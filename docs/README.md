@@ -1,112 +1,177 @@
 # AutoPR Engine Documentation
 
-Welcome to the AutoPR Engine documentation hub. This comprehensive collection of guides and
-references will help you understand, deploy, and extend the AutoPR Engine system.
+## 📚 **Documentation Index**
 
-## 📚 Table of Contents
+Welcome to the AutoPR Engine documentation. This repository contains a comprehensive automated code
+review and quality management system with AI-powered analysis capabilities.
 
-### Core Documentation
+## 🏗️ **Architecture & Design**
 
-- **[AutoPR Enhanced System](./AUTOPR_ENHANCED_SYSTEM.md)** - Complete system architecture and
-  feature overview
-- **[AI Bots Ecosystem Analysis](./AI_BOTS_ECOSYSTEM_ANALYSIS.md)** - Comprehensive analysis of AI
-  automation tools and integration strategies
+### **Core Components**
 
-### Implementation Guides
+- [Enhanced System Architecture](architecture/AUTOPR_ENHANCED_SYSTEM.md) - Comprehensive system
+  design
+- [Package Architecture](architecture/packages.md) - Package structure and organization
+- [Template Catalog](architecture/template_catalog.md) - Template system architecture
+- [Legacy Architecture](architecture/ARCHITECTURE_LEGACY.md) - Original architecture documentation
 
-- **[AI Bots Ecosystem](./ai-bots-ecosystem/)** - Detailed implementation guides and roadmaps
-  - [Phase 1 Foundation](./ai-bots-ecosystem/phase-1-foundation.md)
-  - [Phase 1 Extensions](./ai-bots-ecosystem/phase-1-extensions.md)
-  - [Phase 2 Rapid Prototyping](./ai-bots-ecosystem/phase-2-rapid-prototyping.md)
-  - [Implementation Roadmap](./ai-bots-ecosystem/implementation-roadmap.md)
-  - [Key Workflows](./ai-bots-ecosystem/key-workflows.md)
+### **Architecture Decision Records (ADRs)**
 
-### API Documentation
+- [ADR Directory](adr/) - All architecture decision records
+- [Hybrid C#/Python Architecture](adr/0001-hybrid-csharp-python-architecture.md)
+- [gRPC Communication](adr/0002-grpc-communication.md)
+- [Plugin System Architecture](adr/0003-plugin-system-architecture.md)
+- [API Versioning Strategy](adr/0004-api-versioning-strategy.md)
+- [Configuration Management](adr/0005-configuration-management.md)
+- [Plugin System Design](adr/0006-plugin-system-design.md)
+- [Authentication & Authorization](adr/0007-authn-authz.md)
+- [Event-Driven Architecture](adr/0008-event-driven-architecture.md)
+- [Error Handling Strategy](adr/0009-error-handling-strategy.md)
+- [Monitoring & Observability](adr/0010-monitoring-observability.md)
+- [Data Persistence Strategy](adr/0011-data-persistence-strategy.md)
+- [Deployment Strategy](adr/0012-deployment-strategy.md)
+- [Security Strategy](adr/0013-security-strategy.md)
+- [Caching Strategy](adr/0014-caching-strategy.md)
 
-- **[API Reference](./api/)** - Complete API documentation and integration guides
-  - [Smart API](./api/smart-api.md) - Core API endpoints and usage
+## 🚀 **Getting Started**
 
-### Setup & Configuration
+### **Quick Start**
 
-- **[Authentication Guide](./guides/authentication.md)** - Complete authentication setup and
-  configuration
-- **[Integration Guide](./ai-bots-ecosystem/integration-guide.md)** - Platform integration
-  instructions
-- **[Infrastructure & Deployment](./ai-bots-ecosystem/infrastructure-deployment.md)** - Deployment
-  strategies and infrastructure setup
+- [Migration Guide](getting-started/MIGRATION_GUIDE.md) - Migration from previous versions
+- [Error Handler Guide](getting-started/ERROR_HANDLER_GUIDE.md) - Error handling and debugging
 
-### Specialized Guides
+### **Development Setup**
 
-- **[Development Assistants](./ai-bots-ecosystem/development-assistants.md)** - AI development tools
-  integration
-- **[Code Review Bots](./ai-bots-ecosystem/code-review-bots.md)** - Automated code review setup
-- **[Testing & Quality](./ai-bots-ecosystem/testing-quality.md)** - Quality assurance and testing
-  automation
-- **[Documentation Tools](./ai-bots-ecosystem/documentation-tools.md)** - Documentation generation
-  and maintenance
+- [Python 3.13 Upgrade](development/PYTHON_313_UPGRADE.md) - Python upgrade guide
+- [Windows Development](development/WINDOWS_DEVELOPMENT.md) - Windows development setup
+- [Code Quality](development/CODE_QUALITY.md) - Code quality standards and tools
+- [AI Linting Fixer](development/ai_linting_fixer.md) - AI-powered linting and fixing
 
-### Analysis & Planning
+## 📖 **User Guides**
 
-- **[Cost Analysis](./ai-bots-ecosystem/cost-analysis.md)** - Resource requirements and cost
-  optimization
-- **[Platform Detector Expansion](./ai-bots-ecosystem/platform-detector-expansion.md)** -
-  Multi-platform integration strategies
-- **[Communication Integration](./ai-bots-ecosystem/communication-integration-expansion.md)** - Chat
-  and notification integrations
+### **Quality Engine**
 
-## 🚀 Quick Start
+- [AI Linting Fixer](development/ai_linting_fixer.md) - AI-powered code analysis
+- [Code Quality](development/CODE_QUALITY.md) - Code quality standards and tools
+- [Platform Detection](development/platform_detection.md) - Platform identification system
 
-1. **New to AutoPR Engine?** Start with the [AutoPR Enhanced System](./AUTOPR_ENHANCED_SYSTEM.md)
-   overview
-2. **Ready to implement?** Follow the
-   [Phase 1 Foundation](./ai-bots-ecosystem/phase-1-foundation.md) guide
-3. **Need API access?** Check the [API Reference](./api/) and
-   [Authentication Guide](./guides/authentication.md)
-4. **Planning deployment?** Review
-   [Infrastructure & Deployment](./ai-bots-ecosystem/infrastructure-deployment.md)
+### **Development Tools**
 
-## 🏗️ Architecture Overview
+- [Modular Refactoring](development/MODULAR_REFACTORING_SUMMARY.md) - Refactoring documentation
+- [AutoWeave Integration](development/autopr_autoweave_integration.md) - Integration guide
+- [Configuration Management](development/CONFIGURATION_EXTRACTION.md) - Configuration system
 
-AutoPR Engine is a sophisticated AI-powered automation platform that combines:
+## 🔧 **API Reference**
 
-- **Multi-Agent AI Systems** - Collaborative AI agents for complex PR analysis
-- **Memory & Learning** - Persistent learning from past interactions
-- **Multi-Platform Integration** - GitHub, Linear, Slack, Discord, Notion support
-- **Quality Gates** - Automated quality checks and validation
-- **Configurable LLM Providers** - Support for OpenAI, Anthropic, Mistral, Groq
+### **Core API**
 
-## 📖 Documentation Categories
+- [API Directory](api/) - API documentation index
+- [Quality Engine API](api/quality-engine.md) - Quality analysis endpoints
+- [Platform Detection API](api/platform-detection.md) - Platform detection endpoints
+- [Security API](api/security.md) - Authentication and authorization endpoints
 
-### 🎯 **Getting Started**
+### **Integration APIs**
 
-Essential documentation for new users and implementers.
+- [GitHub Integration](api/github.md) - GitHub integration endpoints
+- [Linear Integration](api/linear.md) - Linear integration endpoints
+- [Custom Integrations](api/custom-integrations.md) - Building custom integrations
 
-### 🔧 **Implementation**
+## 🚀 **Deployment**
 
-Step-by-step guides for setting up and configuring AutoPR Engine.
+### **Deployment Options**
 
-### 📡 **Integration**
+- [Deployment Directory](deployment/) - Deployment guides and configurations
 
-Platform-specific integration guides and API documentation.
+### **Configuration**
 
-### 🚀 **Advanced**
+- [Configuration Management](development/CONFIGURATION_EXTRACTION.md) - Configuration system
 
-Advanced configuration, customization, and extension guides.
+## 📋 **Planning & Roadmap**
 
-### 📊 **Analysis**
+### **Current Plans**
 
-Performance analysis, cost optimization, and strategic planning documents.
+- [Repository Structure Plan](plans/REPOSITORY_STRUCTURE_PLAN.md) - Repository organization
+  improvements
+- [Enterprise Modernization Plan](plans/ENTERPRISE_MODERNIZATION_PLAN.md) - Enterprise system
+  modernization
+- [Modularization Plan](plans/modularization_plan.md) - Code modularization strategy
+- [Template Packaging Plan](plans/template-packaging-plan.md) - Template system packaging
+- [Product Roadmap](plans/ROADMAP.md) - Product development roadmap
+- [Phase 1 Quality Pipeline](plans/plan-phase1-quality-pipeline.md) - Quality engine implementation
+- [Phase 2 Security Framework](plans/plan-phase2-security-framework.md) - Security framework
+  implementation
+- [Main Plan](plans/plan.md) - Overall project plan
+- [Legacy Plan](plans/PLAN_LEGACY.md) - Original project plan
 
-## 🤝 Contributing
+## 📊 **Analysis & Research**
 
-To contribute to this documentation:
+### **Ecosystem Analysis**
 
-1. Follow the existing structure and formatting
-2. Update the README when adding new documents
-3. Include practical examples and code snippets
-4. Cross-reference related documentation
+- [AI Bots Ecosystem Analysis](analysis/AI_BOTS_ECOSYSTEM_ANALYSIS.md) - Comprehensive AI bots
+  ecosystem study
+- [AI Bots Ecosystem Directory](ai-bots-ecosystem/) - Detailed ecosystem documentation
 
-## 📄 License
+## 🛠️ **Development**
 
-This documentation is part of the AutoPR Engine project. See the main repository for license
-information.
+### **Development Guides**
+
+- [Python 3.13 Upgrade](development/PYTHON_313_UPGRADE.md) - Python upgrade guide
+- [Windows Development](development/WINDOWS_DEVELOPMENT.md) - Windows development setup
+- [Code Quality](development/CODE_QUALITY.md) - Code quality standards and tools
+- [AI Linting Fixer](development/ai_linting_fixer.md) - AI-powered linting and fixing
+- [Modular Refactoring Summary](development/MODULAR_REFACTORING_SUMMARY.md) - Refactoring
+  documentation
+- [AutoPR AutoWeave Integration](development/autopr_autoweave_integration.md) - Integration guide
+- [Configuration Extraction](development/CONFIGURATION_EXTRACTION.md) - Configuration management
+- [Platform Detection](development/platform_detection.md) - Platform detection implementation
+
+### **Architecture**
+
+- [Enhanced System Architecture](architecture/AUTOPR_ENHANCED_SYSTEM.md) - Comprehensive system
+  design
+- [Package Architecture](architecture/packages.md) - Package structure and organization
+- [Template Catalog](architecture/template_catalog.md) - Template system architecture
+
+### **Tools & Utilities**
+
+- [AI Linting Fixer](development/ai_linting_fixer.md) - AI-powered code analysis
+- [Code Quality](development/CODE_QUALITY.md) - Code quality standards and tools
+- [Platform Detection](development/platform_detection.md) - Platform identification system
+
+## 📊 **Templates & Examples**
+
+### **Template System**
+
+- [Template Overview](../templates/README.md) - Template system documentation
+- [Platform Templates](../templates/platforms/) - Platform-specific templates
+- [Use Case Templates](../templates/use-cases/) - Use case templates
+- [Deployment Templates](../templates/deployment/) - Deployment templates
+
+### **Examples**
+
+- [Example Projects](../examples/) - Example implementations
+- [Integration Examples](../examples/integrations/) - Integration examples
+- [Custom Tool Examples](../examples/custom-tools/) - Custom tool implementations
+
+## 🤝 **Community & Support**
+
+### **Getting Help**
+
+- [Error Handler Guide](getting-started/ERROR_HANDLER_GUIDE.md) - Error handling and debugging
+- [Windows Development](development/WINDOWS_DEVELOPMENT.md) - Windows development setup
+- [Migration Guide](getting-started/MIGRATION_GUIDE.md) - Migration from previous versions
+
+### **Contributing**
+
+- [Development Directory](development/) - Development guides and tools
+- [Code Quality](development/CODE_QUALITY.md) - Code quality standards
+- [AI Linting Fixer](development/ai_linting_fixer.md) - AI-powered code analysis
+
+---
+
+## 📝 **Documentation Maintenance**
+
+This documentation is maintained as part of the AutoPR Engine project. For questions, suggestions,
+or contributions to the documentation, please see the [Development Directory](development/).
+
+**Last Updated**: January 2025 **Version**: 1.1.0

@@ -3,11 +3,11 @@ AutoPR Action: Learning & Memory System
 Tracks patterns, user preferences, and project context to improve decision-making over time.
 """
 
+from datetime import datetime
 import hashlib
 import os
 import pathlib
 import sqlite3
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel
@@ -271,7 +271,9 @@ class LearningMemorySystem:
 
     def analyze_project_patterns(self, project_files: list[str]) -> dict[str, Any]:
         """Analyze project-specific patterns and conventions."""
-        project_hash = hashlib.md5(str(sorted(project_files)).encode()).hexdigest()[:8]
+        project_hash = hashlib.md5(
+            str(sorted(project_files)).encode(), usedforsecurity=False
+        ).hexdigest()[:8]
 
         patterns = {
             "coding_style": self._detect_coding_style(project_files),

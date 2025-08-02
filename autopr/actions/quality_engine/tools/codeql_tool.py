@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 import tempfile
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -21,7 +21,7 @@ class CodeQLTool(Tool):
     def description(self) -> str:
         return "A static analysis engine for vulnerability scanning."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run CodeQL on the project. This involves:
         1. Creating a CodeQL database from the source code.
@@ -88,7 +88,7 @@ class CodeQLTool(Tool):
                 return []
 
             try:
-                with open(results_path, "r") as f:
+                with open(results_path) as f:
                     sarif_data = json.load(f)
                 return self._parse_sarif(sarif_data)
             except (json.JSONDecodeError, FileNotFoundError):
@@ -97,7 +97,7 @@ class CodeQLTool(Tool):
 
         return []
 
-    def _parse_sarif(self, sarif_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _parse_sarif(self, sarif_data: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Parses a SARIF log to extract a simplified list of issues.
         """

@@ -1,6 +1,9 @@
 """Markdown linter entry point."""
 
-from cli import main
+try:
+    from .cli import main
+except ImportError:
+    from cli import main
 
 if __name__ == "__main__":
     main()

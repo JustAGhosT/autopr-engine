@@ -9,14 +9,14 @@ This module provides a comprehensive configuration system with:
 - Hot reloading capabilities
 """
 
+from enum import StrEnum
 import json
 import logging
-from enum import StrEnum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
+from pydantic import BaseModel, Field, SecretStr, field_validator
 import yaml
-from pydantic import BaseModel, Field, SecretStr, field_validator, validator
 
 try:
     # Pydantic 2.0+ (preferred)

@@ -6,10 +6,10 @@ New code should use the modular analyzer in autopr.actions.platform_detection.an
 """
 
 import json
-import re
-import warnings
 from pathlib import Path
+import re
 from typing import Any
+import warnings
 
 from autopr.actions.platform_detection.analysis import create_file_analyzer
 from autopr.actions.platform_detection.analysis.patterns import ContentPattern, FilePattern

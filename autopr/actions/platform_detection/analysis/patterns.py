@@ -2,9 +2,9 @@
 Pattern classes for platform detection.
 """
 
-import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
+import re
 from re import Pattern
 
 

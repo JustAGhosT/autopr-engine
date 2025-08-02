@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
-from autopr.actions.base import Action
+from autopr.actions.base.action import Action
 
 if TYPE_CHECKING:
     from collections.abc import Callable

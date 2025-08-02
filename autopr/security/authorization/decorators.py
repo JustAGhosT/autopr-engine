@@ -1,7 +1,7 @@
 # autopr/security/authorization/decorators.py
 
 from functools import wraps
-from typing import List, Union
+from typing import Any
 
 from .models import AuthorizationContext, Permission, ResourceType
 from .utils import get_authorization_manager
@@ -28,7 +28,7 @@ class AuthorizationDecorator:
         self.action = action
         self.resource_id_param = resource_id_param
 
-    def __call__(self, func):
+    def __call__(self, func: Any) -> Any:
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Extract user info - try different sources
@@ -80,7 +80,7 @@ class AuthorizationDecorator:
 
 def require_permission(
     resource_type: ResourceType, action: Permission, resource_id_param: str = "resource_id"
-):
+) -> Any:
     """
     Function decorator to require permission for a specific resource action
 

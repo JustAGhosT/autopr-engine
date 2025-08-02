@@ -42,7 +42,7 @@ class SpecializedAgent(ABC):
     def __init__(self, agent_type: AgentType):
         self.agent_type = agent_type
         self.issue_codes = self._get_supported_issue_codes()
-        self.success_rates = {}  # Track success rates per issue type
+        self.success_rates: dict[str, float] = {}  # Track success rates per issue type
         self.fix_strategies = self._define_fix_strategies()
 
     @abstractmethod
@@ -536,7 +536,7 @@ class AgentManager:
             return self.agents[AgentType.GENERAL_FIXER]
 
         # Count issues by type to find the dominant type
-        issue_type_counts = {}
+        issue_type_counts: dict[AgentType, int] = {}
         for issue in issues:
             error_code = issue.get("error_code", "")
             for agent_type, agent in self.agents.items():
@@ -548,14 +548,14 @@ class AgentManager:
             return self.agents[AgentType.GENERAL_FIXER]
 
         # Select agent with most matching issues
-        best_agent_type = max(issue_type_counts, key=issue_type_counts.get)
+        best_agent_type = max(issue_type_counts, key=lambda k: issue_type_counts[k])
         return self.agents[best_agent_type]
 
     def get_agent_by_type(self, agent_type: AgentType) -> SpecializedAgent:
         """Get a specific agent by type."""
         return self.agents[agent_type]
 
-    def record_agent_result(self, agent_type: AgentType, success: bool):
+    def record_agent_result(self, agent_type: AgentType, success: bool) -> None:
         """Record the result of an agent's attempt."""
         self.agent_stats[agent_type]["attempts"] += 1
         if success:

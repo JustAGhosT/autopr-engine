@@ -52,6 +52,7 @@ class TemplateLoader:
                 loader=FileSystemLoader(str(self.doc_templates_dir)),
                 trim_blocks=True,
                 lstrip_blocks=True,
+                autoescape=True,
             )
         else:
             self.jinja_env: Environment | None = None

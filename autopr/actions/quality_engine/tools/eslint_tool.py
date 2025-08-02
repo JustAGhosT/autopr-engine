@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Dict, List, TypedDict
+from typing import TypedDict
 
 from ..handlers.lint_issue import LintIssue
 from .registry import register_tool
@@ -13,9 +13,9 @@ class ESLintConfig(TypedDict, total=False):
 
     config: str  # Path to .eslintrc file
     fix: bool  # Whether to auto-fix issues
-    extensions: List[str]  # File extensions to lint
-    ignore_pattern: List[str]  # Patterns to ignore
-    args: List[str]  # Additional arguments to pass to ESLint
+    extensions: list[str]  # File extensions to lint
+    ignore_pattern: list[str]  # Patterns to ignore
+    args: list[str]  # Additional arguments to pass to ESLint
 
 
 @register_tool
@@ -36,7 +36,7 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
     def category(self) -> str:
         return "linting"
 
-    async def run(self, files: List[str], config: ESLintConfig) -> List[LintIssue]:
+    async def run(self, files: list[str], config: ESLintConfig) -> list[LintIssue]:
         """
         Run ESLint on a list of JavaScript/TypeScript files.
 
@@ -54,25 +54,25 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
         command = ["npx", "eslint", "--format", "json"]
 
         # Add config file if specified
-        if "config" in config and config["config"]:
+        if config.get("config"):
             command.extend(["--config", config["config"]])
 
         # Add fix flag if specified
-        if "fix" in config and config["fix"]:
+        if config.get("fix"):
             command.append("--fix")
 
         # Add extension filters
-        if "extensions" in config and config["extensions"]:
+        if config.get("extensions"):
             for ext in config["extensions"]:
                 command.extend(["--ext", ext])
 
         # Add ignore patterns
-        if "ignore_pattern" in config and config["ignore_pattern"]:
+        if config.get("ignore_pattern"):
             for pattern in config["ignore_pattern"]:
                 command.extend(["--ignore-pattern", pattern])
 
         # Add additional arguments
-        if "args" in config and config["args"]:
+        if config.get("args"):
             command.extend(config["args"])
 
         # Add files to analyze
@@ -105,19 +105,19 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
             return self._parse_eslint_output(stdout.decode())
 
         except Exception as e:
-            print(f"Error running ESLint: {str(e)}")
+            print(f"Error running ESLint: {e!s}")
             return [
                 {
                     "filename": "",
                     "line_number": 0,
                     "column_number": 0,
-                    "message": f"ESLint execution failed: {str(e)}",
+                    "message": f"ESLint execution failed: {e!s}",
                     "code": "eslint-error",
                     "level": "error",
                 }
             ]
 
-    def _parse_eslint_output(self, output: str) -> List[LintIssue]:
+    def _parse_eslint_output(self, output: str) -> list[LintIssue]:
         """
         Parse ESLint JSON output into LintIssue objects.
 

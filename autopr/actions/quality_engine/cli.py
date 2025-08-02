@@ -4,7 +4,6 @@ Command-line interface for the Quality Engine.
 
 import argparse
 import sys
-from typing import List, Optional
 
 from .engine import QualityEngine
 from .models import QualityInputs, QualityMode
@@ -30,7 +29,7 @@ def ask_windows_confirmation() -> bool:
             print("Please enter 'y' or 'n'.")
 
 
-def main(args: Optional[List[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Quality Engine CLI")
     parser.add_argument(

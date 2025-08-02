@@ -1,5 +1,3 @@
-from typing import Any, Dict, Optional
-
 from ..validation_models import ValidationResult, ValidationSeverity
 
 
@@ -32,16 +30,14 @@ class ObjectValidator:
                     and result.severity != ValidationSeverity.CRITICAL
                 ):
                     result.severity = ValidationSeverity.HIGH
+            elif (
+                isinstance(obj_result.sanitized_data, dict)
+                and "value" in obj_result.sanitized_data
+                and len(obj_result.sanitized_data) == 1
+            ):
+                sanitized_object[obj_key] = obj_result.sanitized_data["value"]
             else:
-                # Extract the inner value if it's wrapped in our temporary dict
-                if (
-                    isinstance(obj_result.sanitized_data, dict)
-                    and "value" in obj_result.sanitized_data
-                    and len(obj_result.sanitized_data) == 1
-                ):
-                    sanitized_object[obj_key] = obj_result.sanitized_data["value"]
-                else:
-                    sanitized_object[obj_key] = obj_result.sanitized_data
+                sanitized_object[obj_key] = obj_result.sanitized_data
 
         if result.is_valid:
             result.sanitized_data = sanitized_object

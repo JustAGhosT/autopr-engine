@@ -17,12 +17,6 @@ Main Components:
 - template_browser: Template discovery and browsing
 """
 
-from templates.discovery.template_validators import (
-    ValidationIssue,
-    ValidationSeverity,
-    ValidatorRegistry,
-)
-
 from .content_analyzer import ContentAnalyzer
 from .docs_generator import TemplateDocumentationGenerator
 from .format_generators import (
@@ -40,6 +34,7 @@ from .report_generators import HTMLReportGenerator, JSONReportGenerator, Markdow
 from .report_generators import ReportGeneratorFactory as QAReportGeneratorFactory
 from .template_browser import TemplateBrowser, TemplateInfo
 from .template_loader import TemplateLoader
+from .template_validators import ValidationIssue, ValidationSeverity, ValidatorRegistry
 from .validation_rules import ValidationRuleLoader
 
 __all__ = [

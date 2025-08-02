@@ -4,8 +4,7 @@ Windows Security Tool - A comprehensive security scanning alternative to CodeQL 
 
 import asyncio
 import json
-import subprocess
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -16,7 +15,7 @@ class WindowsSecurityTool(Tool):
     This serves as an alternative to CodeQL on Windows systems.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.default_timeout = 45.0  # 45 second timeout for comprehensive security scanning
         self.max_files_per_run = 50  # Limit files to prevent hanging
@@ -33,7 +32,7 @@ class WindowsSecurityTool(Tool):
     def category(self) -> str:
         return "security"
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run comprehensive security scanning using multiple tools.
         """
@@ -56,7 +55,7 @@ class WindowsSecurityTool(Tool):
 
         return all_issues
 
-    async def _run_bandit(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _run_bandit(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """Run Bandit security scanner with improved error handling."""
         try:
             # Filter for Python files
@@ -107,9 +106,9 @@ class WindowsSecurityTool(Tool):
                 return [{"error": "Failed to parse Bandit JSON output"}]
 
         except Exception as e:
-            return [{"error": f"Bandit execution error: {str(e)}"}]
+            return [{"error": f"Bandit execution error: {e!s}"}]
 
-    async def _run_safety(self, config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _run_safety(self, config: dict[str, Any]) -> list[dict[str, Any]]:
         """Run Safety for dependency vulnerability scanning with improved error handling."""
         try:
             command = ["safety", "check", "--json"]
@@ -157,11 +156,11 @@ class WindowsSecurityTool(Tool):
                 return [{"error": "Failed to parse Safety JSON output"}]
 
         except Exception as e:
-            return [{"error": f"Safety execution error: {str(e)}"}]
+            return [{"error": f"Safety execution error: {e!s}"}]
 
     async def _run_additional_checks(
-        self, files: List[str], config: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Run additional security checks with improved error handling."""
         issues = []
 
@@ -174,18 +173,16 @@ class WindowsSecurityTool(Tool):
                     file_issues = await self._check_python_security_patterns(file, config)
                     issues.extend(file_issues)
                 except Exception as e:
-                    issues.append(
-                        {"error": f"Error checking security patterns in {file}: {str(e)}"}
-                    )
+                    issues.append({"error": f"Error checking security patterns in {file}: {e!s}"})
 
         return issues
 
     async def _check_python_security_patterns(
-        self, file_path: str, config: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, file_path: str, config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Check for common Python security anti-patterns."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             issues = []
@@ -244,4 +241,4 @@ class WindowsSecurityTool(Tool):
             return issues
 
         except Exception as e:
-            return [{"error": f"Error checking security patterns in {file_path}: {str(e)}"}]
+            return [{"error": f"Error checking security patterns in {file_path}: {e!s}"}]

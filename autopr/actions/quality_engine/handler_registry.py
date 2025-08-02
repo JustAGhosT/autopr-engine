@@ -2,7 +2,8 @@
 Registry for handlers that process tool results.
 """
 
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from .handler_base import Handler
 
@@ -18,7 +19,7 @@ class HandlerRegistry:
     the correct handling of different result types returned by tools.
     """
 
-    def __init__(self, handler_map: Optional[Dict[Type, Handler]] = None):
+    def __init__(self, handler_map: dict[type, Handler] | None = None):
         """
         Initialize the registry with an optional handler map.
 
@@ -32,8 +33,8 @@ class HandlerRegistry:
         self._tool_handlers = {}
 
     def register_for_result(
-        self, result_type: Type[TResult]
-    ) -> Callable[[Type[Handler[TResult]]], Type[Handler[TResult]]]:
+        self, result_type: type[TResult]
+    ) -> Callable[[type[Handler[TResult]]], type[Handler[TResult]]]:
         """
         Register a handler for a specific result type.
 
@@ -49,14 +50,14 @@ class HandlerRegistry:
             A decorator function that registers the handler
         """
 
-        def decorator(handler_class: Type[Handler[TResult]]) -> Type[Handler[TResult]]:
+        def decorator(handler_class: type[Handler[TResult]]) -> type[Handler[TResult]]:
             handler = handler_class()
             self._handlers[result_type] = handler
             return handler_class
 
         return decorator
 
-    def register_handler(self, result_type: Type[TResult], handler: Handler[TResult]) -> None:
+    def register_handler(self, result_type: type[TResult], handler: Handler[TResult]) -> None:
         """
         Register an existing handler instance for a result type.
 
@@ -66,7 +67,7 @@ class HandlerRegistry:
         """
         self._handlers[result_type] = handler
 
-    def register_for_tool(self, tool_class: Type) -> Callable[[Type[Handler]], Type[Handler]]:
+    def register_for_tool(self, tool_class: type) -> Callable[[type[Handler]], type[Handler]]:
         """
         Register a handler for a specific tool class.
 
@@ -82,14 +83,14 @@ class HandlerRegistry:
             A decorator function that registers the handler
         """
 
-        def decorator(handler_class: Type[Handler]) -> Type[Handler]:
+        def decorator(handler_class: type[Handler]) -> type[Handler]:
             handler = handler_class()
             self._tool_handlers[tool_class] = handler
             return handler_class
 
         return decorator
 
-    def get_handler_for_result(self, result_type: Type[TResult]) -> Handler[TResult]:
+    def get_handler_for_result(self, result_type: type[TResult]) -> Handler[TResult]:
         """
         Get the handler for a specific result type.
 
@@ -106,7 +107,7 @@ class HandlerRegistry:
             raise KeyError(f"No handler registered for result type {result_type.__name__}")
         return self._handlers[result_type]
 
-    def get_handler_for_tool(self, tool_class: Type) -> Handler:
+    def get_handler_for_tool(self, tool_class: type) -> Handler:
         """
         Get the handler for a specific tool class.
 
@@ -123,7 +124,7 @@ class HandlerRegistry:
             raise KeyError(f"No handler registered for tool class {tool_class.__name__}")
         return self._tool_handlers[tool_class]
 
-    def handle_results(self, results: List[TResult], result_type: Type[TResult]) -> None:
+    def handle_results(self, results: list[TResult], result_type: type[TResult]) -> None:
         """
         Handle results of a specific type.
 
@@ -143,8 +144,8 @@ class HandlerRegistry:
 
 
 def register_for_result(
-    result_type: Type[TResult],
-) -> Callable[[Type[Handler[TResult]]], Type[Handler[TResult]]]:
+    result_type: type[TResult],
+) -> Callable[[type[Handler[TResult]]], type[Handler[TResult]]]:
     """Placeholder for the DI-based decorator."""
     from .di import container
 
@@ -152,7 +153,7 @@ def register_for_result(
     return registry.register_for_result(result_type)
 
 
-def register_for_tool(tool_class: Type) -> Callable[[Type[Handler]], Type[Handler]]:
+def register_for_tool(tool_class: type) -> Callable[[type[Handler]], type[Handler]]:
     """Placeholder for the DI-based decorator."""
     from .di import container
 

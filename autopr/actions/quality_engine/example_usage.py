@@ -3,14 +3,12 @@ Example usage of the Quality Engine with dependency injection.
 """
 
 import asyncio
-from typing import Dict, List
 
-from .container import container
 from .engine import create_quality_engine
 from .handlers.lint_issue import LintIssue
 
 
-async def run_quality_analysis(files: List[str]) -> None:
+async def run_quality_analysis(files: list[str]) -> None:
     """
     Run quality analysis on files.
 

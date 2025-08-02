@@ -1,12 +1,10 @@
-from typing import Any, Dict, List, Optional, Union
-
 from ..validation_models import ValidationResult, ValidationSeverity
 
 
 class ArrayValidator:
     """Array validation functionality."""
 
-    def _validate_array(self, key: str, value: Union[list, tuple]) -> ValidationResult:
+    def _validate_array(self, key: str, value: list | tuple) -> ValidationResult:
         """Validate array input."""
         result = ValidationResult(is_valid=True)
 
@@ -35,16 +33,14 @@ class ArrayValidator:
                     and result.severity != ValidationSeverity.CRITICAL
                 ):
                     result.severity = ValidationSeverity.HIGH
+            elif (
+                isinstance(item_result.sanitized_data, dict)
+                and "value" in item_result.sanitized_data
+                and len(item_result.sanitized_data) == 1
+            ):
+                sanitized_array.append(item_result.sanitized_data["value"])
             else:
-                # Extract the inner value if it's wrapped in our temporary dict
-                if (
-                    isinstance(item_result.sanitized_data, dict)
-                    and "value" in item_result.sanitized_data
-                    and len(item_result.sanitized_data) == 1
-                ):
-                    sanitized_array.append(item_result.sanitized_data["value"])
-                else:
-                    sanitized_array.append(item_result.sanitized_data)
+                sanitized_array.append(item_result.sanitized_data)
 
         # Wrap array in a dictionary to satisfy type constraints
         if result.is_valid:

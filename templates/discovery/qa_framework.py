@@ -19,11 +19,6 @@ from pathlib import Path
 from typing import Any
 
 from autopr.quality.template_metrics import QualityMetrics, get_quality_analyzer, get_quality_scorer
-from templates.discovery.template_validators import (
-    ValidationIssue,
-    ValidationSeverity,
-    get_validator_registry,
-)
 
 from .report_generators import (
     ReportGeneratorFactory,
@@ -31,6 +26,7 @@ from .report_generators import (
     generate_report,
     save_report,
 )
+from .template_validators import ValidationIssue, ValidationSeverity, get_validator_registry
 
 # Import modular components
 from .validation_rules import get_validation_rules
@@ -327,7 +323,6 @@ if __name__ == "__main__":
             sys.exit(1)
 
     else:
-
         try:
             results = qa.run_qa_suite(save_report_flag=True)
 

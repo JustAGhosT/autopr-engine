@@ -4,9 +4,9 @@ Base classes and interfaces for file analysis.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 import fnmatch
 import logging
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
@@ -61,7 +61,7 @@ class FileAnalyzer:
     def __init__(
         self,
         workspace_path: str | Path,
-        handlers: dict[str, type["FileHandler"]] | None = None,
+        handlers: dict[str, type[FileHandler]] | None = None,
     ):
         """
         Initialize the file analyzer.
@@ -71,13 +71,13 @@ class FileAnalyzer:
             handlers: Mapping of file patterns to handler classes
         """
         self.workspace_path = Path(workspace_path).resolve()
-        self.handlers: dict[str, type["FileHandler"]] = {}
+        self.handlers: dict[str, type[FileHandler]] = {}
         self._initialize_handlers(handlers or {})
 
-    def _initialize_handlers(self, handlers: dict[str, type["FileHandler"]]) -> None:
+    def _initialize_handlers(self, handlers: dict[str, type[FileHandler]]) -> None:
         """Initialize the file handlers."""
 
-        self._handler_patterns: list[tuple[Any, type["FileHandler"]]] = []
+        self._handler_patterns: list[tuple[Any, type[FileHandler]]] = []
 
         for pattern, handler_cls in handlers.items():
             self.register_handler(pattern, handler_cls)
@@ -85,7 +85,7 @@ class FileAnalyzer:
     def register_handler(
         self,
         pattern: str,
-        handler_cls: type["FileHandler"],
+        handler_cls: type[FileHandler],
     ) -> None:
         """Register a handler for files matching the given pattern."""
         # Import here to avoid circular import

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypedDict, TypeVar, cast
+from typing import Any, TypeVar
 
 from .tool_base import Tool
 
@@ -10,11 +10,11 @@ TTool = TypeVar("TTool", bound=Tool)
 class ToolRegistry:
     """Registry for quality tools."""
 
-    def __init__(self):
-        self._tools: Dict[str, Tool] = {}
-        self._tool_classes: Dict[str, Type[Tool]] = {}
+    def __init__(self) -> None:
+        self._tools: dict[str, Tool] = {}
+        self._tool_classes: dict[str, type[Tool]] = {}
 
-    def register(self, tool_class: Type[Tool]) -> Type[Tool]:
+    def register(self, tool_class: type[Tool]) -> type[Tool]:
         """
         Register a tool class with the registry.
 
@@ -48,7 +48,7 @@ class ToolRegistry:
             raise KeyError(f"Tool '{name}' is not registered.")
         return self._tools[name]
 
-    def get_tool_class(self, name: str) -> Type[Tool]:
+    def get_tool_class(self, name: str) -> type[Tool]:
         """
         Get a tool class by name.
 
@@ -65,7 +65,7 @@ class ToolRegistry:
             raise KeyError(f"Tool class '{name}' is not registered.")
         return self._tool_classes[name]
 
-    def get_all_tools(self) -> List[Tool]:
+    def get_all_tools(self) -> list[Tool]:
         """
         Get all registered tools.
 
@@ -74,7 +74,7 @@ class ToolRegistry:
         """
         return list(self._tools.values())
 
-    def get_tool_classes(self) -> List[Type[Tool]]:
+    def get_tool_classes(self) -> list[type[Tool]]:
         """
         Get all registered tool classes.
 
@@ -83,7 +83,7 @@ class ToolRegistry:
         """
         return list(self._tool_classes.values())
 
-    def get_tools_by_category(self, category: str) -> List[Tool]:
+    def get_tools_by_category(self, category: str) -> list[Tool]:
         """
         Get all tools in a specific category.
 
@@ -95,7 +95,7 @@ class ToolRegistry:
         """
         return [tool for tool in self._tools.values() if tool.category == category]
 
-    def instantiate_tool(self, name: str, *args, **kwargs) -> Tool:
+    def instantiate_tool(self, name: str, *args: Any, **kwargs: Any) -> Tool:
         """
         Instantiate a new instance of a tool class.
 
@@ -118,7 +118,7 @@ class ToolRegistry:
 registry = ToolRegistry()
 
 
-def register_tool(tool_class: Type[TTool]) -> Type[TTool]:
+def register_tool(tool_class: type[TTool]) -> type[TTool]:
     """
     Decorator to register a tool with the registry.
 

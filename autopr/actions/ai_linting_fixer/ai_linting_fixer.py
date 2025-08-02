@@ -7,7 +7,7 @@ using advanced language models and specialized agents.
 
 import logging
 import time
-from typing import Any
+from typing import Any, BaseException
 
 from autopr.actions.llm.manager import LLMProviderManager
 
@@ -386,7 +386,7 @@ class AILintingFixer:
             performance_summary = self.performance_tracker.get_performance_summary()
 
             # Create suggestions
-            suggestions = []
+            suggestions: list[str] = []
             if failed_issues:
                 suggestions.append("Try increasing --max-fixes if you want to process more issues")
             suggestions.append("Check if the specified fix types match available issues")
@@ -439,11 +439,13 @@ class AILintingFixer:
             # Cleanup
             logger.info("AI Linting Fixer resources cleaned up")
 
-    def __enter__(self):
+    def __enter__(self) -> "AILintingFixer":
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any
+    ) -> None:
         """Context manager exit."""
         try:
             # End performance tracking

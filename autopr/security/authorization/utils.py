@@ -1,7 +1,7 @@
 """Utility functions for authorization operations."""
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -19,8 +19,8 @@ def get_authorization_manager(
     use_cache: bool = True,
     cache_ttl_seconds: int = 300,
     enable_audit: bool = True,
-    audit_log_file: Optional[str] = None,
-):
+    audit_log_file: str | None = None,
+) -> Any:
     """
     Get global authorization manager instance with appropriate capabilities.
 
@@ -69,7 +69,7 @@ def get_authorization_manager(
     return _auth_manager
 
 
-def get_access_logger():
+def get_access_logger() -> AuthorizationAuditLogger:
     """Get global access logger instance."""
     global _access_logger
     if _access_logger is None:
@@ -78,7 +78,7 @@ def get_access_logger():
 
 
 def create_project_authorization_context(
-    user_id: str, roles: List[str], project_id: str, action: str
+    user_id: str, roles: list[str], project_id: str, action: str
 ) -> AuthorizationContext:
     """Create authorization context for project operations."""
     return AuthorizationContext(
@@ -92,7 +92,7 @@ def create_project_authorization_context(
 
 
 def create_repository_authorization_context(
-    user_id: str, roles: List[str], repository_id: str, action: str
+    user_id: str, roles: list[str], repository_id: str, action: str
 ) -> AuthorizationContext:
     """Create authorization context for repository operations."""
     return AuthorizationContext(
@@ -106,7 +106,7 @@ def create_repository_authorization_context(
 
 
 def create_workflow_authorization_context(
-    user_id: str, roles: List[str], workflow_id: str, action: str
+    user_id: str, roles: list[str], workflow_id: str, action: str
 ) -> AuthorizationContext:
     """Create authorization context for workflow operations."""
     return AuthorizationContext(
@@ -120,7 +120,7 @@ def create_workflow_authorization_context(
 
 
 def create_template_authorization_context(
-    user_id: str, roles: List[str], template_id: str, action: str
+    user_id: str, roles: list[str], template_id: str, action: str
 ) -> AuthorizationContext:
     """Create authorization context for template operations."""
     return AuthorizationContext(
@@ -135,11 +135,11 @@ def create_template_authorization_context(
 
 def authorize_request(
     user_id: str,
-    roles: List[str],
+    roles: list[str],
     resource_type: str,
     resource_id: str,
     action: str,
-    additional_context: Dict[str, Any] = None,
+    additional_context: dict[str, Any] | None = None,
 ) -> bool:
     """Convenience function for authorization checks."""
     auth_manager = get_authorization_manager()
@@ -152,16 +152,16 @@ def authorize_request(
         resource_type=ResourceType(resource_type),
         resource_id=resource_id,
         action=Permission(action),
-        additional_context=additional_context,
+        additional_context=additional_context or {},
     )
 
     granted = auth_manager.authorize(context)
     access_logger.log_authorization_check(context, granted)
 
-    return granted
+    return bool(granted)
 
 
-def validate_permission_hierarchy(permissions: List[str]) -> bool:
+def validate_permission_hierarchy(permissions: list[str]) -> bool:
     """Validate that permission hierarchy is respected."""
     permission_levels = {
         Permission.READ.value: 1,
@@ -186,8 +186,8 @@ def validate_permission_hierarchy(permissions: List[str]) -> bool:
 
 
 def get_effective_permissions(
-    user_roles: List[str], explicit_permissions: List[str], resource_owner: bool = False
-) -> List[str]:
+    user_roles: list[str], explicit_permissions: list[str], resource_owner: bool = False
+) -> list[str]:
     """Calculate effective permissions for a user."""
     effective_permissions = set(explicit_permissions)
 
@@ -216,7 +216,7 @@ def get_effective_permissions(
     return list(effective_permissions)
 
 
-def check_permission_conflicts(permissions: List[str]) -> List[str]:
+def check_permission_conflicts(permissions: list[str]) -> list[str]:
     """Check for conflicting permissions."""
     conflicts = []
 
@@ -236,8 +236,8 @@ def check_permission_conflicts(permissions: List[str]) -> List[str]:
 
 
 def generate_permission_matrix(
-    users: List[str], resources: List[str], auth_manager
-) -> Dict[str, Any]:
+    users: list[str], resources: list[str], auth_manager: Any
+) -> dict[str, Any]:
     """Generate a permission matrix for analysis."""
     matrix = {
         "users": users,

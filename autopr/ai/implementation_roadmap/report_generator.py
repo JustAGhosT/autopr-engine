@@ -3,8 +3,8 @@ Report Generator for Implementation Roadmap
 Handles analytics, reporting, and progress visualization
 """
 
-import operator
 from datetime import datetime, timedelta
+import operator
 from pathlib import Path
 from typing import Any
 

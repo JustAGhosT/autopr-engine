@@ -1,7 +1,7 @@
 """Permission caching for improved performance."""
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 import structlog
 
@@ -21,9 +21,7 @@ class PermissionCache:
         """Generate cache key for permission check."""
         return f"{user_id}:{resource_type}:{resource_id}:{action}"
 
-    def get(
-        self, user_id: str, resource_type: str, resource_id: str, action: str
-    ) -> Optional[bool]:
+    def get(self, user_id: str, resource_type: str, resource_id: str, action: str) -> bool | None:
         """Get cached permission result."""
         cache_key = self._generate_cache_key(user_id, resource_type, resource_id, action)
 
@@ -75,7 +73,7 @@ class PermissionCache:
         self.cache.clear()
         logger.debug("Permission cache cleared", count=count)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         now = datetime.utcnow().timestamp()
         valid_entries = sum(

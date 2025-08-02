@@ -1,9 +1,9 @@
 """Authorization audit logging functionality."""
 
+from datetime import datetime
 import json
 import os
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -15,7 +15,7 @@ logger = structlog.get_logger(__name__)
 class AuthorizationAuditLogger:
     """Logger for authorization-related events with optional file logging"""
 
-    def __init__(self, audit_log_file: Optional[str] = None):
+    def __init__(self, audit_log_file: str | None = None):
         self.logger = structlog.get_logger("auth_audit")
         self.audit_log_file = audit_log_file
 
@@ -68,7 +68,7 @@ class AuthorizationAuditLogger:
         user_id: str,
         resource_type: str,
         resource_id: str,
-        permissions: List[str],
+        permissions: list[str],
         granted_by: str,
     ):
         """Log permission grant event"""
@@ -101,7 +101,7 @@ class AuthorizationAuditLogger:
         self.logger.info("Permission revoked", **log_data)
         self._write_to_file(log_data)
 
-    def _write_to_file(self, log_data: Dict[str, Any]):
+    def _write_to_file(self, log_data: dict[str, Any]):
         """Write log data to file if configured"""
         if not self.audit_log_file:
             return

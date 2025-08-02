@@ -6,8 +6,8 @@ This workflow integrates with the existing workflow system and provides comprehe
 error tracking, categorization, and recovery capabilities.
 """
 
-import logging
 from datetime import datetime
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -321,7 +321,7 @@ class ErrorHandlerWorkflow(Workflow):
 
 # Convenience functions for easy integration
 async def create_error_handler_workflow(
-    config: dict[str, Any] | None = None
+    config: dict[str, Any] | None = None,
 ) -> ErrorHandlerWorkflow:
     """Create and initialize an error handler workflow."""
     workflow = ErrorHandlerWorkflow(config)

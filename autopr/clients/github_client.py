@@ -74,7 +74,6 @@ class GitHubConfig:
 
 # Type variable for JSON-serializable data
 JSONType = Union[dict[str, Any], list[Any], str, int, float, bool, None]
-T = TypeVar("T", bound=JSONType)
 
 
 class GitHubClient:
@@ -122,8 +121,11 @@ class GitHubClient:
         Returns:
             Time to sleep in seconds
         """
-        jitter = random.uniform(0, 0.1)  # Add up to 10% jitter
-        return min((2**attempt) * self.config.backoff_factor * (1 + jitter), 60)  # Max 60 seconds
+        jitter = random.uniform(0, 0.1)  # Add up to 10% jitter  # - Used for backoff, not security
+        backoff_time = min(
+            (2**attempt) * self.config.backoff_factor * (1 + jitter), 60
+        )  # Max 60 seconds
+        return float(backoff_time)
 
     async def _handle_rate_limit(self, response: ClientResponse) -> None:
         """Update rate limit information from response headers.
@@ -144,7 +146,7 @@ class GitHubClient:
             self.logger.warning(f"Approaching rate limit. Waiting {sleep_time:.1f}s until reset")
             await asyncio.sleep(sleep_time)
 
-    async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
+    async def _request(self, method: str, endpoint: str, **kwargs: Any) -> dict[str, Any]:
         """Make an HTTP request with retry logic and rate limit handling.
 
         Args:
@@ -248,7 +250,7 @@ class GitHubClient:
         return await self._request("GET", endpoint, **kwargs)
 
     async def post(
-        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs
+        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Make a POST request to the GitHub API.
 
@@ -265,7 +267,7 @@ class GitHubClient:
         return await self._request("POST", endpoint, **kwargs)
 
     async def put(
-        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs
+        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Make a PUT request to the GitHub API.
 
@@ -282,7 +284,7 @@ class GitHubClient:
         return await self._request("PUT", endpoint, **kwargs)
 
     async def patch(
-        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs
+        self, endpoint: str, data: dict[str, Any] | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Make a PATCH request to the GitHub API.
 
@@ -298,7 +300,7 @@ class GitHubClient:
             kwargs["json"] = data
         return await self._request("PATCH", endpoint, **kwargs)
 
-    async def delete(self, endpoint: str, **kwargs) -> bool:
+    async def delete(self, endpoint: str, **kwargs: Any) -> bool:
         """Make a DELETE request to the GitHub API.
 
         Args:
@@ -315,7 +317,7 @@ class GitHubClient:
         return response.get("status", 0) == 204
 
     async def graphql(
-        self, query: str, variables: dict[str, Any] | None = None, **kwargs
+        self, query: str, variables: dict[str, Any] | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Execute a GraphQL query against the GitHub API.
 
@@ -350,10 +352,13 @@ class GitHubClient:
             await self._session.close()
             self._session = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "GitHubClient":
         """Async context manager entry."""
+        await self._get_session()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any
+    ) -> None:
         """Async context manager exit."""
         await self.close()

@@ -12,10 +12,10 @@ Key Principles:
 - Easy to test and modify
 """
 
-import logging
-import sys
 from dataclasses import dataclass
 from enum import Enum
+import logging
+import sys
 from typing import Any, TextIO
 
 from .models import (  # SessionMetrics, # Removed; ProcessingMode, # Removed
@@ -461,7 +461,6 @@ class ErrorDisplay:
         # Show context information
         context = error_details.get("context", {})
         if context:
-
             components = context.get("components_initialized", {})
             if components:
                 for _component, _status in components.items():

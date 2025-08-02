@@ -1,11 +1,14 @@
 """Core markdown linter implementation."""
 
-import operator
-import re
 from collections.abc import Callable
+import operator
 from pathlib import Path
+import re
 
-from models import FileReport, IssueSeverity, LintIssue
+try:
+    from .models import FileReport, IssueSeverity, LintIssue
+except ImportError:
+    from models import FileReport, IssueSeverity, LintIssue
 
 
 class MarkdownLinter:

@@ -10,7 +10,7 @@ from aiohttp import ClientSession
 
 
 @pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop]:
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """
     Create an instance of the default event loop for the test session.
 
@@ -27,7 +27,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop]:
 
 
 @pytest_asyncio.fixture
-async def http_session() -> AsyncGenerator[ClientSession]:
+async def http_session() -> AsyncGenerator[ClientSession, None]:
     """
     Create and provide an aiohttp ClientSession for testing.
 
@@ -37,7 +37,7 @@ async def http_session() -> AsyncGenerator[ClientSession]:
         yield session
 
 
-@pytest.fixture
+@pytest.fixture()
 def github_token() -> str:
     """
     Provide a GitHub token for testing.
@@ -47,7 +47,7 @@ def github_token() -> str:
     return os.getenv("GITHUB_TOKEN", "test_token")
 
 
-@pytest.fixture
+@pytest.fixture()
 def linear_api_key() -> str:
     """
     Provide a Linear API key for testing.

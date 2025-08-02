@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Setup script for the markdown-lint package."""
 
-
 from setuptools import find_packages, setup
 
 # Read the README file

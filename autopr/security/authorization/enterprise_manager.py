@@ -1,7 +1,6 @@
 """Enterprise-grade authorization manager implementation."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
 
 import structlog
 
@@ -16,13 +15,13 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
 
     def __init__(self):
         # Role-based permissions: role -> resource_type -> permissions
-        self.role_permissions: Dict[str, Dict[ResourceType, Set[Permission]]] = {}
+        self.role_permissions: dict[str, dict[ResourceType, set[Permission]]] = {}
 
         # User-specific resource permissions
-        self.user_resource_permissions: Dict[str, List[ResourcePermission]] = {}
+        self.user_resource_permissions: dict[str, list[ResourcePermission]] = {}
 
         # Resource ownership mapping
-        self.resource_owners: Dict[str, str] = {}
+        self.resource_owners: dict[str, str] = {}
 
         # Initialize default roles
         self._initialize_default_roles()
@@ -168,7 +167,7 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
         user_id: str,
         resource_type: ResourceType,
         resource_id: str,
-        permissions: Set[Permission],
+        permissions: set[Permission],
         granted_by: str,
     ) -> bool:
         """Grant specific permissions to a user for a resource"""

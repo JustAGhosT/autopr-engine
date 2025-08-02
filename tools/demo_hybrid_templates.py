@@ -4,8 +4,8 @@ Demonstration of Hybrid YAML + Template Approach
 Shows how the enhanced FileGenerator works with metadata-driven templates.
 """
 
-import sys
 from pathlib import Path
+import sys
 
 # Add the autopr package to the path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -79,7 +79,6 @@ def demo_hybrid_templates() -> None:
 
     platforms_to_test = ["replit", "lovable", "bolt"]
     for platform in platforms_to_test:
-
         # Generate Dockerfile
         generator.generate_dockerfile(platform, variables={"node_version": "18"})
 

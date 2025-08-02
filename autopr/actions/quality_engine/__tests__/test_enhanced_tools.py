@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from autopr.actions.quality_engine.tools.semgrep_tool import SemgrepTool
-from autopr.actions.quality_engine.tools.tool_base import Tool, ToolExecutionResult
+from autopr.actions.quality_engine.tools.tool_base import Tool
 from autopr.actions.quality_engine.tools.windows_security_tool import WindowsSecurityTool
 
 
@@ -103,7 +103,7 @@ class TestTool:
 class TestToolExecution:
     """Test tool execution with timeout handling."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_successful_execution(self):
         """Test successful tool execution."""
         tool = SemgrepTool()
@@ -120,7 +120,7 @@ class TestToolExecution:
             assert result["warnings"] == []
             assert "1 issue found" in result["output_summary"]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_timeout_handling(self):
         """Test timeout handling."""
         tool = SemgrepTool()
@@ -137,7 +137,7 @@ class TestToolExecution:
             assert "timed out" in result["error_message"]
             assert result["execution_time"] >= 0.1
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_error_handling(self):
         """Test error handling."""
         tool = SemgrepTool()
@@ -152,7 +152,7 @@ class TestToolExecution:
             assert "Test error" in result["error_message"]
             assert result["issues"] == []
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_file_limit_warning(self):
         """Test file limit warning."""
         tool = SemgrepTool()
@@ -170,7 +170,7 @@ class TestToolExecution:
             assert len(result["warnings"]) == 1
             assert "Limited to first 5 files" in result["warnings"][0]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_output_summary_generation(self):
         """Test output summary generation."""
         tool = SemgrepTool()
@@ -272,14 +272,14 @@ class TestWindowsSecurityTool:
         assert tool.timeout == 45.0
         assert tool.max_files == 50
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_windows_security_empty_files(self):
         """Test Windows Security tool with empty file list."""
         tool = WindowsSecurityTool()
         result = await tool.run([], {})
         assert result == []
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_windows_security_python_security_patterns(self):
         """Test Python security pattern detection."""
         tool = WindowsSecurityTool()

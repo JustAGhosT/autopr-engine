@@ -1,7 +1,7 @@
 import asyncio
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -11,7 +11,7 @@ class InterrogateTool(Tool):
     A tool for checking Python docstring coverage using Interrogate.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.default_timeout = 15.0  # Reduce timeout to 15 seconds for faster execution
 
@@ -23,7 +23,7 @@ class InterrogateTool(Tool):
     def description(self) -> str:
         return "A tool for checking Python docstring coverage."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Interrogate on a list of files.
         """
@@ -69,8 +69,8 @@ class InterrogateTool(Tool):
         return self._parse_output(output, files, fail_under)
 
     def _parse_output(
-        self, output: str, files_to_check: List[str], fail_under: int
-    ) -> List[Dict[str, Any]]:
+        self, output: str, files_to_check: list[str], fail_under: int
+    ) -> list[dict[str, Any]]:
         """
         Parses the output of Interrogate to check coverage and find issues.
         """

@@ -2,8 +2,7 @@
 Authorization middleware for web framework integration.
 """
 
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -20,7 +19,7 @@ class AuthorizationMiddleware:
         self.auth_manager = auth_manager
 
     def check_authorization(
-        self, request, resource_type: str, resource_id: str, action: str
+        self, request: Any, resource_type: str, resource_id: str, action: str
     ) -> bool:
         """Check authorization for web requests"""
         try:
@@ -47,7 +46,7 @@ class AuthorizationMiddleware:
             logger.error("Authorization middleware error", error=str(e))
             return False
 
-    def _extract_user_id(self, request) -> Optional[str]:
+    def _extract_user_id(self, request: Any) -> str | None:
         """Extract user ID from request - implement based on your auth system"""
         # Try multiple common patterns for user identification
         if hasattr(request, "user") and hasattr(request.user, "id"):
@@ -70,7 +69,7 @@ class AuthorizationMiddleware:
 
         return None
 
-    def _extract_user_roles(self, request) -> List[str]:
+    def _extract_user_roles(self, request: Any) -> list[str]:
         """Extract user roles from request - implement based on your auth system"""
         roles = []
 
@@ -95,7 +94,9 @@ class AuthorizationMiddleware:
 
         return [role.strip() for role in roles if role.strip()]
 
-    def require_permission(self, resource_type: str, action: str, resource_id_param: str = "id"):
+    def require_permission(
+        self, resource_type: str, action: str, resource_id_param: str = "id"
+    ) -> Any:
         """Decorator for route-level authorization"""
 
         def decorator(func):
@@ -120,7 +121,7 @@ class AuthorizationMiddleware:
         return decorator
 
     def require_any_permission(
-        self, permissions: List[Dict[str, str]], resource_id_param: str = "id"
+        self, permissions: list[dict[str, str]], resource_id_param: str = "id"
     ):
         """Decorator that requires any of the specified permissions"""
 
@@ -148,7 +149,7 @@ class AuthorizationMiddleware:
         return decorator
 
     def require_all_permissions(
-        self, permissions: List[Dict[str, str]], resource_id_param: str = "id"
+        self, permissions: list[dict[str, str]], resource_id_param: str = "id"
     ):
         """Decorator that requires all of the specified permissions"""
 

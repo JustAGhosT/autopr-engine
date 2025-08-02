@@ -6,7 +6,7 @@ from typing import List, Type
 from .tool_base import Tool
 
 
-def discover_tools() -> List[Type[Tool]]:
+def discover_tools() -> list[type[Tool]]:
     """Dynamically discover and import all tools in this directory."""
 
     tools = []
@@ -23,7 +23,7 @@ def discover_tools() -> List[Type[Tool]]:
     return tools
 
 
-def _should_include_tool_for_platform(tool_class: Type[Tool], tool_name: str) -> bool:
+def _should_include_tool_for_platform(tool_class: type[Tool], tool_name: str) -> bool:
     """Determine if a tool should be included based on the current platform."""
     current_platform = platform.system().lower()
 

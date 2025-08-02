@@ -1,6 +1,6 @@
 import asyncio
 import re
-from typing import Dict, List, TypedDict
+from typing import TypedDict
 
 from ..handlers.lint_issue import LintIssue
 from .registry import register_tool
@@ -8,7 +8,7 @@ from .tool_base import Tool
 
 
 class MyPyConfig(TypedDict, total=False):
-    args: List[str]
+    args: list[str]
 
 
 @register_tool
@@ -17,7 +17,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
     A tool for running MyPy, a static type checker for Python.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
 
@@ -33,7 +33,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
     def category(self) -> str:
         return "linting"  # Override with specific category
 
-    async def run(self, files: List[str], config: MyPyConfig) -> List[LintIssue]:
+    async def run(self, files: list[str], config: MyPyConfig) -> list[LintIssue]:
         """
         Run mypy on a list of files.
         """
@@ -78,7 +78,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
         issues = self._parse_output(stdout.decode())
         return issues
 
-    def _parse_output(self, output: str) -> List[LintIssue]:
+    def _parse_output(self, output: str) -> list[LintIssue]:
         """
         Parses the text output of MyPy into a structured list of issues.
         Example line: main.py:5:12: error: Incompatible return value type (got "int", expected "str")  [return-value]

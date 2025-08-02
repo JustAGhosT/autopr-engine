@@ -5,11 +5,11 @@ Handles detection, parsing, and analysis of linting issues from various tools
 including flake8, pylint, mypy, and other Python linting tools.
 """
 
+from dataclasses import dataclass
+from enum import Enum
 import logging
 import operator
 import subprocess
-from dataclasses import dataclass
-from enum import Enum
 from typing import Any
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
 
 import structlog
 
@@ -17,7 +16,7 @@ class SecurityLevel(Enum):
 
 @dataclass
 class SecurityContext:
-    user_id: Optional[str]
+    user_id: str | None
     roles: list[str]
     permissions: list[str]
     session_id: str
@@ -32,14 +31,13 @@ class SecurityValidator(ABC):
     @abstractmethod
     async def validate(self, context: SecurityContext, resource: str, action: str) -> bool:
         """Validate security context for resource access"""
-        pass
 
 
 class ZeroTrustSecurityManager:
     """Enterprise zero-trust security manager"""
 
     def __init__(self):
-        self.validators: Dict[str, SecurityValidator] = {}
+        self.validators: dict[str, SecurityValidator] = {}
         self.audit_logger = structlog.get_logger("security.audit")
 
     def register_validator(self, name: str, validator: SecurityValidator) -> None:

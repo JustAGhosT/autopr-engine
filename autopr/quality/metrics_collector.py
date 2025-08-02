@@ -3,11 +3,11 @@ AutoPR Evaluation: Metrics Collector
 Comprehensive system for tracking performance, accuracy, and user satisfaction metrics.
 """
 
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 import json
 import sqlite3
 import statistics
-from dataclasses import dataclass
-from datetime import datetime, timedelta
 from typing import Any
 
 from pydantic import BaseModel

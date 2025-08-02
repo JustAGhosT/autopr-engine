@@ -1,12 +1,16 @@
 """Command-line interface for the markdown linter."""
 
 import argparse
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
-from linter import MarkdownLinter
-from models import IssueSeverity
+try:
+    from .linter import MarkdownLinter
+    from .models import IssueSeverity
+except ImportError:
+    from linter import MarkdownLinter
+    from models import IssueSeverity
 
 
 def parse_args(args: list[str]) -> argparse.Namespace:

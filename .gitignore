@@ -52,6 +52,12 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# Build artifacts
+build-artifacts/
+*.db
+*.sqlite
+*.sqlite3
+
 # Translations
 *.mo
 *.pot
@@ -204,3 +210,60 @@ Thumbs.db
 ai_linting_interactions.db
 ai_linting_attempts.json
 ai_interactions_export.json
+
+# Additional build and temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# Ruff cache
+.ruff_cache/
+
+# Coverage and testing
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# Platform validation and reports
+platform_validation_report.txt
+platform_config_validation.log
+*.validation.log
+*.validation_report.txt
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration backups
+*.config.backup
+*.config.bak
+
+# Temporary AI files
+.ai_linting_backups/
+*.ai_backup
+*.ai_temp
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Documentation builds
+docs/_build/
+docs/build/
+
+# Local configuration overrides
+local_config.*
+local_settings.*
+.env.local
+.env.*.local

@@ -1,9 +1,6 @@
 # production_monitoring.py
 import asyncio
-import json
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List
 
 import aiohttp
 from azure.monitor.opentelemetry import configure_azure_monitor
@@ -41,7 +38,7 @@ class ContinueProductionMonitoring:
         user_id: str,
         response_time: float,
         cost: float,
-    ):
+    ) -> None:
         """Monitor individual request"""
 
         with self.tracer.start_as_current_span("continue_request") as span:
@@ -64,7 +61,7 @@ class ContinueProductionMonitoring:
                 f"Response time: {response_time:.2f}s, Cost: ${cost:.4f}"
             )
 
-    async def check_model_health(self) -> Dict[str, bool]:
+    async def check_model_health(self) -> dict[str, bool]:
         """Check health of all model endpoints"""
 
         endpoints = [
@@ -105,7 +102,7 @@ class ContinueProductionMonitoring:
 
         return health_status
 
-    async def generate_usage_report(self, days: int = 7) -> Dict:
+    async def generate_usage_report(self, days: int = 7) -> dict:
         """Generate usage report for the past N days"""
 
         # This would typically query Azure Monitor logs
@@ -129,7 +126,7 @@ class ContinueProductionMonitoring:
 
 
 # Example usage and monitoring setup
-async def main():
+async def main() -> None:
     monitor = ContinueProductionMonitoring(
         connection_string="InstrumentationKey=your-key;IngestionEndpoint=https://swedencentral-1.in.applicationinsights.azure.com/"
     )

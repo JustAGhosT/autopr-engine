@@ -10,7 +10,7 @@ try:
 
     AI_COMPONENTS_AVAILABLE = True
 except ImportError:
-    AIAgentManager = None
+    AIAgentManager = None  # type: ignore
     AI_COMPONENTS_AVAILABLE = False
 
 # Main class (optional AI imports)
@@ -19,9 +19,9 @@ try:
 
     AI_LINTING_FIXER_AVAILABLE = True
 except ImportError:
-    AILintingFixer = None
-    create_ai_linting_fixer = None
-    run_ai_linting_fixer = None
+    AILintingFixer = None  # type: ignore
+    create_ai_linting_fixer = None  # type: ignore
+    run_ai_linting_fixer = None  # type: ignore
     AI_LINTING_FIXER_AVAILABLE = False
 
 from .code_analyzer import CodeAnalyzer

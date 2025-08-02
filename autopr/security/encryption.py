@@ -1,11 +1,11 @@
 import base64
 import os
-from typing import Optional, bytes, str
+from typing import bytes, str
 
-import structlog
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import structlog
 
 logger = structlog.get_logger(__name__)
 
@@ -13,7 +13,7 @@ logger = structlog.get_logger(__name__)
 class EnterpriseEncryptionManager:
     """Enterprise-grade encryption and key management"""
 
-    def __init__(self, master_key: Optional[str] = None):
+    def __init__(self, master_key: str | None = None):
         if master_key:
             self.key = self._derive_key_from_password(master_key.encode())
         else:
@@ -22,7 +22,7 @@ class EnterpriseEncryptionManager:
         self.cipher_suite = Fernet(self.key)
         logger.info("Encryption manager initialized with secure key derivation")
 
-    def _derive_key_from_password(self, password: bytes, salt: Optional[bytes] = None) -> bytes:
+    def _derive_key_from_password(self, password: bytes, salt: bytes | None = None) -> bytes:
         """Derive encryption key from password using PBKDF2"""
         if salt is None:
             salt = os.urandom(16)

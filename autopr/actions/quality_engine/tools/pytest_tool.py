@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -10,7 +10,7 @@ class PyTestTool(Tool):
     A tool for running tests using the PyTest framework.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
 
@@ -22,7 +22,7 @@ class PyTestTool(Tool):
     def description(self) -> str:
         return "A tool for running tests using PyTest."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run PyTest on the specified files or directories.
         Requires the `pytest-json-report` plugin to be installed.
@@ -71,7 +71,7 @@ class PyTestTool(Tool):
 
         return self._format_output(json_output)
 
-    def _format_output(self, report: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _format_output(self, report: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Formats the pytest-json-report into a standardized list of issues.
         We only report failed tests.

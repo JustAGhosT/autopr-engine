@@ -3,14 +3,9 @@ Template Manager
 Handles all template operations and discovery
 """
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-import yaml
-
-from autopr.actions.base import Action
+from typing import Any
 
 
 @dataclass
@@ -19,8 +14,8 @@ class TemplateInfo:
     category: str
     platform: str
     confidence: float
-    files: List[str]
-    dependencies: List[str]
+    files: list[str]
+    dependencies: list[str]
 
 
 class TemplateManager:
@@ -28,10 +23,10 @@ class TemplateManager:
 
     def __init__(self, config_path: str = "configs/config.yaml"):
         self.config = self._load_config(config_path)
-        self.templates_cache: Dict[str, TemplateInfo] = {}
+        self.templates_cache: dict[str, TemplateInfo] = {}
         self._load_templates()
 
-    def discover_templates(self, project_path: Path) -> List[TemplateInfo]:
+    def discover_templates(self, project_path: Path) -> list[TemplateInfo]:
         """Auto-discover templates based on project structure"""
         discovered = []
 
@@ -43,10 +38,9 @@ class TemplateManager:
 
         return sorted(discovered, key=lambda t: t.confidence, reverse=True)
 
-    def generate_from_template(self, template_name: str, context: Dict[str, Any]) -> Dict[str, str]:
+    def generate_from_template(self, template_name: str, context: dict[str, Any]) -> dict[str, str]:
         """Generate files from template with context"""
         # Implementation details...
-        pass
 
     def _load_templates(self):
         """Load all template definitions"""

@@ -6,12 +6,10 @@ Tool for all code quality checks and AI-powered fixes
 
 import asyncio
 import json
-import subprocess
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
 
@@ -29,20 +27,20 @@ class LintResult:
     success: bool
     issues_found: int
     issues_fixed: int
-    files_processed: List[str]
+    files_processed: list[str]
     execution_time: float
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class CodeLinter:
     """Linting engine with smart mode selection"""
 
-    def __init__(self):
-        self.results: List[LintResult] = []
+    def __init__(self) -> None:
+        self.results: list[LintResult] = []
         self.total_issues_found = 0
         self.total_issues_fixed = 0
 
-    async def run(self, mode: LintMode, files: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def run(self, mode: LintMode, files: list[str] | None = None) -> dict[str, Any]:
         """Main entry point for consolidated linting"""
 
         if mode == LintMode.SMART:
@@ -54,7 +52,7 @@ class CodeLinter:
         elif mode == LintMode.AI_ONLY:
             return await self._ai_only_mode(files)
 
-    async def _smart_mode(self, files: Optional[List[str]]) -> Dict[str, Any]:
+    async def _smart_mode(self, files: list[str] | None) -> dict[str, Any]:
         """Smart mode: adapts based on commit size and file types"""
 
         # Determine commit size
@@ -74,7 +72,7 @@ class CodeLinter:
 
         return self._generate_report()
 
-    async def _run_ai_fixes(self, files: Optional[List[str]]):
+    async def _run_ai_fixes(self, files: list[str] | None):
         """Run AI-powered fixes using the modular system"""
         try:
             inputs = AILintingFixerInputs(

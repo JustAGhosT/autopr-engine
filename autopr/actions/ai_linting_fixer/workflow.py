@@ -221,13 +221,13 @@ class WorkflowEventBus:
     def __init__(self):
         self.subscribers: dict[str, list[Callable]] = {}
 
-    def subscribe(self, event_type: str, callback: Callable):
+    def subscribe(self, event_type: str, callback: Callable) -> None:
         """Subscribe to workflow events of a specific type."""
         if event_type not in self.subscribers:
             self.subscribers[event_type] = []
         self.subscribers[event_type].append(callback)
 
-    def publish(self, event: WorkflowEvent):
+    def publish(self, event: WorkflowEvent) -> None:
         """Publish a workflow event to all subscribers."""
         # Publish to specific event type subscribers
         if event.event_type in self.subscribers:
@@ -256,7 +256,7 @@ class WorkflowRegistry:
     def __init__(self):
         self.active_workflows: dict[str, dict[str, Any]] = {}
 
-    def register_workflow(self, workflow_context: WorkflowContext):
+    def register_workflow(self, workflow_context: WorkflowContext) -> None:
         """Register a new workflow."""
         self.active_workflows[workflow_context.workflow_id] = {
             "context": workflow_context,
@@ -268,7 +268,7 @@ class WorkflowRegistry:
 
     def update_workflow_status(
         self, workflow_id: str, status: str, event: WorkflowEvent | None = None
-    ):
+    ) -> None:
         """Update workflow status."""
         if workflow_id in self.active_workflows:
             self.active_workflows[workflow_id]["status"] = status
@@ -277,7 +277,7 @@ class WorkflowRegistry:
             if event:
                 self.active_workflows[workflow_id]["events"].append(event)
 
-    def complete_workflow(self, workflow_id: str, result: WorkflowResult):
+    def complete_workflow(self, workflow_id: str, result: WorkflowResult) -> None:
         """Mark workflow as completed."""
         if workflow_id in self.active_workflows:
             self.active_workflows[workflow_id]["status"] = "completed"

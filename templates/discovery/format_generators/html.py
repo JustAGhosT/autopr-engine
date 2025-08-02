@@ -8,8 +8,7 @@ Generates documentation in HTML format.
 
 from typing import Any
 
-from discovery.content_analyzer import TemplateAnalysis
-
+from ..content_analyzer import TemplateAnalysis
 from .base import BaseFormatGenerator
 from .html_template_loader import YAMLHTMLTemplateLoader
 from .markdown import MarkdownGenerator

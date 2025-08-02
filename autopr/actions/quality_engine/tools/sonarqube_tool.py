@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -17,7 +17,7 @@ class SonarQubeTool(Tool):
     def description(self) -> str:
         return "A platform for continuous inspection of code quality."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run the SonarQube scanner.
         This tool requires server configuration provided in the `config` dictionary.

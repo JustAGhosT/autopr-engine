@@ -6,10 +6,8 @@ Format Generator Factory Module
 Factory for creating format generators and convenience functions.
 """
 
-
-from discovery.content_analyzer import TemplateAnalysis
-from discovery.template_loader import TemplateLoader
-
+from ..content_analyzer import TemplateAnalysis
+from ..template_loader import TemplateLoader
 from .base import BaseFormatGenerator
 from .config import DocumentationConfig
 from .html import HTMLGenerator

@@ -1,7 +1,5 @@
 """Cached authorization manager implementation."""
 
-from typing import Set
-
 from .cache import PermissionCache
 from .enterprise_manager import EnterpriseAuthorizationManager
 from .models import AuthorizationContext, Permission, ResourceType
@@ -38,7 +36,7 @@ class CachedAuthorizationManager(EnterpriseAuthorizationManager):
         user_id: str,
         resource_type: ResourceType,
         resource_id: str,
-        permissions: Set[Permission],
+        permissions: set[Permission],
         granted_by: str,
     ) -> bool:
         result = super().grant_resource_permission(

@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -19,7 +19,7 @@ class PerformanceAnalyzerTool(Tool):
     def description(self) -> str:
         return "Analyzes code for potential performance issues."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> dict[str, Any]:
         """
         Run performance analysis checks.
         For Python, we'll use scalene if available.
@@ -63,7 +63,7 @@ class PerformanceAnalyzerTool(Tool):
                         # Try to read the profiling results if available
                         if os.path.exists(out_file):
                             try:
-                                with open(out_file, "r") as f:
+                                with open(out_file) as f:
                                     profile_data = json.load(f)
 
                                 # Find hotspots
@@ -106,7 +106,7 @@ class PerformanceAnalyzerTool(Tool):
         # Static performance analysis (check for common patterns)
         for file in files:
             try:
-                with open(file, "r") as f:
+                with open(file) as f:
                     content = f.read()
 
                     # Check for python performance issues

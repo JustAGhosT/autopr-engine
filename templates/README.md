@@ -1,264 +1,173 @@
-# AutoPR Template System
+# AutoPR Engine Templates
 
-This directory contains the comprehensive template system for the AutoPR engine, supporting
-**no-code**, **vibe coding**, and **AI agent builder** platforms with a hybrid YAML + template
-approach.
+This directory contains all templates for the AutoPR Engine project, organized by category and use
+case.
 
-## Template System Overview
+## 📁 Template Structure
 
-The AutoPR template system uses a **hybrid YAML + template approach** that combines:
+### Platform Templates
 
-- **Rich metadata** (variables, variants, usage guidelines)
-- **Template content** with variable substitution
-- **Platform-specific configurations** for 46+ platforms
-- **Reusable components** (security, deployment, testing, monitoring)
+- `platforms/` - Platform-specific templates
+  - GitHub integration templates
+  - GitLab integration templates
+  - CI/CD platform templates
 
-## Directory Structure
+### Use Case Templates
 
-### `/platforms/`
+- `use-cases/` - Use case specific templates
+  - Code review templates
+  - PR analysis templates
+  - Quality assurance templates
 
-Platform-specific templates for no-code, vibe coding, and AI agent builder platforms:
+### Deployment Templates
 
-**Tier 1 Platforms:**
+- `deployment/` - Deployment and infrastructure templates
+  - Docker configurations
+  - Cloud deployment templates
+  - Infrastructure as code templates
 
-- `horizons/` - Hostinger Horizons (vibe coding leader)
-- `lovable/` - Lovable.dev (rapid development)
-- `bubble/` - Bubble (complex web apps)
-- `glide/` - Glide (data-driven apps)
-- `n8n/` - n8n (AI agent workflows)
-- `make/` - Make.com (no-code automation)
-- `google-adk/` - Google Agent Development Kit
-- `gemini-cli/` - Google Gemini CLI
-- `google-opal/` - Google Opal AI mini-apps
+### Security Templates
 
-**Tier 2 & 3 Platforms:**
+- `security/` - Security and compliance templates
+  - Security audit templates
+  - Compliance check templates
+  - Vulnerability assessment templates
 
-- `replit/`, `thunkable/`, `flutterflow/`, `appsmith/`, `retool/`, `power-apps/`
-- `webflow/`, `framer/`, `supabase/`, `firebase/`, `airtable/`
-- `flowise/`, `gumloop/`, `bildr/`, `backendless/`, `zapier-interfaces/`
-- And 20+ more platforms...
+### Monitoring Templates
 
-### `/security/` ✨ **Extracted YAML Templates**
+- `monitoring/` - Monitoring and observability templates
+  - Metrics collection templates
+  - Alert configuration templates
+  - Dashboard templates
 
-Security configuration templates with metadata and variants:
+### Testing Templates
 
-- `helmet.config.yml` - Express.js Helmet security middleware
-- `cors.config.yml` - CORS configuration with environment variants
-- `htaccess.yml` - Apache .htaccess with SPA routing & security headers
+- `testing/` - Testing and quality assurance templates
+  - Unit test templates
+  - Integration test templates
+  - Performance test templates
 
-### `/deployment/` ✨ **Extracted YAML Templates**
+### Documentation Templates
 
-Deployment pipeline templates with CI/CD configurations:
+- `documentation/` - Documentation and reporting templates
+  - API documentation templates
+  - User guide templates
+  - Technical specification templates
 
-- `github-actions.yml` - GitHub Actions workflows (React, Node.js, Azure, Vercel)
-- `azure-pipeline.yml` - Azure DevOps pipelines (App Service, Static Web Apps, Functions)
-- `azure-static-web-app.json` - Azure Static Web Apps configuration
+### Integration Templates
 
-### `/build/` ✨ **Extracted YAML Templates**
+- `integrations/` - Third-party integration templates
+  - Webhook templates
+  - API integration templates
+  - Plugin templates
 
-Build configuration templates with optimization and variants:
+### Build Templates
 
-- `pm2.config.yml` - PM2 process manager with clustering and monitoring
-- `vite-enhanced.config.yml` - Optimized Vite with PWA, compression, and performance
-- `vite.config.js` - Basic Vite configuration (legacy)
-- `vitest.config.js` - Vitest testing configuration (legacy)
-- `next.config.js` - Next.js configuration (legacy)
+- `build/` - Build and compilation templates
+  - Build script templates
+  - Compilation configuration templates
+  - Artifact generation templates
 
-### `/testing/` ✨ **Extracted YAML Templates**
+### Discovery Templates
 
-Testing setup and component templates:
+- `discovery/` - Code discovery and analysis templates
+  - Code scanning templates
+  - Dependency analysis templates
+  - Architecture discovery templates
 
-- `test-setup.yml` - Comprehensive test setup (Jest/Vitest, mocks, utilities)
-- `error-boundary.yml` - Production-ready React Error Boundary component
-- `playwright.config.ts` - Playwright E2E testing (legacy)
-- `setupTests.ts` - Basic test setup (legacy)
+### HTML Templates
 
-### `/monitoring/` ✨ **Extracted YAML Templates**
+- `html/` - HTML and web interface templates
+  - Web dashboard templates
+  - Report visualization templates
+  - User interface templates
 
-Monitoring and health check templates:
+### TypeScript Templates
 
-- `health-check.yml` - Comprehensive health check script with database/API checks
-- `backup.sh` - Backup script (legacy)
-- `monitor.sh` - System monitoring script (legacy)
-- `restore.sh` - Restore script (legacy)
+- `typescript/` - TypeScript and JavaScript templates
+  - Frontend component templates
+  - API client templates
+  - Type definition templates
 
-### `/docker/` 🔄 **Partially Extracted**
+### Reports
 
-Docker configuration templates:
+- `reports/` - Reporting and analytics templates
+  - Quality metrics reports
+  - Performance reports
+  - Security reports
 
-- `react.dockerfile.yml` - React application Dockerfile (YAML)
-- `node.dockerfile.yml` - Node.js application Dockerfile (YAML)
-- `react.dockerfile` - React Dockerfile (legacy)
-- `node.dockerfile` - Node.js Dockerfile (legacy)
-- `generic.dockerfile` - Generic Dockerfile (legacy)
+### QA Reports
 
-### `/typescript/` 📁 **Legacy Static Files**
+- `qa_reports/` - Quality assurance reporting templates
+  - Code quality reports
+  - Test coverage reports
+  - Compliance reports
 
-TypeScript configuration templates (static JSON files):
+## 🎯 Template Usage
 
-- `react-tsconfig.json` - React TypeScript configuration
-- `vite-tsconfig.json` - Vite TypeScript configuration
-- `basic-tsconfig.json` - Basic TypeScript configuration
+### Template Selection
 
-### `/integrations/`
+Templates are selected based on:
 
-Cross-platform integration templates:
+- Platform requirements
+- Use case specifications
+- Deployment environment
+- Security requirements
+- Monitoring needs
 
-- `auth-integration.yml` - Authentication integration patterns
-- `payment-integration.yml` - Payment system integration
+### Template Customization
 
-### `/use-cases/`
+All templates can be customized by:
 
-Specialized use case templates:
+1. Modifying template parameters
+2. Extending base templates
+3. Creating platform-specific variants
+4. Adding custom logic and rules
 
-- `e-commerce-store.yml` - E-commerce application template
-- `social-platform.yml` - Social media platform template
-- `project-management.yml` - Project management application
+### Template Validation
 
-### `/discovery/`
+Templates are validated using `scripts/validate_templates.py` to ensure:
 
-Documentation and migration guides:
+- Proper syntax and structure
+- Required parameters are defined
+- Dependencies are satisfied
+- Security best practices are followed
+- Consistent naming conventions
+- Proper organization structure
 
-- `migration_guide.yml` - Platform migration guidance
-- `platform_comparison.yml` - Platform comparison matrix
+## 📝 Template Development
 
-## Template System Features
+### Creating New Templates
 
-### ✨ **Hybrid YAML + Template Approach**
+When creating new templates:
 
-Each extracted template includes:
+1. Follow the established naming conventions
+2. Include comprehensive documentation
+3. Provide example usage
+4. Include parameter validation
+5. Test with multiple scenarios
 
-```yaml
-name: "Template Name"
-category: "template_category"
-description: "Template description"
-version: "1.0.0"
-author: "AutoPR Template System"
-tags: ["tag1", "tag2"]
+### Template Best Practices
 
-template_info:
-  name: "Display Name"
-  type: "configuration_type"
-  framework: "target_framework"
-  target_audience: "developers, engineers"
-  primary_use_cases: ["use_case_1", "use_case_2"]
+1. **Modularity**: Create reusable template components
+2. **Documentation**: Include clear usage instructions
+3. **Validation**: Validate template parameters
+4. **Testing**: Test templates with various inputs
+5. **Versioning**: Maintain template version compatibility
 
-variables:
-  variable_name:
-    type: "string|boolean|select|array"
-    description: "Variable description"
-    default: "default_value"
-    required: true|false
+## 🔍 Quick Reference
 
-variants:
-  variant_name:
-    description: "Variant description"
-    variables:
-      variable_name: "variant_value"
+- **Platform Integration**: `platforms/` directory
+- **Code Analysis**: `use-cases/` directory
+- **Infrastructure**: `deployment/` directory
+- **Security**: `security/` directory
+- **Monitoring**: `monitoring/` directory
+- **Testing**: `testing/` directory
+- **Documentation**: `documentation/` directory
+- **Integrations**: `integrations/` directory
 
-usage:
-  getting_started: ["step1", "step2"]
-  best_practices: ["practice1", "practice2"]
-  limitations: ["limitation1", "limitation2"]
+## 📚 Additional Resources
 
-template: |
-  # Template content with {{ variable }} substitution
-```
-
-### 🎯 **Platform Coverage**
-
-- **46+ platforms** across no-code, vibe coding, and AI agent builders
-- **Tier 1**: Industry leaders (Horizons, Lovable, Bubble, n8n, Make.com)
-- **Tier 2**: Specialized platforms (Webflow, Retool, Flowise)
-- **Tier 3**: Emerging and niche platforms
-
-### 🔧 **Template Categories**
-
-- `no_code_platform` - Traditional drag-and-drop platforms
-- `vibe_coding_platform` - Conversational AI development
-- `ai_agent_builder` - Intelligent automation and multi-agent systems
-- `security` - Security configurations and headers
-- `deployment` - CI/CD pipelines and deployment
-- `build` - Build tools and optimization
-- `testing` - Test setup and components
-- `monitoring` - Health checks and monitoring
-
-## Usage
-
-### FileGenerator Integration
-
-```python
-from autopr.actions.prototype_enhancement.file_generators import FileGenerator
-
-generator = FileGenerator()
-
-# Generate from extracted YAML template
-content = generator.generate_from_template(
-    template_key="security/helmet.config.yml",
-    variables={"content_security_policy": True},
-    variants=["production"]
-)
-
-# List available templates
-templates = generator.list_available_templates(category="security")
-
-# Get template metadata
-info = generator.get_template_info("deployment/github-actions.yml")
-```
-
-### Template Development
-
-1. **Create YAML template** with metadata and variables
-2. **Define variants** for different use cases
-3. **Add usage documentation** and best practices
-4. **Test template generation** with various variable combinations
-5. **Update FileGenerator** to reference new template
-
-## Migration Status
-
-### ✅ **Completed Extractions**
-
-- Security configurations (helmet, CORS, .htaccess)
-- Deployment pipelines (GitHub Actions, Azure DevOps)
-- Build configurations (PM2, enhanced Vite)
-- Testing setups (test setup, error boundary)
-- Monitoring scripts (health check)
-
-### 🔄 **In Progress**
-
-- Docker configurations (partial YAML extraction)
-- Additional deployment targets (Vercel, Netlify)
-- Enhanced TypeScript configurations
-
-### 📋 **Remaining Hardcoded Templates**
-
-Still in Python files and need extraction:
-
-- `file_generators.py`: Next.js config, web.config, static web app config
-- `enhancement_strategies.py`: Platform-specific configurations
-
-## Quality Assurance
-
-All templates are validated using the integrated QA framework:
-
-- **Metadata completeness** (95%+ score required)
-- **Variable validation** and type checking
-- **Template syntax** verification
-- **Usage documentation** quality
-- **Best practices** compliance
-
-Run QA validation:
-
-```bash
-python templates/discovery/qa_framework.py
-```
-
-## Contributing
-
-1. Follow the **hybrid YAML + template** format
-2. Include comprehensive **metadata and variants**
-3. Add **usage documentation** and best practices
-4. Test with **multiple variable combinations**
-5. Validate with **QA framework** before submission
-
-For detailed guidelines, see the [Template Development Guide](discovery/docs_generator.py).
+- [Template Development Guide](docs/development/template-development.md)
+- [Template API Reference](docs/api/templates.md)
+- [Template Examples](examples/templates.md)

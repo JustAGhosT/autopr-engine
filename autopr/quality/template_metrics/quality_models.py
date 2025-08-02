@@ -13,7 +13,7 @@ utility functions.
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from templates.discovery.template_validators import ValidationIssue, ValidationSeverity
+from ...templates.discovery.template_validators import ValidationIssue, ValidationSeverity
 
 
 @dataclass

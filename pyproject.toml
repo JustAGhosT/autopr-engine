@@ -415,6 +415,12 @@ extend-ignore = [
 
     # Specific exclusions for AI auto-PR context
     # PLR rules removed - they may not exist in current Ruff version
+    
+    # Exception handling patterns (appropriate for optional features)
+    "BLE001", # Do not catch blind exception - appropriate for graceful degradation
+    
+    # Random number generation (simulation functions, not security-critical)
+    "S311",   # Standard pseudo-random generators - used for simulation, not security
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

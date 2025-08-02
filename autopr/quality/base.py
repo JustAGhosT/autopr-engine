@@ -4,7 +4,6 @@ Base classes and interfaces for quality tools used by the Quality Engine.
 
 import abc
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
 
 import pydantic
 from structlog import get_logger
@@ -41,10 +40,10 @@ class ToolResult(pydantic.BaseModel):
     success: bool
     issues_found: int
     issues_fixed: int
-    files_analyzed: List[str]
-    files_modified: List[str]
-    error_message: Optional[str] = None
-    logs: List[str] = []
+    files_analyzed: list[str]
+    files_modified: list[str]
+    error_message: str | None = None
+    logs: list[str] = []
     tool_name: str
     tool_category: ToolCategory
     execution_time_ms: int
@@ -54,18 +53,18 @@ class QualityToolConfig(pydantic.BaseModel):
     """Base configuration for quality tools"""
 
     enabled: bool = True
-    modes: Set[QualityMode] = {QualityMode.COMPREHENSIVE, QualityMode.SMART}
+    modes: set[QualityMode] = {QualityMode.COMPREHENSIVE, QualityMode.SMART}
     auto_fix: bool = True
-    max_issues: Optional[int] = None
+    max_issues: int | None = None
     timeout_seconds: int = 60
-    exclude_patterns: List[str] = []
-    include_patterns: List[str] = []
+    exclude_patterns: list[str] = []
+    include_patterns: list[str] = []
 
 
 class QualityTool(abc.ABC):
     """Base class for all quality tools"""
 
-    def __init__(self, config: Optional[QualityToolConfig] = None):
+    def __init__(self, config: QualityToolConfig | None = None):
         self.config = config or QualityToolConfig()
         self.logger = get_logger(self.__class__.__name__)
 
@@ -73,16 +72,14 @@ class QualityTool(abc.ABC):
     @abc.abstractmethod
     def name(self) -> str:
         """Return the name of the tool"""
-        pass
 
     @property
     @abc.abstractmethod
     def category(self) -> ToolCategory:
         """Return the category of the tool"""
-        pass
 
     @property
-    def modes(self) -> Set[QualityMode]:
+    def modes(self) -> set[QualityMode]:
         """Return the modes this tool supports"""
         return self.config.modes
 
@@ -91,18 +88,14 @@ class QualityTool(abc.ABC):
         return mode in self.modes
 
     @abc.abstractmethod
-    async def check(self, files: Optional[List[str]] = None) -> ToolResult:
+    async def check(self, files: list[str] | None = None) -> ToolResult:
         """Run the tool in check-only mode"""
-        pass
 
     @abc.abstractmethod
-    async def fix(self, files: Optional[List[str]] = None) -> ToolResult:
+    async def fix(self, files: list[str] | None = None) -> ToolResult:
         """Run the tool in fix mode"""
-        pass
 
-    async def run(
-        self, files: Optional[List[str]] = None, auto_fix: Optional[bool] = None
-    ) -> ToolResult:
+    async def run(self, files: list[str] | None = None, auto_fix: bool | None = None) -> ToolResult:
         """Run the tool based on configuration"""
         should_fix = self.config.auto_fix if auto_fix is None else auto_fix
 
@@ -120,13 +113,13 @@ class QualityTool(abc.ABC):
                 files_analyzed=[],
                 files_modified=[],
                 error_message=str(e),
-                logs=[f"Exception: {str(e)}"],
+                logs=[f"Exception: {e!s}"],
                 tool_name=self.name,
                 tool_category=self.category,
                 execution_time_ms=0,
             )
 
-    def filter_files(self, files: List[str]) -> List[str]:
+    def filter_files(self, files: list[str]) -> list[str]:
         """Filter files based on include/exclude patterns"""
         # This is a simplified implementation - in a real system,
         # you would use proper glob pattern matching

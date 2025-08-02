@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, TypeVar
+from typing import Generic, TypeVar
 
 TResult = TypeVar("TResult")
 
@@ -16,11 +16,10 @@ class Handler(Generic[TResult], ABC):
     """
 
     @abstractmethod
-    def handle(self, results: List[TResult]) -> None:
+    def handle(self, results: list[TResult]) -> None:
         """
         Process a list of tool results.
 
         Args:
             results: The results to process.
         """
-        pass

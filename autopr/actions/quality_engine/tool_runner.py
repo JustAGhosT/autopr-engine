@@ -3,7 +3,7 @@ Tool runner for quality engine - handles running tools and processing results
 """
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -16,10 +16,10 @@ logger = structlog.get_logger(__name__)
 async def run_tool(
     tool_name: str,
     tool_instance: Any,
-    files: List[str],
-    tool_config: Dict[str, Any],
-    handler_registry: Optional[Any] = None,
-) -> Optional[ToolResult]:
+    files: list[str],
+    tool_config: dict[str, Any],
+    handler_registry: Any | None = None,
+) -> ToolResult | None:
     """Run a quality tool with enhanced timeout and error handling."""
     try:
         logger.info("Running tool", tool=tool_name, file_count=len(files))
@@ -156,7 +156,7 @@ def determine_smart_tools(files: list[str]) -> list[str]:
     return list(tools)
 
 
-def get_tool_performance_info(tool_instance: Any) -> Dict[str, Any]:
+def get_tool_performance_info(tool_instance: Any) -> dict[str, Any]:
     """Get performance information for a tool."""
     if hasattr(tool_instance, "get_performance_metrics"):
         return tool_instance.get_performance_metrics()
@@ -169,7 +169,7 @@ def get_tool_performance_info(tool_instance: Any) -> Dict[str, Any]:
     }
 
 
-def validate_tool_config(tool_instance: Any, config: Dict[str, Any]) -> List[str]:
+def validate_tool_config(tool_instance: Any, config: dict[str, Any]) -> list[str]:
     """Validate tool configuration."""
     if hasattr(tool_instance, "validate_config"):
         return tool_instance.validate_config(config)

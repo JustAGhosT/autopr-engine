@@ -1,7 +1,6 @@
 """Audited authorization manager implementation."""
 
 from datetime import datetime
-from typing import Optional, Set
 
 from .audit_logger import AuthorizationAuditLogger
 from .cached_manager import CachedAuthorizationManager
@@ -11,7 +10,7 @@ from .models import AuthorizationContext, Permission, ResourceType
 class AuditedAuthorizationManager(CachedAuthorizationManager):
     """Authorization manager with built-in auditing"""
 
-    def __init__(self, cache_ttl_seconds: int = 300, audit_log_file: Optional[str] = None):
+    def __init__(self, cache_ttl_seconds: int = 300, audit_log_file: str | None = None):
         super().__init__(cache_ttl_seconds)
         self.audit_logger = AuthorizationAuditLogger(audit_log_file)
 
@@ -31,7 +30,7 @@ class AuditedAuthorizationManager(CachedAuthorizationManager):
         user_id: str,
         resource_type: ResourceType,
         resource_id: str,
-        permissions: Set[Permission],
+        permissions: set[Permission],
         granted_by: str,
     ) -> bool:
         result = super().grant_resource_permission(

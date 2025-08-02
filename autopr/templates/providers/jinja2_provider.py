@@ -7,8 +7,8 @@ import os
 from pathlib import Path
 from typing import Any
 
-import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+import yaml
 
 from ..base import TemplateMetadata, TemplateProvider
 

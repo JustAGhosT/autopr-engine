@@ -1,45 +1,84 @@
-# AutoPR Configuration Files
+# AutoPR Engine Configuration
 
-This directory contains organized configuration files extracted from the AutoPR engine codebase.
+This directory contains all configuration files for the AutoPR Engine project, organized by
+category.
 
-## Directory Structure
+## 📁 Configuration Structure
 
-### `/platforms/`
+### Root Configuration Files
 
-Platform-specific configuration files for different development platforms:
+- `.flake8` - Flake8 linting configuration
+- `mypy.ini` - MyPy type checking configuration
+- `.markdownlint.json` - Markdown linting configuration
 
-- `replit.json` - Replit platform configuration
-- `lovable.json` - Lovable.dev platform configuration- `bolt.json` - Bolt.new platform configuration
-- `emergent.json` - Emergent.sh platform configuration
+### Environment Configurations
 
-### `/packages/`
+- `environments/` - Environment-specific configurations
+  - Development environment settings
+  - Production environment settings
+  - Testing environment settings
 
-Package dependency configurations organized by category:
+### Platform Configurations
 
-- `security.json` - Security-related packages
-- `testing.json` - Testing framework packages
-- `performance.json` - Performance optimization packages
-- `development.json` - Development tools and utilities
-- `monitoring.json` - Monitoring and observability packages
+- `platforms/` - Platform-specific configurations
+  - GitHub integration settings
+  - GitLab integration settings
+  - CI/CD platform configurations
 
-### `/deployment/`
+### Workflow Configurations
 
-Deployment platform configurations:
+- `workflows/` - Workflow and automation configurations
+  - PR analysis workflows
+  - Code review workflows
+  - Deployment workflows
 
-- `azure.json` - Azure deployment settings
-- `vercel.json` - Vercel deployment settings
-- `netlify.json` - Netlify deployment settings
-- `railway.json` - Railway deployment settings
+### Package Configurations
 
-### `/workflows/`
+- `packages/` - Package-specific configurations
+  - Python package settings
+  - Node.js package settings
+  - Docker configurations
 
-Workflow configuration files (moved from autopr/workflows/)
+### Implementation Phases
 
-### `/triggers/`
+- `phases/` - Implementation phase configurations
+  - Phase-specific settings
+  - Milestone configurations
+  - Feature flag settings
 
-Trigger configuration files (moved from autopr/)
+## 🔧 Configuration Management
 
-## Usage
+### Environment Variables
 
-These configuration files are designed to be imported and used by the AutoPR engine modules instead
-of having hardcoded configurations embedded in Python files.
+Configuration values that vary by environment should be managed through environment variables or
+`.env` files.
+
+### Configuration Validation
+
+All configuration files should be validated before use to ensure they meet the required schema and
+constraints.
+
+### Configuration Updates
+
+When updating configurations:
+
+1. Test changes in development environment first
+2. Update documentation for any new configuration options
+3. Validate configuration syntax and schema
+4. Deploy changes incrementally
+
+## 📝 Configuration Best Practices
+
+1. **Use descriptive names** for configuration files and options
+2. **Include comments** explaining complex configuration options
+3. **Validate configurations** before deployment
+4. **Version control** all configuration changes
+5. **Document dependencies** between different configuration files
+
+## 🔍 Quick Reference
+
+- **Linting**: `.flake8`, `.markdownlint.json`
+- **Type Checking**: `mypy.ini`
+- **Environment**: `environments/` directory
+- **Platforms**: `platforms/` directory
+- **Workflows**: `workflows/` directory

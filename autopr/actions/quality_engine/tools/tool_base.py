@@ -2,10 +2,10 @@
 Base tool class for quality analysis tools with timeout handling, error handling, and display output.
 """
 
+from abc import ABC, abstractmethod
 import asyncio
 import time
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, TypedDict, TypeVar
+from typing import Any, Generic, TypedDict, TypeVar
 
 import structlog
 
@@ -20,17 +20,17 @@ class ToolExecutionResult(TypedDict):
     """Result of tool execution with metadata."""
 
     success: bool
-    issues: List[Any]
+    issues: list[Any]
     execution_time: float
-    error_message: Optional[str]
-    warnings: List[str]
+    error_message: str | None
+    warnings: list[str]
     output_summary: str
 
 
 class Tool(ABC, Generic[TConfig, TIssue]):
     """Abstract base class for quality tools with enhanced error handling and timeouts."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.default_timeout = 60.0  # Default 60 second timeout
         self.max_files_per_run = 100  # Limit files to prevent hanging
         self.verbose_output = False
@@ -39,13 +39,11 @@ class Tool(ABC, Generic[TConfig, TIssue]):
     @abstractmethod
     def name(self) -> str:
         """The name of the tool."""
-        pass
 
     @property
     @abstractmethod
     def description(self) -> str:
         """A brief description of what the tool does."""
-        pass
 
     @property
     def category(self) -> str:
@@ -66,7 +64,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         """Get a user-friendly display name for the tool."""
         return self.name.replace("_", " ").title()
 
-    async def run_with_timeout(self, files: List[str], config: TConfig) -> ToolExecutionResult:
+    async def run_with_timeout(self, files: list[str], config: TConfig) -> ToolExecutionResult:
         """
         Run the tool with timeout handling and error management.
 
@@ -102,7 +100,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
 
             success = True
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             error_message = (
                 f"{self.get_display_name()} execution timed out after {self.timeout} seconds"
             )
@@ -110,7 +108,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
             logger.warning(f"Tool {self.name} timed out", timeout=self.timeout)
 
         except Exception as e:
-            error_message = f"{self.get_display_name()} execution failed: {str(e)}"
+            error_message = f"{self.get_display_name()} execution failed: {e!s}"
             success = False
             logger.error(f"Tool {self.name} failed", error=str(e))
 
@@ -128,7 +126,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
             output_summary=output_summary,
         )
 
-    async def _run_implementation(self, files: List[str], config: TConfig) -> List[TIssue]:
+    async def _run_implementation(self, files: list[str], config: TConfig) -> list[TIssue]:
         """
         Internal implementation method that tools should override.
         This is called by run_with_timeout with proper error handling.
@@ -136,7 +134,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         return await self.run(files, config)
 
     @abstractmethod
-    async def run(self, files: List[str], config: TConfig) -> List[TIssue]:
+    async def run(self, files: list[str], config: TConfig) -> list[TIssue]:
         """
         Run the tool on a list of files.
         Tools should implement this method with their specific logic.
@@ -148,10 +146,9 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         Returns:
             A list of issues found by the tool.
         """
-        pass
 
     def _generate_output_summary(
-        self, issues: List[Any], error_message: Optional[str], warnings: List[str]
+        self, issues: list[Any], error_message: str | None, warnings: list[str]
     ) -> str:
         """Generate a human-readable summary of the tool execution."""
         summary_parts = []
@@ -176,7 +173,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
 
         return " | ".join(summary_parts)
 
-    def get_config_schema(self) -> Dict[str, Any]:
+    def get_config_schema(self) -> dict[str, Any]:
         """Get the configuration schema for this tool."""
         return {
             "timeout": {
@@ -196,7 +193,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
             },
         }
 
-    def validate_config(self, config: TConfig) -> List[str]:
+    def validate_config(self, config: TConfig) -> list[str]:
         """Validate the configuration and return any validation errors."""
         errors = []
 
@@ -217,7 +214,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
 
         return errors
 
-    def get_performance_metrics(self) -> Dict[str, Any]:
+    def get_performance_metrics(self) -> dict[str, Any]:
         """Get performance metrics and recommendations for this tool."""
         return {
             "recommended_timeout": self.timeout,

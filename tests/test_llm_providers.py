@@ -130,7 +130,6 @@ def test_message_formatting() -> bool:
     """Test message formatting and validation."""
 
     try:
-
         # Test message role enum
 
         # Test message creation

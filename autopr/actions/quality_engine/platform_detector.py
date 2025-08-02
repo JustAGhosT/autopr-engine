@@ -2,10 +2,8 @@
 Platform detection and tool adaptation for the Quality Engine.
 """
 
-import os
 import platform
 import sys
-from typing import Dict, List, Optional, Set
 
 import structlog
 
@@ -15,13 +13,13 @@ logger = structlog.get_logger(__name__)
 class PlatformDetector:
     """Detects the current platform and provides tool adaptations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.platform = platform.system().lower()
         self.is_windows = self.platform == "windows"
         self.is_linux = self.platform == "linux"
         self.is_macos = self.platform == "darwin"
 
-    def detect_platform(self) -> Dict[str, any]:
+    def detect_platform(self) -> dict[str, any]:
         """Detect the current platform and its capabilities."""
         return {
             "platform": self.platform,
@@ -32,7 +30,7 @@ class PlatformDetector:
             "architecture": platform.architecture()[0],
         }
 
-    def get_windows_limitations(self) -> List[str]:
+    def get_windows_limitations(self) -> list[str]:
         """Get list of tools that have limitations on Windows."""
         limitations = []
 
@@ -47,7 +45,7 @@ class PlatformDetector:
 
         return limitations
 
-    def get_windows_alternatives(self) -> Dict[str, List[str]]:
+    def get_windows_alternatives(self) -> dict[str, list[str]]:
         """Get Windows alternatives for tools that don't work well on Windows."""
         return {
             "codeql": [
@@ -62,7 +60,7 @@ class PlatformDetector:
             ],
         }
 
-    def get_available_tools(self, all_tools: List[str]) -> List[str]:
+    def get_available_tools(self, all_tools: list[str]) -> list[str]:
         """Filter tools based on platform compatibility."""
         if not self.is_windows:
             return all_tools
@@ -117,7 +115,7 @@ class PlatformDetector:
 
         return available_tools
 
-    def get_tool_substitutions(self) -> Dict[str, str]:
+    def get_tool_substitutions(self) -> dict[str, str]:
         """Get tool substitutions for Windows-incompatible tools."""
         if not self.is_windows:
             return {}
@@ -130,7 +128,7 @@ class PlatformDetector:
         """Determine if we should show Windows-specific warnings."""
         return self.is_windows
 
-    def get_windows_recommendations(self) -> List[str]:
+    def get_windows_recommendations(self) -> list[str]:
         """Get recommendations for Windows users."""
         if not self.is_windows:
             return []
@@ -143,7 +141,7 @@ class PlatformDetector:
             "Enable Windows Security Tool for additional security checks",
         ]
 
-    def get_cross_platform_tools(self) -> List[str]:
+    def get_cross_platform_tools(self) -> list[str]:
         """Get list of tools that work well across all platforms."""
         return [
             "semgrep",  # Excellent cross-platform static analysis

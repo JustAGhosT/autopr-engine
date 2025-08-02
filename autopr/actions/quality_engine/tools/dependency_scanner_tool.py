@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -18,7 +18,7 @@ class DependencyScannerTool(Tool):
     def description(self) -> str:
         return "Scans Python dependencies for known vulnerabilities using safety."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> dict[str, Any]:
         """
         Run safety check on project dependencies.
         """

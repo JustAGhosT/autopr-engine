@@ -1,16 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Type,
-    TypedDict,
-    TypeVar,
-    get_args,
-    get_origin,
-)
+from typing import Any, Generic, TypeVar, get_args
 
 # Change the bound to Any to allow TypedDict
 TConfig = TypeVar("TConfig", bound=Any)
@@ -24,13 +13,11 @@ class Tool(ABC, Generic[TConfig, TIssue]):
     @abstractmethod
     def name(self) -> str:
         """The name of the tool."""
-        pass
 
     @property
     @abstractmethod
     def description(self) -> str:
         """A brief description of what the tool does."""
-        pass
 
     @property
     def category(self) -> str:
@@ -38,7 +25,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         return "general"
 
     @property
-    def result_type(self) -> Optional[Type]:
+    def result_type(self) -> type | None:
         """
         The type of results this tool produces.
 
@@ -56,7 +43,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         return None
 
     @abstractmethod
-    async def run(self, files: List[str], config: TConfig) -> Dict[str, Any]:
+    async def run(self, files: list[str], config: TConfig) -> dict[str, Any]:
         """
         Run the tool on a list of files.
 
@@ -70,4 +57,3 @@ class Tool(ABC, Generic[TConfig, TIssue]):
                 - 'files_with_issues': List of files that had issues
                 - 'summary': A text summary of the results (optional)
         """
-        pass

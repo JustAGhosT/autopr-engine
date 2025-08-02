@@ -6,13 +6,13 @@ and atomic operations for the AI linting system.
 """
 
 import ast
-import logging
-import shutil
-import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+import logging
 from pathlib import Path
+import shutil
+import tempfile
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -214,7 +214,7 @@ class BackupManager:
 
             with open(file_path, "rb") as f:
                 content = f.read()
-            return hashlib.md5(content).hexdigest()
+            return hashlib.md5(content, usedforsecurity=False).hexdigest()
         except:
             return ""
 

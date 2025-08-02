@@ -176,10 +176,11 @@ class LintingIssue(BaseModel):
 
     file_path: str
     line_number: int
-    column: int
+    column_number: int
     error_code: str
     message: str
-    line_content: str
+    line_content: str = ""
+    column: int = 0  # Keep for backward compatibility
 
 
 class LintingFixResult(BaseModel):
@@ -275,3 +276,28 @@ class AILintingFixerOutputs(BaseModel):
     session_id: str | None = None
     processing_mode: str = "standalone"
     dry_run: bool = False
+
+
+def create_empty_outputs(session_id: str | None = None) -> AILintingFixerOutputs:
+    """Create empty outputs with default values."""
+    return AILintingFixerOutputs(
+        total_issues_found=0,
+        issues_fixed=0,
+        files_modified=[],
+        success=True,
+        summary="No issues found or processed",
+        total_issues_detected=0,
+        issues_queued=0,
+        issues_processed=0,
+        issues_failed=0,
+        total_duration=0.0,
+        backup_files_created=0,
+        errors=[],
+        warnings=[],
+        agent_stats={},
+        queue_stats={},
+        redis_stats=None,
+        session_id=session_id,
+        processing_mode="standalone",
+        dry_run=False,
+    )

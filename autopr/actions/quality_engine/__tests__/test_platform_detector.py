@@ -4,8 +4,6 @@ Tests for platform detection and Windows adaptations.
 
 from unittest.mock import patch
 
-import pytest
-
 from autopr.actions.quality_engine.platform_detector import PlatformDetector
 
 

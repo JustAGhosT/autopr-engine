@@ -6,7 +6,6 @@ Template Search Module
 Handles template search, filtering, and discovery functionality.
 """
 
-
 import operator
 
 from .template_models import TemplateInfo

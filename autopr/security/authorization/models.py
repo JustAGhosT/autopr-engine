@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 import pydantic
 
@@ -37,16 +37,16 @@ class AuthorizationContext(pydantic.BaseModel):
     """Context for authorization decisions."""
 
     user_id: str
-    roles: List[str] = []
-    permissions: List[Permission] = []
+    roles: list[str] = []
+    permissions: list[Permission] = []
     resource_type: ResourceType
     resource_id: str
     action: Permission
-    user_agent: Optional[str] = None
-    ip_address: Optional[str] = None
-    explicit_permissions: Optional[Set[Permission]] = None
-    user_role: Optional[str] = None
-    additional_context: Optional[Dict[str, Any]] = None
+    user_agent: str | None = None
+    ip_address: str | None = None
+    explicit_permissions: set[Permission] | None = None
+    user_role: str | None = None
+    additional_context: dict[str, Any] | None = None
 
     class Config:
         use_enum_values = True
@@ -57,7 +57,7 @@ class ResourcePermission(pydantic.BaseModel):
 
     resource_type: ResourceType
     resource_id: str
-    permissions: Set[Permission]
+    permissions: set[Permission]
     granted_by: str
     granted_at: str = pydantic.Field(default_factory=lambda: datetime.utcnow().isoformat())
 
@@ -70,7 +70,7 @@ class PermissionPolicy(pydantic.BaseModel):
 
     name: str
     description: str = ""
-    rules: List[Dict[str, Any]]
+    rules: list[dict[str, Any]]
     created_at: str = pydantic.Field(default_factory=lambda: datetime.utcnow().isoformat())
     active: bool = True
 
@@ -82,10 +82,10 @@ class AuthorizationReport(pydantic.BaseModel):
     """Comprehensive authorization report."""
 
     generated_at: str = pydantic.Field(default_factory=lambda: datetime.utcnow().isoformat())
-    summary: Dict[str, Any] = {}
-    details: Dict[str, Any] = {}
-    security_analysis: Dict[str, Any] = {}
-    recommendations: List[str] = []
+    summary: dict[str, Any] = {}
+    details: dict[str, Any] = {}
+    security_analysis: dict[str, Any] = {}
+    recommendations: list[str] = []
 
     class Config:
         use_enum_values = True

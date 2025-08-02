@@ -1,10 +1,13 @@
+from datetime import datetime
 import os
+from pathlib import Path
 import tempfile
 import unittest
-from datetime import datetime
-from pathlib import Path
 
-from file_ops import BackupManager, FileValidator, SafeFileOperations
+try:
+    from .file_ops import BackupManager, FileValidator, SafeFileOperations
+except ImportError:
+    from file_ops import BackupManager, SafeFileOperations
 
 
 class TestGetFileInfoBasic(unittest.TestCase):

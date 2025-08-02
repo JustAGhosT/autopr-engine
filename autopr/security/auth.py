@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any
 
-import jwt
-import structlog
 from fastapi import HTTPException, status
+import jwt
 from passlib.context import CryptContext
+import structlog
 
 logger = structlog.get_logger(__name__)
 
@@ -19,7 +19,7 @@ class EnterpriseAuthManager:
         self.token_blacklist: set[str] = set()
 
     def create_access_token(
-        self, data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+        self, data: dict[str, Any], expires_delta: timedelta | None = None
     ) -> str:
         """Create JWT access token with enterprise security"""
         to_encode = data.copy()
@@ -37,7 +37,7 @@ class EnterpriseAuthManager:
 
         return token
 
-    def verify_token(self, token: str) -> Dict[str, Any]:
+    def verify_token(self, token: str) -> dict[str, Any]:
         """Verify JWT token with comprehensive validation"""
         try:
             # Check if token is blacklisted

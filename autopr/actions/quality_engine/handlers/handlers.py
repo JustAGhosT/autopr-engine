@@ -1,5 +1,3 @@
-from typing import List
-
 from ..registry import HandlerRegistry
 from ..results import LintIssue
 
@@ -7,7 +5,7 @@ registry = HandlerRegistry()
 
 
 @registry.register(LintIssue)
-def handle_lint(results: List[LintIssue]):
+def handle_lint(results: list[LintIssue]):
     """
     Handle lint issues.
 

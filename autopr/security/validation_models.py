@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -17,7 +17,7 @@ class ValidationResult(BaseModel):
     """Result of input validation."""
 
     is_valid: bool
-    errors: List[str] = Field(default_factory=list)
-    warnings: List[str] = Field(default_factory=list)
-    sanitized_data: Optional[Dict[str, Any]] = None
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    sanitized_data: dict[str, Any] | None = None
     severity: ValidationSeverity = ValidationSeverity.LOW

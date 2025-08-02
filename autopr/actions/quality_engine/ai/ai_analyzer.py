@@ -5,13 +5,13 @@ Provides intelligent code quality analysis using AI models via the AutoPR LLM pr
 """
 
 import asyncio
-import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+import os
+from typing import Any
 
 import structlog
 
-from autopr.ai.base import LLMMessage, LLMResponse
+from autopr.ai.base import LLMMessage
 from autopr.ai.providers.manager import LLMProviderManager
 
 logger = structlog.get_logger(__name__)
@@ -22,7 +22,7 @@ class CodeSuggestion:
     """Represents an AI-generated code improvement suggestion."""
 
     file_path: str
-    line_number: Optional[int]
+    line_number: int | None
     suggestion: str
     explanation: str
     confidence: float
@@ -34,7 +34,7 @@ class AICodeAnalyzer:
     AI-powered code analyzer that leverages LLMs to provide intelligent code suggestions.
     """
 
-    def __init__(self, llm_manager: Optional[LLMProviderManager] = None):
+    def __init__(self, llm_manager: LLMProviderManager | None = None):
         """
         Initialize the AI code analyzer.
 
@@ -90,9 +90,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
         self,
         file_path: str,
         code_content: str,
-        provider_name: Optional[str] = None,
-        model: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        provider_name: str | None = None,
+        model: str | None = None,
+    ) -> dict[str, Any]:
         """
         Analyze code using the configured LLM provider.
 
@@ -125,7 +125,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
 
         try:
             self.logger.info(
-                f"Analyzing code with AI", file_path=file_path, provider=provider_name or "default"
+                "Analyzing code with AI", file_path=file_path, provider=provider_name or "default"
             )
             response = await self.llm_manager.generate_completion(
                 messages=messages,
@@ -160,7 +160,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 else:
                     json_content = content
 
-                result = json.loads(json_content)
+                result: dict[str, Any] = json.loads(json_content)
                 self.logger.info(
                     "Successfully analyzed code with AI",
                     file_path=file_path,
@@ -178,12 +178,12 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 }
 
         except Exception as e:
-            self.logger.error(f"Error during AI code analysis", error=str(e), file_path=file_path)
-            return {"suggestions": [], "summary": f"AI analysis error: {str(e)}", "priorities": []}
+            self.logger.error("Error during AI code analysis", error=str(e), file_path=file_path)
+            return {"suggestions": [], "summary": f"AI analysis error: {e!s}", "priorities": []}
 
     async def analyze_files(
-        self, files: List[str], provider_name: Optional[str] = None, model: Optional[str] = None
-    ) -> Dict[str, Dict[str, Any]]:
+        self, files: list[str], provider_name: str | None = None, model: str | None = None
+    ) -> dict[str, dict[str, Any]]:
         """
         Analyze multiple files in parallel.
 
@@ -200,7 +200,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
 
         for file_path in files:
             try:
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     code_content = f.read()
 
                 task = asyncio.create_task(
@@ -209,11 +209,11 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 tasks.append((file_path, task))
             except Exception as e:
                 self.logger.error(
-                    f"Error reading file for AI analysis", file_path=file_path, error=str(e)
+                    "Error reading file for AI analysis", file_path=file_path, error=str(e)
                 )
                 results[file_path] = {
                     "suggestions": [],
-                    "summary": f"Error reading file: {str(e)}",
+                    "summary": f"Error reading file: {e!s}",
                     "priorities": [],
                 }
 
@@ -222,10 +222,10 @@ Each suggestion should be specific, actionable, and explain both what to change 
             try:
                 results[file_path] = await task
             except Exception as e:
-                self.logger.error(f"Error in AI analysis task", file_path=file_path, error=str(e))
+                self.logger.error("Error in AI analysis task", file_path=file_path, error=str(e))
                 results[file_path] = {
                     "suggestions": [],
-                    "summary": f"Error in analysis: {str(e)}",
+                    "summary": f"Error in analysis: {e!s}",
                     "priorities": [],
                 }
 
@@ -257,7 +257,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
         }
         return mapping.get(extension, "text")
 
-    def convert_to_tool_results(self, ai_results: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    def convert_to_tool_results(self, ai_results: dict[str, dict[str, Any]]) -> dict[str, Any]:
         """
         Convert AI analysis results to the format expected by the quality engine.
 

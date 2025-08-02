@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -18,7 +18,7 @@ class RadonTool(Tool):
     def description(self) -> str:
         return "A tool for analyzing Python code complexity."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Radon's cyclomatic complexity check on a list of files.
         """
@@ -57,8 +57,8 @@ class RadonTool(Tool):
             return [{"error": "Failed to parse radon JSON output"}]
 
     def _format_output(
-        self, output: Dict[str, List[Dict[str, Any]]], threshold: int
-    ) -> List[Dict[str, Any]]:
+        self, output: dict[str, list[dict[str, Any]]], threshold: int
+    ) -> list[dict[str, Any]]:
         """
         Formats Radon's JSON output into a standardized list of issues.
         """

@@ -1,11 +1,9 @@
-from typing import List
-
 from ..handler_base import Handler
 from .lint_issue import LintIssue
 
 
 class LintHandler(Handler[LintIssue]):
-    def handle(self, results: List[LintIssue]) -> None:
+    def handle(self, results: list[LintIssue]) -> None:
         """
         Process and display lint issues.
 

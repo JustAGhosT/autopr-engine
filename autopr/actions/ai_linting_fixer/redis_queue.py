@@ -5,15 +5,15 @@ Provides Redis-based distributed processing capabilities for AI linting operatio
 This enables horizontal scaling across multiple workers and systems.
 """
 
-import json
-import logging
-import time
-import uuid
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
+import json
+import logging
+import time
 from typing import Any
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -359,7 +359,6 @@ class RedisQueueManager:
                 issue = QueuedIssue.from_dict(json.loads(issue_data))
 
                 if issue.processing_started_at and issue.processing_started_at < cutoff_time:
-
                     # Re-enqueue stale issue
                     issue.assigned_worker = None
                     issue.processing_started_at = None

@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 import pydantic
 import toml
@@ -10,15 +10,15 @@ class ToolConfig(pydantic.BaseModel):
     """Configuration for a single quality tool."""
 
     enabled: bool = True
-    config: Dict[str, Any] = {}
+    config: dict[str, Any] = {}
 
 
 class QualityEngineConfig(pydantic.BaseModel):
     """Configuration for the Quality Engine."""
 
     default_mode: str = "smart"
-    tools: Dict[str, ToolConfig] = {}
-    modes: Dict[str, List[str]] = {}  # New Field for mode tools
+    tools: dict[str, ToolConfig] = {}
+    modes: dict[str, list[str]] = {}  # New Field for mode tools
 
 
 def validate_config(config: QualityEngineConfig):
@@ -81,7 +81,7 @@ def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
         # Try to load configuration from the specified file
         if os.path.exists(config_path):
             if config_path.endswith(".toml"):
-                with open(config_path, "r") as f:
+                with open(config_path) as f:
                     file_config = toml.load(f)
 
                 # Extract tool configuration from pyproject.toml
@@ -101,7 +101,7 @@ def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
                             default_config["modes"][mode] = tools
 
             elif config_path.endswith(".yaml") or config_path.endswith(".yml"):
-                with open(config_path, "r") as f:
+                with open(config_path) as f:
                     yaml_config = yaml.safe_load(f)
 
                 # Merge with default config

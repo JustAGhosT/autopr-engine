@@ -14,10 +14,10 @@ import operator
 import statistics
 from typing import Any
 
-from templates.discovery.template_validators import ValidationSeverity
-
 from .quality_models import QualityMetrics
 from .quality_scorer import QualityScorer
+
+# from templates.discovery.template_validators import ValidationSeverity
 
 
 class QualityAnalyzer:

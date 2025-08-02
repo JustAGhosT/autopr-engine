@@ -3,7 +3,7 @@ AI-enhanced analysis functionality for the quality engine
 """
 
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import structlog
 
@@ -13,11 +13,11 @@ logger = structlog.get_logger(__name__)
 
 
 async def run_ai_analysis(
-    files: List[str],
+    files: list[str],
     llm_manager: Any,
-    provider_name: Optional[str] = None,
-    model: Optional[str] = None,
-) -> Optional[Dict[str, Any]]:
+    provider_name: str | None = None,
+    model: str | None = None,
+) -> dict[str, Any] | None:
     """Run AI-enhanced code analysis.
 
     Args:
@@ -56,7 +56,7 @@ async def run_ai_analysis(
         return None
 
 
-async def initialize_llm_manager() -> Optional[Any]:
+async def initialize_llm_manager() -> Any | None:
     """Initialize the LLM manager for AI analysis.
 
     Returns:
@@ -84,7 +84,7 @@ async def initialize_llm_manager() -> Optional[Any]:
         return None
 
 
-def create_tool_result_from_ai_analysis(ai_result: Dict[str, Any]) -> ToolResult:
+def create_tool_result_from_ai_analysis(ai_result: dict[str, Any]) -> ToolResult:
     """Convert AI analysis results to a ToolResult.
 
     Args:

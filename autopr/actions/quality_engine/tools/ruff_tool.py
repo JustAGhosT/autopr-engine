@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -18,7 +18,7 @@ class RuffTool(Tool):
     def description(self) -> str:
         return "A Python linter."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run ruff on a list of files.
         """
@@ -46,7 +46,7 @@ class RuffTool(Tool):
 
         try:
             issues = json.loads(stdout)
-            return issues
+            return list(issues) if isinstance(issues, list) else [issues]
         except json.JSONDecodeError:
             print(f"Failed to parse ruff output: {stdout.decode()}")
             return [{"error": "Failed to parse ruff JSON output"}]

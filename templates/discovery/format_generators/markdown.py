@@ -8,8 +8,7 @@ Generates documentation in Markdown format.
 
 from datetime import datetime
 
-from discovery.content_analyzer import TemplateAnalysis
-
+from ..content_analyzer import TemplateAnalysis
 from .base import BaseFormatGenerator
 
 

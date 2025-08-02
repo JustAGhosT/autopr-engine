@@ -2,7 +2,7 @@
 Generic wrapper for tool results.
 """
 
-from typing import Any, Dict, Generic, List, TypeVar
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -24,9 +24,9 @@ class ToolResult(Generic[T]):
     def __init__(
         self,
         tool_name: str,
-        issues: List[T],
+        issues: list[T],
         category: str = "general",
-        metadata: Dict[str, Any] = None,
+        metadata: dict[str, Any] = None,
     ):
         """
         Initialize a new tool result.

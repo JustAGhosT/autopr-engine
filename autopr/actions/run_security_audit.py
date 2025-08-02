@@ -3,7 +3,7 @@ from typing import Any
 
 import pydantic
 
-from autopr.actions.base import Action
+from autopr.actions.base.action import Action
 
 
 class Inputs(pydantic.BaseModel):

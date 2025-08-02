@@ -2,12 +2,9 @@
 Base Action class for AutoPR.
 """
 
-import logging
 from abc import ABC, abstractmethod
-from typing import Any, TypeVar
-
-from .action_inputs import ActionInputs
-from .action_outputs import ActionOutputs
+import logging
+from typing import Any, Generic, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +13,7 @@ TInputs = TypeVar("TInputs")
 TOutputs = TypeVar("TOutputs")
 
 
-class Action[TInputs, TOutputs](ABC):
+class Action(ABC, Generic[TInputs, TOutputs]):
     """
     Base class for all AutoPR actions.
 

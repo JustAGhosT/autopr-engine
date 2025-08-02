@@ -3,7 +3,7 @@ Quality Engine - Main engine for running quality analysis tools.
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -26,9 +26,9 @@ class QualityEngine(Action):
     def __init__(
         self,
         config_path: str = "pyproject.toml",
-        tool_registry: Optional[ToolRegistry] = None,
-        handler_registry: Optional[HandlerRegistry] = None,
-        config: Optional[Any] = None,
+        tool_registry: ToolRegistry | None = None,
+        handler_registry: HandlerRegistry | None = None,
+        config: Any | None = None,
     ):
         super().__init__(
             name="quality_engine",
@@ -109,7 +109,7 @@ class QualityEngine(Action):
         print("The quality engine will automatically adapt tools for Windows compatibility.")
         print("=" * 60 + "\n")
 
-    def _filter_tools_for_platform(self) -> Dict[str, Any]:
+    def _filter_tools_for_platform(self) -> dict[str, Any]:
         """Filter tools based on platform compatibility."""
         all_tool_names = list(self.tools.keys())
         available_tools = self.platform_detector.get_available_tools(all_tool_names)
@@ -135,7 +135,7 @@ class QualityEngine(Action):
                 # Replace the old tool with the new one
                 self.tools[new_tool] = self.tools.pop(old_tool)
 
-    def _determine_tools_for_mode(self, mode: QualityMode, files: List[str]) -> List[str]:
+    def _determine_tools_for_mode(self, mode: QualityMode, files: list[str]) -> list[str]:
         """Determine which tools to run based on mode and files."""
         if mode == QualityMode.SMART:
             return determine_smart_tools(files)
@@ -163,7 +163,7 @@ class QualityEngine(Action):
         else:
             return {"enabled": True, "config": {}}
 
-    async def execute(self, inputs: QualityInputs, context: Dict[str, Any]) -> QualityOutputs:
+    async def execute(self, inputs: QualityInputs, context: dict[str, Any]) -> QualityOutputs:
         """Execute the quality engine with the given inputs"""
         logger.info("Executing Quality Engine", mode=inputs.mode)
 
@@ -302,9 +302,9 @@ class QualityEngine(Action):
 # Factory function to create a quality engine with dependencies
 def create_engine(
     config_path: str = "pyproject.toml",
-    tool_registry: Optional[ToolRegistry] = None,
-    handler_registry: Optional[HandlerRegistry] = None,
-    config: Optional[Any] = None,
+    tool_registry: ToolRegistry | None = None,
+    handler_registry: HandlerRegistry | None = None,
+    config: Any | None = None,
 ) -> QualityEngine:
     """Create a quality engine with the given dependencies."""
     return QualityEngine(

@@ -4,16 +4,15 @@ AutoPR Consolidation Tool
 Handles all cleanup, migration, and optimization tasks
 """
 
-import shutil
 from pathlib import Path
-from typing import List
+import shutil
 
 
 class Consolidator:
     """Tool for all consolidation operations"""
 
     def __init__(self):
-        self.operations_log: List[str] = []
+        self.operations_log: list[str] = []
 
     def run_full_consolidation(self):
         """Execute complete consolidation workflow"""
@@ -57,7 +56,7 @@ class Consolidator:
 
         # Remove backup files
         for pattern in ["**/*.backup_*", "**/fixer.backup_*.py", "**/*_old.py"]:
-            for path in Path(".").glob(pattern):
+            for path in Path().glob(pattern):
                 self._safe_remove(path)
 
     def _update_configurations(self):

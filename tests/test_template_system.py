@@ -2,10 +2,11 @@
 """
 Test script for the AutoPR template system with provider support.
 """
+
 import logging
 import os
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 # Add the project root to the Python path

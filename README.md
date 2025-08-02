@@ -10,6 +10,36 @@
 AutoPR Engine is a comprehensive AI-powered automation platform that transforms GitHub pull request
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
 
+> **📢 Repository Structure Update**: The repository has been reorganized for better maintainability
+> and developer experience. See [Implementation Summary](docs/plans/IMPLEMENTATION_SUMMARY.md) for
+> details on the improvements.
+
+---
+
+## 📁 **Repository Structure**
+
+The AutoPR Engine repository is organized for optimal developer experience and maintainability:
+
+```
+autopr-engine/
+├── docs/                      # 📚 All documentation
+│   ├── getting-started/       # Setup and quick start guides
+│   ├── development/           # Development guides and tools
+│   ├── plans/                 # Project planning documents
+│   └── README.md              # Documentation index
+├── configs/                   # ⚙️ Configuration files
+│   ├── environments/          # Environment-specific configs
+│   ├── platforms/             # Platform configurations
+│   └── workflows/             # Workflow configurations
+├── templates/                 # 🎨 Template system
+│   ├── platforms/             # Platform-specific templates
+│   ├── use-cases/             # Use case templates
+│   └── deployment/            # Deployment templates
+├── tools/                     # 🔧 Development tools
+├── build-artifacts/           # 📦 Build outputs
+└── autopr/                    # 🚀 Main source code
+```
+
 ---
 
 ## 🌟 **Features**
@@ -110,24 +140,27 @@ jobs:
 
 ### **Core Concepts**
 
-- [**Architecture Overview**](docs/architecture.md) - System design and components
-- [**Workflow Guide**](docs/workflows.md) - Creating and customizing workflows
-- [**Action Reference**](docs/actions.md) - Complete action documentation
-- [**Integration Guide**](docs/integrations.md) - Setting up external services
+- [**Architecture Overview**](docs/architecture/README.md) - System design and components
+- [**Enhanced System Architecture**](docs/architecture/AUTOPR_ENHANCED_SYSTEM.md) - Comprehensive
+  system design
+- [**Quality Engine**](docs/development/ai_linting_fixer.md) - AI-powered code analysis
+- [**Development Guide**](docs/development/) - Development setup and tools
 
 ### **Platform-Specific Guides**
 
-- [**Replit Integration**](docs/platforms/replit.md) - Prototype to production
-- [**Slack/Axolo Setup**](docs/integrations/axolo.md) - PR channel automation
-- [**Linear Workflow**](docs/integrations/linear.md) - Issue management
-- [**Azure Deployment**](docs/deployment/azure.md) - Cloud deployment guide
+- [**Platform Detection**](docs/development/platform_detection.md) - Platform identification system
+- [**Windows Development**](docs/development/WINDOWS_DEVELOPMENT.md) - Windows development setup
+- [**Code Quality**](docs/development/CODE_QUALITY.md) - Code quality standards
+- [**Configuration Management**](docs/development/CONFIGURATION_EXTRACTION.md) - Configuration
+  system
 
 ### **Advanced Topics**
 
-- [**Multi-Agent AI**](docs/advanced/autogen.md) - AutoGen integration
-- [**Memory Systems**](docs/advanced/memory.md) - Learning and patterns
-- [**Custom Actions**](docs/advanced/custom-actions.md) - Building your own
-- [**Monitoring**](docs/advanced/monitoring.md) - Observability setup
+- [**Python 3.13 Upgrade**](docs/development/PYTHON_313_UPGRADE.md) - Python upgrade guide
+- [**Modular Refactoring**](docs/development/MODULAR_REFACTORING_SUMMARY.md) - Refactoring
+  documentation
+- [**AutoWeave Integration**](docs/development/autopr_autoweave_integration.md) - Integration guide
+- [**Migration Guide**](docs/getting-started/MIGRATION_GUIDE.md) - Migration from previous versions
 
 ---
 

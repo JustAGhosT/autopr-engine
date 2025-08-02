@@ -6,8 +6,8 @@ Integrates with various platforms for enhanced workflow coordination.
 import os
 from typing import Any
 
-import requests
 from pydantic import BaseModel
+import requests
 
 from .base import Action
 
@@ -107,6 +107,7 @@ def create_linear_issue(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
             "https://api.linear.app/graphql",
             headers=headers,
             json={"query": mutation, "variables": variables},
+            timeout=30,
         )
 
         if response.status_code == 200:
@@ -171,7 +172,7 @@ def send_slack_notification(inputs: MultiPlatformInputs) -> MultiPlatformOutputs
                 }
             )
 
-        response: requests.Response = requests.post(webhook_url, json=message)
+        response: requests.Response = requests.post(webhook_url, json=message, timeout=30)
 
         if response.status_code == 200:
             return MultiPlatformOutputs(
@@ -209,7 +210,7 @@ def send_discord_message(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
 
         message: dict[str, Any] = {"embeds": [embed]}
 
-        response: requests.Response = requests.post(webhook_url, json=message)
+        response: requests.Response = requests.post(webhook_url, json=message, timeout=30)
 
         if response.status_code == 204:
             return MultiPlatformOutputs(
@@ -252,7 +253,7 @@ def create_notion_page(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
         }
 
         response: requests.Response = requests.post(
-            "https://api.notion.com/v1/pages", headers=headers, json=page_data
+            "https://api.notion.com/v1/pages", headers=headers, json=page_data, timeout=30
         )
 
         if response.status_code == 200:
@@ -299,6 +300,7 @@ def create_jira_ticket(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
             auth=auth,
             json=issue_data,
             headers={"Content-Type": "application/json"},
+            timeout=30,
         )
 
         if response.status_code == 201:

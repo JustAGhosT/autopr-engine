@@ -2,8 +2,8 @@
 
 import argparse
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 from .linter import YAMLLinter
@@ -264,7 +264,6 @@ def run_linter(args: argparse.Namespace) -> int:
         else:
             fixed_count = linter.fix_files(dry_run=False)
             if fixed_count > 0:
-
                 # Re-run linter to show remaining issues
                 if args.verbose > 0:
                     new_linter = YAMLLinter(config)

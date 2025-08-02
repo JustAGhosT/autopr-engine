@@ -4,9 +4,7 @@ Semgrep Tool - Cross-platform static analysis for security and code quality.
 
 import asyncio
 import json
-import os
-import tempfile
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -17,7 +15,7 @@ class SemgrepTool(Tool):
     Cross-platform and works well on Windows, Linux, and macOS.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.default_timeout = 45.0  # Reduce timeout to 45 seconds for faster execution
         self.max_files_per_run = 200  # Higher limit for static analysis
@@ -34,7 +32,7 @@ class SemgrepTool(Tool):
     def category(self) -> str:
         return "security"
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Semgrep analysis on the provided files.
         """
@@ -91,9 +89,9 @@ class SemgrepTool(Tool):
                 return [{"error": "Failed to parse Semgrep JSON output"}]
 
         except Exception as e:
-            return [{"error": f"Semgrep execution error: {str(e)}"}]
+            return [{"error": f"Semgrep execution error: {e!s}"}]
 
-    def _parse_semgrep_output(self, output: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _parse_semgrep_output(self, output: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Parse Semgrep JSON output and convert to standard issue format.
         """
@@ -149,7 +147,7 @@ class SemgrepTool(Tool):
 
         return issues
 
-    def _determine_category(self, rule_id: str, metadata: Dict[str, Any]) -> str:
+    def _determine_category(self, rule_id: str, metadata: dict[str, Any]) -> str:
         """
         Determine the category of an issue based on rule ID and metadata.
         """
@@ -201,7 +199,7 @@ class SemgrepTool(Tool):
         # Default category
         return "general"
 
-    def get_default_config(self) -> Dict[str, Any]:
+    def get_default_config(self) -> dict[str, Any]:
         """
         Get default configuration for Semgrep.
         """
@@ -213,7 +211,7 @@ class SemgrepTool(Tool):
             "categories": ["security", "performance", "maintainability", "bug"],
         }
 
-    def get_supported_languages(self) -> List[str]:
+    def get_supported_languages(self) -> list[str]:
         """
         Get list of languages supported by Semgrep.
         """
@@ -240,7 +238,7 @@ class SemgrepTool(Tool):
             "powershell",
         ]
 
-    def get_rule_categories(self) -> Dict[str, List[str]]:
+    def get_rule_categories(self) -> dict[str, list[str]]:
         """
         Get available rule categories and their descriptions.
         """

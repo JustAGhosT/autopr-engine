@@ -1,8 +1,8 @@
-import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+import secrets
+from typing import Any
 
 import bcrypt
 import jwt
@@ -32,12 +32,12 @@ class UserRole(Enum):
 @dataclass
 class AuthenticationResult:
     success: bool
-    user_id: Optional[str] = None
-    roles: List[str] = None
-    permissions: List[str] = None
-    token: Optional[str] = None
-    expires_at: Optional[datetime] = None
-    error_message: Optional[str] = None
+    user_id: str | None = None
+    roles: list[str] = None
+    permissions: list[str] = None
+    token: str | None = None
+    expires_at: datetime | None = None
+    error_message: str | None = None
     requires_mfa: bool = False
 
 
@@ -46,13 +46,13 @@ class UserCredentials:
     username: str
     password_hash: str
     salt: str
-    roles: List[str]
-    permissions: List[str]
+    roles: list[str]
+    permissions: list[str]
     is_active: bool = True
     created_at: datetime = None
-    last_login: Optional[datetime] = None
+    last_login: datetime | None = None
     failed_login_attempts: int = 0
-    locked_until: Optional[datetime] = None
+    locked_until: datetime | None = None
 
 
 class EnterpriseAuthenticationManager:
@@ -67,14 +67,14 @@ class EnterpriseAuthenticationManager:
         self.refresh_token_expiry = timedelta(days=30)
 
         # In-memory storage for demo - replace with database in production
-        self.users: Dict[str, UserCredentials] = {}
-        self.api_keys: Dict[str, Dict[str, Any]] = {}
-        self.active_sessions: Dict[str, Dict[str, Any]] = {}
+        self.users: dict[str, UserCredentials] = {}
+        self.api_keys: dict[str, dict[str, Any]] = {}
+        self.active_sessions: dict[str, dict[str, Any]] = {}
 
         logger.info("Authentication manager initialized")
 
     def create_user(
-        self, username: str, password: str, roles: List[str], permissions: List[str]
+        self, username: str, password: str, roles: list[str], permissions: list[str]
     ) -> bool:
         """Create a new user with secure password hashing"""
         try:
@@ -223,8 +223,8 @@ class EnterpriseAuthenticationManager:
             return AuthenticationResult(success=False, error_message="Token validation failed")
 
     def create_api_key(
-        self, username: str, name: str, permissions: List[str], expires_in_days: int = 365
-    ) -> Optional[str]:
+        self, username: str, name: str, permissions: list[str], expires_in_days: int = 365
+    ) -> str | None:
         "Create API key for user"
         try:
             user = self.users.get(username)
@@ -303,11 +303,11 @@ class EnterpriseAuthenticationManager:
             logger.error("API key revocation failed", error=str(e))
             return False
 
-    def check_permission(self, user_permissions: List[str], required_permission: str) -> bool:
+    def check_permission(self, user_permissions: list[str], required_permission: str) -> bool:
         "Check if user has required permission"
         return required_permission in user_permissions or "admin" in user_permissions
 
-    def check_role(self, user_roles: List[str], required_role: str) -> bool:
+    def check_role(self, user_roles: list[str], required_role: str) -> bool:
         "Check if user has required role"
         role_hierarchy = {"guest": 0, "user": 1, "admin": 2, "super_admin": 3, "service_account": 1}
 
@@ -355,7 +355,7 @@ class EnterpriseAuthenticationManager:
             logger.error("Session cleanup failed", error=str(e))
             return 0
 
-    def get_user_sessions(self, username: str) -> List[Dict[str, Any]]:
+    def get_user_sessions(self, username: str) -> list[dict[str, Any]]:
         "Get active sessions for user"
         sessions = []
         for session_id, session_data in self.active_sessions.items():

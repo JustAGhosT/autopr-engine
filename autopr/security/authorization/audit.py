@@ -1,7 +1,7 @@
 """Audit logging for authorization events."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
@@ -13,7 +13,7 @@ logger = structlog.get_logger(__name__)
 class AuthorizationAuditLogger:
     """Audit logger for authorization events."""
 
-    def __init__(self, log_file: Optional[str] = None):
+    def __init__(self, log_file: str | None = None):
         self.audit_logger = structlog.get_logger("authorization_audit")
         self.log_file = log_file
 
@@ -27,7 +27,7 @@ class AuthorizationAuditLogger:
             self.audit_logger.addHandler(file_handler)
 
     def log_authorization_check(
-        self, context: AuthorizationContext, result: bool, duration_ms: Optional[float] = None
+        self, context: AuthorizationContext, result: bool, duration_ms: float | None = None
     ):
         """Log authorization check."""
         self.audit_logger.info(
@@ -47,7 +47,7 @@ class AuthorizationAuditLogger:
         user_id: str,
         resource_type: str,
         resource_id: str,
-        permissions: List[str],
+        permissions: list[str],
         granted_by: str,
     ):
         """Log permission grant."""
@@ -89,7 +89,7 @@ class AuthorizationAuditLogger:
             timestamp=datetime.utcnow().isoformat(),
         )
 
-    def log_security_event(self, event_type: str, user_id: str, details: Dict[str, Any]):
+    def log_security_event(self, event_type: str, user_id: str, details: dict[str, Any]):
         """Log security events."""
         self.audit_logger.warning(
             "security_event",

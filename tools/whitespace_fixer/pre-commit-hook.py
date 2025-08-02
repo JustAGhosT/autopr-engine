@@ -5,16 +5,16 @@ Runs the whitespace fixer on staged files and re-stages them if modified.
 """
 
 import hashlib
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
 
 def get_file_hash(file_path):
     """Get MD5 hash of a file."""
     try:
         with open(file_path, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
+            return hashlib.md5(f.read(), usedforsecurity=False).hexdigest()
     except OSError:
         return None
 
@@ -80,7 +80,6 @@ def main():
 
     # Re-stage modified files if any
     if modified_files:
-
         for file_path in modified_files:
             try:
                 result = subprocess.run(

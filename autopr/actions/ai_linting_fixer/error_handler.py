@@ -5,14 +5,14 @@ This module provides comprehensive error handling, categorization, and display
 capabilities that integrate with the existing display system.
 """
 
-import logging
-import operator
-import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+import logging
+import operator
 from pathlib import Path
+import traceback
 from typing import Any
 from uuid import uuid4
 

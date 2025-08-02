@@ -10,8 +10,8 @@ Automatically fixes:
 """
 
 import argparse
-import re
 from pathlib import Path
+import re
 
 
 class WhitespaceFixer:
@@ -213,7 +213,6 @@ class WhitespaceFixer:
         consecutive_blank = 0
 
         for i, line in enumerate(lines):
-
             # Fix trailing whitespace
             if line.rstrip() != line:
                 issues_fixed.append(f"Line {i + 1}: Removed trailing whitespace")

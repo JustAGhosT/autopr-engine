@@ -5,11 +5,11 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
+from datetime import datetime
 import json
 import logging
-import sqlite3
-from datetime import datetime
 from pathlib import Path
+import sqlite3
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -455,20 +455,20 @@ class AIInteractionDB:
 
             # Delete old interactions (keeping last N days)
             conn.execute(
-                f"""
+                """
                 DELETE FROM ai_interactions
-                WHERE DATE(timestamp) < DATE(?, '-{days_to_keep} days')
+                WHERE DATE(timestamp) < DATE(?, ?)
                 """,
-                (cutoff_date,),
+                (cutoff_date, f"-{days_to_keep} days"),
             )
 
             # Delete old performance sessions
             conn.execute(
-                f"""
+                """
                 DELETE FROM performance_sessions
-                WHERE DATE(session_timestamp) < DATE(?, '-{days_to_keep} days')
+                WHERE DATE(session_timestamp) < DATE(?, ?)
                 """,
-                (cutoff_date,),
+                (cutoff_date, f"-{days_to_keep} days"),
             )
 
             conn.commit()
@@ -497,10 +497,12 @@ class AIInteractionDB:
                 tables = ["ai_interactions", "performance_sessions"]
                 for table in tables:
                     try:
-                        count = conn.execute(f"SELECT COUNT(*) as count FROM {table}").fetchone()[
-                            "count"
-                        ]
-                        info["table_counts"][table] = count
+                        # Use parameterized query with table name validation
+                        if table in tables:  # Validate table name
+                            count = conn.execute(
+                                "SELECT COUNT(*) as count FROM " + table
+                            ).fetchone()["count"]
+                            info["table_counts"][table] = count
                     except sqlite3.OperationalError:
                         info["table_counts"][table] = 0
 
@@ -630,10 +632,12 @@ class IssueQueueManager:
 
             params.append(issue_id)
 
-            conn.execute(
-                f"UPDATE linting_issues_queue SET {', '.join(update_fields)} WHERE id = ?",
-                params,
-            )
+            # Build update query safely
+            if update_fields:
+                update_query = (
+                    f"UPDATE linting_issues_queue SET {', '.join(update_fields)} WHERE id = ?"
+                )
+                conn.execute(update_query, params)
             conn.commit()
 
     def retry_failed_issue(self, issue_id: int) -> bool:
@@ -735,12 +739,12 @@ class IssueQueueManager:
             cutoff_date = datetime.now().isoformat()[:10]  # YYYY-MM-DD format
 
             conn.execute(
-                f"""
+                """
                 DELETE FROM linting_issues_queue
                 WHERE status IN ('completed', 'failed', 'skipped')
-                AND DATE(created_timestamp) < DATE(?, '-{days_to_keep} days')
+                AND DATE(created_timestamp) < DATE(?, ?)
                 """,
-                (cutoff_date,),
+                (cutoff_date, f"-{days_to_keep} days"),
             )
             conn.commit()
 

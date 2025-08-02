@@ -1,12 +1,10 @@
-from typing import Union
-
 from ..validation_models import ValidationResult, ValidationSeverity
 
 
 class NumberValidator:
     """Number validation functionality."""
 
-    def _validate_number(self, key: str, value: Union[int, float]) -> ValidationResult:
+    def _validate_number(self, key: str, value: int | float) -> ValidationResult:
         """Validate numeric input."""
         result = ValidationResult(is_valid=True)
 

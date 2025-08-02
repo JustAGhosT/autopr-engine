@@ -12,14 +12,15 @@ Features:
 - Rich formatting and styling
 """
 
-import json
 from abc import ABC, abstractmethod
 from datetime import datetime
+import json
 from pathlib import Path
 from typing import Any
 
 from autopr.quality.template_metrics import QualityMetrics
-from templates.discovery.template_validators import ValidationSeverity
+
+from .template_validators import ValidationSeverity
 
 
 class ReportGenerator(ABC):
@@ -264,7 +265,9 @@ class MarkdownReportGenerator(ReportGenerator):
             status = (
                 "🔴 Critical"
                 if metrics.has_critical_issues
-                else "✅ Good" if metrics.overall_score >= 80 else "🟡 Needs Work"
+                else "✅ Good"
+                if metrics.overall_score >= 80
+                else "🟡 Needs Work"
             )
             lines.append(
                 f"| {template_name} | {metrics.overall_score:.1f} | {metrics.quality_grade} | {len(metrics.issues)} | {status} |"
@@ -368,7 +371,9 @@ class HTMLReportGenerator(ReportGenerator):
             status_class = (
                 "critical"
                 if metrics.has_critical_issues
-                else "good" if metrics.overall_score >= 80 else "warning"
+                else "good"
+                if metrics.overall_score >= 80
+                else "warning"
             )
 
             html += f"""
@@ -444,4 +449,5 @@ def save_report(content: str, output_path: Path, format_type: str = "markdown") 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(content)
 
+    return str(output_path)
     return str(output_path)

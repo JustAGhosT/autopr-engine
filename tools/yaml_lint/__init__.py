@@ -4,6 +4,9 @@ A comprehensive YAML linter with intelligent auto-fixing capabilities
 for formatting, style, and common issues.
 
 Example usage:
+    try:
+    from .yaml_lint import YAMLLinter
+except ImportError:
     from yaml_lint import YAMLLinter
 
     linter = YAMLLinter()

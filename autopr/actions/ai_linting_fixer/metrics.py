@@ -88,16 +88,16 @@ class MetricsCollector:
         self.operation_start_times: dict[str, float] = {}
         self.file_metrics: list[dict[str, Any]] = []
 
-    def start_session(self):
+    def start_session(self) -> None:
         """Start a new metrics collection session."""
         self.session_metrics = SessionMetrics()
         self.session_metrics.start_time = datetime.now()
 
-    def end_session(self):
+    def end_session(self) -> None:
         """End the current metrics collection session."""
         self.session_metrics.end_time = datetime.now()
 
-    def start_operation(self, operation_name: str):
+    def start_operation(self, operation_name: str) -> None:
         """Start timing an operation."""
         self.operation_start_times[operation_name] = time.time()
 
@@ -110,7 +110,7 @@ class MetricsCollector:
         del self.operation_start_times[operation_name]
         return duration
 
-    def record_api_call(self, response_time: float, tokens_used: int = 0):
+    def record_api_call(self, response_time: float, tokens_used: int = 0) -> None:
         """Record API call metrics."""
         self.session_metrics.api_calls += 1
         self.session_metrics.total_tokens += tokens_used
@@ -118,7 +118,7 @@ class MetricsCollector:
 
     def record_fix_attempt(
         self, success: bool, confidence: float | None = None, processing_time: float = 0.0
-    ):
+    ) -> None:
         """Record a fix attempt."""
         if success:
             self.session_metrics.successful_fixes += 1
@@ -139,7 +139,7 @@ class MetricsCollector:
         file_size: int,
         processing_time: float,
         complexity_score: float,
-    ):
+    ) -> None:
         """Record file-level metrics."""
         self.file_metrics.append(
             {
@@ -153,7 +153,7 @@ class MetricsCollector:
             }
         )
 
-    def sample_resource_usage(self):
+    def sample_resource_usage(self) -> None:
         """Sample current resource usage."""
         try:
             # Memory usage
@@ -304,12 +304,12 @@ class MetricsAggregator:
         self.historical_sessions: list[SessionMetrics] = []
         self.performance_trends: dict[str, list[float]] = {}
 
-    def add_session(self, session_metrics: SessionMetrics):
+    def add_session(self, session_metrics: SessionMetrics) -> None:
         """Add a completed session for analysis."""
         self.historical_sessions.append(session_metrics)
         self._update_trends(session_metrics)
 
-    def _update_trends(self, session: SessionMetrics):
+    def _update_trends(self, session: SessionMetrics) -> None:
         """Update performance trend tracking."""
         if "success_rate" not in self.performance_trends:
             self.performance_trends["success_rate"] = []
@@ -374,7 +374,7 @@ class PerformanceProfiler:
         self.profiling_data: dict[str, list[float]] = {}
         self.active_profiles: dict[str, float] = {}
 
-    def start_profile(self, operation: str):
+    def start_profile(self, operation: str) -> None:
         """Start profiling an operation."""
         self.active_profiles[operation] = time.time()
 

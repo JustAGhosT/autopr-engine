@@ -6,8 +6,8 @@ Creates GitHub issues and Linear tickets based on AI analysis
 import os
 from typing import Any
 
-import requests
 from pydantic import BaseModel, Field
+import requests
 
 
 class IssueCreatorInputs(BaseModel):
@@ -95,7 +95,7 @@ class IssueCreator:
             "assignees": issue_data.get("assignees", []),
         }
 
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
         response.raise_for_status()
 
         created_issue = response.json()
@@ -155,7 +155,7 @@ class IssueCreator:
         }
 
         response = requests.post(
-            url, headers=headers, json={"query": mutation, "variables": variables}
+            url, headers=headers, json={"query": mutation, "variables": variables}, timeout=30
         )
         response.raise_for_status()
 
@@ -233,7 +233,7 @@ A Linear ticket has been created for autonomous resolution.
 
         payload = {"body": comment}
 
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
         response.raise_for_status()
 
     def _notify_charlie_linear(self, issue_id: str) -> None:
@@ -277,7 +277,7 @@ A Linear ticket has been created for autonomous resolution.
         }
 
         response = requests.post(
-            url, headers=headers, json={"query": mutation, "variables": variables}
+            url, headers=headers, json={"query": mutation, "variables": variables}, timeout=30
         )
         response.raise_for_status()
 
@@ -436,7 +436,7 @@ A Linear ticket has been created for autonomous resolution.
     def _send_slack_notification(self, message: dict) -> None:
         """Send notification to Slack"""
         if self.slack_webhook:
-            response = requests.post(self.slack_webhook, json=message)
+            response = requests.post(self.slack_webhook, json=message, timeout=30)
             response.raise_for_status()
 
     def _get_team_id(self, team_name: str) -> str:

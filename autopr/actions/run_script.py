@@ -2,7 +2,7 @@ import asyncio
 
 import pydantic
 
-from autopr.actions.base import Action
+from autopr.actions.base.action import Action
 
 
 # Define the inputs for our action

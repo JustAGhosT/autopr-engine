@@ -2,11 +2,8 @@
 Tests for quality engine CLI functionality.
 """
 
-import sys
 from io import StringIO
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 
 from autopr.actions.quality_engine.cli import ask_windows_confirmation, main
 

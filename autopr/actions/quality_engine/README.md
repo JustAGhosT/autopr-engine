@@ -13,7 +13,7 @@ Windows compatibility.
 
 ## Directory Structure
 
-```
+```text
 quality_engine/
 ├── __init__.py                 # Main package initialization
 ├── engine.py                   # Core quality engine implementation
@@ -101,25 +101,121 @@ The Quality Engine automatically detects Windows and provides:
 ### Command Line Interface
 
 ```bash
-# Basic usage
-python -m autopr.actions.quality_engine.cli --files <files> --mode fast
+# Basic usage (smart mode is default)
+python -m autopr.actions.quality_engine
+
+# Fast mode - quick analysis with essential tools
+python -m autopr.actions.quality_engine --mode=fast
+
+# Smart mode - intelligent tool selection based on file types (default)
+python -m autopr.actions.quality_engine --mode=smart
+
+# Comprehensive mode - full analysis with all available tools
+python -m autopr.actions.quality_engine --mode=comprehensive
+
+# AI-enhanced analysis (experimental)
+python -m autopr.actions.quality_engine --mode=ai_enhanced --ai-provider openai --ai-model gpt-4
 
 # Windows mode (with confirmation)
 python -m autopr.actions.quality_engine.cli --files <files> --mode comprehensive
 
 # Skip Windows check
 python -m autopr.actions.quality_engine.cli --files <files> --skip-windows-check
-
-# AI-enhanced analysis
-python -m autopr.actions.quality_engine.cli --files <files> --mode ai_enhanced --enable-ai
 ```
 
 ### Available Modes
 
-- **fast**: Quick analysis with essential tools (Ruff, Bandit)
-- **smart**: Intelligent tool selection based on file types
-- **comprehensive**: Full analysis with all available tools
-- **ai_enhanced**: AI-powered analysis with code suggestions
+- **smart** (default): Intelligent tool selection based on file types - fastest for daily use
+- **fast**: Quick analysis with essential tools (Ruff, Bandit) - minimal checks
+- **comprehensive**: Full analysis with all available tools - thorough but slower
+- **ai_enhanced**: AI-powered analysis with code suggestions - requires AI provider and model
+  configuration (experimental)
+
+### Pre-commit Integration
+
+The Quality Engine is **disabled by default** in pre-commit hooks due to performance considerations.
+
+#### Current Pre-commit Workflow
+
+1. **Black** - Python code formatting
+2. **isort** - Import sorting
+3. **Prettier** - JSON/YAML/Markdown formatting
+4. **Handle Unstaged Changes** - Automatically adds formatting changes
+5. **✅ Commit completes successfully**
+
+#### Manual Quality Checks
+
+```bash
+# Run comprehensive analysis when needed
+python -m autopr.actions.quality_engine --mode=comprehensive
+
+# Run smart analysis for quick checks
+python -m autopr.actions.quality_engine --mode=smart
+
+# Run fast analysis for essential checks
+python -m autopr.actions.quality_engine --mode=fast
+```
+
+#### Re-enabling Quality Engine in Pre-commit
+
+If you want to add Quality Engine back to pre-commit, uncomment the section in
+`.pre-commit-config.yaml`:
+
+```yaml
+# Quality Engine (uncomment to enable)
+- repo: local
+  hooks:
+    - id: quality-engine
+      name: AutoPR Quality Engine
+      entry: python -m autopr.actions.quality_engine
+      language: system
+      types: [python]
+      args: [--mode=smart] # Use smart mode for pre-commit
+      stages: [pre-commit]
+      verbose: true
+      pass_filenames: false
+```
+
+**Note**: Enabling Quality Engine in pre-commit will significantly increase commit time (60-90
+seconds).
+
+### CLI Options
+
+```bash
+python -m autopr.actions.quality_engine [OPTIONS]
+
+Options:
+  --mode {fast,comprehensive,ai_enhanced,smart}  Quality check mode (default: smart)
+  --files [FILES ...]                            Files to check (supports glob patterns)
+  --config CONFIG                                Path to configuration file (default: pyproject.toml)
+  --verbose                                      Enable verbose output
+  --ai-provider AI_PROVIDER                      AI provider to use for AI-enhanced mode
+  --ai-model AI_MODEL                           AI model to use for AI-enhanced mode
+  -h, --help                                     Show help message
+```
+
+### Performance Characteristics
+
+#### Mode Comparison
+
+- **Fast Mode**: ~2-5 seconds - Essential tools only
+- **Smart Mode**: ~10-30 seconds - Intelligent tool selection
+- **Comprehensive Mode**: ~60-120 seconds - All tools, thorough analysis
+
+#### Typical Results (AutoPR Engine Codebase)
+
+- **Fast Mode**: ~50-100 issues found
+- **Smart Mode**: ~500-1000 issues found
+- **Comprehensive Mode**: ~3000-4000 issues found across 250+ files
+
+#### Tool Execution Times (Comprehensive Mode)
+
+- **Ruff**: ~1.1s (3,762 issues found)
+- **Semgrep**: ~45s (security analysis)
+- **Windows Security**: ~43s (Windows-specific)
+- **Radon**: ~60s (complexity analysis)
+- **MyPy**: ~3s (type checking)
+- **Bandit**: ~1.1s (security scanning)
 
 ### Programmatic Usage
 

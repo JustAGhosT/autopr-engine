@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Set
+from typing import Any
 
 import structlog
 
@@ -46,9 +46,7 @@ class EnterpriseInputValidator(
         self.max_array_length = 1000
         self.allowed_file_extensions = {".txt", ".json", ".yaml", ".yml", ".md"}
 
-    def validate_input(
-        self, data: Dict[str, Any], schema: Optional[type] = None
-    ) -> ValidationResult:
+    def validate_input(self, data: dict[str, Any], schema: type | None = None) -> ValidationResult:
         """Comprehensive input validation."""
         result = ValidationResult(is_valid=True)
         sanitized_data = {}
@@ -96,7 +94,7 @@ class EnterpriseInputValidator(
                     else:
                         result.sanitized_data = sanitized_data
                 except Exception as e:
-                    result.errors.append(f"Schema validation failed: {str(e)}")
+                    result.errors.append(f"Schema validation failed: {e!s}")
                     result.is_valid = False
                     result.severity = ValidationSeverity.HIGH
             else:
@@ -119,7 +117,7 @@ class EnterpriseInputValidator(
             logger.error("Input validation error", error=str(e))
             return ValidationResult(
                 is_valid=False,
-                errors=[f"Validation system error: {str(e)}"],
+                errors=[f"Validation system error: {e!s}"],
                 severity=ValidationSeverity.CRITICAL,
             )
 

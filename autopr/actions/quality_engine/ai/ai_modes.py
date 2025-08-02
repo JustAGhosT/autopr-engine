@@ -5,13 +5,11 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
-import asyncio
 import os
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 import structlog
 
-from autopr.ai.base import LLMMessage, LLMResponse
 from autopr.ai.providers.manager import LLMProviderManager
 
 from .ai_analyzer import AICodeAnalyzer
@@ -83,11 +81,11 @@ Provide detailed security insights in a structured JSON format.
 
 
 async def run_ai_analysis(
-    files: List[str],
+    files: list[str],
     llm_manager: LLMProviderManager,
-    provider_name: Optional[str] = None,
-    model: Optional[str] = None,
-) -> Dict[str, Any]:
+    provider_name: str | None = None,
+    model: str | None = None,
+) -> dict[str, Any]:
     """
     Run AI-enhanced code analysis on the provided files.
 
@@ -133,13 +131,13 @@ async def run_ai_analysis(
             file_size = os.path.getsize(file_path)
             if file_size > 100 * 1024:  # 100 KB
                 logger.info(
-                    f"Skipping large file for AI analysis", file_path=file_path, size=file_size
+                    "Skipping large file for AI analysis", file_path=file_path, size=file_size
                 )
                 continue
 
             files_for_analysis.append(file_path)
         except Exception as e:
-            logger.error(f"Error checking file for AI analysis", file_path=file_path, error=str(e))
+            logger.error("Error checking file for AI analysis", file_path=file_path, error=str(e))
 
     # If no files are suitable for analysis, return empty results
     if not files_for_analysis:
@@ -208,7 +206,7 @@ async def run_ai_analysis(
     if results:
         summary_lines.append("\n## File Summaries")
         for file_path, result in results.items():
-            if "summary" in result and result["summary"]:
+            if result.get("summary"):
                 summary_lines.append(f"\n### {os.path.basename(file_path)}")
                 summary_lines.append(result["summary"])
 
@@ -218,11 +216,11 @@ async def run_ai_analysis(
 
 
 async def analyze_code_architecture(
-    files: List[str],
+    files: list[str],
     llm_manager: LLMProviderManager,
-    provider_name: Optional[str] = None,
-    model: Optional[str] = None,
-) -> Dict[str, Any]:
+    provider_name: str | None = None,
+    model: str | None = None,
+) -> dict[str, Any]:
     """
     Perform architectural analysis of the codebase using LLM.
 
@@ -244,11 +242,11 @@ async def analyze_code_architecture(
 
 
 async def analyze_security_issues(
-    files: List[str],
+    files: list[str],
     llm_manager: LLMProviderManager,
-    provider_name: Optional[str] = None,
-    model: Optional[str] = None,
-) -> Dict[str, Any]:
+    provider_name: str | None = None,
+    model: str | None = None,
+) -> dict[str, Any]:
     """
     Perform security-focused analysis of the codebase using LLM.
 

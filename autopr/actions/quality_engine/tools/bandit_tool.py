@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from .tool_base import Tool
 
@@ -10,7 +10,7 @@ class BanditTool(Tool):
     A tool for running Bandit, a security linter for Python.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.default_timeout = 20.0  # Reduce timeout to 20 seconds for faster execution
 
@@ -22,7 +22,7 @@ class BanditTool(Tool):
     def description(self) -> str:
         return "A security linter for Python."
 
-    async def run(self, files: List[str], config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run bandit on a list of files.
         """
@@ -52,7 +52,8 @@ class BanditTool(Tool):
         try:
             # The JSON output contains a 'results' key.
             output = json.loads(stdout)
-            return output.get("results", [])
+            results = output.get("results", [])
+            return results
         except json.JSONDecodeError:
             print(f"Failed to parse bandit output: {stdout.decode()}")
             return [{"error": "Failed to parse bandit JSON output"}]

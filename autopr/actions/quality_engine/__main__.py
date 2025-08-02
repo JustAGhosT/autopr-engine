@@ -12,7 +12,7 @@ from .di import container, get_engine
 from .engine import QualityInputs, QualityMode
 
 
-def main():
+def main() -> None:
     """Main CLI entry point for the Quality Engine."""
     parser = argparse.ArgumentParser(description="AutoPR Quality Engine")
     parser.add_argument(
@@ -62,7 +62,7 @@ def main():
         print("Operation cancelled by user.")
         sys.exit(130)
     except Exception as e:
-        print(f"Error running quality engine: {str(e)}")
+        print(f"Error running quality engine: {e!s}")
         sys.exit(1)
 
 
