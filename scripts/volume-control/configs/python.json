@@ -1,0 +1,86 @@
+{
+  "tool": "python",
+  "description": "Python language server and analysis",
+  "activation_levels": {
+    "0": {
+      "enabled": false,
+      "settings": {
+        "python.enabled": false,
+        "python.languageServer": "None",
+        "python.analysis.enabled": false,
+        "python.linting.enabled": false,
+        "python.formatting.enabled": false,
+        "files.associations": {
+          "*.py": "plaintext",
+          "*.yml": "plaintext",
+          "*.yaml": "plaintext"
+        }
+      }
+    },
+    "50": {
+      "enabled": true,
+      "settings": {
+        "python.enabled": true,
+        "python.languageServer": "Pylance",
+        "python.analysis.enabled": true,
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.diagnosticMode": "workspace",
+        "python.linting.enabled": false,
+        "python.formatting.enabled": false,
+        "python.analysis.autoImportCompletions": true,
+        "files.associations": {}
+      }
+    },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "python.enabled": true,
+        "python.languageServer": "Pylance",
+        "python.analysis.enabled": true,
+        "python.analysis.typeCheckingMode": "strict",
+        "python.analysis.diagnosticMode": "workspace",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "python.formatting.enabled": false,
+        "python.analysis.autoImportCompletions": true
+      }
+    },
+    "500": {
+      "enabled": true,
+      "settings": {
+        "python.enabled": true,
+        "python.languageServer": "Pylance",
+        "python.analysis.enabled": true,
+        "python.analysis.typeCheckingMode": "strict",
+        "python.analysis.diagnosticMode": "workspace",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "python.linting.mypyEnabled": true,
+        "python.formatting.enabled": true,
+        "python.formatting.provider": "black",
+        "python.analysis.autoImportCompletions": true
+      }
+    },
+    "1000": {
+      "enabled": true,
+      "settings": {
+        "python.enabled": true,
+        "python.languageServer": "Pylance",
+        "python.analysis.enabled": true,
+        "python.analysis.typeCheckingMode": "strict",
+        "python.analysis.diagnosticMode": "workspace",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "python.linting.mypyEnabled": true,
+        "python.linting.ruffEnabled": true,
+        "python.linting.banditEnabled": true,
+        "python.formatting.enabled": true,
+        "python.formatting.provider": "black",
+        "python.formatting.blackEnabled": true,
+        "python.formatting.isortEnabled": true,
+        "python.analysis.autoImportCompletions": true,
+        "editor.formatOnSave": true
+      }
+    }
+  }
+}

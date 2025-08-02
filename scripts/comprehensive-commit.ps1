@@ -28,7 +28,7 @@ if (-not $stagedFiles) {
 
 Write-Host "[1/4] Running pre-commit hooks..." -ForegroundColor Green
 Write-Host ""
-$preCommitResult = pre-commit run --all-files
+pre-commit run --all-files
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "ERROR: Pre-commit hooks failed" -ForegroundColor Red

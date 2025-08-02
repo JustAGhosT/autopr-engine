@@ -1,161 +1,95 @@
-# AutoPR Scripts
+# Scripts Directory
 
 This directory contains utility scripts for the AutoPR Engine project.
 
-## Comprehensive Commit Scripts
+## 🎛️ Volume Control System
 
-These scripts provide a thorough code review workflow that runs comprehensive quality analysis with
-AI enhancement before committing changes.
+The main volume control system for managing IDE linting and commit checks:
 
-### Available Scripts
-
-- **`comprehensive-commit.bat`** - Windows batch script
-- **`comprehensive-commit.ps1`** - PowerShell script (recommended for Windows)
-
-### What These Scripts Do
-
-1. **Pre-commit Hooks** - Runs all pre-commit hooks (Black, isort, Prettier, etc.)
-2. **Comprehensive Quality Analysis** - Full analysis with all available tools
-3. **AI-Enhanced Analysis** - AI-powered code review and suggestions
-4. **Git Commit** - Commits changes with your message
+- **`volume.py`** - Main volume control interface
+- **`volume-control/`** - Complete volume control system
+  - `main.py` - Volume control engine
+  - `volume_knob.py` - Volume knob implementation  
+  - `config_loader.py` - JSON configuration loader
+  - `configs/` - Tool-specific volume configurations
+  - `status.py` - Show current volume status
+  - `debug.py` - Debug volume settings
 
 ### Usage
+```bash
+# Set volumes
+python scripts/volume.py dev 50        # Set dev volume to 50
+python scripts/volume.py commit 200    # Set commit volume to 200
 
-#### Prerequisites
+# Adjust volumes
+python scripts/volume.py dev up 5      # Increase dev volume by 5 steps
+python scripts/volume.py commit down 2 # Decrease commit volume by 2 steps
 
-1. Stage your changes first:
-
-   ```bash
-   git add .
-   ```
-
-2. Make sure you have the required dependencies:
-   - Python with AutoPR Engine installed
-   - Pre-commit hooks configured
-   - OpenAI API key (for AI-enhanced analysis)
-
-#### Running the Scripts
-
-**PowerShell (Recommended):**
-
-```powershell
-.\scripts\comprehensive-commit.ps1
+# Check status
+python scripts/volume-control/status.py
 ```
 
-**Batch Script:**
+## 🔧 Validation & Utility Scripts
 
-```cmd
-scripts\comprehensive-commit.bat
+- **`validate_build_system.py`** - Validates build system configuration
+- **`validate_configs.py`** - Validates project configuration files  
+- **`validate_imports.py`** - Validates import statements across codebase
+- **`validate_links.py`** - Validates external links in documentation
+- **`validate_templates.py`** - Validates template files
+
+## 🚨 Emergency/Nuclear Scripts
+
+Legacy scripts for extreme linting control (use volume control instead):
+
+- `nuclear-problems-fix.py` - Nuclear option to disable all IDE problems
+- `super-nuclear-fix.py` - Temporarily disable problematic files
+- `kill-all-validation.py` - Kill all validation systems
+- `fix-extension-errors.py` - Fix extension cache errors
+- `final-level-0-fix.py` - Apply Level 0 (silence) fixes
+
+## 💾 Commit Scripts
+
+- `commit.bat` - Windows commit script
+- `comprehensive-commit.bat/ps1` - Enhanced commit with validation
+
+## Usage
+
+```bash
+# Validation
+python scripts/validate_build_system.py
+
+# Volume control (recommended)
+python scripts/volume.py dev 50
+python scripts/volume-control/status.py
+
+# Emergency silence (if needed)
+python scripts/nuclear-problems-fix.py
 ```
 
-### Workflow
+## 📋 Volume Control Examples
 
-1. **Stage Changes** - `git add .`
-2. **Run Script** - Execute the comprehensive commit script
-3. **Review Results** - Check quality analysis and AI suggestions
-4. **Commit** - Enter commit message and complete
+### Common Scenarios
 
-### Expected Duration
-
-- **Pre-commit hooks**: ~5-10 seconds
-- **Comprehensive analysis**: ~60-120 seconds
-- **AI-enhanced analysis**: ~30-60 seconds
-- **Total time**: ~2-3 minutes
-
-### Features
-
-- ✅ **Error Handling** - Graceful failure with helpful messages
-- ✅ **User Confirmation** - Option to continue even with warnings
-- ✅ **Progress Tracking** - Clear step-by-step progress
-- ✅ **Color Output** - PowerShell version with colored output
-- ✅ **Validation** - Checks for git repository and staged changes
-
-### Example Output
-
-```text
-========================================
- AutoPR Comprehensive Commit Script
-========================================
-
-[1/4] Running pre-commit hooks...
-black................................................Passed
-isort................................................Passed
-prettier.................................................................Passed
-Handle Unstaged Changes..................................................Passed
-
-[2/4] Running comprehensive quality analysis...
-[Quality Engine output with 3000+ issues found]
-
-[3/4] Running AI-enhanced analysis...
-[AI analysis with suggestions]
-
-[4/4] Committing changes...
-Enter commit message: Add new feature with comprehensive testing
-
-========================================
- SUCCESS: Comprehensive commit completed!
-========================================
-
-Summary:
-- Pre-commit hooks: PASSED
-- Comprehensive quality analysis: COMPLETED
-- AI-enhanced analysis: COMPLETED
-- Git commit: SUCCESSFUL
-
-Your code has been thoroughly reviewed and committed.
+**Quiet Coding** (minimal distractions):
+```bash
+python scripts/volume.py dev 50        # Light IDE features
+python scripts/volume.py commit 200    # Basic commit checks
 ```
 
-### Troubleshooting
-
-#### AI-Enhanced Analysis Fails
-
-- This is experimental and may not work in all environments
-- You can continue with the commit even if AI analysis fails
-- Check your OpenAI API key configuration
-
-#### Quality Analysis Finds Issues
-
-- Review the issues and fix critical problems
-- You can choose to continue with the commit anyway
-- Consider running `python -m autopr.actions.quality_engine --mode=fast` for quick checks
-
-#### Pre-commit Hooks Fail
-
-- Fix the formatting/linting issues
-- Re-run the script after fixing issues
-- Use `pre-commit run --all-files` to test hooks separately
-
-### Integration with IDE
-
-> You can integrate these scripts into your IDE:
-
-**VS Code:**
-
-```json
-{
-  "tasks": [
-    {
-      "label": "Comprehensive Commit",
-      "type": "shell",
-      "command": "powershell",
-      "args": ["-ExecutionPolicy", "Bypass", "-File", "./scripts/comprehensive-commit.ps1"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    }
-  ]
-}
+**Development Mode** (balanced):
+```bash
+python scripts/volume.py dev 200       # Standard IDE features  
+python scripts/volume.py commit 500    # Comprehensive commit checks
 ```
 
-### Customization
+**Production Ready** (maximum quality):
+```bash
+python scripts/volume.py dev 500       # Full IDE validation
+python scripts/volume.py commit 1000   # Maximum commit validation
+```
 
-You can modify the scripts to:
-
-- Change AI provider/model
-- Add additional quality checks
-- Customize error handling
-- Add specific file patterns to analyze
+**Emergency Debugging** (complete silence):
+```bash
+python scripts/volume.py dev 0         # No IDE noise
+python scripts/volume.py commit 0      # No commit checks
+```

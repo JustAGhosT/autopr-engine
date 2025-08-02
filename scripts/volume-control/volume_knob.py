@@ -9,6 +9,10 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Any
+try:
+    from .config_loader import VolumeConfigLoader
+except ImportError:
+    from config_loader import VolumeConfigLoader
 
 
 class VolumeKnob:
@@ -18,6 +22,8 @@ class VolumeKnob:
         self.knob_name = knob_name
         self.config_file = f".volume-{knob_name}.json"
         self.current_volume = self.load_volume()
+        self.config_loader = VolumeConfigLoader()
+        self.vscode_settings_file = Path(".vscode/settings.json")
     
     def load_volume(self) -> int:
         """Load current volume setting"""
@@ -37,6 +43,35 @@ class VolumeKnob:
         with open(self.config_file, 'w') as f:
             json.dump(config, f, indent=2)
     
+    def apply_settings_for_volume(self, volume: int):
+        """Apply VS Code settings based on volume level using JSON configs"""
+        # Get settings for this volume level
+        volume_settings = self.config_loader.get_settings_for_volume(volume)
+        
+        # Load existing VS Code settings
+        if self.vscode_settings_file.exists():
+            with open(self.vscode_settings_file, 'r') as f:
+                current_settings = json.load(f)
+        else:
+            current_settings = {}
+        
+        # Apply volume-specific settings
+        current_settings.update(volume_settings)
+        
+        # Ensure .vscode directory exists
+        self.vscode_settings_file.parent.mkdir(exist_ok=True)
+        
+        # Write updated settings
+        with open(self.vscode_settings_file, 'w') as f:
+            json.dump(current_settings, f, indent=2)
+        
+        # Show what's active
+        active_tools = self.config_loader.get_active_tools(volume)
+        if active_tools:
+            print(f"Active tools: {', '.join(active_tools)}")
+        else:
+            print("All tools disabled (Volume 0)")
+    
     def set_volume(self, volume: int):
         """Set volume (0-1000, must be multiple of 5)"""
         if not 0 <= volume <= 1000:
@@ -47,7 +82,8 @@ class VolumeKnob:
         
         self.current_volume = volume
         self.save_volume(volume)
-        print(f"🎛️ {self.knob_name} Volume set to {volume}/1000")
+        self.apply_settings_for_volume(volume)
+        print(f"Volume {self.knob_name} set to {volume}/1000")
     
     def get_volume(self) -> int:
         """Get current volume"""

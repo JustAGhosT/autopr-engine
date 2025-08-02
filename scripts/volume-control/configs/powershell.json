@@ -1,0 +1,45 @@
+{
+  "tool": "powershell",
+  "description": "PowerShell script analysis and support",
+  "activation_levels": {
+    "0": {
+      "enabled": false,
+      "settings": {
+        "powershell.scriptAnalysis.enable": false,
+        "powershell.codeFormatting.enabled": false,
+        "powershell.debugging.enabled": false,
+        "files.associations": {
+          "*.ps1": "plaintext"
+        }
+      }
+    },
+    "300": {
+      "enabled": true,
+      "settings": {
+        "powershell.scriptAnalysis.enable": false,
+        "powershell.codeFormatting.enabled": true,
+        "powershell.debugging.enabled": true,
+        "files.associations": {}
+      }
+    },
+    "600": {
+      "enabled": true,
+      "settings": {
+        "powershell.scriptAnalysis.enable": true,
+        "powershell.codeFormatting.enabled": true,
+        "powershell.debugging.enabled": true,
+        "powershell.scriptAnalysis.settingsPath": ""
+      }
+    },
+    "1000": {
+      "enabled": true,
+      "settings": {
+        "powershell.scriptAnalysis.enable": true,
+        "powershell.codeFormatting.enabled": true,
+        "powershell.debugging.enabled": true,
+        "powershell.scriptAnalysis.settingsPath": "",
+        "powershell.helpCompletion": "BlockComment"
+      }
+    }
+  }
+}
