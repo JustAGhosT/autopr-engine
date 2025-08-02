@@ -1,0 +1,35 @@
+{
+  "0": {
+    "name": "OFF",
+    "description": "No linting - pure coding experience",
+    "enabled": false,
+    "config": null
+  },
+  "100": {
+    "name": "QUIET",
+    "description": "Basic syntax only - minimal interference",
+    "enabled": true,
+    "config": {
+      "select": ["E", "F"],
+      "ignore": ["E501", "W291", "W292", "W293", "F401", "F841"],
+      "line_length": 120,
+      "max_errors": 5
+    }
+  },
+  "1000": {
+    "name": "MAXIMUM",
+    "description": "Nuclear mode - everything enabled",
+    "enabled": true,
+    "config": {
+      "select": ["ALL"],
+      "ignore": [],
+      "line_length": 79,
+      "max_errors": 9999,
+      "format": {
+        "quote_style": "double",
+        "indent_style": "space",
+        "line_ending": "auto"
+      }
+    }
+  }
+} 

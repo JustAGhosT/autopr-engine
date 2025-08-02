@@ -72,8 +72,9 @@
       "*": true
     },
     "continue.telemetryEnabled": false,
-    "continue.enableTabAutocomplete": true,
-    "tabnine.experimentalAutoImports": true,
+    "continue.enableTabAutocomplete": false,
+    "continue.enabled": false,
+    "tabnine.experimentalAutoImports": false,
     "aiXcoder.autoTrigger": true,
     "codegpt.query.language": "English",
     "codegpt.query.maxTokens": 1000,
@@ -280,8 +281,8 @@
       "github.copilot",
       "github.copilot-chat",
       "codeium.codeium",
-      "continue.continue",
-      "tabnine.tabnine-vscode",
+      // "continue.continue", // Disabled to prevent file access errors
+      // "tabnine.tabnine-vscode", // Disabled to prevent linting interference
       "aiXcoder.aiXcoder",
       "codegpt.codegpt",
       "ms-vscode.vscode-ai",

@@ -1,0 +1,76 @@
+{
+  "0": {
+    "name": "OFF",
+    "description": "No linting - pure coding experience",
+    "settings": {
+      "python.linting.enabled": false,
+      "python.linting.flake8Enabled": false,
+      "python.linting.mypyEnabled": false,
+      "python.linting.pylintEnabled": false,
+      "python.linting.pydocstyleEnabled": false,
+      "python.linting.banditEnabled": false,
+      "python.linting.ruffEnabled": false,
+      "python.formatting.provider": "none",
+      "python.formatting.blackEnabled": false,
+      "python.formatting.isortEnabled": false,
+      "editor.formatOnSave": false,
+      "python.analysis.typeCheckingMode": "off",
+      "python.linting.lintOnSave": false,
+      "python.linting.maxNumberOfProblems": 0,
+      "ruff.enable": false,
+      "ruff.lint.enable": false,
+      "ruff.format.enable": false,
+      "ruff.organizeImports.enable": false,
+      "problems.decorations.enabled": false,
+      "problems.showCurrentInStatus": false,
+      "python.languageServer": "None",
+      "python.analysis.diagnosticMode": "off",
+      "cursor.python.linting.enabled": false,
+      "cursor.python.formatting.enabled": false,
+      "cursor.python.analysis.enabled": false,
+      "cursor.linting.enabled": false,
+      "cursor.formatting.enabled": false,
+      "cursor.diagnostics.enabled": false,
+      "cSpell.enabled": false,
+      "cSpell.enableFiletypes": [],
+      "cSpell.diagnosticLevel": "Hint",
+      "cSpell.showStatus": false,
+      "markdownlint.enable": false,
+      "markdownlint.config": {
+        "default": false
+      },
+      "markdownlint.customRules": [],
+      "markdownlint.run": "never"
+    }
+  },
+  "100": {
+    "name": "QUIET",
+    "description": "Basic syntax only - minimal interference",
+    "settings": {
+      "python.linting.enabled": true,
+      "python.linting.maxNumberOfProblems": 5,
+      "python.analysis.typeCheckingMode": "off",
+      "python.linting.lintOnSave": false,
+      "editor.formatOnSave": false,
+      "ruff.enable": true,
+      "ruff.lint.enable": true,
+      "ruff.format.enable": false,
+      "ruff.organizeImports.enable": false
+    }
+  },
+  "1000": {
+    "name": "MAXIMUM",
+    "description": "Nuclear mode - everything enabled",
+    "settings": {
+      "python.linting.enabled": true,
+      "python.linting.maxNumberOfProblems": 9999,
+      "python.analysis.typeCheckingMode": "strict",
+      "python.linting.lintOnSave": true,
+      "editor.formatOnSave": true,
+      "ruff.enable": true,
+      "ruff.lint.enable": true,
+      "ruff.format.enable": true,
+      "ruff.organizeImports.enable": true
+    }
+  }
+} 

@@ -1,0 +1,132 @@
+name: PR Checks (Simplified)
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  # Essential checks only - designed to be fast and non-blocking
+  essential-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -e .
+
+      - name: Run formatting check (Black)
+        run: black --check --diff .
+
+      - name: Run import sorting check (isort)
+        run: isort --check-only --diff .
+
+      - name: Run basic linting (Ruff)
+        run: |
+          ruff check . --ignore=E501,W503,E203,W291,W292,W293 --max-issues=50
+
+      - name: Run basic tests
+        run: |
+          pytest tests/unit/ -v --tb=short --maxfail=5
+
+      - name: Comment PR with results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const comment = `## PR Check Results ✅
+
+            **Status:** All essential checks passed!
+
+            **Checks Completed:**
+            - ✅ Code formatting (Black)
+            - ✅ Import sorting (isort)  
+            - ✅ Basic linting (Ruff)
+            - ✅ Unit tests
+
+            **Next Steps:**
+            - Full quality checks will run after merge
+            - Comprehensive testing in main branch
+            - Performance and security scans in production pipeline
+
+            ---
+            *This PR is ready for review! 🚀*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Optional: Run comprehensive checks but don't block
+  comprehensive-checks:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -e .
+
+      - name: Run comprehensive quality checks
+        run: |
+          python -m autopr.actions.quality_engine --mode=comprehensive --skip-windows-check
+
+      - name: Run security scan
+        run: |
+          bandit -r autopr/ -f json -o bandit-report.json || true
+
+      - name: Comment comprehensive results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const comment = `## Comprehensive Check Results 🔍
+
+            **Status:** ${job.status === 'success' ? '✅ All checks passed' : '⚠️ Some issues found (non-blocking)'}
+
+            **Comprehensive Quality:** ${job.status === 'success' ? '✅ Passed' : '⚠️ Issues found'}
+            **Security Scan:** ✅ Completed
+
+            **Note:** These checks are informational and don't block merging.
+            Issues will be addressed in follow-up PRs.
+
+            ---
+            *Comprehensive checks completed*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

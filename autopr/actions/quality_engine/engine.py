@@ -139,6 +139,8 @@ class QualityEngine(Action):
         """Determine which tools to run based on mode and files."""
         if mode == QualityMode.SMART:
             return determine_smart_tools(files)
+        elif mode == QualityMode.ULTRA_FAST:
+            return ["ruff"]  # Ultra fast mode with only essential linting
         elif mode == QualityMode.FAST:
             return ["ruff", "bandit"]  # Fast mode with essential tools
         elif mode == QualityMode.COMPREHENSIVE:

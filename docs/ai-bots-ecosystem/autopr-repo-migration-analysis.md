@@ -293,7 +293,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Software Development :: Quality Assurance",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.13",
     install_requires=[
         "pydantic>=2.0.0",
         "aiohttp>=3.8.0",

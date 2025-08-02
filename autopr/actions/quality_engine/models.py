@@ -11,6 +11,7 @@ import pydantic
 class QualityMode(Enum):
     """Operating mode for quality checks"""
 
+    ULTRA_FAST = "ultra-fast"
     FAST = "fast"
     COMPREHENSIVE = "comprehensive"
     AI_ENHANCED = "ai_enhanced"
@@ -23,6 +24,7 @@ class QualityInputs(pydantic.BaseModel):
     mode: QualityMode = QualityMode.SMART
     files: list[str] | None = None
     max_fixes: int = 50
+    max_issues: int = 100  # Maximum issues to report before stopping
     enable_ai_agents: bool = True
     config_path: str = "pyproject.toml"
     verbose: bool = False
