@@ -13,6 +13,15 @@
         }
       }
     },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "powershell.scriptAnalysis.enable": false,
+        "powershell.codeFormatting.enabled": true,
+        "powershell.debugging.enabled": true,
+        "files.associations": {}
+      }
+    },
     "300": {
       "enabled": true,
       "settings": {

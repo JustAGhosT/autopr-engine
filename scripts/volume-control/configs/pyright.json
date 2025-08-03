@@ -15,6 +15,18 @@
       "reportUnusedImport": "none"
     }
   },
+  "200": {
+    "name": "BALANCED",
+    "description": "Standard type checking - good balance of strictness and productivity",
+    "enabled": true,
+    "config": {
+      "typeCheckingMode": "basic",
+      "reportMissingImports": "warning",
+      "reportUnusedImport": "warning",
+      "reportUnusedVariable": "warning",
+      "reportOptionalMemberAccess": "warning"
+    }
+  },
   "1000": {
     "name": "MAXIMUM",
     "description": "Nuclear mode - everything enabled",

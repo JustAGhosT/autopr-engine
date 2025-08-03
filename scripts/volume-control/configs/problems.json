@@ -18,6 +18,16 @@
         "problems.visibility": true
       }
     },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "problems.decorations.enabled": true,
+        "problems.showCurrentInStatus": true,
+        "problems.visibility": true,
+        "problems.panel.visible": true,
+        "problems.autoReveal": true
+      }
+    },
     "1000": {
       "enabled": true,
       "settings": {

@@ -11,6 +11,15 @@
         "github.vscode-github-actions.enable": false
       }
     },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "github-actions.validate": true,
+        "github-actions.enableWorkflowValidation": false,
+        "github-actions.enableSchemaValidation": false,
+        "github.vscode-github-actions.enable": true
+      }
+    },
     "400": {
       "enabled": true,
       "settings": {

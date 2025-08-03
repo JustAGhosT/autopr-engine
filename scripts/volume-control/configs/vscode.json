@@ -74,6 +74,24 @@
       "ruff.organizeImports.enable": false
     }
   },
+  "200": {
+    "name": "BALANCED",
+    "description": "Standard checks - good balance of speed and quality",
+    "settings": {
+      "python.linting.enabled": true,
+      "python.linting.maxNumberOfProblems": 20,
+      "python.analysis.typeCheckingMode": "basic",
+      "python.linting.lintOnSave": true,
+      "editor.formatOnSave": false,
+      "ruff.enable": true,
+      "ruff.lint.enable": true,
+      "ruff.format.enable": false,
+      "ruff.organizeImports.enable": true,
+      "python.languageServer": "Pylance",
+      "python.analysis.diagnosticMode": "workspace",
+      "files.autoSave": "onFocusChange"
+    }
+  },
   "1000": {
     "name": "MAXIMUM",
     "description": "Nuclear mode - everything enabled",

@@ -16,6 +16,20 @@
       "max_errors": 5
     }
   },
+  "200": {
+    "name": "BALANCED",
+    "description": "Standard linting - good balance of strictness and productivity",
+    "enabled": true,
+    "config": {
+      "select": ["E", "F", "W", "I"],
+      "ignore": ["E501", "W291", "W292", "W293", "F401", "F841"],
+      "line_length": 100,
+      "max_errors": 20,
+      "per-file-ignores": {
+        "__init__.py": ["F401"]
+      }
+    }
+  },
   "1000": {
     "name": "MAXIMUM",
     "description": "Nuclear mode - everything enabled",

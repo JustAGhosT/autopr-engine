@@ -21,6 +21,18 @@
         "typescript.preferences.noSemicolons": false
       }
     },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "typescript.validate.enable": true,
+        "javascript.validate.enable": true,
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "typescript.suggest.enabled": true,
+        "typescript.preferences.noSemicolons": false,
+        "typescript.format.enable": false,
+        "editor.formatOnSave": false
+      }
+    },
     "500": {
       "enabled": true,
       "settings": {

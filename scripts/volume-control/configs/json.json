@@ -18,6 +18,15 @@
         "json.schemas": []
       }
     },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "json.validate.enable": true,
+        "json.format.enable": false,
+        "json.schemas": [],
+        "editor.formatOnSave": false
+      }
+    },
     "400": {
       "enabled": true,
       "settings": {

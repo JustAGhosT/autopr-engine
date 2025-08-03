@@ -21,6 +21,27 @@
       "description": "Only syntax check - max 5 issues"
     }
   },
+  "200": {
+    "name": "BALANCED",
+    "description": "Standard checks - good balance of speed and quality",
+    "enabled": true,
+    "hooks": {
+      "ruff": {
+        "stage": "pre-commit",
+        "args": ["--fix"]
+      },
+      "isort": {
+        "stage": "pre-commit",
+        "args": ["--check-only"]
+      },
+      "quality_engine": {
+        "stage": "pre-commit",
+        "args": ["--mode=standard", "--max-issues=20"]
+      },
+      "other_tools": "manual",
+      "description": "Standard checks with auto-formatting"
+    }
+  },
   "1000": {
     "name": "MAXIMUM",
     "description": "Nuclear mode - everything enabled",
