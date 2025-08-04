@@ -11,6 +11,7 @@ from ..base.action import Action
 from .config import load_config
 from .handler_registry import HandlerRegistry
 from .models import QualityInputs, QualityMode, QualityOutputs
+from .volume_mapping import get_volume_config, get_volume_level_name
 from .platform_detector import PlatformDetector
 from .tool_runner import determine_smart_tools, run_tool
 from .tools.registry import ToolRegistry
@@ -135,18 +136,39 @@ class QualityEngine(Action):
                 # Replace the old tool with the new one
                 self.tools[new_tool] = self.tools.pop(old_tool)
 
-    def _determine_tools_for_mode(self, mode: QualityMode, files: list[str]) -> list[str]:
-        """Determine which tools to run based on mode and files."""
+    def _determine_tools_for_mode(self, mode: QualityMode, files: list[str], volume: int = 500) -> list[str]:
+        """Determine which tools to run based on mode, files, and volume level.
+        
+        Args:
+            mode: Quality mode to use
+            files: List of files to analyze
+            volume: Volume level from 0-1000 that influences tool selection and configuration
+            
+        Returns:
+            List of tool names to run
+        """
+        # Base tool selection based on quality mode
         if mode == QualityMode.SMART:
-            return determine_smart_tools(files)
+            tools = determine_smart_tools(files)
         elif mode == QualityMode.ULTRA_FAST:
-            return ["ruff"]  # Ultra fast mode with only essential linting
+            tools = ["ruff"]  # Ultra fast mode with only essential linting
         elif mode == QualityMode.FAST:
-            return ["ruff", "bandit"]  # Fast mode with essential tools
+            tools = ["ruff", "bandit"]  # Fast mode with essential tools
         elif mode == QualityMode.COMPREHENSIVE:
-            return list(self.tools.keys())  # All available tools
-        else:
-            return list(self.tools.keys())
+            tools = list(self.tools.keys())  # All available tools
+        else:  # AI_ENHANCED or other modes
+            tools = list(self.tools.keys())
+            
+        # Adjust tools based on volume level
+        if volume < 100:  # Very quiet - minimal tools
+            tools = [t for t in tools if t in {"ruff"}]
+        elif volume < 300:  # Quiet - lightweight tools only
+            tools = [t for t in tools if t in {"ruff", "bandit", "black"}]
+        elif volume < 700:  # Moderate - standard tools
+            tools = [t for t in tools if t not in {"pylint", "mypy"}]
+        # At higher volumes, use all tools determined by the quality mode
+            
+        return tools
 
     def _get_tool_config(self, tool_name: str) -> Any:
         """Get configuration for a specific tool."""
@@ -165,15 +187,39 @@ class QualityEngine(Action):
         else:
             return {"enabled": True, "config": {}}
 
-    async def execute(self, inputs: QualityInputs, context: dict[str, Any]) -> QualityOutputs:
-        """Execute the quality engine with the given inputs"""
-        logger.info("Executing Quality Engine", mode=inputs.mode)
+    async def execute(self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None) -> QualityOutputs:
+        """Execute the quality engine with the given inputs and volume level.
+        
+        Args:
+            inputs: Quality engine input parameters
+            context: Context dictionary for the execution
+            volume: Volume level from 0-1000 that influences quality strictness.
+                   If None, uses inputs.volume if set, otherwise defaults to 500.
+                   
+        Returns:
+            QualityOutputs with the results of the quality checks
+        """
+        # Apply volume settings if volume is provided either directly or through inputs
+        if volume is not None or (hasattr(inputs, 'volume') and inputs.volume is not None):
+            inputs.apply_volume_settings(volume)
+            volume = inputs.volume or 500
+                
+        logger.info(
+            "Executing Quality Engine", 
+            mode=inputs.mode, 
+            volume=volume,
+            volume_level=get_volume_level_name(volume)
+        )
 
         # Determine files to check
         files_to_check = inputs.files or ["."]
 
-        # Determine tools to run
-        tools_to_run = self._determine_tools_for_mode(inputs.mode, files_to_check)
+        # Determine tools to run based on mode and volume
+        tools_to_run = self._determine_tools_for_mode(
+            inputs.mode, 
+            files_to_check,
+            volume=volume
+        )
 
         # Filter tools based on what's actually available
         available_tools = [tool for tool in tools_to_run if tool in self.tools]
