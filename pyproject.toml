@@ -106,7 +106,328 @@ source = [ "autopr",]
 omit = [ "*/tests/*", "*/migrations/*", "*/venv/*", "*/__pycache__/*",]
 
 [tool.coverage.report]
-exclude_lines = [ "pragma: no cover", "def __repr__", "if self.debug:", "if settings.DEBUG", "raise AssertionError", "raise NotImplementedError", "if 0:", "if __name__ == .__main__.:", "class .*\\bProtocol\\):", "@(abc\\.)?abstractmethod",]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+per-file-ignores = [
+    "__init__.py:F401",
+]
+
+[tool.ruff]
+# Same as Black.
+line-length = 100
+
+# Assume Python 3.12 (3.13 not yet supported by all tools)
+target-version = "py312"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+[tool.ruff.lint]
+# Maximum comprehensiveness for AI auto-PR fixer
+# Enable ALL rules for maximum coverage, then exclude specific ones
+extend-select = ["ALL"]
+
+# Strategic exclusions for AI auto-PR fixer
+extend-ignore = [
+    # Type annotations (mypy handles this better)
+    "ANN",    # Missing type annotations
+    "ANN101", # Missing-type-self
+    "ANN102", # Missing-type-cls
+    "ANN201", # Missing-return-type-public-function
+    "ANN202", # Missing-return-type-private-function
+    "ANN204", # Missing-return-type-special-method
+    "ANN205", # Missing-return-type-static-method
+    "ANN206", # Missing-return-type-class-method
+    "ANN401", # Dynamically-typed-expression
+
+    # Docstring conventions (pydocstyle handles this better)
+    "D",      # pydocstyle rules
+    "D100",   # Missing docstring in public module
+    "D101",   # Missing docstring in public class
+    "D102",   # Missing docstring in public method
+    "D103",   # Missing docstring in public function
+    "D104",   # Missing docstring in public package
+    "D105",   # Missing docstring in magic method
+    "D106",   # Missing docstring in public nested class
+    "D107",   # Missing docstring in __init__
+    "D200",   # One-line docstring should fit on one line
+    "D201",   # No blank lines allowed before function docstring
+    "D202",   # No blank lines allowed after function docstring
+    "D203",   # 1 blank line required before class docstring
+    "D204",   # 1 blank line required after class docstring
+    "D205",   # 1 blank line required between summary line and description
+    "D206",   # Docstring should be indented with spaces, not tabs
+    "D207",   # Docstring is under-indented
+    "D208",   # Docstring is over-indented
+    "D209",   # Multi-line docstring closing quotes should be on a separate line
+    "D210",   # No whitespaces allowed surrounding docstring text
+    "D211",   # No blank lines allowed before class docstring
+    "D212",   # Multi-line docstring summary should start at the first line
+    "D213",   # Multi-line docstring summary should start at the second line
+    "D214",   # Section is over-indented
+    "D215",   # Section underline is over-indented
+    "D300",   # Use """triple double quotes"""
+    "D301",   # Use r""" if any backslashes in a docstring
+    "D400",   # First line should end with a period
+    "D401",   # First line should be in imperative mood
+    "D402",   # First line should not be the function's "signature"
+    "D403",   # First word of the first line should be properly capitalized
+    "D404",   # First word of the docstring should not be "This"
+    "D405",   # Section name should be properly capitalized
+    "D406",   # Section name should end with a newline
+    "D407",   # Missing dashed underline after section
+    "D408",   # Section underline should be in the line following the section's name
+    "D409",   # Section underline should match the length of its name
+    "D410",   # Missing blank line after section
+    "D411",   # Missing blank line before section
+    "D412",   # No blank lines allowed between a section header and its content
+    "D413",   # Missing blank line after last section
+    "D414",   # Section has no content
+    "D415",   # First line should end with a period, question mark, or exclamation point
+    "D416",   # Section name should end with a colon
+    "D417",   # Missing argument descriptions in the docstring
+    "D418",   # Function/ method decorated with @overload shouldn't contain a docstring
+    "D419",   # Docstring is empty
+
+    # Formatting preferences (handled by formatter)
+    "E203",   # whitespace before ':'
+    "E501",   # line too long (handled by formatter)
+    "COM812", # trailing commas (formatting preference)
+    "ISC001", # string concatenation (formatting preference)
+
+    # Performance considerations
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex (handled by radon)
+
+    # Specific exclusions for AI auto-PR context
+    # PLR rules removed - they may not exist in current Ruff version
+    
+    # Exception handling patterns (appropriate for optional features)
+    "BLE001", # Do not catch blind exception - appropriate for graceful degradation
+    
+    # Random number generation (simulation functions, not security-critical)
+    "S311",   # Standard pseudo-random generators - used for simulation, not security
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+# Like isort, sort imports alphabetically.
+force-sort-within-sections = true
+
+# Like isort, split imports into sections.
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.bandit]
+skips = ["B101", "B601"]
+exclude_dirs = ["tests", "docs", "migrations"]
+
+[tool.pydocstyle]
+inherit = false
+ignore = [
+    "D100",  # Missing docstring in public module
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
+    "D105",  # Missing docstring in magic method
+    "D107",  # Missing docstring in __init__
+    "D200",  # One-line docstring should fit on one line
+    "D203",  # 1 blank line required before class docstring
+    "D212",  # Multi-line docstring summary should start at the first line
+    "D213",  # Multi-line docstring summary should start at the second line
+    "D400",  # First line should end with a period
+    "D401",  # First line should be in imperative mood
+    "D415",  # First line should end with a period, question mark, or exclamation point
+]
+match = "(?!test_).*\\.py"
+match_dir = "[^\\.].*"
+
+# Documentation configuration
+[tool.sphinx]
+project = "AutoPR Engine"
+copyright = "2025, VeritasVault Team"
+author = "VeritasVault Team"
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosummary",
+]
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
+
+# Essential tools for maximum comprehensiveness (AI auto-PR fixer)
+# vulture>=2.10.0,<3.0.0          # Dead code detection (better than Ruff's ERA)
+# interrogate>=1.5.0,<2.0.0       # Docstring coverage analysis
+# radon>=6.0.0,<7.0.0             # Code complexity metrics
+# xenon>=0.8.0,<1.0.0             # Complexity threshold enforcement
+# semgrep>=1.50.0,<2.0.0          # Advanced semantic code analysis
+
+# Type stubs
+# types-PyYAML>=6.0.0,<7.0.0
+# types-requests>=2.31.0,<3.0.0
+# typing-extensions>=4.10.0,<5.0.0  # Required for newer Python type features
+# types-python-dateutil>=2.8.0
+# types-redis>=4.6.0
+# types-toml>=0.10.8
+
+[tool.vulture]
+# Dead code detection configuration
+min_confidence = 80
+exclude = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+    "*/node_modules/*",
+    "*/build/*",
+    "*/dist/*",
+    "*.egg-info/*",
+]
+
+[tool.interrogate]
+# Docstring coverage analysis
+fail-under = 80
+exclude = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+    "*/node_modules/*",
+    "*/build/*",
+    "*/dist/*",
+    "*.egg-info/*",
+]
+ignore-init-module = true
+ignore-init-method = true
+ignore-semiprivate = true
+ignore-private = true
+ignore-property-decorators = true
+ignore-special = true
+
+[tool.radon]
+# Code complexity metrics
+cc_min = "A"  # Minimum complexity grade
+mi_min = "A"  # Minimum maintainability index
+exclude = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+    "*/node_modules/*",
+    "*/build/*",
+    "*/dist/*",
+    "*.egg-info/*",
+]
+
+[tool.xenon]
+# Complexity threshold enforcement
+max-absolute-A = 10
+max-absolute-B = 20
+max-absolute-C = 30
+max-absolute-D = 40
+max-absolute-E = 50
+max-absolute-F = 60
+exclude = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+    "*/node_modules/*",
+    "*/build/*",
+    "*/dist/*",
+    "*.egg-info/*",
+]
+
+[tool.semgrep]
+# Advanced semantic code analysis
+configs = [
+    "p/security-audit",
+    "p/bandit",
+    "p/owasp-top-ten",
+    "p/secrets",
+    "p/ci",
+    "p/performance",
+    "p/error-prone",
+    "p/best-practices",
+]
+exclude = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+    "*/node_modules/*",
+    "*/build/*",
+    "*/dist/*",
+    "*.egg-info/*",
+]
 
 [tool.setuptools.packages.find]
 exclude = [ "tests*", "docs*", "examples*",]

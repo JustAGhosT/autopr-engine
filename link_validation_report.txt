@@ -1,0 +1,157 @@
+❌ Broken Links Found:
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\README.md:
+  Line 14: docs/plans/IMPLEMENTATION_SUMMARY.md
+    Context: > and developer experience. See [Implementation Summary](docs/plans/IMPLEMENTATION_SUMMARY.md) for
+  Line 143: docs/architecture/README.md
+    Context: - [**Architecture Overview**](docs/architecture/README.md) - System design and components
+  Line 345: docs/integrations/slack.md
+    Context: - **[Slack](docs/integrations/slack.md)** - Channel automation with Axolo
+  Line 346: docs/integrations/teams.md
+    Context: - **[Microsoft Teams](docs/integrations/teams.md)** - Enterprise communication
+  Line 347: docs/integrations/discord.md
+    Context: - **[Discord](docs/integrations/discord.md)** - Community-focused teams
+  Line 348: docs/integrations/notion.md
+    Context: - **[Notion](docs/integrations/notion.md)** - Documentation automation
+  Line 352: docs/integrations/linear.md
+    Context: - **[Linear](docs/integrations/linear.md)** - Modern issue tracking
+  Line 353: docs/integrations/github.md
+    Context: - **[GitHub Issues](docs/integrations/github.md)** - Native GitHub integration
+  Line 354: docs/integrations/jira.md
+    Context: - **[Jira](docs/integrations/jira.md)** - Enterprise project management
+  Line 358: docs/integrations/coderabbit.md
+    Context: - **[CodeRabbit](docs/integrations/coderabbit.md)** - AI code review
+  Line 359: docs/integrations/copilot.md
+    Context: - **[GitHub Copilot](docs/integrations/copilot.md)** - AI coding assistant
+  Line 360: docs/integrations/autogen.md
+    Context: - **[AutoGen](docs/integrations/autogen.md)** - Multi-agent collaboration
+  Line 361: docs/features/platform-detection.md
+    Context: - **[Platform Detection](docs/features/platform-detection.md)** - 25+ platforms
+  Line 386: CONTRIBUTING.md
+    Context: We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+  Line 410: LICENSE
+    Context: This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\README.md:
+  Line 69: api/quality-engine.md
+    Context: - [Quality Engine API](api/quality-engine.md) - Quality analysis endpoints
+  Line 70: api/platform-detection.md
+    Context: - [Platform Detection API](api/platform-detection.md) - Platform detection endpoints
+  Line 71: api/security.md
+    Context: - [Security API](api/security.md) - Authentication and authorization endpoints
+  Line 75: api/github.md
+    Context: - [GitHub Integration](api/github.md) - GitHub integration endpoints
+  Line 76: api/linear.md
+    Context: - [Linear Integration](api/linear.md) - Linear integration endpoints
+  Line 77: api/custom-integrations.md
+    Context: - [Custom Integrations](api/custom-integrations.md) - Building custom integrations
+  Line 153: ../examples/integrations/
+    Context: - [Integration Examples](../examples/integrations/) - Integration examples
+  Line 154: ../examples/custom-tools/
+    Context: - [Custom Tool Examples](../examples/custom-tools/) - Custom tool implementations
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\adr\0001-hybrid-csharp-python-architecture.md:
+  Line 54: 0003-plugin-system.md
+    Context: - [ADR-0003: Plugin System Architecture](0003-plugin-system.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\adr\0002-grpc-communication.md:
+  Line 52: 0004-api-versioning.md
+    Context: - [ADR-0004: API Versioning Strategy](0004-api-versioning.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\adr\0007-authn-authz.md:
+  Line 127: 0008-audit-logging.md
+    Context: - [ADR-0008: Audit Logging](0008-audit-logging.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\adr\0010-monitoring-observability.md:
+  Line 132: 0011-deployment-strategy.md
+    Context: - [ADR-0011: Deployment Strategy](0011-deployment-strategy.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\ai-bots-ecosystem\key-workflows.md:
+  Line 410: issue
+    Context: return routing_actions[classification](issue)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\ai-bots-ecosystem\phase-2-rapid-prototyping.md:
+  Line 290: inputs
+    Context: return self.enhancement_strategies[inputs.platform](inputs)
+  Line 374: inputs
+    Context: return migration_map[migration_key](inputs)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\ai-bots-ecosystem\README.md:
+  Line 41: ./language-specialists.md#typescript-experts
+    Context: [Language Specialists → TypeScript Section](./language-specialists.md#typescript-experts)
+  Line 43: ./infrastructure-deployment.md#azure-specialists
+    Context: [Infrastructure → Azure Tools](./infrastructure-deployment.md#azure-specialists)
+  Line 45: ./cost-analysis.md#devin-alternatives
+    Context: [Cost Analysis → Devin Alternatives](./cost-analysis.md#devin-alternatives)
+  Line 47: ./documentation-tools.md#chatprd-alternatives
+    Context: [Documentation Tools → ChatPRD Alternatives](./documentation-tools.md#chatprd-alternatives)
+  Line 52: ./integration-guide.md#immediate-priority
+    Context: [Integration Guide → Immediate Implementation](./integration-guide.md#immediate-priority)
+  Line 53: ./integration-guide.md#medium-priority
+    Context: - ⚡ **Week 3-4**: [Integration Guide → Medium Priority](./integration-guide.md#medium-priority)
+  Line 54: ./integration-guide.md#long-term-integration
+    Context: - 📈 **Month 2+**: [Integration Guide → Long-term](./integration-guide.md#long-term-integration)
+  Line 121: ./capability-matrix.md
+    Context: 3. [Capability Matrix](./capability-matrix.md) - Tool comparison
+  Line 133: ./interaction-methods.md
+    Context: 3. [Interaction Methods](./interaction-methods.md) - Setup guides
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\architecture\ARCHITECTURE_LEGACY.md:
+  Line 315: ./adr/
+    Context: - [Architecture Decision Records (ADRs)](./adr/)
+  Line 316: ./deployment.md
+    Context: - [Deployment Guide](./deployment.md)
+  Line 317: ./DEVELOPER.md
+    Context: - [Developer Guide](./DEVELOPER.md)
+  Line 318: ./api/
+    Context: - [API Documentation](./api/)
+  Line 322: ./QUICKSTART.md
+    Context: See the [Quick Start Guide](./QUICKSTART.md) for instructions on setting up a development
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\architecture\AUTOPR_ENHANCED_SYSTEM.md:
+  Line 682: ./API_REFERENCE.md
+    Context: - [API Reference](./API_REFERENCE.md)
+  Line 683: ./CONFIGURATION.md
+    Context: - [Configuration Guide](./CONFIGURATION.md)
+  Line 684: ./BEST_PRACTICES.md
+    Context: - [Best Practices](./BEST_PRACTICES.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\getting-started\MIGRATION_GUIDE.md:
+  Line 59: plan-phase1-quality-pipeline.md
+    Context: [Quality Pipeline Plan](plan-phase1-quality-pipeline.md)
+  Line 63: docs/plans/plan-phase1-quality-pipeline.md
+    Context: [Quality Pipeline Plan](docs/plans/plan-phase1-quality-pipeline.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\docs\plans\ROADMAP.md:
+  Line 191: CONTRIBUTING.md
+    Context: We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to
+  Line 196: LICENSE
+    Context: AutoPR is [MIT licensed](LICENSE).
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\templates\README.md:
+  Line 171: docs/development/template-development.md
+    Context: - [Template Development Guide](docs/development/template-development.md)
+  Line 172: docs/api/templates.md
+    Context: - [Template API Reference](docs/api/templates.md)
+  Line 173: examples/templates.md
+    Context: - [Template Examples](examples/templates.md)
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\templates\documentation\platform_guide.md:
+  Line 98: examples/
+    Context: - [Template Examples](examples/)
+  Line 103: troubleshooting.md
+    Context: _Need help? Check our [troubleshooting guide](troubleshooting.md) or [contact support](support.md)._
+  Line 103: support.md
+    Context: _Need help? Check our [troubleshooting guide](troubleshooting.md) or [contact support](support.md)._
+
+📁 C:\Users\smitj\repos\autopr\autopr-engine\templates\documentation\use_case_guide.md:
+  Line 118: examples/
+    Context: - [Template Examples](examples/)
+  Line 119: platforms/
+    Context: - [Platform-Specific Guides](platforms/)
+  Line 120: integrations/
+    Context: - [Integration Tutorials](integrations/)
+  Line 124: troubleshooting.md
+    Context: *Need help? Check our [troubleshooting guide](troubleshooting.md) or [contact support](support.md).*
+  Line 124: support.md
+    Context: *Need help? Check our [troubleshooting guide](troubleshooting.md) or [contact support](support.md).*

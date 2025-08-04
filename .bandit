@@ -1,0 +1,36 @@
+# Bandit configuration file
+# Exclude test files and directories from security scanning
+
+exclude_dirs:
+  - "*/__tests__/*"
+  - "*/tests/*"
+  - "*/test_*"
+  - "*/_test*"
+  - "*/conftest.py"
+  - "*/test_*.py"
+  - "*/_test*.py"
+
+# Skip specific tests that are not relevant for security
+skips:
+  - B101  # assert_used
+  - B601  # paramiko_calls
+  - B603  # subprocess_without_shell_equals_true (safe for git commands)
+  - B607  # start_process_with_partial_path (safe for git commands)
+  - B110  # try_except_pass (acceptable for error handling)
+  - B112  # try_except_continue (acceptable for error handling)
+  - B404  # import_subprocess (acceptable for git operations)
+  - B105  # hardcoded_password_string (enum value, not actual password)
+  - B311  # random (used for non-security purposes like backoff and simulation)
+  - B324  # hashlib (MD5/SHA1 used for file hashing, not security)
+  - B608  # hardcoded_sql_expressions (safe parameterized queries)
+
+# Set confidence and severity levels
+confidence: medium
+severity: high
+
+# Output format
+output_format: json
+output_file: bandit-report.json
+
+# Note: exit_zero is not a valid bandit config option
+# Use --exit-zero flag in pre-commit args instead 

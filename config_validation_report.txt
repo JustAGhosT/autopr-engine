@@ -1,0 +1,65 @@
+🔧 AutoPR Engine Configuration Validation Report
+
+✅ Valid Configuration Files (60):
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\config.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\phases\implementation_phases.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\tasks\implementation_tasks.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\triggers\main-triggers.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\ai_linting_fixer.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\automated_dependency_update.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\branch_cleanup.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\changelog_updater.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\dead_code_report.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\enhanced_pr_comment_handler.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\magic_fix.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\onboard_contributor.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\phase1_pr_review_workflow.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\phase2_rapid_prototyping.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\pr_comment_handler.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\pr_size_labeler.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\quality_gate.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\release_drafter.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\scaffold_component_workflow.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\screenshot_gallery.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\security_audit.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\stale_issue_closer.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\tech_debt_report.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\workflows\update_documentation.yaml
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\.markdownlint.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\packages\development.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\packages\monitoring.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\packages\performance.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\packages\security.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\packages\testing.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai_platforms.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud_platforms.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core_platforms.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\template_platform.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\amazon_codeguru.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\amazon_codewhisperer.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\claude_dev.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\codeium.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\cursor.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\github_copilot.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\replit_ai.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\sourcegraph_cody.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\tabnine.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\ai\v0_dev.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\aws_amplify.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\digitalocean_apps.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\firebase.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\heroku.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\netlify.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\railway.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\render.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\cloud\vercel.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\bolt.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\codesandbox.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\emergent.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\glitch.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\lovable.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\replit.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\same.json
+  - C:\Users\smitj\repos\autopr\autopr-engine\configs\platforms\core\stackblitz.json
+
+🎉 All configurations are valid and consistent!

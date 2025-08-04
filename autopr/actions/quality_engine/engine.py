@@ -147,7 +147,6 @@ class QualityEngine(Action):
         Returns:
             List of tool names to run
         """
-        # Base tool selection based on quality mode
         if mode == QualityMode.SMART:
             tools = determine_smart_tools(files)
         elif mode == QualityMode.ULTRA_FAST:
@@ -186,7 +185,6 @@ class QualityEngine(Action):
                 return {"enabled": True, "config": tool_settings}
         else:
             return {"enabled": True, "config": {}}
-
     async def execute(self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None) -> QualityOutputs:
         """Execute the quality engine with the given inputs and volume level.
         
@@ -203,12 +201,14 @@ class QualityEngine(Action):
         if volume is not None or (hasattr(inputs, 'volume') and inputs.volume is not None):
             inputs.apply_volume_settings(volume)
             volume = inputs.volume or 500
+        else:
+            volume = 500  # Default volume if not specified
                 
         logger.info(
             "Executing Quality Engine", 
             mode=inputs.mode, 
             volume=volume,
-            volume_level=get_volume_level_name(volume)
+            volume_level=get_volume_level_name(volume) if hasattr(self, 'get_volume_level_name') else None
         )
 
         # Determine files to check

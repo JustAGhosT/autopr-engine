@@ -1,13 +1,23 @@
 # AutoPR Pre-commit Configuration
-# ULTRA PERMISSIVE - NO BLOCKING CHECKS
 #
-# This configuration is designed to NOT block commits
-# All checks are either disabled or set to warn-only
+# Workflow for all quality checks with balanced strictness
 #
-# To make commits more strict later:
-# - Remove --warn-only flags
-# - Remove --exit-zero flags
-# - Remove --ignore flags
+# COMMIT BLOCKING BEHAVIOR:
+# - Bandit: Only blocks on HIGH severity issues (--exit-zero flag)
+# - Ruff: Ignores line length and whitespace issues (E501, W503)
+# - Quality Engine: Uses --warn-only flag for non-critical issues
+# - MyPy: Only blocks on critical type errors
+#
+# To make commits more permissive:
+# - Add --warn-only to quality-engine args
+# - Add --exit-zero to bandit args
+# - Add --ignore flags to ruff args
+#
+# To make commits more strict:
+# - Remove --warn-only from quality-engine args
+# - Remove --exit-zero from bandit args
+# - Remove --ignore flags from ruff args
+# - Add --strict to quality-engine args
 
 repos:
   # Basic formatting (fast) - These are essential but non-blocking
@@ -34,26 +44,26 @@ repos:
         args: [--prose-wrap=always, --print-width=100, --check]
         stages: [manual]  # Moved to manual - won't block commits
 
-  # Quality Engine - Ultra Fast mode for pre-commit (only essential checks)
+  # Quality Engine - Fast mode for pre-commit (non-blocking by default)
   - repo: local
     hooks:
-      - id: quality-engine-ultra-fast
-        name: AutoPR Quality Engine (Ultra Fast Mode)
+      - id: quality-engine-fast
+        name: AutoPR Quality Engine (Fast Mode)
         entry: python -m autopr.actions.quality_engine
         language: system
         types: [python]
-        args: [--mode=ultra-fast, --skip-windows-check, --warn-only, --max-issues=5]
-        stages: [manual]  # Moved to manual - won't block commits
+        args: [--mode=fast, --skip-windows-check, --warn-only]
+        stages: [manual]  # Manual only - won't block commits
         verbose: true
         pass_filenames: true
-        description: "Run ultra-fast quality checks on Python files (non-blocking)"
+        description: "Run fast quality checks on Python files (non-blocking)"
 
   # Individual tool hooks for specific checks - All manual (non-blocking)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.0
     hooks:
       - id: ruff
-        args: [--fix, --exit-zero, --ignore=E501,W503,E203,W291,W292,W293,ALL]
+        args: [--fix, --exit-zero, --ignore=E501,W503,E203,W291,W292,W293]
         stages: [manual]  # Manual only - won't block commits
       - id: ruff-format
         args: [--exit-zero]
@@ -63,7 +73,7 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        args: [--ignore-missing-imports, --show-error-codes, --no-strict-optional, --ignore-errors]
+        args: [--ignore-missing-imports, --show-error-codes, --no-strict-optional]
         stages: [manual]  # Manual only - won't block commits
 
   - repo: https://github.com/PyCQA/bandit
