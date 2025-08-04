@@ -12,26 +12,57 @@ from typing import Dict, Any, List
 class VolumeConfigLoader:
     """Loads and applies tool configurations based on volume levels"""
     
-    def __init__(self, config_dir: str = "configs"):
-        self.config_dir = Path(__file__).parent / config_dir
+    def __init__(self, config_dir: str = None):
+        # Try multiple possible locations for config files
+        possible_config_dirs = [
+            Path(__file__).parent / "configs",  # Default location
+            Path.cwd() / "configs",             # Current working directory
+            Path.cwd() / "scripts" / "volume-control" / "configs",  # From project root
+            Path.home() / ".config" / "volume-control"  # User config directory
+        ]
+        
+        # Use provided config_dir if specified, otherwise find first existing directory
+        if config_dir:
+            self.config_dir = Path(config_dir)
+        else:
+            self.config_dir = None
+            for dir_path in possible_config_dirs:
+                if dir_path.exists() and dir_path.is_dir():
+                    self.config_dir = dir_path
+                    break
+            
+            if self.config_dir is None:
+                self.config_dir = possible_config_dirs[0]  # Default to first option
+        
+        print(f"Using config directory: {self.config_dir}")
         self.tools = {}
         self.load_all_configs()
     
     def load_all_configs(self):
         """Load all tool configuration files"""
         if not self.config_dir.exists():
-            print(f"Config directory {self.config_dir} not found")
+            print(f"ERROR: Config directory {self.config_dir} not found")
+            print(f"Current working directory: {Path.cwd()}")
+            print(f"Directory contents: {list(Path(self.config_dir.parent).iterdir())}")
             return
         
-        for config_file in self.config_dir.glob("*.json"):
+        print(f"Loading configs from: {self.config_dir}")
+        config_files = list(self.config_dir.glob("*.json"))
+        print(f"Found {len(config_files)} config files: {[f.name for f in config_files]}")
+        
+        for config_file in config_files:
             try:
                 with open(config_file, 'r') as f:
                     config = json.load(f)
                     tool_name = config.get('tool', config_file.stem)
                     self.tools[tool_name] = config
-                    print(f"Loaded config for {tool_name}")
+                    print(f"Loaded config for {tool_name} from {config_file}")
+                    print(f"  Activation levels: {list(config.get('activation_levels', {}).keys())}")
             except Exception as e:
-                print(f"Error loading {config_file}: {e}")
+                print(f"ERROR loading {config_file}: {str(e)}")
+        
+        print(f"Total tools loaded: {len(self.tools)}")
+        print(f"Tool names: {list(self.tools.keys())}")
     
     def get_settings_for_volume(self, volume: int) -> Dict[str, Any]:
         """Get combined settings for all tools at the specified volume level"""

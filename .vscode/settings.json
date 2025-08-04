@@ -3,7 +3,7 @@
   "python.linting.enabled": true,
   "python.formatting.enabled": false,
   "python.analysis.enabled": true,
-  "python.languageServer": "Pylance",
+  "python.languageServer": "None",
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,
   "python.linting.pylintEnabled": false,
