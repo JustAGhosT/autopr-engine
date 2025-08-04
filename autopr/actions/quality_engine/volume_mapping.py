@@ -36,10 +36,10 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
         raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
     
     # Base configuration that applies to all modes
-    base_config = {
+    base_config: Dict[str, Any] = {
         "max_fixes": max(1, volume // 20),  # 0-50 fixes based on volume
         "max_issues": max(10, volume // 10),  # 10-100 issues based on volume
-        "enable_ai_agents": volume > 200,  # Only enable AI agents above quiet mode
+        "enable_ai_agents": bool(volume > 200),
     }
     
     # Map volume ranges to quality modes

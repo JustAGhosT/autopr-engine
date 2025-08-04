@@ -2,7 +2,14 @@
 
 import asyncio
 import os
+import sys
+from pathlib import Path
 from collections.abc import AsyncGenerator, Generator
+
+# Add the project root to the Python path
+project_root = str(Path(__file__).parent)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import pytest
 import pytest_asyncio

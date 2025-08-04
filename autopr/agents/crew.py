@@ -15,18 +15,20 @@ from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityMode, QualityInputs
 from autopr.actions.quality_engine.volume_mapping import (
     get_volume_config,
-    get_quality_mode_from_volume,
-    get_quality_config_from_volume,
+    volume_to_quality_mode,
     get_volume_level_name
 )
 
-from .models import (
+# Models are imported directly to avoid circular imports
+from autopr.agents.models import (
     CodeIssue,
     PlatformAnalysis,
     CodeAnalysisReport,
     PlatformComponent
 )
-from .agents import (
+
+# Import agents directly from their modules
+from autopr.agents.agents import (
     CodeQualityAgent,
     PlatformAnalysisAgent,
     LintingAgent
@@ -97,8 +99,8 @@ class AutoPRCrew:
             Dict containing volume context information
         """
         volume = volume_override if volume_override is not None else self.volume
-        quality_mode = get_quality_mode_from_volume(volume)
-        config = get_quality_config_from_volume(volume)
+        quality_mode = volume_to_quality_mode(volume)
+        config = get_volume_config(volume)
         
         return {
             "volume": volume,
@@ -116,8 +118,8 @@ class AutoPRCrew:
         Returns:
             QualityInputs configured according to volume settings
         """
-        quality_mode = get_quality_mode_from_volume(volume)
-        config = get_quality_config_from_volume(volume)
+        quality_mode = volume_to_quality_mode(volume)
+        config = get_volume_config(volume)
         
         # Create base inputs with volume-based mode
         inputs = QualityInputs(

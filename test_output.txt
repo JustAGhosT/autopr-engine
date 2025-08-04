@@ -1,0 +1,25 @@
+2025-08-04 19:05:57 - httpx - INFO - HTTP Request: GET https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json "HTTP/1.1 200 OK"
+Traceback (most recent call last):
+  File "C:\Users\smitj\repos\autopr\autopr-engine\test_import.py", line 12, in <module>
+    from autopr.agents.crew import AutoPRCrew
+  File "C:\Users\smitj\repos\autopr\autopr-engine\autopr\agents\__init__.py", line 14, in <module>
+    from .crew import AutoPRCrew
+  File "C:\Users\smitj\repos\autopr\autopr-engine\autopr\agents\crew.py", line 16, in <module>
+    from autopr.actions.quality_engine.volume_mapping import (
+    ...<4 lines>...
+    )
+ImportError: cannot import name 'get_quality_mode_from_volume' from 'autopr.actions.quality_engine.volume_mapping' (C:\Users\smitj\repos\autopr\autopr-engine\autopr\actions\quality_engine\volume_mapping.py)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\smitj\repos\autopr\autopr-engine\test_import.py", line 16, in <module>
+    print(f"\u274c Failed to import AutoPRCrew: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\smitj\AppData\Local\Programs\Python\Python313\Lib\site-packages\crewai\llm.py", line 85, in write
+    return self._original_stream.write(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\smitj\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 0: character maps to <undefined>
