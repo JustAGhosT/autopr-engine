@@ -11,7 +11,7 @@ import os
 def check_tool_disabled(tool_name, command, expected_exit=0):
     """Check if a tool is disabled"""
     try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        result = subprocess.run(command.split(), capture_output=True, text=True)        
         if result.returncode == expected_exit:
             print(f"✅ {tool_name}: DISABLED")
             return True

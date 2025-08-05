@@ -10,55 +10,59 @@
 - Explain your OBSERVATIONS clearly, then provide REASONING to identify the exact issue. Add console logs when needed to gather more information.
 
 
-AutoPR Engine implements a sophisticated AI-powered code quality and enhancement system with several key business components:
+AutoPR implements an AI-powered code analysis and enhancement system with several key business domains:
 
-1. AI Linting & Code Fixing
-- Specialized AI agents handle different code issues (imports, line length, variables)
-- Custom confidence scoring (0.4-0.9) based on fix complexity and issue type
-- Progressive retry logic with intelligent fallback mechanisms
-- File Path: autopr/actions/ai_linting_fixer/agents.py
+1. AI Linting and Code Fixing Engine
+- Core system for automated code improvement using AI agents
+- Multi-stage workflow: detection → analysis → fix generation → validation
+- Specialized agent selection based on issue types
+- Domain-specific confidence scoring for fix validation
+File: autopr/actions/ai_linting_fixer/ai_linting_fixer.py
 
-2. Platform Detection System  
-- Multi-factor platform detection using weighted evidence
-- Custom scoring for platform confidence based on files, dependencies, and patterns
-- Migration recommendation engine for platform transitions
-- File Path: autopr/actions/platform_detection/detector.py
+2. Quality Control System
+- Volume-based quality control (0-1000 scale)
+- Maps volume levels to operational modes:
+  * 0-199: Ultra-fast mode
+  * 200-399: Fast mode
+  * 400-599: Smart mode
+  * 600-799: Comprehensive mode
+  * 800-1000: AI-enhanced mode
+File: autopr/actions/quality_engine/volume_mapping.py
 
-3. Quality Control Framework
-- HiFi-style volume control (0-1000) for adjusting validation strictness
-- Four distinct quality modes: fast, comprehensive, AI-enhanced, smart
-- Platform-specific tool substitution and adaptation
-- File Path: autopr/actions/quality_engine/engine.py
+3. Platform Detection and Enhancement
+- Identifies development platforms through weighted scoring
+- Generates platform-specific enhancements:
+  * Testing infrastructure
+  * Security hardening
+  * Production readiness
+File: autopr/actions/platform_detection/detector.py
 
-4. Multi-Agent Code Analysis
-- Specialized AI roles: Code Analyzer, Fixer, Reviewer, Security Auditor
-- Custom consensus building through agent conversations 
-- Learning system adapts from PR feedback and historical performance
-- File Path: autopr/extensions/implementation/implementor.py
+4. Memory and Learning System
+- Pattern recognition from historical fixes
+- Success rate tracking per issue type
+- AI agent performance optimization
+File: autopr/actions/learning_memory_system.py
 
-5. Security & Authorization 
-- Zero-trust model with context-aware validation
-- Role-based permissions with granular resource control
-- Custom audit logging for authorization decisions
-- File Path: autopr/security/authorization/models.py
+Core Integration Points:
+1. AI Provider Management
+- Multi-provider fallback system
+- Provider-specific confidence scoring
+- Load balancing and quota management
+File: autopr/actions/llm/manager.py
 
-The system orchestrates these components through:
-- Event-driven workflow engine
-- Multi-provider LLM integration with fallback chains
-- Platform-specific enhancement strategies
-- Quality gate decision logic
+2. Security Authorization Framework
+- Resource-based access control
+- Zero-trust security model
+- Progressive lockout system
+File: autopr/security/authorization/enterprise_manager.py
 
-Core workflows connect through:
-- Issue detection -> AI agent selection -> Fix validation -> Quality gates
-- Platform detection -> Enhancement strategy -> Implementation workflow
-- Quality analysis -> Agent review -> Consensus building -> Automated fixes
+3. Quality Analytics Engine
+- Success rate analysis
+- Fix confidence tracking
+- Resource utilization monitoring
+File: autopr/quality/metrics_collector.py
 
-File paths containing critical business logic:
-- autopr/actions/ai_linting_fixer/
-- autopr/actions/platform_detection/
-- autopr/actions/quality_engine/
-- autopr/security/authorization/
-- autopr/extensions/implementation/
+The system integrates these components through a workflow orchestration layer that coordinates between AI agents, quality controls, and platform-specific enhancements while maintaining comprehensive security and performance tracking.
 
 $END$
 

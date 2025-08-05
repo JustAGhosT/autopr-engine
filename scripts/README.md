@@ -15,6 +15,26 @@ The main volume control system for managing IDE linting and commit checks:
   - `status.py` - Show current volume status
   - `debug.py` - Debug volume settings
 
+## 🔍 Validation Scripts
+
+Scripts for validating different aspects of the project:
+
+- **`validate_build_system.py`** - Validate the build system configuration
+- **`validate_configs.py`** - Validate configuration files
+- **`validate_imports.py`** - Check for import issues
+- **`validate_links.py`** - Validate internal and external links
+- **`validate_templates.py`** - Validate template files
+
+## 🛠️ Maintenance Scripts
+
+- **`level-0-complete.py`** - Verify Level 0 (no linting) status
+- **`disable-github-actions.py`** - Disable GitHub Actions workflows
+
+## 📦 Archived Scripts
+
+Legacy and one-time use scripts have been moved to the `archive/scripts/` directory.
+These are kept for reference but are not part of the active codebase.
+
 ### Usage
 ```bash
 # Set volumes
