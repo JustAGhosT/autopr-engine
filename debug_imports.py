@@ -3,6 +3,7 @@ import sys
 import os
 import importlib
 from pathlib import Path
+import inspect
 
 def print_header(title):
     """Print a section header."""

@@ -2,7 +2,7 @@
   "python.enabled": true,
   "python.linting.enabled": true,
   "python.formatting.enabled": false,
-  "python.analysis.enabled": true,
+  "python.analysis.enabled": false,
   "python.languageServer": "None",
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,

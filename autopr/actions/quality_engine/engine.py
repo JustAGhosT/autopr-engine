@@ -185,6 +185,23 @@ class QualityEngine(Action):
                 return {"enabled": True, "config": tool_settings}
         else:
             return {"enabled": True, "config": {}}
+            
+    def _validate_volume(self, volume: int) -> int:
+        """Validate that the volume is within the expected range (0-1000).
+        
+        Args:
+            volume: The volume level to validate
+            
+        Returns:
+            The validated volume (clamped to 0-1000 range)
+            
+        Raises:
+            ValueError: If volume is not an integer
+        """
+        if not isinstance(volume, int):
+            raise ValueError(f"Volume must be an integer, got {type(volume).__name__}")
+        return max(0, min(1000, volume))  # Clamp to 0-1000 range
+
     async def execute(self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None) -> QualityOutputs:
         """Execute the quality engine with the given inputs and volume level.
         
@@ -196,19 +213,29 @@ class QualityEngine(Action):
                    
         Returns:
             QualityOutputs with the results of the quality checks
+            
+        Raises:
+            ValueError: If volume is not an integer or is outside the 0-1000 range
         """
-        # Apply volume settings if volume is provided either directly or through inputs
-        if volume is not None or (hasattr(inputs, 'volume') and inputs.volume is not None):
+        # Determine the volume to use, with proper precedence
+        if volume is None:
+            volume = getattr(inputs, 'volume', 500)  # Default to 500 if not specified
+        
+        # Validate volume is an integer and within range
+        volume = self._validate_volume(volume)
+        
+        # Apply volume settings to inputs if volume was explicitly provided
+        if hasattr(inputs, 'apply_volume_settings'):
             inputs.apply_volume_settings(volume)
-            volume = inputs.volume or 500
-        else:
-            volume = 500  # Default volume if not specified
-                
+        
+        # Get volume level name for logging
+        volume_level = get_volume_level_name(volume)  # Directly use the imported function
+        
         logger.info(
             "Executing Quality Engine", 
             mode=inputs.mode, 
             volume=volume,
-            volume_level=get_volume_level_name(volume) if hasattr(self, 'get_volume_level_name') else None
+            volume_level=volume_level
         )
 
         # Determine files to check

@@ -91,9 +91,9 @@ class CodeAnalysisReport(BaseModel):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the report to a dictionary."""
-        return self.dict()
+        return self.model_dump()
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'CodeAnalysisReport':
         """Create a report from a dictionary."""
-        return cls.parse_obj(data)
+        return cls.model_validate(data)

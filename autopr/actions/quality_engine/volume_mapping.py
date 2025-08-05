@@ -5,19 +5,53 @@ Maps volume levels (0-1000) to QualityEngine quality modes and configurations.
 """
 
 from enum import Enum
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Tuple, Optional, TypedDict
 
 from .models import QualityMode
 
+# Volume range constants for consistent behavior across functions
+VOLUME_RANGES = {
+    "SILENT": (0, 0),      # No output, no fixes
+    "QUIET": (1, 199),     # Minimal output, few fixes
+    "MODERATE": (200, 399),  # Balanced output and fixes
+    "BALANCED": (400, 599),  # Default balanced mode
+    "THOROUGH": (600, 799),  # More thorough checks
+    "MAXIMUM": (800, 1000)   # Maximum thoroughness
+}
+
+class VolumeRange(TypedDict):
+    min: int
+    max: int
 
 class VolumeLevel(Enum):
     """Named volume levels for better readability"""
     SILENT = 0
-    QUIET = 250
-    MODERATE = 500
-    HIGH = 750
-    MAX = 1000
+    QUIET = 100
+    MODERATE = 300
+    BALANCED = 500
+    THOROUGH = 700
+    MAXIMUM = 1000
 
+
+def _get_volume_range(volume: int) -> str:
+    """Get the volume range name for a given volume level.
+    
+    Args:
+        volume: Volume level from 0 to 1000
+        
+    Returns:
+        Name of the volume range (e.g., 'SILENT', 'QUIET')
+        
+    Raises:
+        ValueError: If volume is outside 0-1000 range
+    """
+    if not 0 <= volume <= 1000:
+        raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+        
+    for name, (min_vol, max_vol) in VOLUME_RANGES.items():
+        if min_vol <= volume <= max_vol:
+            return name
+    return "BALANCED"  # Default fallback
 
 def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
     """
@@ -32,61 +66,72 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
     Raises:
         ValueError: If volume is outside 0-1000 range
     """
-    if not 0 <= volume <= 1000:
-        raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+    # Get the volume range name
+    volume_range = _get_volume_range(volume)
     
     # Base configuration that applies to all modes
     base_config: Dict[str, Any] = {
-        "max_fixes": max(1, volume // 20),  # 0-50 fixes based on volume
+        "max_fixes": max(1, volume // 20) if volume > 0 else 0,  # 0-50 fixes based on volume
         "max_issues": max(10, volume // 10),  # 10-100 issues based on volume
-        "enable_ai_agents": bool(volume > 200),
+        "enable_ai_agents": volume > VOLUME_RANGES["MODERATE"][0],
     }
     
     # Map volume ranges to quality modes
-    if volume == 0:
+    if volume_range == "SILENT":
         return QualityMode.ULTRA_FAST, {
-            **base_config,
+            "max_fixes": 0,
+            "max_issues": 10,  # Minimum issues to report
             "enable_ai_agents": False,
-            "max_fixes": 0,  # No fixes in silent mode
         }
-    elif volume < 200:
+    elif volume_range == "QUIET":
         return QualityMode.ULTRA_FAST, base_config
-    elif volume < 400:
+    elif volume_range == "MODERATE":
         return QualityMode.FAST, base_config
-    elif volume < 600:
+    elif volume_range == "BALANCED":
         return QualityMode.SMART, base_config
-    elif volume < 800:
+    elif volume_range == "THOROUGH":
         return QualityMode.COMPREHENSIVE, base_config
-    else:
+    else:  # MAXIMUM
         return QualityMode.AI_ENHANCED, {
             **base_config,
-            "enable_ai_agents": True,
             "max_fixes": 100,  # More aggressive fixes at max volume
+            "enable_ai_agents": True,
         }
 
 
 def get_volume_level_name(volume: int) -> str:
-    """Get a human-readable name for a volume level"""
-    if volume == 0:
-        return "Silent"
-    elif volume < 200:
-        return "Quiet"
-    elif volume < 400:
-        return "Moderate"
-    elif volume < 600:
-        return "Balanced"
-    elif volume < 800:
-        return "Thorough"
-    else:
-        return "Maximum"
+    """
+    Get a human-readable name for a volume level.
+    
+    Args:
+        volume: Volume level from 0 to 1000
+        
+    Returns:
+        Human-readable name of the volume level (e.g., 'Silent', 'Quiet')
+        
+    Raises:
+        ValueError: If volume is outside 0-1000 range
+    """
+    volume_range = _get_volume_range(volume)
+    return volume_range.title()
 
 
 def get_volume_config(volume: int) -> Dict[str, Any]:
     """
     Get the complete configuration for a given volume level.
     
-    Returns a dictionary that can be used to update QualityInputs.
+    Args:
+        volume: Volume level from 0 to 1000
+        
+    Returns:
+        Dictionary with 'mode' and configuration settings that can be used to update QualityInputs
+        
+    Raises:
+        ValueError: If volume is outside 0-1000 range
     """
+    if not 0 <= volume <= 1000:
+        raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+        
     quality_mode, config = volume_to_quality_mode(volume)
     return {
         "mode": quality_mode,

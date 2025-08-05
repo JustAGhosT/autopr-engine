@@ -80,7 +80,7 @@ repos:
     rev: 1.7.5
     hooks:
       - id: bandit
-        args: [-r, ., -c, .bandit, --exit-zero, --skip=ALL]
+        args: [-r, ., -c, .bandit, --exit-zero, --severity-level=medium]        
         exclude: |
           (?x)^(
               .*/__tests__/.*|

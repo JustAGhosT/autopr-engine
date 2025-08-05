@@ -17,6 +17,7 @@ from autopr.actions.quality_engine.volume_mapping import (
     get_volume_config,
     get_volume_level_name
 )
+from autopr.agents.models import IssueSeverity
 
 # Import models using full path to avoid circular imports
 from autopr.agents.models import CodeIssue, PlatformAnalysis, CodeAnalysisReport
@@ -67,8 +68,11 @@ class VolumeConfig:
         # Only import if needed to avoid circular imports
         if self.quality_mode is None or self.config is None:
             from autopr.actions.quality_engine.volume_mapping import volume_to_quality_mode, get_volume_config
-            # Get the default mode and config based on volume
-            mode, default_config = volume_to_quality_mode(self.volume)
+            try:
+                # Get the default mode and config based on volume
+                mode, default_config = volume_to_quality_mode(self.volume)
+            except Exception as e:
+                raise ValueError(f"Failed to get default mode and config for volume {self.volume}") from e
             
             # Initialize with default values
             self.quality_mode = mode
@@ -365,30 +369,90 @@ class LintingAgent(BaseAgent):
         self._verbose = value
     
     async def fix_code_issues(self, file_path: str) -> List[CodeIssue]:
-        """Fix code style and quality issues in the specified file."""
+        """Fix code style and quality issues in the specified file.
+        
+        Args:
+            file_path: Path to the file to fix
+            
+        Returns:
+            List[CodeIssue]: List of fixed issues, or an error issue if processing failed
+            
+        Raises:
+            FileNotFoundError: If the specified file does not exist
+            PermissionError: If there are permission issues reading/writing the file
+        """
         try:
             # Get the file content
-            with open(file_path, 'r', encoding='utf-8') as f:
-                file_content = f.read()
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_content = f.read()
+            except UnicodeDecodeError as e:
+                return [CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    column=0,
+                    message=f"Failed to decode file: {str(e)}. File may be binary or use a different encoding.",
+                    severity=IssueSeverity.HIGH,
+                    rule_id="encoding-error",
+                    category="error"
+                )]
             
             # Fix issues using the linting fixer
-            fixed_content, issues = await self._linting_fixer.fix_code(
-                file_path=file_path,
-                file_content=file_content,
-                verbose=self._verbose
-            )
+            try:
+                fixed_content, issues = await self._linting_fixer.fix_code(
+                    file_path=file_path,
+                    file_content=file_content,
+                    verbose=self._verbose
+                )
+            except Exception as e:
+                return [CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    column=0,
+                    message=f"Linting failed: {str(e)}",
+                    severity=IssueSeverity.HIGH,
+                    rule_id="linting-error",
+                    category="error"
+                )]
             
-            # Write the fixed content back to the file
+            # Write the fixed content back to the file if it changed
             if fixed_content != file_content:
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    f.write(fixed_content)
-                
-                if self._verbose:
-                    print(f"Fixed {len(issues)} issues in {file_path}")
+                try:
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(fixed_content)
+                    
+                    if self._verbose:
+                        print(f"Fixed {len(issues)} issues in {file_path}")
+                except Exception as e:
+                    # If we can't write the file, log it and continue
+                    issues.append(CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        column=0,
+                        message=f"Failed to write fixes to file: {str(e)}",
+                        severity=IssueSeverity.HIGH,
+                        rule_id="write-error",
+                        category="error"
+                    ))
             
             return issues
             
+        except FileNotFoundError:
+            raise  # Re-raise file not found errors
+            
+        except PermissionError:
+            raise  # Re-raise permission errors
+            
         except Exception as e:
+            # For any other unexpected errors, return an error issue
             if self._verbose:
-                print(f"Error fixing issues in {file_path}: {str(e)}")
-            return []
+                print(f"Unexpected error fixing issues in {file_path}: {str(e)}")
+            return [CodeIssue(
+                file_path=file_path,
+                line_number=0,
+                column=0,
+                message=f"Unexpected error: {str(e)}",
+                severity=IssueSeverity.HIGH,
+                rule_id="unexpected-error",
+                category="error"
+            )]
