@@ -14,7 +14,8 @@ from crewai import Agent as CrewAgent
 
 from autopr.agents.base import BaseAgent, VolumeConfig
 from autopr.actions.llm import get_llm_provider_manager
-from autopr.actions.ai_linting_fixer import AILintingFixer, FixResult, CodeIssue
+from autopr.actions.ai_linting_fixer import AILintingFixer, CodeIssue
+from autopr.actions.ai_linting_fixer.models import LintingFixResult
 from autopr.actions.ai_linting_fixer.agents import (
     ImportFixerAgent,
     LineLengthFixerAgent,

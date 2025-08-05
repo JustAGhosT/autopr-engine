@@ -13,7 +13,8 @@ from crewai import Agent as CrewAgent
 from autopr.agents.base import BaseAgent, VolumeConfig
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.actions.platform_detection.detector import PlatformDetector
-from autopr.actions.platform_detection.models import PlatformAnalysis, PlatformType, PlatformInfo
+from autopr.agents.models import PlatformAnalysis
+from autopr.actions.platform_detection.schema import PlatformType
 
 
 @dataclass
@@ -180,21 +181,39 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         # Get the platform with the highest confidence
         return max(analysis.platforms.items(), key=lambda x: x[1])[0]
     
-    def _get_platform_info(self, platform_type: PlatformType) -> Optional[PlatformInfo]:
+    def _get_platform_info(self, platform_type: PlatformType) -> Optional[dict]:
         """Get information about a specific platform type.
         
         Args:
             platform_type: The platform type to get information for
             
         Returns:
-            PlatformInfo object with details about the platform, or None if not found
+            Dictionary with details about the platform, or None if not found
         """
-        return self.detector.get_platform_info(platform_type)
+        # Get platform configuration from the config manager
+        platform_config = self.detector.config.get_platform(platform_type.value)
+        if not platform_config:
+            return None
+            
+        # Convert to a dictionary with the required fields
+        return {
+            "id": platform_config.get("id"),
+            "name": platform_config.get("name"),
+            "description": platform_config.get("description", ""),
+            "type": platform_config.get("type"),
+            "category": platform_config.get("category"),
+            "documentation_url": platform_config.get("documentation_url", ""),
+            "is_active": platform_config.get("is_active", True)
+        }
     
-    def get_supported_platforms(self) -> List[PlatformInfo]:
+    def get_supported_platforms(self) -> List[dict]:
         """Get a list of all supported platforms.
         
         Returns:
-            A list of PlatformInfo objects for all supported platforms
+            List of dictionaries with platform information for all supported platforms
         """
-        return self.detector.get_supported_platforms()
+        return [
+            platform_info
+            for platform_type in PlatformType
+            if (platform_info := self._get_platform_info(platform_type)) is not None
+        ]
