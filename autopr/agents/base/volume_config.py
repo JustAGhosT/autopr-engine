@@ -89,6 +89,20 @@ class VolumeConfig:
                     self.config[key] = bool(value)
     
     @staticmethod
+    def _warn_about_conversion(value: Any) -> None:
+        """Issue a warning about failed boolean conversion.
+        
+        Args:
+            value: The value that failed boolean conversion
+        """
+        import warnings
+        warnings.warn(
+            f"Could not convert value '{value}' to boolean, defaulting to False",
+            UserWarning,
+            stacklevel=3  # Adjusted for additional call level
+        )
+
+    @staticmethod
     def _convert_to_bool(value: Any) -> bool:
         """Convert various boolean-like values to Python bool.
         
@@ -116,23 +130,12 @@ class VolumeConfig:
             if value in ('false', 'f', 'no', 'n', 'off', '0'):
                 return False
             # For any other non-empty string that's not a recognized boolean value
-            # We'll treat it as False but log a warning
-            import warnings
-            warnings.warn(
-                f"Could not convert value '{value}' to boolean, defaulting to False",
-                UserWarning,
-                stacklevel=2
-            )
+            VolumeConfig._warn_about_conversion(value)
             return False
                 
         if isinstance(value, (int, float)):
             return bool(value)
             
         # For any other type, treat as False with a warning
-        import warnings
-        warnings.warn(
-            f"Could not convert value '{value}' to boolean, defaulting to False",
-            UserWarning,
-            stacklevel=2
-        )
+        VolumeConfig._warn_about_conversion(value)
         return False

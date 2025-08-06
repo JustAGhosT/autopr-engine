@@ -2,11 +2,16 @@
 Quality Engine Data Models
 """
 
+import logging
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 
 import pydantic
 
+from autopr.actions.base import ActionInputs
+from autopr.utils.volume_utils import get_volume_config
+
+logger = logging.getLogger(__name__)
 
 class QualityMode(Enum):
     """Operating mode for quality checks"""
@@ -46,24 +51,69 @@ class QualityInputs(pydantic.BaseModel):
     )
     
     def apply_volume_settings(self, volume: int | None = None) -> None:
-        """Apply volume-based configuration to this input object.
+        """Apply volume-based configuration to this instance.
         
         Args:
-            volume: If provided, overrides self.volume for this call
+            volume: Volume level (0-1000). If None, uses self.volume.
+            
+        This will update the instance attributes based on the volume level:
+        - mode: QualityMode based on volume
+        - max_fixes: Number of fixes to apply (0-100)
+        - max_issues: Maximum issues to report (10-1000)
+        - enable_ai_agents: Whether to use AI agents (True for volume >= 200)
         """
         if volume is None:
             volume = self.volume
             
         if volume is None or volume < 0 or volume > 1000:
+            logger.warning("Invalid volume level: %s. Must be between 0-1000.", volume)
             return
             
-        from .volume_mapping import get_volume_config
-        volume_config = get_volume_config(volume)
-        
-        # Update self with volume-based configuration
-        for key, value in volume_config.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+        try:
+            # Get volume-based configuration
+            volume_config = get_volume_config(volume)
+            logger.debug("Applying volume settings for volume %d: %s", volume, volume_config)
+            
+            # Update instance attributes with volume-based configuration
+            for key, value in volume_config.items():
+                if hasattr(self, key):
+                    setattr(self, key, value)
+                    logger.debug("Set %s = %s", key, value)
+                else:
+                    logger.warning("Volume config key '%s' does not exist in %s", 
+                                key, self.__class__.__name__)
+                    
+        except Exception as e:
+            logger.exception("Failed to apply volume settings: %s", str(e))
+            # Fall back to default values based on volume ranges
+            if volume < 200:
+                self.mode = QualityMode.ULTRA_FAST
+                self.max_fixes = 0
+                self.max_issues = 10
+                self.enable_ai_agents = False
+            elif volume < 400:
+                self.mode = QualityMode.FAST
+                self.max_fixes = 10
+                self.max_issues = 50
+                self.enable_ai_agents = False
+            elif volume < 600:
+                self.mode = QualityMode.SMART
+                self.max_fixes = 25
+                self.max_issues = 100
+                self.enable_ai_agents = True
+            elif volume < 800:
+                self.mode = QualityMode.COMPREHENSIVE
+                self.max_fixes = 50
+                self.max_issues = 250
+                self.enable_ai_agents = True
+            else:
+                self.mode = QualityMode.AI_ENHANCED
+                self.max_fixes = 100
+                self.max_issues = 500
+                self.enable_ai_agents = True
+                
+            logger.warning("Falling back to default volume settings for volume %d: %s", 
+                         volume, self.mode.value)
 
 
 class ToolResult(pydantic.BaseModel):

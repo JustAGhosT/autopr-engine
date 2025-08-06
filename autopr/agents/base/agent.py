@@ -5,11 +5,14 @@ This module provides the BaseAgent class which serves as the foundation for all
 AutoPR agents. It handles common functionality like initialization, logging, and
 volume-based configuration.
 """
-from typing import Any, Dict, Optional, TypeVar, Generic, Type
-from dataclasses import dataclass
+import logging
+from typing import Any, Dict, Optional, TypeVar, Generic
 from crewai import Agent as CrewAgent
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.agents.base.volume_config import VolumeConfig
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 
 # Define generic type variables for input/output types
@@ -120,24 +123,30 @@ class BaseAgent(Generic[InputT, OutputT]):
         """
         try:
             # Log the start of execution
-            if self.verbose:
-                print(f"Starting execution of {self.name} with inputs: {inputs}")
+            logger.debug("Starting execution of %s with inputs: %s", self.name, inputs)
             
             # Delegate to the agent-specific implementation
             result = await self._execute(inputs)
             
             # Log the completion of execution
-            if self.verbose:
-                print(f"Completed execution of {self.name}")
-                
+            logger.debug("Completed execution of %s", self.name)
+            
             return result
             
         except Exception as e:
-            # Log the error and re-raise
-            error_msg = f"Error in {self.name}: {str(e)}"
-            if self.verbose:
-                print(error_msg)
-            raise type(e)(error_msg) from e
+            # Log the error with full context
+            logger.error("Error in %s: %s", self.name, str(e), exc_info=True)
+            
+            # Preserve the original exception type and attributes
+            if not str(e):
+                # If the original exception has no message, use our custom one
+                e.args = (f"Error in {self.name}",) + e.args[1:]
+            elif not any(self.name in str(arg) for arg in e.args if isinstance(arg, str)):
+                # If the error message doesn't already contain the agent name, prepend it
+                e.args = (f"Error in {self.name}: {str(e)}",) + e.args[1:]
+                
+            # Re-raise the original exception with preserved type and attributes
+            raise
     
     async def _execute(self, inputs: InputT) -> OutputT:
         """Execute the agent with the given inputs.

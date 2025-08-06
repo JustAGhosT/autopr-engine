@@ -40,7 +40,8 @@ jobs:
         run: isort --check-only --diff .
 
       - name: Run Ruff
-        run: ruff check . --ignore=E501,W503,E203,W291,W292,W293 --max-issues=50
+        # Using BALANCED (200) volume level ignore list from volume control config
+        run: ruff check . --ignore=E501,W291,W292,W293,F401,F841 --max-issues=50
 
       - name: Run tests
         run: pytest tests/unit/ -v --tb=short --maxfail=5
@@ -75,3 +76,11 @@ jobs:
 
       - name: Run security scan
         run: bandit -r autopr/ -f json -o bandit-report.json || true
+        
+      - name: Upload security scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 7

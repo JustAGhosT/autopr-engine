@@ -21,6 +21,16 @@ This module provides agent-based orchestration for code quality analysis using C
 import warnings
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Generic, Type
 
+# Import base classes and models
+from autopr.agents.base import BaseAgent
+from autopr.agents.models import (
+    IssueSeverity,
+    CodeIssue,
+    PlatformComponent,
+    PlatformAnalysis,
+    CodeAnalysisReport
+)
+
 # Import the new modular agent classes
 from .code_quality_agent import (
     CodeQualityAgent,
@@ -40,6 +50,25 @@ from .linting_agent import (
     LintingOutputs
 )
 
+from autopr.agents.agents import (
+    CodeReviewAgent,
+    DocumentationAgent,
+    TestingAgent,
+    SecurityAgent,
+    PerformanceAgent,
+    AccessibilityAgent,
+    PlatformDetectionAgent,
+    PlatformEnhancementAgent,
+    VolumeConfig,
+    AutoPRCrew,
+    ModularAutoPRCrew,
+)
+from autopr.utils.volume_utils import (
+    volume_to_quality_mode,
+    get_volume_config,
+    get_volume_level_name,
+)
+
 # Show deprecation warning for old import path
 warnings.warn(
     "The 'agents.agents' module is deprecated. Import directly from 'agents' instead.",
@@ -47,7 +76,6 @@ warnings.warn(
     stacklevel=2
 )
 
-# For backward compatibility
 __all__ = [
     # Base classes
     'BaseAgent',
@@ -73,18 +101,5 @@ __all__ = [
     
     # Crew
     'AutoPRCrew',
-    'ModularAutoPRCrew',  # New modular implementation
-]
-
-__all__ = [
-    'AutoPRCrew',
-    'ModularAutoPRCrew',
-    'CodeQualityAgent',
-    'PlatformAnalysisAgent',
-    'LintingAgent',
-    'IssueSeverity',
-    'CodeIssue',
-    'PlatformComponent',
-    'PlatformAnalysis',
-    'CodeAnalysisReport'
+    'ModularAutoPRCrew'  # New modular implementation
 ]

@@ -4,6 +4,8 @@ Code Quality Agent for AutoPR.
 This module provides the CodeQualityAgent class which is responsible for analyzing
 and improving code quality based on various metrics and best practices.
 """
+import json
+from json import JSONDecodeError
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 from crewai import Agent as CrewAgent
@@ -87,6 +89,10 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
             max_rpm=max_rpm,
             **kwargs
         )
+        # Initialize LLM provider if not done by BaseAgent
+        if not hasattr(self, 'llm_provider'):
+            from autopr.actions.llm import get_llm_provider_manager
+            self.llm_provider = get_llm_provider_manager().get_default_provider()
     
     async def _execute(self, inputs: CodeQualityInputs) -> CodeQualityOutputs:
         """Analyze code quality and provide improvement suggestions.
@@ -202,9 +208,6 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         Raises:
             ValueError: If the response cannot be parsed
         """
-        import json
-        from json import JSONDecodeError
-        
         try:
             # Try to parse the response as JSON
             result = json.loads(response.strip())

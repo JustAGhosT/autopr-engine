@@ -12,7 +12,7 @@ from autopr.actions.llm import get_llm_provider_manager
 from autopr.actions.quality_engine import QualityEngine, QualityMode
 from autopr.actions.platform_detection import PlatformDetector
 from autopr.actions.ai_linting_fixer import AILintingFixer
-from autopr.actions.quality_engine.volume_mapping import (
+from autopr.utils.volume_utils import (
     volume_to_quality_mode,
     get_volume_config,
     get_volume_level_name
@@ -48,39 +48,41 @@ class VolumeConfig:
     config: Optional[Dict[str, Any]] = None
     
     def __post_init__(self) -> None:
-        """Initialize volume-based configuration with enhanced boolean handling.
-        
-        This method:
-        1. Validates and clamps the volume to 0-1000 range
-        2. Loads default quality mode and config if not provided
-        3. Ensures all boolean values in config are properly typed
-        4. Preserves user-provided config values while applying volume defaults
-        """
-        # Ensure volume is within valid range (0-1000)
-        try:
-            self.volume = max(0, min(1000, int(self.volume)))
-        except (TypeError, ValueError) as e:
-            raise ValueError(f"Volume must be an integer between 0-1000, got {self.volume}") from e
+        """Initialize volume configuration with validation and defaults."""
+        # Import here to avoid circular imports
+        from autopr.utils.volume_utils import volume_to_quality_mode
+        from autopr.actions.quality_engine.models import QualityMode
         
         # Store user-provided config to preserve it
         user_config = self.config.copy() if self.config else {}
         
-        # Only import if needed to avoid circular imports
-        if self.quality_mode is None or self.config is None:
-            from autopr.actions.quality_engine.volume_mapping import volume_to_quality_mode, get_volume_config
+        # Ensure volume is an integer between 0-1000
+        try:
+            self.volume = max(0, min(1000, int(self.volume)))
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"Volume must be an integer between 0-1000, got {self.volume}") from e
+            
+        # Initialize config if not provided
+        if self.config is None:
+            self.config = {}
+            
+        # If quality_mode is not provided, determine it from volume
+        if self.quality_mode is None:
             try:
                 # Get the default mode and config based on volume
                 mode, default_config = volume_to_quality_mode(self.volume)
+                self.quality_mode = mode
+                # Merge default config with any provided config
+                self.config = {**default_config, **user_config}
             except Exception as e:
-                raise ValueError(f"Failed to get default mode and config for volume {self.volume}") from e
-            
-            # Initialize with default values
-            self.quality_mode = mode
-            self.config = default_config
-            
-            # Apply user-provided config on top of defaults
-            if user_config:
-                self.config.update(user_config)
+                # Fall back to default values if volume_to_quality_mode fails
+                self.quality_mode = QualityMode.BALANCED
+                self.config = {
+                    "max_fixes": 25,
+                    "max_issues": 100,
+                    "enable_ai_agents": True,
+                    **user_config
+                }
         
         # Ensure all boolean values in config are properly typed
         if self.config:

@@ -103,33 +103,46 @@ class AutoPRCrew:
             **analysis_kwargs
         }
         
-        # Create tasks for each analysis type with volume context
-        tasks = [
-            create_code_quality_task(repo_path, context, self.code_quality_agent),
-            create_platform_analysis_task(repo_path, context, self.platform_agent),
-            create_linting_task(repo_path, context, self.linting_agent)
+        # Create tasks for each analysis type with volume context and track their types
+        task_pairs = [
+            ("code_quality", create_code_quality_task(repo_path, context, self.code_quality_agent)),
+            ("platform_analysis", create_platform_analysis_task(repo_path, context, self.platform_agent)),
+            ("linting", create_linting_task(repo_path, context, self.linting_agent))
         ]
         
-        # Execute tasks in parallel
+        # Unpack the task names and coroutines
+        task_names = [name for name, _ in task_pairs]
+        tasks = [task for _, task in task_pairs]
+        
+        # Execute tasks in parallel with error handling
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Process results
+        # Process results with explicit type checking and better error tracking
         code_quality = {}
         platform_analysis = None
         linting_issues = []
         
-        for result in results:
+        for task_name, result in zip(task_names, results):
             if isinstance(result, Exception):
-                # Log the error but continue with other results
-                logger.error(f"Error during analysis: {result}")
+                logger.error(f"Error in {task_name} analysis: {str(result)}", exc_info=isinstance(result, Exception))
                 continue
                 
-            if isinstance(result, dict) and "metrics" in result:
-                code_quality = result
-            elif isinstance(result, PlatformAnalysis):
-                platform_analysis = result
-            elif isinstance(result, list) and all(isinstance(x, CodeIssue) for x in result):
-                linting_issues = result
+            try:
+                # Use explicit task result mapping with type checking
+                if task_name == "code_quality" and isinstance(result, dict):
+                    if "metrics" not in result:
+                        logger.warning(f"Missing 'metrics' in code quality result: {result}")
+                    code_quality = result
+                elif task_name == "platform_analysis" and isinstance(result, PlatformAnalysis):
+                    platform_analysis = result
+                elif task_name == "linting" and isinstance(result, list):
+                    if not all(isinstance(x, CodeIssue) for x in result):
+                        logger.warning("Linting result contains non-CodeIssue objects")
+                    linting_issues = result
+                else:
+                    logger.warning(f"Unexpected result type for {task_name}: {type(result).__name__}")
+            except Exception as e:
+                logger.error(f"Error processing {task_name} result: {e}", exc_info=True)
         
         # Generate the final report
         return generate_analysis_summary(

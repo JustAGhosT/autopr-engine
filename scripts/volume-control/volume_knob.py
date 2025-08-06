@@ -34,11 +34,13 @@ class VolumeKnob:
         return 0
     
     def save_volume(self, volume: int):
-        """Save volume setting"""
+        """Save volume setting with current timestamp"""
+        from datetime import datetime
+        
         config = {
             'knob_name': self.knob_name,
             'volume': volume,
-            'last_updated': str(Path().absolute())
+            'last_updated': datetime.utcnow().isoformat() + 'Z'  # ISO 8601 with UTC timezone
         }
         with open(self.config_file, 'w') as f:
             json.dump(config, f, indent=2)
