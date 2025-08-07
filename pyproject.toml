@@ -2,25 +2,16 @@
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "autopr-engine"
 version = "1.0.0"
 description = "AI-Powered GitHub PR Automation and Issue Management"
+authors = ["VeritasVault Team <dev@veritasvault.net>"]
+maintainers = ["VeritasVault Team <dev@veritasvault.net>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.13"
-license = {text = "MIT"}
-authors = [
-    {name = "VeritasVault Team", email = "dev@veritasvault.net"}
-]
-maintainers = [
-    {name = "VeritasVault Team", email = "dev@veritasvault.net"}
-]
-keywords = [
-    "github", "pull-request", "automation", "ai", "code-review",
-    "ci-cd", "workflow", "integration", "slack", "linear", "autogen",
-    "llm", "openai", "anthropic", "issue-management", "quality-gates",
-    "platform-detection", "multi-agent"
-]
+packages = [{include = "autopr"}]
+
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -28,8 +19,6 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "Topic :: Software Development",
@@ -38,80 +27,48 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 
-dependencies = [
-    "pydantic>=2.9.0,<3.0.0",
-    "pydantic_settings>=2.0.0,<3.0.0",
-    "aiohttp>=3.10.0,<4.0.0",
-    "structlog>=24.4.0,<25.0.0",
-    "click>=8.1.0,<9.0.0",
-    "pyyaml>=6.0.1,<7.0.0",
-    "jinja2>=3.1.4,<4.0.0",
-    "pygithub>=2.4.0,<3.0.0",
-    "GitPython>=3.1.43,<4.0.0",
-    "openai>=1.51.0,<2.0.0",
-    "anthropic>=0.34.0,<1.0.0",
-    "mistralai>=1.2.0,<2.0.0",
-    "groq>=0.11.0,<1.0.0",
-    "httpx>=0.27.0,<1.0.0",
-    "websockets>=13.1.0,<14.0.0",
-    "python-dateutil>=2.8.0,<3.0.0",
-    "pytz>=2023.3",
-    "python-dotenv>=1.0.1,<2.0.0",
-    "tomli>=2.0.1,<3.0.0",
-    "loguru>=0.7.2,<1.0.0"
+[tool.poetry.dependencies]
+python = "^3.13.0"
+pydantic = "^2.9.0"
+pydantic-settings = "^2.0.0"
+aiohttp = "^3.10.0"
+structlog = "^24.4.0"
+click = "^8.1.0"
+pyyaml = "^6.0.1"
+jinja2 = "^3.1.4"
+pygithub = "^2.4.0"
+GitPython = "^3.1.43"
+openai = "^1.51.0"
+anthropic = "^0.34.0"
+mistralai = "^1.2.0"
+groq = "^0.11.0"
+httpx = "^0.27.0"
+websockets = "^13.1.0"
+python-dateutil = "^2.8.0"
+pytz = "^2024.1"
+python-dotenv = "^1.0.1"
+tomli = "^2.0.1"
+loguru = "^0.7.2"
+
+[tool.poetry.extras]
+full = [
+    "dev",
+    "monitoring",
+    "memory",
+    "ai",
+    "database",
+    "server",
+    "resilience"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.3.0,<9.0.0",
-    "pytest-asyncio>=0.24.0,<1.0.0",
-    "pytest-cov>=5.0.0,<6.0.0",
-    "pytest-mock>=3.14.0,<4.0.0",
-    "black>=24.8.0,<25.0.0",
-    "isort>=5.13.0,<6.0.0",
-    "flake8>=7.0.0,<8.0.0",
-    "mypy>=1.11.0,<2.0.0",
-    "pre-commit>=3.0.0,<4.0.0",
-    "sphinx>=8.1.0,<9.0.0",
-    "sphinx-rtd-theme>=3.0.0,<4.0.0",
-    "myst-parser>=4.0.0,<5.0.0"
+keywords = [
+    "github", "pull-request", "automation", "ai", "code-review",
+    "ci-cd", "workflow", "integration", "slack", "linear", "autogen",
+    "llm", "openai", "anthropic", "issue-management", "quality-gates",
+    "platform-detection", "multi-agent"
 ]
-monitoring = [
-    "prometheus_client>=0.17.0,<1.0.0",
-    "sentry-sdk[fastapi]>=1.32.0,<2.0.0",
-    "datadog>=0.47.0,<1.0.0"
-]
-memory = [
-    "mem0ai>=0.1.0,<1.0.0",
-    "chromadb>=0.4.0,<1.0.0",
-    "qdrant-client>=1.5.0,<2.0.0"
-]
-ai = [
-    "pyautogen>=0.2.0,<1.0.0",
-    "langchain>=0.0.300,<1.0.0",
-    "langchain-openai>=0.0.5,<1.0.0",
-    "langchain-anthropic>=0.1.0,<1.0.0"
-]
-database = [
-    "asyncpg>=0.28.0,<1.0.0",
-    "sqlalchemy[asyncio]>=2.0.0,<3.0.0",
-    "alembic>=1.12.0,<2.0.0",
-    "redis>=4.6.0,<5.0.0",
-    "aioredis>=2.0.0,<3.0.0"
-]
-server = [
-    "fastapi>=0.103.0,<1.0.0",
-    "uvicorn[standard]>=0.23.0,<1.0.0",
-    "gunicorn>=21.2.0,<22.0.0"
-]
-resilience = [
-    "pybreaker>=1.0.0,<2.0.0",
-    "tenacity>=8.2.0,<9.0.0",
-    "limits>=3.6.0,<4.0.0"
-]
-full = ["autopr-engine[dev,monitoring,memory,ai,database,server,resilience]"]
 
-[project.urls]
+[tool.poetry.urls]
 Homepage = "https://github.com/veritasvault/autopr-engine"
 Documentation = "https://autopr-engine.readthedocs.io"
 Repository = "https://github.com/veritasvault/autopr-engine"
@@ -119,39 +76,89 @@ Repository = "https://github.com/veritasvault/autopr-engine"
 Changelog = "https://github.com/veritasvault/autopr-engine/blob/main/CHANGELOG.md"
 Discussions = "https://github.com/veritasvault/autopr-engine/discussions"
 
-[project.scripts]
+[tool.poetry.scripts]
 autopr = "autopr.cli:main"
 autopr-server = "autopr.server:main"
 autopr-worker = "autopr.worker:main"
 autopr-migration = "autopr.migration:main"
 
-[project.entry-points."autopr.actions"]
-platform_detector = "autopr.actions.platform_detector:PlatformDetector"
-pr_review_analyzer = "autopr.actions.pr_review_analyzer:PRReviewAnalyzer"
-issue_creator = "autopr.actions.issue_creator:IssueCreator"
-ai_comment_analyzer = "autopr.actions.ai_comment_analyzer:AICommentAnalyzer"
-quality_gates = "autopr.actions.quality_gates:QualityGates"
-autogen_multi_agent = "autopr.actions.autogen_multi_agent:AutoGenMultiAgent"
+[tool.poetry.plugins."autopr.actions"]
+"platform_detector" = "autopr.actions.platform_detector:PlatformDetector"
+"pr_review_analyzer" = "autopr.actions.pr_review_analyzer:PRReviewAnalyzer"
+"issue_creator" = "autopr.actions.issue_creator:IssueCreator"
+"ai_comment_analyzer" = "autopr.actions.ai_comment_analyzer:AICommentAnalyzer"
+"quality_gates" = "autopr.actions.quality_gates:QualityGates"
+"autogen_multi_agent" = "autopr.actions.autogen_multi_agent:AutoGenMultiAgent"
 
-[project.entry-points."autopr.integrations"]
-github = "autopr.integrations.github:GitHubIntegration"
-linear = "autopr.integrations.linear:LinearIntegration"
-slack = "autopr.integrations.slack:SlackIntegration"
-axolo = "autopr.integrations.axolo:AxoloIntegration"
+[tool.poetry.plugins."autopr.integrations"]
+"github" = "autopr.integrations.github:GitHubIntegration"
+"linear" = "autopr.integrations.linear:LinearIntegration"
+"slack" = "autopr.integrations.slack:SlackIntegration"
+"axolo" = "autopr.integrations.axolo:AxoloIntegration"
 
-[project.entry-points."autopr.llm_providers"]
-openai = "autopr.ai.providers.openai:OpenAIProvider"
-anthropic = "autopr.ai.providers.anthropic:AnthropicProvider"
-mistral = "autopr.ai.providers.mistral:MistralProvider"
-groq = "autopr.ai.providers.groq:GroqProvider"
+[tool.poetry.plugins."autopr.llm_providers"]
+"openai" = "autopr.ai.providers.openai:OpenAIProvider"
+"anthropic" = "autopr.ai.providers.anthropic:AnthropicProvider"
+"mistral" = "autopr.ai.providers.mistral:MistralProvider"
+"groq" = "autopr.ai.providers.groq:GroqProvider"
 
-[tool.poetry]
-name = "autopr-engine"
-version = "1.0.0"
-description = "AI-Powered GitHub PR Automation and Issue Management"
-authors = ["VeritasVault Team <dev@veritasvault.net>"]
-license = "MIT"
-packages = [{include = "autopr", from = "."}]
+
+httpx = "^0.27.0"
+websockets = "^13.1.0"
+python-dateutil = "^2.8.0"
+pytz = "^2024.1"
+python-dotenv = "^1.0.1"
+tomli = "^2.0.1"
+loguru = "^0.7.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^5.0.0"
+pytest-mock = "^3.14.0"
+black = "^24.8.0"
+isort = "^5.13.0"
+flake8 = "^7.0.0"
+mypy = "^1.11.0"
+pre-commit = "^3.0.0"
+sphinx = "^8.1.0"
+sphinx-rtd-theme = "^3.0.0"
+myst-parser = "^4.0.0"
+
+[tool.poetry.group.monitoring.dependencies]
+prometheus-client = "^0.17.0"
+sentry-sdk = {extras = ["fastapi"], version = "^1.32.0"}
+datadog = "^0.47.0"
+
+[tool.poetry.group.memory.dependencies]
+mem0ai = "^0.1.0"
+chromadb = "^0.4.0"
+qdrant-client = "^1.5.0"
+
+[tool.poetry.group.ai.dependencies]
+langchain = "^0.0.300"
+langchain-openai = "^0.0.5"
+langchain-anthropic = "^0.1.0"
+
+[tool.poetry.group.database.dependencies]
+asyncpg = "^0.28.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.0"}
+alembic = "^1.12.0"
+redis = "^4.6.0"
+aioredis = "^2.0.0"
+
+[tool.poetry.group.server.dependencies]
+fastapi = "^0.103.0"
+uvicorn = {extras = ["standard"], version = "^0.23.0"}
+gunicorn = "^21.2.0"
+
+[tool.poetry.group.resilience.dependencies]
+pybreaker = "^1.0.0"
+tenacity = "^8.2.0"
+limits = "^3.6.0"
+
+
+
 
 [tool.setuptools.package-dir]
 "" = "."
@@ -171,7 +178,57 @@ autopr = [
 minversion = "7.0"
 addopts = ["-ra", "--tb=short", "--maxfail=10"]
 testpaths = ["tests"]
-filterwarnings = ["ignore"]
+# Warning filters are now controlled by volume settings in autopr/utils/volume_utils.py
+# Default to 'ignore' but will be overridden by volume settings when tests run
+filterwarnings = [
+    # Always show deprecation warnings
+    "error::DeprecationWarning",
+    # Always show resource warnings (e.g., unclosed files)
+    "error::ResourceWarning",
+    # Default to ignoring other warnings - volume settings will adjust this
+    "ignore"
+]
+
+# Volume-based warning control
+# These settings map volume levels to warning filters
+[tool.pytest.volume_warnings]
+# Silent (0): Only critical issues
+"0" = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::ImportWarning",
+    "ignore::BytesWarning",
+    "ignore::ResourceWarning"
+]
+# Quiet (1-199): Show important warnings
+"100" = [
+    "default::DeprecationWarning",
+    "default::ResourceWarning",
+    "ignore::UserWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::ImportWarning",
+    "ignore::BytesWarning"
+]
+# Moderate (200-399): Show most warnings
+"300" = [
+    "default::Warning"  # Show all warnings by default
+]
+# Balanced (400-599): Show all warnings and fail on critical ones
+"500" = [
+    "error::DeprecationWarning",
+    "error::ResourceWarning",
+    "default::Warning"
+]
+# Thorough (600-799): Fail on most warnings
+"700" = [
+    "error::Warning"  # Fail on all warnings
+]
+# Maximum (800-1000): Strictest settings
+"1000" = [
+    "error::Warning",
+    "error::_pytest.warning_types.PytestWarning"
+]
 
 [tool.coverage.run]
 source = ["autopr"]

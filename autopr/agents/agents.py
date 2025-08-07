@@ -9,7 +9,8 @@ from dataclasses import dataclass
 
 from crewai import Agent
 from autopr.actions.llm import get_llm_provider_manager
-from autopr.actions.quality_engine import QualityEngine, QualityMode
+from autopr.actions.quality_engine import QualityEngine
+from autopr.utils.volume_utils import QualityMode
 from autopr.actions.platform_detection import PlatformDetector
 from autopr.actions.ai_linting_fixer import AILintingFixer
 from autopr.utils.volume_utils import (
@@ -51,7 +52,7 @@ class VolumeConfig:
         """Initialize volume configuration with validation and defaults."""
         # Import here to avoid circular imports
         from autopr.utils.volume_utils import volume_to_quality_mode
-        from autopr.actions.quality_engine.models import QualityMode
+        from autopr.utils.volume_utils import QualityMode
         
         # Store user-provided config to preserve it
         user_config = self.config.copy() if self.config else {}

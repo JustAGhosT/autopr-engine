@@ -36,8 +36,8 @@ if project_root not in sys.path:
 log_section("Attempting to import VolumeConfig")
 
 try:
-    from autopr.agents.agents import VolumeConfig
-    from autopr.actions.quality_engine.engine import QualityMode
+    from autopr.agents.base.volume_config import VolumeConfig
+    from autopr.utils.volume_utils import QualityMode
     logger.info("✅ Successfully imported VolumeConfig and QualityMode")
     
     log_section("Testing VolumeConfig Initialization")
@@ -68,7 +68,7 @@ try:
         (1, 'integer 1'),
         (0, 'integer 0'),
         ('1', 'string "1"'),
-        ('0', 'string "0")
+        ('0', 'string "0"')
     ]
     
     for value, desc in test_cases:
@@ -77,6 +77,7 @@ try:
             config = VolumeConfig(volume=500, config={'enable_ai_agents': value})
             result = config.config.get('enable_ai_agents')
             logger.info(f"✅ {desc}: {result} (type: {type(result).__name__})")
+
         except Exception as e:
             logger.error(f"❌ Failed with {desc}: {e}\n{traceback.format_exc()}")
     

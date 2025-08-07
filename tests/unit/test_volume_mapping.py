@@ -11,7 +11,7 @@ from autopr.actions.quality_engine.volume_mapping import (
     get_volume_config,
     VolumeLevel
 )
-from autopr.actions.quality_engine.engine import QualityMode
+from autopr.utils.volume_utils import QualityMode
 
 
 class TestVolumeMapping:

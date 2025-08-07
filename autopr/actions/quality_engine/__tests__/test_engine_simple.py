@@ -4,7 +4,8 @@ Simplified tests for Quality Engine core functionality.
 
 import pytest
 
-from autopr.actions.quality_engine.models import QualityMode, QualityOutputs
+from autopr.actions.quality_engine.models import QualityOutputs
+from autopr.utils.volume_utils import QualityMode
 
 
 class TestQualityEngineSimple:

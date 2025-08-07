@@ -127,17 +127,24 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
                 context=inputs.context or {}
             )
             
-            # Extract the primary platform
+            # Extract the primary platform safely
             primary_platform = self._get_primary_platform(analysis)
             
-            # Prepare the output
+            # Safely get the primary platform's confidence score
+            primary_confidence = analysis.platforms.get(primary_platform, 0.0)
+            
+            # Prepare the platforms list with name-confidence pairs
+            platforms_list = [(p.name, confidence) 
+                            for p, confidence in analysis.platforms.items()]
+            
+            # Prepare the output with defensive programming
             return PlatformAnalysisOutputs(
-                platforms=[(p.name, c) for p, c in analysis.platforms],
-                primary_platform=(primary_platform.name, analysis.platforms[primary_platform]),
-                tools=list(analysis.tools),
-                frameworks=list(analysis.frameworks),
-                languages=list(analysis.languages),
-                config_files=[str(path) for path in analysis.config_files],
+                platforms=platforms_list,
+                primary_platform=(primary_platform.name, primary_confidence),
+                tools=list(analysis.tools) if analysis.tools else [],
+                frameworks=list(analysis.frameworks) if analysis.frameworks else [],
+                languages=list(analysis.languages) if analysis.languages else [],
+                config_files=[str(path) for path in analysis.config_files] if analysis.config_files else [],
                 analysis=analysis
             )
             

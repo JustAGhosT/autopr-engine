@@ -29,13 +29,17 @@
   },
   "problems.decorations.enabled": true,
   "problems.showCurrentInStatus": true,
-  "yaml.validate": true,
+  // YAML Configuration - All YAML features disabled
   "yaml.schemas": {},
   "yaml.customTags": [],
   "yaml.format.enable": false,
-  "yaml.hover": true,
-  "yaml.completion": true,
+  "yaml.hover": false,
+  "yaml.completion": false,
   "yaml.validate.enable": false,
+  "yaml.schemaStore.enable": false,
+  "yaml.yamlVersion": "1.1",
+  "yaml.disableAdditionalProperties": true,
+  "yaml.trace.server": "off",
   "powershell.scriptAnalysis.enable": false,
   "powershell.integratedConsole.showOnStartup": false,
   "powershell.debugging.enabled": true,
@@ -54,16 +58,35 @@
   "cursor.linting.enabled": false,
   "cursor.formatting.enabled": false,
   "cursor.diagnostics.enabled": false,
-  "cSpell.enabled": false,
-  "cSpell.enableFiletypes": [],
+  // cSpell configuration
+  "cSpell.enabled": true,
+  "cSpell.enabledFileTypes": [
+    "python",
+    "markdown",
+    "plaintext",
+    "json",
+    "yaml",
+    "dockerfile",
+    "git-commit"
+  ],
   "cSpell.diagnosticLevel": "Hint",
-  "cSpell.showStatus": false,
-  "markdownlint.enable": false,
+  "cSpell.showStatus": true,
+  "cSpell.ignorePaths": [
+    "**/node_modules/**",
+    "**/venv/**",
+    "**/.venv/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/*.min.js"
+  ],
+  "markdownlint.enable": true,
   "markdownlint.config": {
-    "default": false
+    "default": true,
+    "MD013": false,  // Disable line length check
+    "MD033": false,  // Allow inline HTML
+    "MD041": false   // Disable first line must be h1
   },
-  "markdownlint.customRules": [],
-  "markdownlint.run": "never",
+  "markdownlint.run": "onSave",
   "tabnine.enabled": false,
   "tabnine.experimentalAutoImports": false,
   "tabnine.autoComplete": false,
@@ -92,8 +115,9 @@
   },
   "editor.suggestOnTriggerCharacters": false,
   "editor.acceptSuggestionOnEnter": "off",
-  "python.linting.maxNumberOfProblems": 0,
-  "python.analysis.include": [],
+  // Overly restrictive Python analysis exclusions
+  // 
+  // The current configuration excludes all files from Python analysis, which defeats the purpose of having linting enabled
   "python.analysis.exclude": [
     "**/*",
     "*"
@@ -122,7 +146,7 @@
     "**/build": true,
     "**/*.pyc": true
   },
-  "yaml.schemaStore.enable": false,
+
   "python.defaultInterpreterPath": "",
   "python.autoComplete.enabled": false,
   "python.jediEnabled": false,
@@ -136,44 +160,35 @@
   "files.associations": {},
   "github-actions.workflows.pinned.workflows": [],
   "github-actions.workflows.pinned.refresh.enabled": false,
-  "redhat.vscode-yaml": false,
-  "yaml.schemaStore.url": "",
-  "yaml.yamlVersion": "1.1",
-  "yaml.disableAdditionalProperties": true,
-  "yaml.suggest.parentSkeletonSelectedFirst": false,
+  // PowerShell Configuration
   "powershell.scriptAnalysis.settingsPath": "",
-  "powershell.codeFormatting.preset": "None",
+  "powershell.codeFormatting.preset": "Custom",
   "powershell.integratedConsole.suppressStartupBanner": true,
   "problems.visibility": true,
-  "redhat.vscode-yaml.enable": false,
   "ms-vscode.powershell.enable": false,
   "github.vscode-github-actions.enable": false,
   "workbench.enableExperiments": false,
   "telemetry.telemetryLevel": "off",
-  "update.enableWindowsBackgroundUpdates": false,
   "javascript.validate.enable": true,
   "github-actions": false,
   "githubActions.workflows.pinned.workflows": [],
   "githubActions.workflows.pinned.refresh.enabled": false,
-  "extensions.showRecommendationsOnlyOnDemand": true,
+  // Extensions configuration moved to extensions.json
   "workbench.startupEditor": "none",
   "workbench.settings.enableNaturalLanguageSearch": false,
-  "redhat.vscode-yaml.validation.enabled": false,
-  "redhat.vscode-yaml.format.enable": false,
-  "redhat.vscode-yaml.hover": false,
-  "redhat.vscode-yaml.completion": false,
+  // Red Hat YAML Extension (completely disabled)
+  "redhat.vscode-yaml": false,  // Master switch - disables all Red Hat YAML features
   "git.enabled": true,
   "git.autorefresh": true,
   "git.decorations.enabled": true,
-  "yaml.trace.server": "messages",
-  "yaml.maxItemsComputed": 0,
-  "redhat.vscode-yaml.enabled": true,
+  // YAML Language Server and related extensions disabled
+  "yaml-language-server.enabled": false,
   "ms-kubernetes-tools.vscode-kubernetes-tools": false,
   "vscode-yaml.enabled": false,
-  "yaml-language-server.enabled": false,
   "[yaml]": {
     "editor.defaultFormatter": "none",
     "editor.formatOnSave": false,
+    "editor.suggest.showWords": false,
     "editor.quickSuggestions": {
       "comments": "off",
       "strings": "off",
@@ -183,6 +198,7 @@
   "[yml]": {
     "editor.defaultFormatter": "none",
     "editor.formatOnSave": false,
+    "editor.suggest.showWords": false,
     "editor.quickSuggestions": {
       "comments": "off",
       "strings": "off",

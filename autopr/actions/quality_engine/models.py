@@ -3,24 +3,14 @@ Quality Engine Data Models
 """
 
 import logging
-from enum import Enum
 from typing import Any, Optional
 
 import pydantic
 
 from autopr.actions.base import ActionInputs
-from autopr.utils.volume_utils import get_volume_config
+from autopr.utils.volume_utils import QualityMode, get_volume_config
 
 logger = logging.getLogger(__name__)
-
-class QualityMode(Enum):
-    """Operating mode for quality checks"""
-
-    ULTRA_FAST = "ultra-fast"
-    FAST = "fast"
-    COMPREHENSIVE = "comprehensive"
-    AI_ENHANCED = "ai_enhanced"
-    SMART = "smart"
 
 
 class QualityInputs(pydantic.BaseModel):

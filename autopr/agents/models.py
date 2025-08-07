@@ -89,11 +89,63 @@ class CodeAnalysisReport(BaseModel):
         description="Analysis of the platform and technology stack"
     )
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert the report to a dictionary."""
-        return self.model_dump()
+    def to_dict(self, *, include: set[str] | None = None, exclude: set[str] | None = None, 
+               by_alias: bool = False, exclude_unset: bool = False, 
+               exclude_defaults: bool = False, exclude_none: bool = False) -> Dict[str, Any]:
+        """Convert the report to a dictionary using Pydantic v2 serialization.
+        
+        Args:
+            include: Fields to include in the output
+            exclude: Fields to exclude from the output
+            by_alias: Whether to use field aliases in the output
+            exclude_unset: Whether to exclude fields that were not explicitly set
+            exclude_defaults: Whether to exclude fields that are set to their default value
+            exclude_none: Whether to exclude fields that are None
+            
+        Returns:
+            Dictionary representation of the model
+        """
+        return self.model_dump(
+            include=include,
+            exclude=exclude,
+            by_alias=by_alias,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none
+        )
+        
+    def to_json(self, *, indent: int | None = None, **kwargs) -> str:
+        """Convert the report to a JSON string using Pydantic v2 serialization.
+        
+        Args:
+            indent: Number of spaces for JSON indentation
+            **kwargs: Additional arguments passed to model_dump_json()
+            
+        Returns:
+            JSON string representation of the model
+        """
+        return self.model_dump_json(indent=indent, **kwargs)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'CodeAnalysisReport':
-        """Create a report from a dictionary."""
+        """Create a report from a dictionary using Pydantic v2 validation.
+        
+        Args:
+            data: Dictionary containing the report data
+            
+        Returns:
+            A new CodeAnalysisReport instance
+        """
         return cls.model_validate(data)
+        
+    @classmethod
+    def from_json(cls, json_data: str | bytes | bytearray) -> 'CodeAnalysisReport':
+        """Create a report from a JSON string using Pydantic v2 validation.
+        
+        Args:
+            json_data: JSON string or bytes containing the report data
+            
+        Returns:
+            A new CodeAnalysisReport instance
+        """
+        return cls.model_validate_json(json_data)

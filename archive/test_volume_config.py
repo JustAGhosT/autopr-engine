@@ -11,7 +11,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from autopr.agents.agents import VolumeConfig
-from autopr.actions.quality_engine.engine import QualityMode
+from autopr.utils.volume_utils import QualityMode
 
 def test_volume_config():
     """Test VolumeConfig initialization and boolean handling."""

@@ -36,58 +36,58 @@ Controls what blocks your commits
 
 ### Check Current Status
 ```bash
-python scripts/linting-volume-control.py status
+python scripts/volume.py status
 ```
 
 ### Set Dev Environment Volume
 ```bash
 # Start with minimal linting
-python scripts/linting-volume-control.py dev 1
+python scripts/volume.py dev 1
 
 # Gradually increase as you're ready
-python scripts/linting-volume-control.py dev 2
-python scripts/linting-volume-control.py dev 3
+python scripts/volume.py dev 2
+python scripts/volume.py dev 3
 # ... up to 10
 ```
 
 ### Set Commit Volume
 ```bash
 # Start with no commit checks
-python scripts/linting-volume-control.py commit 0
+python scripts/volume.py commit 0
 
 # Gradually increase as you're ready
-python scripts/linting-volume-control.py commit 1
-python scripts/linting-volume-control.py commit 2
+python scripts/volume.py commit 1
+python scripts/volume.py commit 2
 # ... up to 10
 ```
 
 ### Autofix Current Level
 ```bash
 # After setting a volume, autofix issues at that level
-python scripts/linting-volume-control.py autofix
+python scripts/volume.py autofix
 ```
 
 ## 🚀 Recommended Workflow
 
 ### For New Projects (Start Conservative)
-1. **Set Dev Volume to 1**: `python scripts/linting-volume-control.py dev 1`
-2. **Set Commit Volume to 0**: `python scripts/linting-volume-control.py commit 0`
+1. **Set Dev Volume to 1**: `python scripts/volume.py dev 1`
+2. **Set Commit Volume to 0**: `python scripts/volume.py commit 0`
 3. **Focus on functionality first**
 4. **When ready, tune up 1 tick at a time**:
    ```bash
-   python scripts/linting-volume-control.py dev 2
-   python scripts/linting-volume-control.py autofix
+   python scripts/volume.py dev 2
+   python scripts/volume.py autofix
    ```
 
 ### For Existing Projects (Gradual Improvement)
-1. **Check current status**: `python scripts/linting-volume-control.py status`
+1. **Check current status**: `python scripts/volume.py status`
 2. **Start with current level**
 3. **Tune up 1 tick at a time**:
    ```bash
-   python scripts/linting-volume-control.py dev 3
-   python scripts/linting-volume-control.py autofix
-   python scripts/linting-volume-control.py dev 4
-   python scripts/linting-volume-control.py autofix
+   python scripts/volume.py dev 3
+   python scripts/volume.py autofix
+   python scripts/volume.py dev 4
+   python scripts/volume.py autofix
    ```
 
 ## 🎛️ Volume Level Details
@@ -223,15 +223,15 @@ Each level includes appropriate autofix commands:
 ## 🚨 Troubleshooting
 
 ### If You're Still in "Yeah Right" Territory
-1. **Start with Dev Volume 0**: `python scripts/linting-volume-control.py dev 0`
+1. **Start with Dev Volume 0**: `python scripts/volume.py dev 0`
 2. **Restart your IDE**
-3. **Gradually increase**: `python scripts/linting-volume-control.py dev 1`
-4. **Autofix each level**: `python scripts/linting-volume-control.py autofix`
+3. **Gradually increase**: `python scripts/volume.py dev 1`
+4. **Autofix each level**: `python scripts/volume.py autofix`
 
 ### If Commits Are Blocking
-1. **Lower Commit Volume**: `python scripts/linting-volume-control.py commit 0`
-2. **Gradually increase**: `python scripts/linting-volume-control.py commit 1`
-3. **Autofix issues**: `python scripts/linting-volume-control.py autofix`
+1. **Lower Commit Volume**: `python scripts/volume.py commit 0`
+2. **Gradually increase**: `python scripts/volume.py commit 1`
+3. **Autofix issues**: `python scripts/volume.py autofix`
 
 ### If IDE Is Still Showing Errors
 1. **Reload IDE**: Ctrl+Shift+P → "Developer: Reload Window"

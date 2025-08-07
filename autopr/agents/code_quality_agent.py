@@ -12,7 +12,7 @@ from crewai import Agent as CrewAgent
 
 from autopr.agents.base import BaseAgent, VolumeConfig
 from autopr.actions.llm import get_llm_provider_manager
-from autopr.actions.quality_engine import QualityMode
+from autopr.utils.volume_utils import QualityMode
 from autopr.actions.quality_engine.volume_mapping import get_volume_config
 
 

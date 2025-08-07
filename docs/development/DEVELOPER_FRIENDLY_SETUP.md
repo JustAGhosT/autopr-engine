@@ -45,7 +45,7 @@ python scripts/volume.py autofix
 - Basic security scan (bandit)
 - Unit tests
 
-**Command:** `python scripts/volume.py status`
+**Command:** `python scripts/volume.py autofix`
 
 ### 🔴 Level 3: Comprehensive Checks (Before Release)
 - All Level 2 checks
@@ -179,28 +179,59 @@ python scripts/volume.py autofix
 
 ## 🔧 Customization
 
-### Make Checks More Permissive
-Edit `pyproject.toml`:
-```toml
-[tool.ruff.lint]
-# Add more rules to ignore
-ignore = [
-    "E501",  # Line too long
-    "F401",  # Unused imports
-    # ... add more as needed
-]
+### Volume Control System
+
+AutoPR uses a HiFi-style volume control system (0-1000) to configure check strictness:
+
+```bash
+# Check current volume levels
+python scripts/volume.py status
+
+# Set development volume (affects IDE linting)
+python scripts/volume.py dev <0-1000>
+
+# Set commit volume (affects pre-commit checks)
+python scripts/volume.py commit <0-1000>
+
+# Adjust volumes up/down
+python scripts/volume.py dev up 1     # Increase dev volume by 5 (1 step)
+python scripts/volume.py commit down 2  # Decrease commit volume by 10 (2 steps)
+
+# Autofix issues at current volume level
+python scripts/volume.py autofix
 ```
 
-### Make Checks More Strict
+### Volume Levels Guide
+- `0` - OFF (no linting)
+- `5-100` - QUIET (basic syntax only)
+- `105-300` - MEDIUM (standard formatting & imports)
+- `305-600` - HIGH (enhanced checks)
+- `605-1000` - VERY HIGH (strict mode)
+
+### Fine-Tuning Rules
+
+For custom rule adjustments, edit the volume control configuration instead of `pyproject.toml` directly:
+
 ```bash
-# Run comprehensive checks locally
+# View current configuration at:
+cat scripts/volume-control/config/volume_rules.json
+
+# Or check the active rules for current volume:
+python scripts/volume.py status --verbose
+```
+
+### Advanced: Manual Overrides
+
+For one-off comprehensive checks:
+```bash
+# Run comprehensive checks
 python -m autopr.actions.quality_engine --mode=comprehensive
 
-# Enable MyPy strict mode
+# Enable MyPy strict mode for specific modules
 mypy autopr --strict
 
-# Run all Ruff rules
-ruff check . --select=ALL
+# Run all Ruff rules on specific files
+ruff check path/to/file.py --select=ALL
 ```
 
 ## 📞 Getting Help

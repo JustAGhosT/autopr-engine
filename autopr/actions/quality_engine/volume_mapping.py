@@ -8,7 +8,8 @@ This module provides functions to map volume levels (0-1000) to quality modes
 and configurations that control the behavior of the quality engine.
 """
 import warnings
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, TypedDict
+from enum import Enum
 
 # Import from the new location
 from autopr.utils.volume_utils import (
@@ -31,7 +32,7 @@ volume_to_quality_mode = _volume_to_quality_mode
 get_volume_level_name = _get_volume_level_name
 
 # Import QualityMode for backward compatibility
-from autopr.actions.quality_engine.models import QualityMode
+from autopr.utils.volume_utils import QualityMode
 
 # Volume range constants for consistent behavior across functions
 VOLUME_RANGES = {

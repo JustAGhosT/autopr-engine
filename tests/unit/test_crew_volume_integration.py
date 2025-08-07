@@ -7,7 +7,8 @@ from unittest.mock import MagicMock, patch, ANY
 from typing import Dict, Any, Optional, Union
 
 from autopr.agents.crew import AutoPRCrew
-from autopr.actions.quality_engine.engine import QualityInputs, QualityMode
+from autopr.actions.quality_engine.engine import QualityInputs
+from autopr.utils.volume_utils import QualityMode
 from autopr.actions.platform_detection.detector import PlatformAnalysis, PlatformComponent
 from autopr.models.artifacts import CodeIssue, IssueSeverity
 

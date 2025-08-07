@@ -4,9 +4,24 @@ Volume-related utility functions for AutoPR.
 This module provides volume-based configuration and utilities that can be imported
 without creating circular dependencies between modules.
 """
+from enum import Enum
 from typing import Any, Dict, Tuple
 
-from autopr.actions.quality_engine.models import QualityMode
+
+class QualityMode(Enum):
+    """Operating mode for quality checks"""
+
+    ULTRA_FAST = "ultra-fast"
+    FAST = "fast"
+    COMPREHENSIVE = "comprehensive"
+    AI_ENHANCED = "ai_enhanced"
+    SMART = "smart"
+
+# Volume threshold constants for consistent behavior
+AI_AGENTS_THRESHOLD = 200  # Volume level at which to enable AI agents
+MIN_FIXES = 1  # Minimum number of fixes to apply
+MAX_FIXES = 100  # Maximum number of fixes to apply
+MIN_ISSUES = 10  # Minimum number of issues to report
 
 
 def get_volume_level_name(volume: int) -> str:
@@ -77,9 +92,12 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
 
     # Base configuration that applies to all modes
     base_config: Dict[str, Any] = {
-        "max_fixes": max(1, volume // 20) if volume > 0 else 0,  # 0-50 fixes based on volume
-        "max_issues": max(10, volume // 10),  # 10-100 issues based on volume
-        "enable_ai_agents": volume > 200,  # Enable AI agents for volume > 200
+        # Scale fixes more gradually (1-100) based on volume
+        "max_fixes": min(MAX_FIXES, max(MIN_FIXES, volume // 10)),
+        # Scale issues from MIN_ISSUES to 100 based on volume
+        "max_issues": max(MIN_ISSUES, volume // 10),
+        # Enable AI agents at the MODERATE threshold (200+)
+        "enable_ai_agents": volume >= AI_AGENTS_THRESHOLD,
     }
     
     # Map volume ranges to quality modes

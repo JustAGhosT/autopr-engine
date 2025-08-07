@@ -221,7 +221,8 @@ Options:
 
 ```python
 from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityInputs, QualityMode
+from autopr.actions.quality_engine.models import QualityInputs
+from autopr.utils.volume_utils import QualityMode
 
 # Create engine
 engine = QualityEngine()

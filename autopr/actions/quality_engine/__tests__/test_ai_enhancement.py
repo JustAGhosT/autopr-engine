@@ -366,7 +366,7 @@ class TestAIEnhancementIntegration:
     async def test_ai_enhanced_quality_engine_integration(self):
         """Test AI enhancement integration with Quality Engine."""
         from autopr.actions.quality_engine.engine import QualityEngine
-        from autopr.actions.quality_engine.models import QualityMode
+        from autopr.utils.volume_utils import QualityMode
 
         engine = QualityEngine()
 

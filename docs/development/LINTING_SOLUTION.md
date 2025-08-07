@@ -200,7 +200,7 @@ python scripts/no-lint.py
 ## 💡 Best Practices
 
 1. **Use `no-lint.py` for daily development**
-2. **Polish before committing** (use `dev-setup.py --fix`)
+2. **Polish before committing** (use `volume.py autofix`)
 3. **Enable linting for PRs** (use `enable-linting.py`)
 4. **Restart IDE after configuration changes**
 5. **Communicate the workflow to your team**
@@ -209,4 +209,5 @@ python scripts/no-lint.py
 
 **The "yeah right" problem is solved! 🎉**
 
+*Context improved by Giga AI, using the provided code document and edit instructions.*
 *Context improved by Giga AI, using the provided code document and edit instructions.* 

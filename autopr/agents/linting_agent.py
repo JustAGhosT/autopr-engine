@@ -7,14 +7,19 @@ and fixing code style and quality issues in a codebase.
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
+import logging
 import os
 import re
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 from crewai import Agent as CrewAgent
 
 from autopr.agents.base import BaseAgent, VolumeConfig
 from autopr.actions.llm import get_llm_provider_manager
-from autopr.actions.ai_linting_fixer import AILintingFixer, CodeIssue
+from autopr.actions.ai_linting_fixer import AILintingFixer
+from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.models import LintingFixResult
 from autopr.actions.ai_linting_fixer.agents import (
     ImportFixerAgent,
@@ -63,9 +68,9 @@ class LintingOutputs:
     file_path: str
     original_code: str
     fixed_code: Optional[str] = None
-    issues: List[CodeIssue] = None
-    fixed_issues: List[CodeIssue] = None
-    remaining_issues: List[CodeIssue] = None
+    issues: List[LintingIssue] = None
+    fixed_issues: List[LintingIssue] = None
+    remaining_issues: List[LintingIssue] = None
     fix_summary: Dict[str, Any] = None
     metrics: Dict[str, Any] = None
 
@@ -136,12 +141,46 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             
         Returns:
             LintingOutputs containing the linting results and fixes
+            
+        Raises:
+            FileNotFoundError: If the input file doesn't exist
+            PermissionError: If there are permission issues reading the file
+            UnicodeDecodeError: If there's an encoding error reading the file
+            OSError: For other file-related errors
         """
         try:
             # Read the file if code is not provided
             if inputs.code is None:
-                with open(inputs.file_path, 'r', encoding='utf-8') as f:
-                    code = f.read()
+                try:
+                    with open(inputs.file_path, 'r', encoding='utf-8') as f:
+                        code = f.read()
+                except FileNotFoundError as e:
+                    error_msg = f"File not found: {inputs.file_path}"
+                    if self.verbose:
+                        logger.error(error_msg, exc_info=True)
+                    raise FileNotFoundError(error_msg) from e
+                except PermissionError as e:
+                    error_msg = f"Permission denied when reading file: {inputs.file_path}"
+                    if self.verbose:
+                        logger.error(error_msg, exc_info=True)
+                    raise PermissionError(error_msg) from e
+                except UnicodeDecodeError as e:
+                    error_msg = f"Could not decode file {inputs.file_path} as UTF-8: {str(e)}"
+                    if self.verbose:
+                        logger.error(error_msg, exc_info=True)
+                    # Preserve the original exception details while adding context
+                    raise UnicodeDecodeError(
+                        e.encoding,
+                        e.object,
+                        e.start,
+                        e.end,
+                        f"{e.reason} in file {inputs.file_path}"
+                    ) from e
+                except OSError as e:
+                    error_msg = f"Error reading file {inputs.file_path}: {str(e)}"
+                    if self.verbose:
+                        logger.error(error_msg, exc_info=True)
+                    raise OSError(error_msg) from e
             else:
                 code = inputs.code
             
