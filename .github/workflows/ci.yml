@@ -106,7 +106,7 @@ jobs:
         run: |
           ruff check autopr/ \
             --exclude autopr/actions/quality_engine/__tests__ \
-            --ignore E402,E722,E741,F811,W293,W291,E122,E302 \
+            --ignore E402,E722,E741,F811,W293,W291 \
             --output-format=github
 
   typecheck:
