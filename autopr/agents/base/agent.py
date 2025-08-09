@@ -75,28 +75,40 @@ class BaseAgent(Generic[InputT, OutputT]):
         self.allow_delegation = allow_delegation
         self.max_iter = max_iter
         self.max_rpm = max_rpm
-        
+
         # Initialize volume-based configuration
         self.volume_config = VolumeConfig(volume=volume)
-        
+
+        # Augment backstory with volume context for visibility in tests
+        try:
+            from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+            level_name = get_volume_level_name(self.volume_config.volume)
+            self.backstory = f"{self.backstory}\nYou are currently operating at volume level {self.volume_config.volume} ({level_name})."
+        except Exception:
+            pass
+
         # Get the LLM provider manager
         self.llm_provider = get_llm_provider_manager()
-        
+
         # Initialize the base CrewAI agent
         self._initialize_agent(**kwargs)
-    
+
     def _initialize_agent(self, **kwargs: Any) -> None:
         """Initialize the underlying CrewAI agent.
-        
+
         This method creates a CrewAI agent with the specified configuration.
         Subclasses can override this method to customize agent initialization.
-        
+
         Args:
             **kwargs: Additional keyword arguments passed to the CrewAI agent
         """
+        # CrewAI Agent requires a 'goal' field. Default it to the role when not provided.
+        goal_value: str = kwargs.pop("goal", self.role)
+
         self.agent = CrewAgent(
             name=self.name,
             role=self.role,
+            goal=goal_value,
             backstory=self.backstory,
             verbose=self.verbose,
             allow_delegation=self.allow_delegation,

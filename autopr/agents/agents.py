@@ -3,27 +3,24 @@ Agent definitions for the AutoPR Agent Framework.
 
 This module defines the specialized agents used in the AutoPR code analysis pipeline.
 """
-from typing import Dict, Any, List, Optional, Type, TypeVar, Generic
-from pathlib import Path
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 
-from crewai import Agent
+# Provide a fallback for typing/mypy when crewai is not available
+try:  # pragma: no cover - import-time compatibility shim
+    from crewai import Agent  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover
+    class Agent:  # type: ignore[no-redef]
+        ...
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.actions.quality_engine import QualityEngine
 from autopr.utils.volume_utils import QualityMode
 from autopr.actions.platform_detection import PlatformDetector
 from autopr.actions.ai_linting_fixer import AILintingFixer
-from autopr.utils.volume_utils import (
-    volume_to_quality_mode,
-    get_volume_config,
-    get_volume_level_name
-)
+from autopr.utils.volume_utils import get_volume_level_name
 from autopr.agents.models import IssueSeverity
 
-# Import models using full path to avoid circular imports
-from autopr.agents.models import CodeIssue, PlatformAnalysis, CodeAnalysisReport
-
-T = TypeVar('T')
+from autopr.agents.models import CodeIssue, PlatformAnalysis, PlatformComponent
 
 @dataclass
 class VolumeConfig:
@@ -77,7 +74,8 @@ class VolumeConfig:
                 self.config = {**default_config, **user_config}
             except Exception as e:
                 # Fall back to default values if volume_to_quality_mode fails
-                self.quality_mode = QualityMode.BALANCED
+                # Default to SMART if unknown
+                self.quality_mode = QualityMode.SMART
                 self.config = {
                     "max_fixes": 25,
                     "max_issues": 100,
@@ -290,33 +288,33 @@ class PlatformAnalysisAgent(BaseAgent):
         # Configure platform detector based on volume if needed
         if self.volume_config.config and "platform_scan_depth" in self.volume_config.config:
             self._platform_detector.scan_depth = self.volume_config.config["platform_scan_depth"]
-    
+
     @property
     def platform_detector(self) -> PlatformDetector:
         """Get the platform detector instance."""
         return self._platform_detector
-    
+
     async def analyze_platform(self, repo_path: str) -> PlatformAnalysis:
         """Analyze the platform and technology stack."""
-        # Delegate to the platform detector
-        detection_result = await self.platform_detector.detect_platform(repo_path)
-        
+        # Delegate to the platform detector (prefer analyze, fallback handled inside detector)
+        detection_result = await self.platform_detector.analyze(repo_path)
+
         # Convert to our model
-        components = [
-            PlatformComponent(
-                name=comp["name"],
-                version=comp.get("version"),
-                confidence=comp["confidence"],
-                evidence=comp.get("evidence", [])
-            )
-            for comp in detection_result.get("components", [])
-        ]
-        
+        # detection_result is a PlatformDetectorOutputs (pydantic model). Map to PlatformAnalysis
+        platform = detection_result.primary_platform
+        confidence = float(detection_result.confidence_scores.get(platform, 0.0))
+
+        # Build minimal components list from platform_specific_configs if present
+        components: list[PlatformComponent] = []
+        platform_configs = detection_result.platform_specific_configs.get(platform, {})
+        for name in platform_configs.get("dependencies", []):
+            components.append(PlatformComponent(name=name, version=None, confidence=0.5, evidence=[]))
+
         return PlatformAnalysis(
-            platform=detection_result["platform"],
-            confidence=detection_result["confidence"],
+            platform=platform,
+            confidence=confidence,
             components=components,
-            recommendations=detection_result.get("recommendations", [])
+            recommendations=detection_result.recommended_enhancements,
         )
 
 

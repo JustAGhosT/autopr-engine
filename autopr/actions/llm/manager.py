@@ -125,6 +125,11 @@ class LLMProviderManager:
             return provider
         return None
 
+    # Backward-compatibility helpers used in tests
+    def get_llm(self, provider_name: str) -> BaseLLMProvider | None:
+        """Alias for get_provider to satisfy older code/tests."""
+        return self.get_provider(provider_name)
+
     def complete(self, request: dict[str, Any]) -> LLMResponse:
         """
         Complete a chat conversation using the specified or default provider with fallback.

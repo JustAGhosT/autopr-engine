@@ -121,24 +121,21 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             max_rpm=max_rpm,
             **kwargs
         )
-        
-        # Initialize the AI linting fixer with LLM provider manager
-        if llm_manager is None:
-            from autopr.actions.llm.manager import get_llm_provider_manager
-            llm_manager = get_llm_provider_manager()
-        self.linting_fixer = AILintingFixer(llm_manager=llm_manager)
-        
+
+        # Initialize the AI linting fixer (constructor manages its own LLM manager)
+        self.linting_fixer = AILintingFixer()
+
         # Register fixer agents
         self._register_fixer_agents()
-    
+
     def _register_fixer_agents(self) -> None:
         """Register all available fixer agents."""
         # The AgentManager already initializes all agents, so we don't need to register them individually
         # Just ensure the agent manager is properly imported and used
-    
+
     async def _execute(self, inputs: LintingInputs) -> LintingOutputs:
         """Lint and optionally fix code issues.
-        
+
         Args:
             inputs: The input data for the agent
             
@@ -186,17 +183,17 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                     raise OSError(error_msg) from e
             else:
                 code = inputs.code
-            
+
             # Determine language from file extension if not provided
             language = inputs.language or self._detect_language(inputs.file_path)
-            
+
             # Set up the context
             context = inputs.context or {}
             context['language'] = language
-            
+
             # Apply volume-based configuration
             volume_config = self.volume_config.config or {}
-            
+
             # Run the linter
             result = await self.linting_fixer.fix_code_issues(
                 file_path=inputs.file_path,
@@ -206,7 +203,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                 fix=inputs.fix,
                 **volume_config
             )
-            
+
             # Prepare the output
             return LintingOutputs(
                 file_path=inputs.file_path,
@@ -218,12 +215,12 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                 fix_summary=result.fix_summary if hasattr(result, 'fix_summary') else {},
                 metrics=result.metrics if hasattr(result, 'metrics') else {},
             )
-            
+
         except Exception as e:
             # Log the error and return a response with the error
             if self.verbose:
                 print(f"Error in LintingAgent: {str(e)}")
-            
+
             # Create a default issue for the error
             error_issue = CodeIssue(
                 rule_id="linting-error",
@@ -234,7 +231,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                 severity="error",
                 context={"error": str(e)}
             )
-            
+
             return LintingOutputs(
                 file_path=inputs.file_path,
                 original_code=inputs.code or "",
@@ -244,20 +241,20 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                 fix_summary={"error": str(e)},
                 metrics={"error": str(e)},
             )
-    
+
     def _detect_language(self, file_path: str) -> str:
         """Detect the programming language from the file extension.
-        
+
         Args:
             file_path: Path to the file
-            
+
         Returns:
             The detected programming language
         """
         # Get the file extension
         _, ext = os.path.splitext(file_path)
         ext = ext.lower()
-        
+
         # Map extensions to languages
         language_map = {
             '.py': 'python',
@@ -291,12 +288,12 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             '.xml': 'xml',
             '.md': 'markdown',
         }
-        
+
         return language_map.get(ext, 'text')
-    
+
     def get_available_rules(self) -> List[Dict[str, Any]]:
         """Get a list of all available linting rules.
-        
+
         Returns:
             A list of dictionaries containing rule information
         """

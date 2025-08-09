@@ -125,8 +125,8 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             
             # Perform the platform analysis
             analysis = await self.detector.analyze(
-                repo_path=repo_path,
-                file_paths=file_paths,
+                repo_path=str(repo_path),
+                file_paths=[str(p) for p in file_paths] if file_paths else None,
                 context=inputs.context or {}
             )
             
@@ -219,7 +219,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             
         # Safely get detection rules with defaults
         detection_rules = {}
-        if hasattr(platform_config, 'detection'):
+        if platform_config and hasattr(platform_config, 'detection'):
             detection = platform_config.detection or {}
             detection_rules = {
                 'files': detection.get('files', []),

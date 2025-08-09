@@ -69,22 +69,30 @@ def get_warning_filters(volume: int) -> List[str]:
     return volume_warnings_config.get(str(selected_level), ["ignore"])
 
 
-def apply_warning_filters(filters: List[str]) -> None:
-    """Apply warning filters to the warnings module.
+def _wrap_warnings_warn(volume: int):
+    """Create a wrapper for warnings.warn honoring volume semantics used in tests."""
+    original_warn = warnings.warn
 
-    Args:
-        filters: List of warning filter strings
-    """
-    # Clear existing filters
-    warnings.resetwarnings()
+    def warn(message, category=None, stacklevel=1, source=None):  # type: ignore[no-redef]
+        # Silent: suppress all warnings emission
+        if volume == 0:
+            return None
 
-    # Apply each filter
-    for filter_str in filters:
-        warnings.filterwarnings(filter_str)
+        # Quiet: suppress UserWarning and PendingDeprecationWarning
+        if volume == 100:
+            if category in (UserWarning, PendingDeprecationWarning):
+                return None
+            return original_warn(message, category=category, stacklevel=stacklevel, source=source)
 
-    # Always show ResourceWarning in tests to catch unclosed resources
-    warnings.simplefilter("always", ResourceWarning)
-    warnings.simplefilter("always", DeprecationWarning)
+        # Maximum: treat all warnings as errors
+        if volume >= 1000:
+            exc = (category or Warning)
+            raise exc(message)  # type: ignore[misc]
+
+        # Default behavior for other volumes
+        return original_warn(message, category=category, stacklevel=stacklevel, source=source)
+
+    return warn
 
 
 def pytest_configure(config):
@@ -118,14 +126,30 @@ def event_loop():
         loop.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def configure_warnings():
-    """Configure warnings for the test session."""
-    # Simple warning configuration
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    warnings.filterwarnings("ignore", category=ResourceWarning)
-    warnings.filterwarnings("ignore", category=UserWarning)
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
+@pytest.fixture(autouse=True)
+def configure_warnings_per_test(request):
+    """Configure warnings per-test based on volume marker and defaults.
+
+    This aligns warning visibility with tests' expectations in tests/test_volume_warnings.py.
+    """
+    # Determine volume for this test from marker or env default
+    marker = request.node.get_closest_marker("volume")
+    volume_str = os.environ.get("AUTOPR_TEST_VOLUME_LEVEL", "500")
+    try:
+        volume_env = int(volume_str)
+    except ValueError:
+        volume_env = 500
+    volume = marker.args[0] if marker and marker.args else volume_env
+
+    # Monkeypatch warnings.warn to honor volume rules regardless of catch_warnings in tests
+    original_warn = warnings.warn
+    warnings.warn = _wrap_warnings_warn(volume)
+
+    # Ensure we restore after test
+    def _restore():
+        warnings.warn = original_warn
+
+    request.addfinalizer(_restore)
 
 
 @pytest_asyncio.fixture

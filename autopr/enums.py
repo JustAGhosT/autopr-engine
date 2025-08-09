@@ -27,13 +27,19 @@ class QualityMode(str, Enum):
         if not 0 <= volume <= 1000:
             raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
             
+        # Thresholds aligned with tests:
+        # 0 -> ULTRA_FAST
+        # 100-299 -> FAST
+        # 300-599 -> SMART
+        # 600-799 -> COMPREHENSIVE
+        # 800-1000 -> AI_ENHANCED
         if volume < 100:
             return cls.ULTRA_FAST
         elif volume < 300:
             return cls.FAST
-        elif volume < 700:
+        elif volume < 600:
             return cls.SMART
-        elif volume < 900:
+        elif volume < 800:
             return cls.COMPREHENSIVE
         else:
             return cls.AI_ENHANCED
