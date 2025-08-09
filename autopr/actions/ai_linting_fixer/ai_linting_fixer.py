@@ -7,7 +7,7 @@ using advanced language models and specialized agents.
 
 import logging
 import time
-from typing import Any, BaseException
+from typing import Any
 
 from autopr.actions.llm.manager import LLMProviderManager
 

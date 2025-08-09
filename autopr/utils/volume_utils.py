@@ -4,18 +4,9 @@ Volume-related utility functions for AutoPR.
 This module provides volume-based configuration and utilities that can be imported
 without creating circular dependencies between modules.
 """
-from enum import Enum
 from typing import Any, Dict, Tuple
 
-
-class QualityMode(Enum):
-    """Operating mode for quality checks"""
-
-    ULTRA_FAST = "ultra-fast"
-    FAST = "fast"
-    COMPREHENSIVE = "comprehensive"
-    AI_ENHANCED = "ai_enhanced"
-    SMART = "smart"
+from autopr.enums import QualityMode
 
 # Volume threshold constants for consistent behavior
 AI_AGENTS_THRESHOLD = 200  # Volume level at which to enable AI agents
@@ -91,33 +82,29 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
         raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
 
     # Base configuration that applies to all modes
-    base_config: Dict[str, Any] = {
-        # Scale fixes more gradually (1-100) based on volume
+    base_config = {
         "max_fixes": min(MAX_FIXES, max(MIN_FIXES, volume // 10)),
-        # Scale issues from MIN_ISSUES to 100 based on volume
-        "max_issues": max(MIN_ISSUES, volume // 10),
-        # Enable AI agents at the MODERATE threshold (200+)
+        "max_issues": min(100, max(MIN_ISSUES, volume // 5)),
         "enable_ai_agents": volume >= AI_AGENTS_THRESHOLD,
+        "verbose": volume > 500,
     }
+
+    # Get the quality mode based on volume
+    quality_mode = QualityMode.from_volume(volume)
     
-    # Map volume ranges to quality modes
+    # Special case for minimum volume - ultra minimal checks
     if volume == 0:
-        return QualityMode.ULTRA_FAST, {
-            "max_fixes": 0,
-            "max_issues": 10,  # Minimum issues to report
+        return quality_mode, {
+            **base_config,
+            "max_fixes": 0,  # No fixes in silent mode
+            "max_issues": 1,  # Minimum issues to report
             "enable_ai_agents": False,
         }
-    elif volume < 200:
-        return QualityMode.ULTRA_FAST, base_config
-    elif volume < 400:
-        return QualityMode.FAST, base_config
-    elif volume < 600:
-        return QualityMode.SMART, base_config
-    elif volume < 800:
-        return QualityMode.COMPREHENSIVE, base_config
-    else:  # 800-1000
-        return QualityMode.AI_ENHANCED, {
+    elif quality_mode == QualityMode.AI_ENHANCED:
+        return quality_mode, {
             **base_config,
             "max_fixes": 100,  # More aggressive fixes at max volume
             "enable_ai_agents": True,
         }
+    else:
+        return quality_mode, base_config

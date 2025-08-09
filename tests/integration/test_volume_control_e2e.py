@@ -14,9 +14,8 @@ from typing import Dict, Any, List, Optional
 
 from autopr.agents.crew import AutoPRCrew
 from autopr.actions.quality_engine.engine import QualityInputs
-from autopr.utils.volume_utils import QualityMode
-from autopr.actions.platform_detection.detector import PlatformAnalysis, PlatformComponent
-from autopr.models.artifacts import CodeIssue, IssueSeverity
+from autopr.enums import QualityMode
+from autopr.agents.models import PlatformAnalysis, PlatformComponent, CodeIssue, IssueSeverity
 
 
 class TestVolumeControlE2E:

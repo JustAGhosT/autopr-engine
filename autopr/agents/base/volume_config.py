@@ -6,8 +6,8 @@ based on a volume level (0-1000), where 0 is the lowest strictness and 1000 is t
 """
 from typing import Any, Dict, Optional
 from dataclasses import dataclass
-from autopr.utils.volume_utils import QualityMode
-from autopr.actions.quality_engine.volume_mapping import volume_to_quality_mode
+from autopr.enums import QualityMode
+from autopr.utils.volume_utils import volume_to_quality_mode
 
 
 @dataclass

@@ -16,6 +16,8 @@ This module provides agent-based orchestration for code quality analysis using C
 
 ### Crew Orchestration
 - `AutoPRCrew`: Main orchestrator for code analysis agents
+
+Note: This is the updated agent framework. Legacy agent imports have been removed.
 """
 
 import warnings
@@ -51,18 +53,15 @@ from .linting_agent import (
 )
 
 from autopr.agents.agents import (
-    CodeReviewAgent,
-    DocumentationAgent,
-    TestingAgent,
-    SecurityAgent,
-    PerformanceAgent,
-    AccessibilityAgent,
-    PlatformDetectionAgent,
-    PlatformEnhancementAgent,
     VolumeConfig,
-    AutoPRCrew,
-    ModularAutoPRCrew,
+    BaseAgent,
+    CodeQualityAgent,
+    PlatformAnalysisAgent,
+    LintingAgent
 )
+
+# Import crew from the crew module
+from .crew.main import AutoPRCrew
 from autopr.utils.volume_utils import (
     volume_to_quality_mode,
     get_volume_config,
@@ -100,6 +99,5 @@ __all__ = [
     'LintingOutputs',
     
     # Crew
-    'AutoPRCrew',
-    'ModularAutoPRCrew'  # New modular implementation
+    'AutoPRCrew'
 ]

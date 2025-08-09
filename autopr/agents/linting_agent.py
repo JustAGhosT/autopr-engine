@@ -22,12 +22,13 @@ from autopr.actions.ai_linting_fixer import AILintingFixer
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.models import LintingFixResult
 from autopr.actions.ai_linting_fixer.agents import (
-    ImportFixerAgent,
-    LineLengthFixerAgent,
-    VariableNamingFixerAgent,
-    TypeAnnotationFixerAgent,
-    UnusedCodeFixerAgent,
-    CodeStyleFixerAgent,
+    ImportOptimizerAgent,
+    LineLengthAgent,
+    VariableCleanerAgent,
+    ExceptionHandlerAgent,
+    StyleFixerAgent,
+    GeneralFixerAgent,
+    AgentManager,
 )
 
 
@@ -89,6 +90,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         allow_delegation: bool = False,
         max_iter: int = 3,
         max_rpm: Optional[int] = None,
+        llm_manager: Optional[Any] = None,
         **kwargs: Any
     ) -> None:
         """Initialize the LintingAgent.
@@ -99,6 +101,8 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             allow_delegation: Whether to allow task delegation
             max_iter: Maximum number of iterations for the agent
             max_rpm: Maximum requests per minute for the agent
+            llm_manager: Optional LLMProviderManager instance. If not provided,
+                       a default one will be created.
             **kwargs: Additional keyword arguments passed to the base class
         """
         super().__init__(
@@ -118,20 +122,19 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             **kwargs
         )
         
-        # Initialize the AI linting fixer
-        self.linting_fixer = AILintingFixer()
+        # Initialize the AI linting fixer with LLM provider manager
+        if llm_manager is None:
+            from autopr.actions.llm.manager import get_llm_provider_manager
+            llm_manager = get_llm_provider_manager()
+        self.linting_fixer = AILintingFixer(llm_manager=llm_manager)
         
         # Register fixer agents
         self._register_fixer_agents()
     
     def _register_fixer_agents(self) -> None:
         """Register all available fixer agents."""
-        self.linting_fixer.register_agent(ImportFixerAgent())
-        self.linting_fixer.register_agent(LineLengthFixerAgent())
-        self.linting_fixer.register_agent(VariableNamingFixerAgent())
-        self.linting_fixer.register_agent(TypeAnnotationFixerAgent())
-        self.linting_fixer.register_agent(UnusedCodeFixerAgent())
-        self.linting_fixer.register_agent(CodeStyleFixerAgent())
+        # The AgentManager already initializes all agents, so we don't need to register them individually
+        # Just ensure the agent manager is properly imported and used
     
     async def _execute(self, inputs: LintingInputs) -> LintingOutputs:
         """Lint and optionally fix code issues.

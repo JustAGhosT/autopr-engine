@@ -11,7 +11,7 @@ from autopr.actions.quality_engine.volume_mapping import (
     get_volume_config,
     VolumeLevel
 )
-from autopr.utils.volume_utils import QualityMode
+from autopr.enums import QualityMode
 
 
 class TestVolumeMapping:
@@ -88,7 +88,8 @@ class TestVolumeMapping:
     def test_volume_level_enum(self):
         """Test VolumeLevel enum values."""
         assert VolumeLevel.SILENT.value == 0
-        assert VolumeLevel.QUIET.value == 250  # Matches actual implementation
-        assert VolumeLevel.MODERATE.value == 500
-        assert VolumeLevel.HIGH.value == 750
-        assert VolumeLevel.MAX.value == 1000
+        assert VolumeLevel.QUIET.value == 100  # Matches actual implementation (1-199 range)
+        assert VolumeLevel.MODERATE.value == 300  # 200-399 range
+        assert VolumeLevel.BALANCED.value == 500  # 400-599 range
+        assert VolumeLevel.THOROUGH.value == 700  # 600-799 range
+        assert VolumeLevel.MAXIMUM.value == 1000  # 800-1000 range

@@ -12,9 +12,12 @@ from crewai import Agent as CrewAgent
 
 from autopr.agents.base import BaseAgent, VolumeConfig
 from autopr.actions.llm import get_llm_provider_manager
-from autopr.actions.platform_detection.detector import PlatformDetector
-from autopr.agents.models import PlatformAnalysis
-from autopr.actions.platform_detection.schema import PlatformType
+from autopr.actions.platform_detection.detector import PlatformDetector, PlatformDetectorOutputs
+from autopr.actions.platform_detection.schema import PlatformType, PlatformConfig
+from autopr.actions.platform_detection.config import PlatformConfigManager
+from pydantic import BaseModel, Field
+
+# PlatformAnalysis is now imported from platform_detection.detector as PlatformDetectorOutputs
 
 
 @dataclass
@@ -50,7 +53,7 @@ class PlatformAnalysisOutputs:
     frameworks: List[str]
     languages: List[str]
     config_files: List[str]
-    analysis: PlatformAnalysis
+    analysis: PlatformDetectorOutputs
 
 
 class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOutputs]):
@@ -173,7 +176,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
                 analysis=error_analysis
             )
     
-    def _get_primary_platform(self, analysis: PlatformAnalysis) -> PlatformType:
+    def _get_primary_platform(self, analysis: PlatformDetectorOutputs) -> PlatformType:
         """Get the primary platform from the analysis results.
         
         Args:
@@ -188,7 +191,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         # Get the platform with the highest confidence
         return max(analysis.platforms.items(), key=lambda x: x[1])[0]
     
-    def _get_platform_info(self, platform_type: PlatformType) -> Optional[dict]:
+    def _get_platform_info(self, platform_type: PlatformType) -> Optional[Dict[str, Any]]:
         """Get information about a specific platform type.
         
         Args:
@@ -197,20 +200,57 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         Returns:
             Dictionary with details about the platform, or None if not found
         """
-        # Get platform configuration from the config manager
-        platform_config = self.detector.config.get_platform(platform_type.value)
+        config_manager = PlatformConfigManager()
+        platform_config = config_manager.get_platform(platform_type.value)
         if not platform_config:
             return None
             
-        # Convert to a dictionary with the required fields
+        # Safely get enum values with fallback to string representation
+        def get_enum_value(enum_obj):
+            if enum_obj is None:
+                return None
+            if hasattr(enum_obj, 'value'):
+                return enum_obj.value
+            return str(enum_obj)
+            
+        # Safely get attributes with defaults
+        def get_attr(obj, attr, default=None):
+            return getattr(obj, attr, default) if hasattr(obj, attr) else default
+            
+        # Safely get detection rules with defaults
+        detection_rules = {}
+        if hasattr(platform_config, 'detection'):
+            detection = platform_config.detection or {}
+            detection_rules = {
+                'files': detection.get('files', []),
+                'dependencies': detection.get('dependencies', []),
+                'folder_patterns': detection.get('folder_patterns', []),
+                'commit_patterns': detection.get('commit_patterns', []),
+                'content_patterns': detection.get('content_patterns', []),
+                'package_scripts': detection.get('package_scripts', [])
+            }
+            
         return {
-            "id": platform_config.get("id"),
-            "name": platform_config.get("name"),
-            "description": platform_config.get("description", ""),
-            "type": platform_config.get("type"),
-            "category": platform_config.get("category"),
-            "documentation_url": platform_config.get("documentation_url", ""),
-            "is_active": platform_config.get("is_active", True)
+            'id': platform_config.id,
+            'name': platform_config.name,
+            'display_name': get_attr(platform_config, 'display_name') or platform_config.name,
+            'description': platform_config.description,
+            'type': get_enum_value(get_attr(platform_config, 'type')),
+            'category': get_enum_value(get_attr(platform_config, 'category')),
+            'subcategory': get_attr(platform_config, 'subcategory'),
+            'tags': get_attr(platform_config, 'tags', []),
+            'status': get_enum_value(get_attr(platform_config, 'status')),
+            'documentation_url': get_attr(platform_config, 'documentation_url'),
+            'is_active': get_attr(platform_config, 'is_active', True),
+            'is_beta': get_attr(platform_config, 'is_beta', False),
+            'is_deprecated': get_attr(platform_config, 'is_deprecated', False),
+            'version': get_attr(platform_config, 'version'),
+            'last_updated': get_attr(platform_config, 'last_updated'),
+            'supported_languages': get_attr(platform_config, 'supported_languages', []),
+            'supported_frameworks': get_attr(platform_config, 'supported_frameworks', []),
+            'integrations': get_attr(platform_config, 'integrations', []),
+            'detection_rules': detection_rules,
+            'project_config': get_attr(platform_config, 'project_config', {})
         }
     
     def get_supported_platforms(self) -> List[dict]:

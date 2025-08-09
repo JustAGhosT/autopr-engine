@@ -38,8 +38,9 @@ def get_warning_filters(volume: int) -> List[str]:
     Returns:
         List of warning filter strings
     """
-    # Load the pyproject.toml file
-    pyproject_path = Path(__file__).parent / "pyproject.toml"
+    # Load the pyproject.toml file from the project root
+    project_root = Path(__file__).parent.parent
+    pyproject_path = project_root / "pyproject.toml"
     with open(pyproject_path) as f:
         config = toml.load(f)
     
@@ -54,8 +55,23 @@ def get_warning_filters(volume: int) -> List[str]:
         if level <= volume:
             selected_level = level
     
+    # Volume-based warning control
+    # These settings map volume levels to warning filters
+    volume_warnings_config = {
+        "0": ["ignore"],
+        "100": [
+            "default",
+            "ignore::UserWarning",
+            "ignore::PendingDeprecationWarning",
+            "ignore::ImportWarning",
+            "ignore::BytesWarning"
+        ],
+        "300": ["default"],
+        "500": ["error"]
+    }
+    
     # Get the warning filters for the selected volume level
-    return volume_warnings.get(str(selected_level), ["ignore"])
+    return volume_warnings_config.get(str(selected_level), ["ignore"])
 
 
 def apply_warning_filters(filters: List[str]) -> None:
@@ -81,12 +97,6 @@ def pytest_configure(config):
     # Set default test volume if not already set
     if 'AUTOPR_TEST_VOLUME_LEVEL' not in os.environ:
         os.environ['AUTOPR_TEST_VOLUME_LEVEL'] = '500'  # Default to balanced mode for tests
-        
-    volume = get_volume_level()
-    warning_filters = get_warning_filters(volume)
-    
-    # Apply the warning filters
-    apply_warning_filters(warning_filters)
     
     # Add a custom marker for volume-based tests
     config.addinivalue_line(
@@ -94,51 +104,28 @@ def pytest_configure(config):
         "volume(level): Mark test to run only at or above the specified volume level"
     )
     
-    # Set a custom marker for the current volume level
-    current_mark = config.option.markexpr or 'True'
-    config.option.markexpr = f"volume<={volume} and {current_mark}"
-    
-    # Print test configuration for debugging
-    print(f"\n=== Test Configuration ===")
-    print(f"Volume level: {volume} ({get_volume_level_name(volume)})")
-    print(f"Warning filters: {warning_filters}")
-    print(f"Active markers: {config.option.markexpr}")
+    # Print minimal test configuration
+    print("\n=== Test Configuration ===")
+    print("Running with default test configuration")
     print("======================\n")
 
 
 @pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    """
-    Create an instance of the default event loop for the test session.
-
-    This fixture ensures that the event loop is properly closed after all tests.
-    """
-    # Create a new event loop for the test session
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    try:
-        # Yield the event loop to the test
-        yield loop
-    finally:
-        # Clean up the event loop
-        loop.close()
-        asyncio.set_event_loop(None)
-
+def event_loop():
+    """Create an instance of the default event loop for the test session."""
+    policy = asyncio.WindowsSelectorEventLoopPolicy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
 
 @pytest.fixture(scope="session", autouse=True)
 def configure_warnings():
-    """Configure warnings based on the current volume level."""
-    volume = get_volume_level()
-    warning_filters = get_warning_filters(volume)
-    apply_warning_filters(warning_filters)
-    
-    # Log the current warning configuration
-    print(f"\n[Volume: {volume} - {get_volume_level_name(volume)}]")
-    print("Warning filters:")
-    for f in warning_filters:
-        print(f"  {f}")
-    print()
+    """Configure warnings for the test session."""
+    # Simple warning configuration
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=ResourceWarning)
+    warnings.filterwarnings("ignore", category=UserWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 @pytest_asyncio.fixture

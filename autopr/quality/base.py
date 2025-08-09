@@ -7,6 +7,7 @@ from enum import Enum
 
 import pydantic
 from structlog import get_logger
+from autopr.enums import QualityMode
 
 logger = get_logger(__name__)
 
@@ -23,15 +24,6 @@ class ToolCategory(Enum):
     TESTING = "testing"
     DEPENDENCY = "dependency"
     AI_ENHANCED = "ai_enhanced"
-
-
-class QualityMode(Enum):
-    """Available quality modes"""
-
-    FAST = "fast"
-    COMPREHENSIVE = "comprehensive"
-    AI_ENHANCED = "ai_enhanced"
-    SMART = "smart"
 
 
 class ToolResult(pydantic.BaseModel):

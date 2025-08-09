@@ -7,9 +7,9 @@ import unittest
 from unittest.mock import MagicMock, patch, ANY
 from pathlib import Path
 
-from autopr.utils.volume_utils import QualityModeEngine
+from autopr.actions.quality_engine.engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs
-from autopr.utils.volume_utils import QualityMode
+from autopr.enums import QualityMode
 from autopr.actions.quality_engine.volume_mapping import get_volume_config, get_volume_level_name
 
 

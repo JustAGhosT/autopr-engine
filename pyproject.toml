@@ -182,9 +182,7 @@ testpaths = ["tests"]
 # Default to 'ignore' but will be overridden by volume settings when tests run
 filterwarnings = [
     # Always show deprecation warnings
-    "error::DeprecationWarning",
-    # Always show resource warnings (e.g., unclosed files)
-    "error::ResourceWarning",
+    "error",
     # Default to ignoring other warnings - volume settings will adjust this
     "ignore"
 ]

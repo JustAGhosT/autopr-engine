@@ -5,12 +5,28 @@ import pytest
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 
+print("=== Starting test_volume_config_simple.py ===")
+print(f"Python path: {sys.path}")
+
 # Add project root to path
 project_root = str(Path(__file__).parent.parent.absolute())
+print(f"Project root: {project_root}")
+
 if project_root not in sys.path:
+    print(f"Adding {project_root} to sys.path")
     sys.path.insert(0, project_root)
 
-from autopr.agents.agents import VolumeConfig
+print("Attempting to import VolumeConfig...")
+try:
+    from autopr.agents.base.volume_config import VolumeConfig
+    print("Successfully imported VolumeConfig")
+    from autopr.utils.volume_utils import volume_to_quality_mode
+    print("Successfully imported volume_to_quality_mode")
+    from autopr.enums import QualityMode
+    print("Successfully imported QualityMode")
+except ImportError as e:
+    print(f"Import error: {e}")
+    raise
 
 # Test cases for VolumeConfig initialization
 TEST_CASES = [
