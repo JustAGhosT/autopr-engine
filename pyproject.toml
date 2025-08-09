@@ -49,6 +49,7 @@ pytz = "^2024.1"
 python-dotenv = "^1.0.1"
 tomli = "^2.0.1"
 loguru = "^0.7.2"
+dependency-injector = "^4.0.0"
 
 [tool.poetry.extras]
 full = [
