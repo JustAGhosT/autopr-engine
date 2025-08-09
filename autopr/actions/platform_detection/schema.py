@@ -14,14 +14,17 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 import json
-from typing import TYPE_CHECKING, Any, ClassVar, TypedDict
+from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 class PlatformType(StrEnum):
-    """Types of platforms we support."""
+    """Types of platforms we support.
+
+    Extended to cover test expectations (frameworks and unknown types).
+    """
 
     IDE = "ide"
     CLOUD = "cloud"
@@ -33,6 +36,18 @@ class PlatformType(StrEnum):
     AI = "ai"
     DEVELOPMENT_PLATFORM = "development_platform"
     GENERAL = "general"
+
+    # Additional entries used by tests and higher-level detection outputs
+    FRAMEWORK = "framework"
+    REACT = "react"
+    NEXT_JS = "next_js"
+    UNKNOWN = "unknown"
+
+
+class PlatformCategory(StrEnum):
+    """High-level platform categories used in reporting and tests."""
+
+    WEB = "web"
 
 
 class PlatformSource(StrEnum):
@@ -100,6 +115,16 @@ class ProjectConfig(TypedDict, total=False):
     configuration_files: list[str]
 
 
+def _default_detection_rules() -> "DetectionRules":
+    # Empty rules by default
+    return cast("DetectionRules", {})
+
+
+def _default_project_config() -> "ProjectConfig":
+    # Empty project config by default
+    return cast("ProjectConfig", {})
+
+
 @dataclass
 class PlatformConfig:
     """
@@ -154,8 +179,8 @@ class PlatformConfig:
     compatibility: dict[str, Any] = field(default_factory=dict)
 
     # Nested configurations
-    detection: DetectionRules = field(default_factory=dict)
-    project_config: ProjectConfig = field(default_factory=dict)
+    detection: DetectionRules = field(default_factory=_default_detection_rules)
+    project_config: ProjectConfig = field(default_factory=_default_project_config)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     # Class variables

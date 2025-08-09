@@ -74,7 +74,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov pytest-asyncio
           
       - name: Run tests
         run: |
@@ -106,7 +106,7 @@ jobs:
         run: |
           ruff check autopr/ \
             --exclude autopr/actions/quality_engine/__tests__ \
-            --ignore E402,E722,E741,F811,W293,W291,E128,E122,E302 \
+            --ignore E402,E722,E741,F811,W293,W291,E122,E302 \
             --output-format=github
 
   typecheck:
@@ -125,7 +125,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install mypy
+          pip install mypy types-PyYAML
           
       - name: Run type checking
         run: |
@@ -160,14 +160,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify status
-        if: contains(needs.*.result, 'failure')
         uses: actions/github-script@v6
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TYPECHECK_RESULT: ${{ needs.typecheck.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
         with:
           script: |
-            const failedJobs = Object.entries(context.jobs)
-              .filter(([_, job]) => job.result === 'failure')
+            const results = {
+              test: process.env.TEST_RESULT,
+              lint: process.env.LINT_RESULT,
+              typecheck: process.env.TYPECHECK_RESULT,
+              security: process.env.SECURITY_RESULT,
+            };
+            const failed = Object.entries(results)
+              .filter(([_, r]) => r === 'failure')
               .map(([name]) => name);
-              
-            if (failedJobs.length > 0) {
-              core.setFailed(`The following jobs failed: ${failedJobs.join(', ')}`);
+            console.log('Job results:', results);
+            if (failed.length > 0) {
+              core.setFailed(`The following jobs failed: ${failed.join(', ')}`);
             }

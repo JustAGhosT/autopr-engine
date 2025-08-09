@@ -5,24 +5,19 @@ This module includes volume-based warning control and other test configurations.
 
 import asyncio
 import os
-import sys
 import warnings
+import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from collections.abc import AsyncGenerator, Generator
+from typing import List
+from collections.abc import AsyncGenerator
 
-# Add the project root to the Python path
-project_root = str(Path(__file__).parent)
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-import pytest
-import pytest_asyncio
-import toml
+import pytest  # type: ignore
+import pytest_asyncio  # type: ignore
+import toml  # type: ignore
 from aiohttp import ClientSession
 
-# Import volume utilities
-from autopr.utils.volume_utils import get_volume_level_name
+# Import volume utilities (placeholder for future use)
+
 
 def get_volume_level() -> int:
     """Get the current volume level from environment or default to 500 (BALANCED)."""
@@ -31,10 +26,10 @@ def get_volume_level() -> int:
 
 def get_warning_filters(volume: int) -> List[str]:
     """Get warning filters based on the current volume level.
-    
+
     Args:
         volume: Volume level from 0 to 1000
-        
+
     Returns:
         List of warning filter strings
     """
@@ -43,18 +38,18 @@ def get_warning_filters(volume: int) -> List[str]:
     pyproject_path = project_root / "pyproject.toml"
     with open(pyproject_path) as f:
         config = toml.load(f)
-    
+
     # Get the volume warnings configuration
     volume_warnings = config.get("tool", {}).get("pytest", {}).get("volume_warnings", {})
-    
+
     # Find the closest volume level that's less than or equal to the current volume
     volume_levels = sorted(int(k) for k in volume_warnings.keys() if k.isdigit())
     selected_level = 0  # Default to most restrictive
-    
+
     for level in volume_levels:
         if level <= volume:
             selected_level = level
-    
+
     # Volume-based warning control
     # These settings map volume levels to warning filters
     volume_warnings_config = {
@@ -64,29 +59,29 @@ def get_warning_filters(volume: int) -> List[str]:
             "ignore::UserWarning",
             "ignore::PendingDeprecationWarning",
             "ignore::ImportWarning",
-            "ignore::BytesWarning"
+            "ignore::BytesWarning",
         ],
         "300": ["default"],
-        "500": ["error"]
+        "500": ["error"],
     }
-    
+
     # Get the warning filters for the selected volume level
     return volume_warnings_config.get(str(selected_level), ["ignore"])
 
 
 def apply_warning_filters(filters: List[str]) -> None:
     """Apply warning filters to the warnings module.
-    
+
     Args:
         filters: List of warning filter strings
     """
     # Clear existing filters
     warnings.resetwarnings()
-    
+
     # Apply each filter
     for filter_str in filters:
         warnings.filterwarnings(filter_str)
-    
+
     # Always show ResourceWarning in tests to catch unclosed resources
     warnings.simplefilter("always", ResourceWarning)
     warnings.simplefilter("always", DeprecationWarning)
@@ -95,15 +90,15 @@ def apply_warning_filters(filters: List[str]) -> None:
 def pytest_configure(config):
     """Configure pytest with volume-based warning filters."""
     # Set default test volume if not already set
-    if 'AUTOPR_TEST_VOLUME_LEVEL' not in os.environ:
-        os.environ['AUTOPR_TEST_VOLUME_LEVEL'] = '500'  # Default to balanced mode for tests
-    
+    if "AUTOPR_TEST_VOLUME_LEVEL" not in os.environ:
+        os.environ["AUTOPR_TEST_VOLUME_LEVEL"] = "500"  # Default to balanced mode for tests
+
     # Add a custom marker for volume-based tests
     config.addinivalue_line(
         "markers",
-        "volume(level): Mark test to run only at or above the specified volume level"
+        "volume(level): Mark test to run only at or above the specified volume level",
     )
-    
+
     # Print minimal test configuration
     print("\n=== Test Configuration ===")
     print("Running with default test configuration")
@@ -112,11 +107,16 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="session")
 def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    policy = asyncio.WindowsSelectorEventLoopPolicy()
-    loop = policy.new_event_loop()
-    yield loop
-    loop.close()
+    """Create a cross-platform event loop for the test session."""
+    # Use Windows selector policy on Windows only; default elsewhere
+    if sys.platform.startswith("win") and hasattr(asyncio, "WindowsSelectorEventLoopPolicy"):
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    loop = asyncio.new_event_loop()
+    try:
+        yield loop
+    finally:
+        loop.close()
+
 
 @pytest.fixture(scope="session", autouse=True)
 def configure_warnings():
