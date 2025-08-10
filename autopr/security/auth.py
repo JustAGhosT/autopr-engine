@@ -1,7 +1,20 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-from fastapi import HTTPException, status
+try:
+    from fastapi import HTTPException, status
+except Exception:  # pragma: no cover - type-checking fallback
+    class _HTTPException(Exception):
+        def __init__(self, status_code: int, detail: str) -> None:  # minimal runtime stub
+            super().__init__(detail)
+            self.status_code = status_code
+            self.detail = detail
+
+    class _status:
+        HTTP_401_UNAUTHORIZED = 401
+
+    HTTPException = _HTTPException  # type: ignore
+    status = _status()  # type: ignore
 import jwt
 from passlib.context import CryptContext
 import structlog
@@ -62,7 +75,7 @@ class EnterpriseAuthManager:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired"
             )
-        except jwt.JWTError as e:
+        except jwt.PyJWTError as e:
             logger.error("JWT validation error", error=str(e))
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"

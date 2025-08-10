@@ -16,6 +16,7 @@ from typing import Any
 
 from .quality_models import QualityMetrics
 from .quality_scorer import QualityScorer
+from .validation_types import ValidationSeverity
 
 # from templates.discovery.template_validators import ValidationSeverity
 
