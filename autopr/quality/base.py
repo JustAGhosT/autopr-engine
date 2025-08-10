@@ -87,17 +87,16 @@ class QualityTool(abc.ABC):
     async def fix(self, files: list[str] | None = None) -> ToolResult:
         """Run the tool in fix mode"""
 
-    async def run(self, files: list[str] | None = None, auto_fix: bool | None = None) -> ToolResult:
+    async def run(self, files: list[str] | None = None, *, auto_fix: bool | None = None) -> ToolResult:
         """Run the tool based on configuration"""
         should_fix = self.config.auto_fix if auto_fix is None else auto_fix
 
         try:
             if should_fix:
                 return await self.fix(files)
-            else:
-                return await self.check(files)
+            return await self.check(files)
         except Exception as e:
-            self.logger.exception(f"Error running {self.name}", exc_info=e)
+            self.logger.exception("Error running %s", self.name)
             return ToolResult(
                 success=False,
                 issues_found=0,

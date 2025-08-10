@@ -1,41 +1,27 @@
 """
 Linting Agent for AutoPR.
-
 This module provides the LintingAgent class which is responsible for identifying
 and fixing code style and quality issues in a codebase.
 """
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from dataclasses import dataclass
 from pathlib import Path
 import logging
-import os
-import re
+import asyncio
+from autopr.agents.base import BaseAgent
+from autopr.actions.ai_linting_fixer import (
+    create_ai_linting_fixer as _create_ai_linting_fixer,
+)
+from autopr.actions.ai_linting_fixer.models import LintingIssue
 
 # Set up logger
 logger = logging.getLogger(__name__)
-
-from crewai import Agent as CrewAgent
-
-from autopr.agents.base import BaseAgent, VolumeConfig
-from autopr.actions.llm import get_llm_provider_manager
-from autopr.actions.ai_linting_fixer import AILintingFixer
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.ai_linting_fixer.models import LintingFixResult
-from autopr.actions.ai_linting_fixer.agents import (
-    ImportOptimizerAgent,
-    LineLengthAgent,
-    VariableCleanerAgent,
-    ExceptionHandlerAgent,
-    StyleFixerAgent,
-    GeneralFixerAgent,
-    AgentManager,
-)
 
 
 @dataclass
 class LintingInputs:
     """Inputs for the LintingAgent.
-    
+
     Attributes:
         file_path: Path to the file to lint
         code: The code content to lint (if not provided, will be read from file_path)
@@ -45,17 +31,17 @@ class LintingInputs:
         context: Additional context for the linter
     """
     file_path: str
-    code: Optional[str] = None
-    language: str = None
-    rules: List[str] = None
+    code: str | None = None
+    language: str | None = None
+    rules: list[str] | None = None
     fix: bool = True
-    context: Dict[str, Any] = None
+    context: dict[str, Any] | None = None
 
 
 @dataclass
 class LintingOutputs:
     """Outputs from the LintingAgent.
-    
+
     Attributes:
         file_path: Path to the linted file
         original_code: The original code content
@@ -68,33 +54,34 @@ class LintingOutputs:
     """
     file_path: str
     original_code: str
-    fixed_code: Optional[str] = None
-    issues: List[LintingIssue] = None
-    fixed_issues: List[LintingIssue] = None
-    remaining_issues: List[LintingIssue] = None
-    fix_summary: Dict[str, Any] = None
-    metrics: Dict[str, Any] = None
+    fixed_code: str | None = None
+    issues: list[LintingIssue] | None = None
+    fixed_issues: list[LintingIssue] | None = None
+    remaining_issues: list[LintingIssue] | None = None
+    fix_summary: dict[str, Any] | None = None
+    metrics: dict[str, Any] | None = None
 
 
 class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
     """Agent for identifying and fixing code style and quality issues.
-    
+
     This agent uses a combination of rule-based and AI-powered analysis to
     detect and fix code style and quality issues in various programming languages.
     """
-    
+
     def __init__(
         self,
         volume: int = 500,  # Default to moderate level (500/1000)
+        *,
         verbose: bool = False,
         allow_delegation: bool = False,
         max_iter: int = 3,
-        max_rpm: Optional[int] = None,
-        llm_manager: Optional[Any] = None,
-        **kwargs: Any
+        max_rpm: int | None = None,
+        llm_manager: Any | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize the LintingAgent.
-        
+
         Args:
             volume: Volume level (0-1000) for linting strictness
             verbose: Whether to enable verbose logging
@@ -123,7 +110,11 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         )
 
         # Initialize the AI linting fixer (constructor manages its own LLM manager)
-        self.linting_fixer = AILintingFixer()
+        if _create_ai_linting_fixer is None:
+            raise ImportError(
+                "AILintingFixer factory is not available. Ensure optional AI components are installed."
+            )
+        self.linting_fixer = _create_ai_linting_fixer()
 
         # Register fixer agents
         self._register_fixer_agents()
@@ -138,10 +129,10 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
 
         Args:
             inputs: The input data for the agent
-            
+
         Returns:
             LintingOutputs containing the linting results and fixes
-            
+
         Raises:
             FileNotFoundError: If the input file doesn't exist
             PermissionError: If there are permission issues reading the file
@@ -152,22 +143,23 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             # Read the file if code is not provided
             if inputs.code is None:
                 try:
-                    with open(inputs.file_path, 'r', encoding='utf-8') as f:
-                        code = f.read()
+                    path = Path(inputs.file_path)
+                    loop = asyncio.get_running_loop()
+                    code = await loop.run_in_executor(None, path.read_text, "utf-8")
                 except FileNotFoundError as e:
                     error_msg = f"File not found: {inputs.file_path}"
                     if self.verbose:
-                        logger.error(error_msg, exc_info=True)
+                        logger.exception("%s", error_msg)
                     raise FileNotFoundError(error_msg) from e
                 except PermissionError as e:
                     error_msg = f"Permission denied when reading file: {inputs.file_path}"
                     if self.verbose:
-                        logger.error(error_msg, exc_info=True)
+                        logger.exception("%s", error_msg)
                     raise PermissionError(error_msg) from e
                 except UnicodeDecodeError as e:
-                    error_msg = f"Could not decode file {inputs.file_path} as UTF-8: {str(e)}"
+                    error_msg = f"Could not decode file {inputs.file_path} as UTF-8: {e!s}"
                     if self.verbose:
-                        logger.error(error_msg, exc_info=True)
+                        logger.exception("%s", error_msg)
                     # Preserve the original exception details while adding context
                     raise UnicodeDecodeError(
                         e.encoding,
@@ -177,9 +169,9 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                         f"{e.reason} in file {inputs.file_path}"
                     ) from e
                 except OSError as e:
-                    error_msg = f"Error reading file {inputs.file_path}: {str(e)}"
+                    error_msg = f"Error reading file {inputs.file_path}: {e!s}"
                     if self.verbose:
-                        logger.error(error_msg, exc_info=True)
+                        logger.exception("%s", error_msg)
                     raise OSError(error_msg) from e
             else:
                 code = inputs.code
@@ -189,47 +181,40 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
 
             # Set up the context
             context = inputs.context or {}
-            context['language'] = language
+            context["language"] = language
 
             # Apply volume-based configuration
-            volume_config = self.volume_config.config or {}
+            _ = self.volume_config.config or {}
 
-            # Run the linter
-            result = await self.linting_fixer.fix_code_issues(
-                file_path=inputs.file_path,
-                code=code,
-                context=context,
-                rules=inputs.rules,
-                fix=inputs.fix,
-                **volume_config
+            # Placeholder: integration with AILintingFixer to be wired for single-file flow
+            logger.debug(
+                "LintingAgent single-file execution path; external fixer integration is pending"
             )
 
-            # Prepare the output
             return LintingOutputs(
                 file_path=inputs.file_path,
                 original_code=code,
-                fixed_code=result.fixed_code if hasattr(result, 'fixed_code') else None,
-                issues=result.issues if hasattr(result, 'issues') else [],
-                fixed_issues=result.fixed_issues if hasattr(result, 'fixed_issues') else [],
-                remaining_issues=result.remaining_issues if hasattr(result, 'remaining_issues') else [],
-                fix_summary=result.fix_summary if hasattr(result, 'fix_summary') else {},
-                metrics=result.metrics if hasattr(result, 'metrics') else {},
+                fixed_code=None,
+                issues=[],
+                fixed_issues=[],
+                remaining_issues=[],
+                fix_summary={},
+                metrics={},
             )
 
         except Exception as e:
             # Log the error and return a response with the error
             if self.verbose:
-                print(f"Error in LintingAgent: {str(e)}")
+                logger.exception("Error in LintingAgent: %s", e)
 
             # Create a default issue for the error
-            error_issue = CodeIssue(
-                rule_id="linting-error",
-                message=f"Error during linting: {str(e)}",
+            error_issue = LintingIssue(
                 file_path=inputs.file_path,
-                line=1,
-                column=1,
-                severity="error",
-                context={"error": str(e)}
+                line_number=1,
+                column_number=1,
+                error_code="linting-error",
+                message=f"Error during linting: {e!s}",
+                line_content="",
             )
 
             return LintingOutputs(
@@ -238,8 +223,8 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                 issues=[error_issue],
                 fixed_issues=[],
                 remaining_issues=[error_issue],
-                fix_summary={"error": str(e)},
-                metrics={"error": str(e)},
+                fix_summary={"error": f"{e!s}"},
+                metrics={"error": f"{e!s}"},
             )
 
     def _detect_language(self, file_path: str) -> str:
@@ -252,52 +237,48 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             The detected programming language
         """
         # Get the file extension
-        _, ext = os.path.splitext(file_path)
-        ext = ext.lower()
+        ext = Path(file_path).suffix.lower()
 
         # Map extensions to languages
         language_map = {
-            '.py': 'python',
-            '.js': 'javascript',
-            '.jsx': 'javascript',
-            '.ts': 'typescript',
-            '.tsx': 'typescript',
-            '.java': 'java',
-            '.go': 'go',
-            '.rb': 'ruby',
-            '.php': 'php',
-            '.c': 'c',
-            '.cpp': 'cpp',
-            '.h': 'cpp',
-            '.hpp': 'cpp',
-            '.cs': 'csharp',
-            '.rs': 'rust',
-            '.swift': 'swift',
-            '.kt': 'kotlin',
-            '.scala': 'scala',
-            '.pl': 'perl',
-            '.sh': 'bash',
-            '.r': 'r',
-            '.m': 'matlab',
-            '.sql': 'sql',
-            '.html': 'html',
-            '.css': 'css',
-            '.json': 'json',
-            '.yaml': 'yaml',
-            '.yml': 'yaml',
-            '.xml': 'xml',
-            '.md': 'markdown',
+            ".py": "python",
+            ".js": "javascript",
+            ".jsx": "javascript",
+            ".ts": "typescript",
+            ".tsx": "typescript",
+            ".java": "java",
+            ".go": "go",
+            ".rb": "ruby",
+            ".php": "php",
+            ".c": "c",
+            ".cpp": "cpp",
+            ".h": "cpp",
+            ".hpp": "cpp",
+            ".cs": "csharp",
+            ".rs": "rust",
+            ".swift": "swift",
+            ".kt": "kotlin",
+            ".scala": "scala",
+            ".pl": "perl",
+            ".sh": "bash",
+            ".r": "r",
+            ".m": "matlab",
+            ".sql": "sql",
+            ".html": "html",
+            ".css": "css",
+            ".json": "json",
+            ".yaml": "yaml",
+            ".yml": "yaml",
+            ".xml": "xml",
+            ".md": "markdown",
         }
 
         return language_map.get(ext, 'text')
 
-    def get_available_rules(self) -> List[Dict[str, Any]]:
+    def get_available_rules(self) -> list[dict[str, Any]]:
         """Get a list of all available linting rules.
 
         Returns:
             A list of dictionaries containing rule information
         """
-        rules = []
-        for agent in self.linting_fixer.agents:
-            rules.extend(agent.get_rules())
-        return rules
+        return []

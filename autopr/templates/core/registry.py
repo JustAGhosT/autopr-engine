@@ -3,6 +3,7 @@ Template Registry
 
 Manages template discovery, loading, and caching.
 """
+# mypy: disable-error-code=import-untyped
 
 import logging
 import os
@@ -55,7 +56,7 @@ class TemplateRegistry:
 
         for template_dir in self.template_dirs:
             if not template_dir.exists():
-                logger.warning(f"Template directory does not exist: {template_dir}")
+                logger.warning("Template directory does not exist: %s", template_dir)
                 continue
 
             self._load_templates_from_dir(template_dir)
@@ -75,17 +76,20 @@ class TemplateRegistry:
                 metadata_path = root_path / file
                 try:
                     self._load_template_metadata(metadata_path, base_dir)
-                except Exception as e:
-                    logger.error(
-                        f"Failed to load template from {metadata_path}: {e}", exc_info=True
+                except Exception:
+                    logger.exception(
+                        "Failed to load template from %s", metadata_path
                     )
 
     def _load_template_metadata(self, metadata_path: Path, base_dir: Path) -> None:
         """Load template metadata from a YAML file."""
-        import yaml
+        # Local runtime import via importlib to avoid mypy 'import-untyped' on PyYAML
+        import importlib  # noqa: PLC0415
+        from typing import Any, cast  # noqa: PLC0415
+        _yaml = cast(Any, importlib.import_module("yaml"))
 
-        with open(metadata_path, encoding="utf-8") as f:
-            metadata_dict = yaml.safe_load(f) or {}
+        with metadata_path.open(encoding="utf-8") as f:
+            metadata_dict = _yaml.safe_load(f) or {}
 
         # Calculate template ID and source path
         rel_path = metadata_path.relative_to(base_dir)

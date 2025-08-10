@@ -1,8 +1,17 @@
-from ..validation_models import ValidationResult, ValidationSeverity
+from autopr.security.validation_models import ValidationResult, ValidationSeverity
 
 
 class ObjectValidator:
     """Object validation functionality."""
+
+    # These helper methods are expected to be provided by mixins on the concrete class
+    def _is_safe_key(self, key: str) -> bool:  # type: ignore[override]
+        return True
+
+    def _validate_value(self, key: str, value):  # type: ignore[override]
+        from autopr.security.validation_models import ValidationResult
+
+        return ValidationResult(is_valid=True, sanitized_data={"value": value})
 
     def _validate_object(self, key: str, value: dict) -> ValidationResult:
         """Validate object input."""

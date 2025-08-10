@@ -9,7 +9,7 @@ from .validation_models import ValidationResult, ValidationSeverity
 from .validators import EnterpriseInputValidator
 
 __all__ = [
+    "EnterpriseInputValidator",
     "ValidationResult",
     "ValidationSeverity",
-    "EnterpriseInputValidator",
 ]

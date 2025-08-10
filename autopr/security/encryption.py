@@ -1,6 +1,7 @@
 import base64
 import os
-from typing import bytes, str
+from pathlib import Path
+from typing import Optional
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -13,7 +14,7 @@ logger = structlog.get_logger(__name__)
 class EnterpriseEncryptionManager:
     """Enterprise-grade encryption and key management"""
 
-    def __init__(self, master_key: str | None = None):
+    def __init__(self, master_key: Optional[str] = None):
         if master_key:
             self.key = self._derive_key_from_password(master_key.encode())
         else:
@@ -44,8 +45,8 @@ class EnterpriseEncryptionManager:
             encrypted_data = self.cipher_suite.encrypt(data.encode())
             logger.debug("Data encrypted successfully", data_length=len(data))
             return base64.urlsafe_b64encode(encrypted_data).decode()
-        except Exception as e:
-            logger.error("Encryption failed", error=str(e))
+        except Exception:
+            logger.exception("Encryption failed")
             raise
 
     def decrypt_data(self, encrypted_data: str) -> str:
@@ -55,40 +56,44 @@ class EnterpriseEncryptionManager:
             decrypted_data = self.cipher_suite.decrypt(decoded_data)
             logger.debug("Data decrypted successfully")
             return decrypted_data.decode()
-        except Exception as e:
-            logger.error("Decryption failed", error=str(e))
+        except Exception:
+            logger.exception("Decryption failed")
             raise
 
-    def encrypt_file(self, file_path: str, output_path: str) -> None:
+    def encrypt_file(self, file_path: str | Path, output_path: str | Path) -> None:
         """Encrypt file contents"""
         try:
-            with open(file_path, "rb") as file:
+            file_path = Path(file_path)
+            output_path = Path(output_path)
+            with file_path.open("rb") as file:
                 file_data = file.read()
 
             encrypted_data = self.cipher_suite.encrypt(file_data)
 
-            with open(output_path, "wb") as encrypted_file:
+            with output_path.open("wb") as encrypted_file:
                 encrypted_file.write(encrypted_data)
 
             logger.info("File encrypted successfully", source=file_path, destination=output_path)
-        except Exception as e:
-            logger.error("File encryption failed", file_path=file_path, error=str(e))
+        except Exception:
+            logger.exception("File encryption failed", file_path=str(file_path))
             raise
 
-    def decrypt_file(self, encrypted_file_path: str, output_path: str) -> None:
+    def decrypt_file(self, encrypted_file_path: str | Path, output_path: str | Path) -> None:
         """Decrypt file contents"""
         try:
-            with open(encrypted_file_path, "rb") as encrypted_file:
+            encrypted_file_path = Path(encrypted_file_path)
+            output_path = Path(output_path)
+            with encrypted_file_path.open("rb") as encrypted_file:
                 encrypted_data = encrypted_file.read()
 
             decrypted_data = self.cipher_suite.decrypt(encrypted_data)
 
-            with open(output_path, "wb") as file:
+            with output_path.open("wb") as file:
                 file.write(decrypted_data)
 
             logger.info(
                 "File decrypted successfully", source=encrypted_file_path, destination=output_path
             )
-        except Exception as e:
-            logger.error("File decryption failed", file_path=encrypted_file_path, error=str(e))
+        except Exception:
+            logger.exception("File decryption failed", file_path=str(encrypted_file_path))
             raise

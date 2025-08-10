@@ -4,34 +4,12 @@ AI Linting Fixer Package.
 A comprehensive AI-powered linting fixer with modular architecture.
 """
 
-# AI Components (optional imports)
-try:
-    from .ai_agent_manager import AIAgentManager
+from typing import Any, Callable
 
-    AI_COMPONENTS_AVAILABLE = True
-except ImportError:
-    AIAgentManager = None  # type: ignore
-    AI_COMPONENTS_AVAILABLE = False
-
-# Main class (optional AI imports)
-try:
-    from .ai_linting_fixer import AILintingFixer, create_ai_linting_fixer, run_ai_linting_fixer
-
-    AI_LINTING_FIXER_AVAILABLE = True
-except ImportError:
-    AILintingFixer = None  # type: ignore
-    create_ai_linting_fixer = None  # type: ignore
-    run_ai_linting_fixer = None  # type: ignore
-    AI_LINTING_FIXER_AVAILABLE = False
-
-from .code_analyzer import CodeAnalyzer
-
-# Core components
-from .detection import IssueDetector
-
-# Display and error handling
-from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode
-from .error_handler import (
+from .code_analyzer import CodeAnalyzer  # noqa: F401
+from .detection import IssueDetector  # noqa: F401
+from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode  # noqa: F401
+from .error_handler import (  # noqa: F401
     ErrorCategory,
     ErrorContext,
     ErrorHandler,
@@ -41,11 +19,9 @@ from .error_handler import (
     create_error_context,
     get_default_error_handler,
 )
-from .file_manager import FileManager
-from .issue_fixer import IssueFixer
-
-# Models
-from .models import (
+from .file_manager import FileManager  # noqa: F401
+from .issue_fixer import IssueFixer  # noqa: F401
+from .models import (  # noqa: F401
     AILintingFixerInputs,
     AILintingFixerOutputs,
     FixAttemptLog,
@@ -57,26 +33,51 @@ from .models import (
     WorkflowEvent,
     WorkflowResult,
 )
-
-# Orchestration
-from .orchestration import (
+from .orchestration import (  # noqa: F401
     create_workflow_context,
     detect_available_orchestrators,
     execute_with_orchestration,
     get_orchestration_config,
     validate_orchestration_config,
 )
-from .performance_tracker import PerformanceTracker
+from .performance_tracker import PerformanceTracker  # noqa: F401
+
+# Optional symbols (pre-declared as variables)
+AIAgentManager: Any | None = None
+AILintingFixer: Any | None = None
+create_ai_linting_fixer: Callable[..., Any] | None = None
+run_ai_linting_fixer: Callable[..., Any] | None = None
+
+# AI Components (optional imports)
+try:
+    from .ai_agent_manager import AIAgentManager as _AIAgentManager
+
+    AIAgentManager = _AIAgentManager
+    AI_COMPONENTS_AVAILABLE = True
+except ImportError:
+    AI_COMPONENTS_AVAILABLE = False
+
+# Main class (optional AI imports)
+try:
+    from .ai_linting_fixer import (
+        AILintingFixer as _AILintingFixer,
+        create_ai_linting_fixer as _create_ai_linting_fixer,
+        run_ai_linting_fixer as _run_ai_linting_fixer,
+    )
+
+    AILintingFixer = _AILintingFixer
+    create_ai_linting_fixer = _create_ai_linting_fixer
+    run_ai_linting_fixer = _run_ai_linting_fixer
+    AI_LINTING_FIXER_AVAILABLE = True
+except ImportError:
+    AI_LINTING_FIXER_AVAILABLE = False
 
 __all__ = [
     "AIAgentManager",
-    # Main class
     "AILintingFixer",
-    # Models
     "AILintingFixerInputs",
     "AILintingFixerOutputs",
     "CodeAnalyzer",
-    # Display and error handling
     "DisplayConfig",
     "DisplayFormatter",
     "ErrorCategory",
@@ -88,9 +89,8 @@ __all__ = [
     "ErrorSeverity",
     "FileManager",
     "FixAttemptLog",
-    "IssueFixer",
-    # Core components
     "IssueDetector",
+    "IssueFixer",
     "LintingFixResult",
     "LintingIssue",
     "OrchestrationConfig",
@@ -103,7 +103,6 @@ __all__ = [
     "create_ai_linting_fixer",
     "create_error_context",
     "create_workflow_context",
-    # Orchestration
     "detect_available_orchestrators",
     "execute_with_orchestration",
     "get_default_error_handler",

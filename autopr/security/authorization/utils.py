@@ -1,21 +1,35 @@
 """Utility functions for authorization operations."""
 
-import os
-from typing import Any
+from pathlib import Path
+from typing import Any, ClassVar, Union, cast
 
 import structlog
 
 from .audit import AuthorizationAuditLogger
+from .managers import (
+    AuditedAuthorizationManager,
+    CachedAuthorizationManager,
+    EnterpriseAuthorizationManager,
+)
 from .models import AuthorizationContext, Permission, ResourceType
 
 logger = structlog.get_logger(__name__)
 
-# Global instances
-_auth_manager = None
-_access_logger = None
+
+ManagerType = Union[
+    AuditedAuthorizationManager, CachedAuthorizationManager, EnterpriseAuthorizationManager
+]
+
+
+class _AuthSingleton:
+    """Simple holder to avoid using module-level ``global`` updates."""
+
+    manager: ClassVar[Any | None] = None
+    access_logger: ClassVar[AuthorizationAuditLogger | None] = None
 
 
 def get_authorization_manager(
+    *,
     use_cache: bool = True,
     cache_ttl_seconds: int = 300,
     enable_audit: bool = True,
@@ -33,19 +47,15 @@ def get_authorization_manager(
     Returns:
         An instance of the appropriate authorization manager
     """
-    global _auth_manager
-
-    if _auth_manager is None:
+    if _AuthSingleton.manager is None:
         # Determine audit log file if not provided but enabled
         if enable_audit and not audit_log_file:
-            log_dir = os.environ.get("AUTOPR_LOG_DIR", "logs")
-            audit_log_file = os.path.join(log_dir, "authorization_audit.log")
+            log_dir = Path("logs")
+            audit_log_file = str(log_dir / "authorization_audit.log")
 
         # Create the appropriate manager based on requested capabilities
         if enable_audit:
-            from .managers import AuditedAuthorizationManager
-
-            _auth_manager = AuditedAuthorizationManager(
+            _AuthSingleton.manager = AuditedAuthorizationManager(
                 cache_ttl_seconds=cache_ttl_seconds if use_cache else 0,
                 audit_log_file=audit_log_file,
             )
@@ -56,25 +66,20 @@ def get_authorization_manager(
                 audit_log_file=audit_log_file,
             )
         elif use_cache:
-            from .managers import CachedAuthorizationManager
-
-            _auth_manager = CachedAuthorizationManager(cache_ttl_seconds=cache_ttl_seconds)
+            _AuthSingleton.manager = CachedAuthorizationManager(cache_ttl_seconds=cache_ttl_seconds)
             logger.info("Created CachedAuthorizationManager", cache_ttl=cache_ttl_seconds)
         else:
-            from .managers import EnterpriseAuthorizationManager
-
-            _auth_manager = EnterpriseAuthorizationManager()
+            _AuthSingleton.manager = EnterpriseAuthorizationManager()
             logger.info("Created basic EnterpriseAuthorizationManager")
 
-    return _auth_manager
+    return cast(Any, _AuthSingleton.manager)
 
 
 def get_access_logger() -> AuthorizationAuditLogger:
     """Get global access logger instance."""
-    global _access_logger
-    if _access_logger is None:
-        _access_logger = AuthorizationAuditLogger()
-    return _access_logger
+    if _AuthSingleton.access_logger is None:
+        _AuthSingleton.access_logger = AuthorizationAuditLogger()
+    return _AuthSingleton.access_logger
 
 
 def create_project_authorization_context(
@@ -174,19 +179,20 @@ def validate_permission_hierarchy(permissions: list[str]) -> bool:
         Permission.EXECUTE.value: 3,
     }
 
+    READ_REQUIRED_LEVEL = 3
+    WRITE_REQUIRED_LEVEL = 4
+
     max_level = max(permission_levels.get(p, 0) for p in permissions)
 
-    # If user has high-level permissions, they should have lower-level ones too
-    if max_level >= 3 and Permission.READ.value not in permissions:
-        return False
-    if max_level >= 4 and Permission.WRITE.value not in permissions:
-        return False
-
-    return True
+    missing_required = (
+        (max_level >= READ_REQUIRED_LEVEL and Permission.READ.value not in permissions)
+        or (max_level >= WRITE_REQUIRED_LEVEL and Permission.WRITE.value not in permissions)
+    )
+    return not missing_required
 
 
 def get_effective_permissions(
-    user_roles: list[str], explicit_permissions: list[str], resource_owner: bool = False
+    user_roles: list[str], explicit_permissions: list[str], *, resource_owner: bool = False
 ) -> list[str]:
     """Calculate effective permissions for a user."""
     effective_permissions = set(explicit_permissions)
@@ -239,15 +245,24 @@ def generate_permission_matrix(
     users: list[str], resources: list[str], auth_manager: Any
 ) -> dict[str, Any]:
     """Generate a permission matrix for analysis."""
-    matrix = {
+    permissions_map: dict[str, dict[str, list[str]]] = {}
+    users_with_access: dict[str, int] = {}
+    resources_with_access: dict[str, int] = {}
+    summary: dict[str, Any] = {
+        "total_grants": 0,
+        "users_with_access": users_with_access,
+        "resources_with_access": resources_with_access,
+    }
+
+    matrix: dict[str, Any] = {
         "users": users,
         "resources": resources,
-        "permissions": {},
-        "summary": {"total_grants": 0, "users_with_access": {}, "resources_with_access": {}},
+        "permissions": permissions_map,
+        "summary": summary,
     }
 
     for user_id in users:
-        matrix["permissions"][user_id] = {}
+        permissions_map[user_id] = {}
         for resource in resources:
             resource_type, resource_id = resource.split(":", 1)
             user_permissions = []
@@ -266,15 +281,11 @@ def generate_permission_matrix(
                     user_permissions.append(permission.value)
                     matrix["summary"]["total_grants"] += 1
 
-            matrix["permissions"][user_id][resource] = user_permissions
+            permissions_map[user_id][resource] = user_permissions
 
             if user_permissions:
-                if user_id not in matrix["summary"]["users_with_access"]:
-                    matrix["summary"]["users_with_access"][user_id] = 0
-                matrix["summary"]["users_with_access"][user_id] += 1
+                users_with_access[user_id] = users_with_access.get(user_id, 0) + 1
 
-                if resource not in matrix["summary"]["resources_with_access"]:
-                    matrix["summary"]["resources_with_access"][resource] = 0
-                matrix["summary"]["resources_with_access"][resource] += 1
+                resources_with_access[resource] = resources_with_access.get(resource, 0) + 1
 
     return matrix

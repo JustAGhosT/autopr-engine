@@ -1,11 +1,14 @@
 import asyncio
 import json
-import os
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Any
+import logging
 
 from .tool_base import Tool
+
+logger = logging.getLogger(__name__)
 
 
 class CodeQLTool(Tool):
@@ -30,16 +33,17 @@ class CodeQLTool(Tool):
         """
         # Check if CodeQL is available
         if not shutil.which("codeql"):
-            print("CodeQL is not available on this system. Skipping CodeQL analysis.")
+            logger.warning("CodeQL is not available on this system. Skipping CodeQL analysis.")
             return [{"warning": "CodeQL is not available on this system"}]
 
-        project_root = "."  # Assuming we run from the project root.
+        # Use first file's parent as project root if provided, else current directory
+        project_root = str(Path(files[0]).resolve().parent) if files else "."
         language = config.get("language", "python")
         query_suite = config.get("query_suite", "python-security-and-quality.qls")
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            db_path = os.path.join(temp_dir, "codeql_db")
-            results_path = os.path.join(temp_dir, "results.sarif")
+            db_path = str(Path(temp_dir) / "codeql_db")
+            results_path = Path(temp_dir) / "results.sarif"
 
             # 1. Create the database
             db_create_cmd = [
@@ -59,7 +63,7 @@ class CodeQLTool(Tool):
 
             if process_db.returncode != 0:
                 error_message = stderr_db.decode().strip()
-                print(f"Error creating CodeQL database: {error_message}")
+                logger.error("Error creating CodeQL database: %s", error_message)
                 return [{"error": f"CodeQL database creation failed: {error_message}"}]
 
             # 2. Analyze the database
@@ -80,21 +84,23 @@ class CodeQLTool(Tool):
 
             if process_analyze.returncode != 0:
                 error_message = stderr_analyze.decode().strip()
-                print(f"Error analyzing CodeQL database: {error_message}")
+                logger.error("Error analyzing CodeQL database: %s", error_message)
                 return [{"error": f"CodeQL analysis failed: {error_message}"}]
 
             # 3. Parse the SARIF output
-            if not os.path.exists(results_path):
+            if not results_path.exists():
                 return []
 
             try:
-                with open(results_path) as f:
-                    sarif_data = json.load(f)
+                # Read file asynchronously to avoid blocking
+                contents = await asyncio.to_thread(results_path.read_text, encoding="utf-8")
+                sarif_data = json.loads(contents)
                 return self._parse_sarif(sarif_data)
-            except (json.JSONDecodeError, FileNotFoundError):
-                print("Failed to parse CodeQL SARIF output.")
+            except (json.JSONDecodeError, FileNotFoundError) as e:
+                logger.exception("Failed to parse CodeQL SARIF output: %s", e)
                 return [{"error": "Failed to parse CodeQL SARIF output"}]
 
+        # If we reach here, no results were produced
         return []
 
     def _parse_sarif(self, sarif_data: dict[str, Any]) -> list[dict[str, Any]]:

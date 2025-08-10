@@ -5,9 +5,9 @@ This module defines the core data models for the template system.
 """
 
 from dataclasses import dataclass, field
-from enum import Enum, StrEnum
+from enum import StrEnum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class TemplateType(StrEnum):

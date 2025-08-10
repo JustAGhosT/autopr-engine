@@ -7,7 +7,7 @@ Core automation actions for GitHub PR processing
 # mypy: disable-error-code=unused-ignore
 # mypy: ignore-errors
 
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import Any
 
 # Import action classes with error handling for optional dependencies
 PlatformDetector: type[Any] | None = None

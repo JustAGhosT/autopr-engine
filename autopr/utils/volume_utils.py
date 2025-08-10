@@ -4,7 +4,7 @@ Volume-related utility functions for AutoPR.
 This module provides volume-based configuration and utilities that can be imported
 without creating circular dependencies between modules.
 """
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from autopr.enums import QualityMode
 
@@ -28,24 +28,32 @@ def get_volume_level_name(volume: int) -> str:
     Raises:
         ValueError: If volume is outside 0-1000 range or not an integer
     """
-    if not 0 <= volume <= 1000:
-        raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+    MIN_VOLUME = 0
+    MAX_VOLUME = 1000
+    if not MIN_VOLUME <= volume <= MAX_VOLUME:
+        msg = f"Volume must be between {MIN_VOLUME} and {MAX_VOLUME}, got {volume}"
+        raise ValueError(msg)
         
     if volume == 0:
         return "Silent"
-    elif volume < 200:
+    THRESHOLD_QUIET = 200
+    THRESHOLD_MODERATE = 400
+    THRESHOLD_BALANCED = 600
+    THRESHOLD_THOROUGH = 800
+
+    if volume < THRESHOLD_QUIET:
         return "Quiet"
-    elif volume < 400:
+    elif volume < THRESHOLD_MODERATE:
         return "Moderate"
-    elif volume < 600:
+    elif volume < THRESHOLD_BALANCED:
         return "Balanced"
-    elif volume < 800:
+    elif volume < THRESHOLD_THOROUGH:
         return "Thorough"
     else:
         return "Maximum"
 
 
-def get_volume_config(volume: int) -> Dict[str, Any]:
+def get_volume_config(volume: int) -> dict[str, Any]:
     """
     Get the complete configuration for a given volume level.
     
@@ -65,7 +73,7 @@ def get_volume_config(volume: int) -> Dict[str, Any]:
     }
 
 
-def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
+def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
     """
     Map a volume level (0-1000) to a QualityMode and configuration.
     
@@ -78,8 +86,11 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
     Raises:
         ValueError: If volume is outside 0-1000 range or not an integer
     """
-    if not 0 <= volume <= 1000:
-        raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+    MIN_VOLUME = 0
+    MAX_VOLUME = 1000
+    if not MIN_VOLUME <= volume <= MAX_VOLUME:
+        msg = f"Volume must be between {MIN_VOLUME} and {MAX_VOLUME}, got {volume}"
+        raise ValueError(msg)
 
     # Base configuration that applies to all modes
     base_config = {
@@ -93,18 +104,17 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
     quality_mode = QualityMode.from_volume(volume)
     
     # Special case for minimum volume - ultra minimal checks
-    if volume == 0:
+    if volume == MIN_VOLUME:
         return quality_mode, {
             **base_config,
             "max_fixes": 0,  # No fixes in silent mode
             "max_issues": 1,  # Minimum issues to report
             "enable_ai_agents": False,
         }
-    elif quality_mode == QualityMode.AI_ENHANCED:
+    if quality_mode == QualityMode.AI_ENHANCED:
         return quality_mode, {
             **base_config,
             "max_fixes": 100,  # More aggressive fixes at max volume
             "enable_ai_agents": True,
         }
-    else:
-        return quality_mode, base_config
+    return quality_mode, base_config

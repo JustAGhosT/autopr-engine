@@ -13,7 +13,7 @@ logger = structlog.get_logger(__name__)
 class EnterpriseAuthorizationManager(BaseAuthorizationManager):
     """Enterprise-grade authorization manager with comprehensive features"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Role-based permissions: role -> resource_type -> permissions
         self.role_permissions: dict[str, dict[ResourceType, set[Permission]]] = {}
 
@@ -26,7 +26,7 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
         # Initialize default roles
         self._initialize_default_roles()
 
-    def _initialize_default_roles(self):
+    def _initialize_default_roles(self) -> None:
         """Initialize default role permissions"""
         # Admin role - full access to everything
         self.role_permissions["admin"] = {

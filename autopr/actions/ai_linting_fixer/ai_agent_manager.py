@@ -5,6 +5,7 @@ This module manages AI agents and their specializations for different types of l
 """
 
 import logging
+from collections import Counter
 from typing import Any
 
 from autopr.actions.llm.manager import LLMProviderManager
@@ -38,10 +39,10 @@ class AIAgentManager:
             return "general_agent"
 
         # Count issues by type
-        issue_counts = {}
+        issue_counts: Counter[str] = Counter()
         for issue in issues:
             error_code = issue.error_code
-            issue_counts[error_code] = issue_counts.get(error_code, 0) + 1
+            issue_counts[error_code] += 1
 
         # Find the best agent based on issue types
         best_agent = "general_agent"
@@ -59,7 +60,7 @@ class AIAgentManager:
                 best_score = score
                 best_agent = agent_name
 
-        logger.debug(f"Selected agent '{best_agent}' for {len(issues)} issues")
+        logger.debug("Selected agent '%s' for %d issues", best_agent, len(issues))
         return best_agent
 
     def get_specialized_system_prompt(self, agent_type: str, issues: list[LintingIssue]) -> str:
@@ -180,7 +181,7 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 return parsed
 
             except json.JSONDecodeError as e:
-                logger.warning(f"Failed to parse AI response as JSON: {e}")
+                logger.warning("Failed to parse AI response as JSON: %s", e)
 
                 # Try to extract useful information from the response
                 lines = content.split("\n")
@@ -213,11 +214,11 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                     "suggestion": "AI response format needs improvement",
                 }
 
-        except Exception as e:
-            logger.exception(f"Unexpected error parsing AI response: {e}")
+        except Exception as exc:
+            logger.exception("Unexpected error parsing AI response")
             return {
                 "success": False,
-                "error": f"Parsing error: {e}",
+                "error": f"Parsing error: {exc}",
                 "raw_response": content[:200] + "..." if len(content) > 200 else content,
             }
 
@@ -229,77 +230,82 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
         fixed_content: str,
     ) -> float:
         """Calculate a comprehensive confidence score for the AI fix."""
-        confidence = 0.3  # Base confidence - start lower for safety
-
         try:
-            # Check if the response indicates success
-            if ai_response.get("success"):
-                confidence += 0.2
-
-            # Check if confidence is provided in response (AI's own confidence)
-            if "confidence" in ai_response:
-                response_confidence = ai_response["confidence"]
-                if isinstance(response_confidence, (int, float)) and 0 <= response_confidence <= 1:
-                    # Weight AI's confidence at 30%
-                    confidence = confidence * 0.7 + response_confidence * 0.3
-
-            # Check if code was actually changed (indicates AI made an attempt)
-            if original_content != fixed_content:
-                confidence += 0.15
-
-                # Check if the change is substantial but not too drastic
-                change_ratio = len(fixed_content) / max(len(original_content), 1)
-                if 0.8 <= change_ratio <= 1.2:  # Reasonable change size
-                    confidence += 0.1
-                elif change_ratio < 0.5 or change_ratio > 2.0:  # Suspicious change size
-                    confidence -= 0.1
-
-            # Check if explanation is provided (shows reasoning)
-            if ai_response.get("explanation"):
-                confidence += 0.1
-                # Bonus for detailed explanations
-                if len(ai_response["explanation"]) > 50:
-                    confidence += 0.05
-
-            # Check if changes are documented (shows attention to detail)
-            if ai_response.get("changes_made"):
-                confidence += 0.1
-                # Bonus for specific change descriptions
-                if len(ai_response["changes_made"]) > 0:
-                    confidence += 0.05
-
-            # Issue complexity factor (fewer issues = higher confidence)
-            if len(issues) == 1:
-                confidence += 0.1  # Single issue is easier
-            elif len(issues) <= 3:
-                confidence += 0.05  # Few issues
-            elif len(issues) > 10:
-                confidence -= 0.1  # Many issues = more complex
-
-            # Issue type confidence (some issues are easier to fix)
-            easy_issues = [
-                "E501",
-                "F401",
-                "W292",
-                "W293",
-            ]  # Line length, unused imports, whitespace
-            medium_issues = ["F841", "E722", "E401"]  # Unused variables, bare except, import style
-            hard_issues = ["B001", "E302", "E305"]  # Complex style issues
-
-            for issue in issues:
-                if issue.error_code in easy_issues:
-                    confidence += 0.05
-                elif issue.error_code in medium_issues:
-                    confidence += 0.02
-                elif issue.error_code in hard_issues:
-                    confidence -= 0.02
-
-            # Cap confidence at reasonable levels
+            confidence = 0.3
+            confidence = self._score_response_success(ai_response, confidence)
+            confidence = self._score_ai_confidence(ai_response, confidence)
+            confidence = self._score_change_size(original_content, fixed_content, confidence)
+            confidence = self._score_explanation(ai_response, confidence)
+            confidence = self._score_changes_list(ai_response, confidence)
+            confidence = self._score_issue_complexity(issues, confidence)
+            confidence = self._score_issue_types(issues, confidence)
             return max(0.0, min(confidence, 1.0))
+        except Exception as exc:
+            logger.debug("Error calculating confidence score: %s", exc)
+            return 0.3
 
-        except Exception as e:
-            logger.debug(f"Error calculating confidence score: {e}")
-            return 0.3  # Return base confidence on error
+    def _score_response_success(self, ai_response: dict[str, Any], confidence: float) -> float:
+        if ai_response.get("success"):
+            confidence += 0.2
+        return confidence
+
+    def _score_ai_confidence(self, ai_response: dict[str, Any], confidence: float) -> float:
+        if "confidence" in ai_response:
+            response_confidence = ai_response["confidence"]
+            if isinstance(response_confidence, (int, float)) and 0 <= response_confidence <= 1:
+                confidence = confidence * 0.7 + response_confidence * 0.3
+        return confidence
+
+    def _score_change_size(
+        self, original_content: str, fixed_content: str, confidence: float
+    ) -> float:
+        if original_content != fixed_content:
+            confidence += 0.15
+            change_ratio = len(fixed_content) / max(len(original_content), 1)
+            if 0.8 <= change_ratio <= 1.2:
+                confidence += 0.1
+            elif change_ratio < 0.5 or change_ratio > 2.0:
+                confidence -= 0.1
+        return confidence
+
+    def _score_explanation(self, ai_response: dict[str, Any], confidence: float) -> float:
+        explanation = ai_response.get("explanation")
+        if explanation:
+            confidence += 0.1
+            if len(explanation) > 50:
+                confidence += 0.05
+        return confidence
+
+    def _score_changes_list(self, ai_response: dict[str, Any], confidence: float) -> float:
+        changes = ai_response.get("changes_made")
+        if changes:
+            confidence += 0.1
+            if len(changes) > 0:
+                confidence += 0.05
+        return confidence
+
+    def _score_issue_complexity(self, issues: list[LintingIssue], confidence: float) -> float:
+        if len(issues) == 1:
+            confidence += 0.1
+        elif len(issues) <= 3:
+            confidence += 0.05
+        elif len(issues) > 10:
+            confidence -= 0.1
+        return confidence
+
+    def _score_issue_types(self, issues: list[LintingIssue], confidence: float) -> float:
+        easy = {"E501", "F401", "W292", "W293"}
+        medium = {"F841", "E722", "E401"}
+        hard = {"B001", "E302", "E305"}
+        for issue in issues:
+            code = issue.error_code
+            if code in easy:
+                confidence += 0.05
+            elif code in medium:
+                confidence += 0.02
+            elif code in hard:
+                confidence -= 0.02
+        return confidence
 
     def _get_base_system_prompt(self) -> str:
         """Get the base system prompt."""

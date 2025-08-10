@@ -7,21 +7,22 @@ This enables horizontal scaling across multiple workers and systems.
 
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import json
 import logging
 import time
-from typing import Any
+from typing import Any, TypedDict
+import os
 import uuid
 
 logger = logging.getLogger(__name__)
 
 # Optional Redis dependency
 try:
-    import redis
-    from redis.exceptions import ConnectionError as RedisConnectionError
-    from redis.exceptions import RedisError
+    import redis  # type: ignore[import-not-found, import-untyped]
+    from redis.exceptions import ConnectionError as RedisConnectionError  # type: ignore[import-not-found, import-untyped]
+    from redis.exceptions import RedisError  # type: ignore[import-not-found, import-untyped]
 
     REDIS_AVAILABLE = True
 except ImportError:
@@ -56,7 +57,7 @@ class QueuedIssue:
     agent_type: str | None = None
 
     # Processing metadata
-    created_at: datetime = None
+    created_at: datetime | None = None
     assigned_worker: str | None = None
     processing_started_at: datetime | None = None
     retry_count: int = 0
@@ -69,7 +70,7 @@ class QueuedIssue:
 
     def __post_init__(self):
         if self.created_at is None:
-            self.created_at = datetime.now()
+            self.created_at = datetime.now(timezone.utc)
         if not self.id:
             self.id = str(uuid.uuid4())
 
@@ -103,11 +104,11 @@ class ProcessingResult:
     processing_time: float = 0.0
     error_message: str | None = None
     worker_id: str | None = None
-    processed_at: datetime = None
+    processed_at: datetime | None = None
 
     def __post_init__(self):
         if self.processed_at is None:
-            self.processed_at = datetime.now()
+            self.processed_at = datetime.now(timezone.utc)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -143,7 +144,7 @@ class RedisQueueManager:
         self.worker_id = worker_id or f"worker_{uuid.uuid4().hex[:8]}"
 
         # Initialize Redis connection
-        self.redis_client = None
+        self.redis_client: Any = None
         self._connect()
 
         # Queue names
@@ -156,24 +157,25 @@ class RedisQueueManager:
         # Statistics
         self.processed_count = 0
         self.failed_count = 0
-        self.start_time = datetime.now()
+        self.start_time = datetime.now(timezone.utc)
 
     def _connect(self):
         """Establish Redis connection."""
         try:
             self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
             self.redis_client.ping()
-            logger.info(f"Connected to Redis: {self.redis_url}")
-        except Exception as e:
-            logger.exception(f"Failed to connect to Redis: {e}")
+            logger.info("Connected to Redis: %s", self.redis_url)
+        except Exception:
+            logger.exception("Failed to connect to Redis")
             raise
 
     def is_connected(self) -> bool:
         """Check if Redis connection is active."""
         try:
+            assert self.redis_client is not None
             self.redis_client.ping()
             return True
-        except:
+        except Exception:
             return False
 
     def enqueue_issue(self, issue: QueuedIssue) -> bool:
@@ -185,6 +187,7 @@ class RedisQueueManager:
             # Add to priority queue (higher priority = higher score)
             score = issue.priority * 1000 + int(time.time())  # Priority + timestamp
 
+            assert self.redis_client is not None
             self.redis_client.zadd(self.pending_queue, {issue_data: score})
 
             logger.debug(f"Enqueued issue {issue.id} with priority {issue.priority}")
@@ -207,6 +210,7 @@ class RedisQueueManager:
                 mapping[issue_data] = score
 
             if mapping:
+                assert self.redis_client is not None
                 self.redis_client.zadd(self.pending_queue, mapping)
                 enqueued_count = len(mapping)
                 logger.info(f"Enqueued {enqueued_count} issues in batch")
@@ -220,6 +224,7 @@ class RedisQueueManager:
         """Get the next issue to process."""
         try:
             # Get highest priority issue (blocking operation)
+            assert self.redis_client is not None
             result = self.redis_client.bzpopmax(self.pending_queue, timeout=timeout)
 
             if not result:
@@ -230,9 +235,10 @@ class RedisQueueManager:
 
             # Move to processing queue
             issue.assigned_worker = self.worker_id
-            issue.processing_started_at = datetime.now()
+            issue.processing_started_at = datetime.now(timezone.utc)
 
             processing_data = json.dumps(issue.to_dict())
+            assert self.redis_client is not None
             self.redis_client.hset(self.processing_queue, issue.id, processing_data)
 
             logger.debug(f"Dequeued issue {issue.id} for processing")
@@ -246,10 +252,12 @@ class RedisQueueManager:
         """Mark an issue as completed."""
         try:
             # Remove from processing queue
+            assert self.redis_client is not None
             self.redis_client.hdel(self.processing_queue, issue_id)
 
             # Add result
             result_data = json.dumps(result.to_dict())
+            assert self.redis_client is not None
             self.redis_client.hset(self.results_queue, issue_id, result_data)
 
             # Update statistics
@@ -258,7 +266,7 @@ class RedisQueueManager:
             else:
                 self.failed_count += 1
 
-            logger.debug(f"Completed issue {issue_id} with success={result.success}")
+            logger.debug("Completed issue %s with success=%s", issue_id, result.success)
             return True
 
         except Exception as e:
@@ -269,6 +277,7 @@ class RedisQueueManager:
         """Handle a failed issue processing."""
         try:
             # Remove from processing queue
+            assert self.redis_client is not None
             self.redis_client.hdel(self.processing_queue, issue.id)
 
             # Check if we should retry
@@ -285,13 +294,16 @@ class RedisQueueManager:
                 {
                     **issue.to_dict(),
                     "final_error": error_message,
-                    "failed_at": datetime.now().isoformat(),
+                    "failed_at": datetime.now(timezone.utc).isoformat(),
                 }
             )
+            assert self.redis_client is not None
             self.redis_client.hset(self.failed_queue, issue.id, failed_data)
             self.failed_count += 1
 
-            logger.warning(f"Issue {issue.id} failed permanently after {issue.retry_count} retries")
+            logger.warning(
+                "Issue %s failed permanently after %d retries", issue.id, issue.retry_count
+            )
             return True
 
         except Exception as e:
@@ -301,6 +313,7 @@ class RedisQueueManager:
     def get_queue_statistics(self) -> dict[str, Any]:
         """Get comprehensive queue statistics."""
         try:
+            assert self.redis_client is not None
             return {
                 "pending_count": self.redis_client.zcard(self.pending_queue),
                 "processing_count": self.redis_client.hlen(self.processing_queue),
@@ -310,7 +323,9 @@ class RedisQueueManager:
                     "worker_id": self.worker_id,
                     "processed_count": self.processed_count,
                     "failed_count": self.failed_count,
-                    "uptime_seconds": (datetime.now() - self.start_time).total_seconds(),
+                    "uptime_seconds": (
+                        datetime.now(timezone.utc) - self.start_time
+                    ).total_seconds(),
                 },
                 "active_workers": self._get_active_workers(),
             }
@@ -322,39 +337,44 @@ class RedisQueueManager:
     def _get_active_workers(self) -> list[dict[str, Any]]:
         """Get list of active workers."""
         try:
-            cutoff_time = datetime.now() - timedelta(minutes=5)
+            cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=5)
             cutoff_timestamp = cutoff_time.timestamp()
 
             # Get workers that have sent heartbeat in last 5 minutes
             active_workers = []
+            assert self.redis_client is not None
             for worker_id, last_seen in self.redis_client.hgetall(self.worker_heartbeat).items():
                 if float(last_seen) > cutoff_timestamp:
                     active_workers.append(
                         {
                             "worker_id": worker_id,
-                            "last_seen": datetime.fromtimestamp(float(last_seen)).isoformat(),
+                            "last_seen": datetime.fromtimestamp(
+                                float(last_seen), tz=timezone.utc
+                            ).isoformat(),
                         }
                     )
 
             return active_workers
 
-        except Exception as e:
-            logger.exception(f"Failed to get active workers: {e}")
+        except Exception:
+            logger.exception("Failed to get active workers")
             return []
 
     def send_heartbeat(self):
         """Send worker heartbeat."""
         try:
+            assert self.redis_client is not None
             self.redis_client.hset(self.worker_heartbeat, self.worker_id, time.time())
-        except Exception as e:
-            logger.exception(f"Failed to send heartbeat: {e}")
+        except Exception:
+            logger.exception("Failed to send heartbeat")
 
     def cleanup_stale_processing(self, timeout_minutes: int = 30):
         """Clean up stale processing items."""
         try:
-            cutoff_time = datetime.now() - timedelta(minutes=timeout_minutes)
+            cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=timeout_minutes)
 
             stale_count = 0
+            assert self.redis_client is not None
             for issue_id, issue_data in self.redis_client.hgetall(self.processing_queue).items():
                 issue = QueuedIssue.from_dict(json.loads(issue_data))
 
@@ -374,20 +394,21 @@ class RedisQueueManager:
                     stale_count += 1
 
             if stale_count > 0:
-                logger.info(f"Cleaned up {stale_count} stale processing items")
+                logger.info("Cleaned up %d stale processing items", stale_count)
 
-        except Exception as e:
-            logger.exception(f"Failed to cleanup stale processing: {e}")
+        except Exception:
+            logger.exception("Failed to cleanup stale processing")
 
     def clear_all_queues(self):
         """Clear all queues (for testing/debugging)."""
         try:
+            assert self.redis_client is not None
             self.redis_client.delete(
                 self.pending_queue, self.processing_queue, self.results_queue, self.failed_queue
             )
             logger.info("Cleared all queues")
-        except Exception as e:
-            logger.exception(f"Failed to clear queues: {e}")
+        except Exception:
+            logger.exception("Failed to clear queues")
 
 
 class DistributedProcessor:
@@ -409,14 +430,14 @@ class DistributedProcessor:
         self.processor_function = processor_function
         self.running = False
         self.heartbeat_interval = 60  # seconds
-        self.last_heartbeat = 0
+        self.last_heartbeat: float = 0.0
 
     def start_processing(self, max_iterations: int | None = None):
         """Start processing issues from the queue."""
         self.running = True
         iteration_count = 0
 
-        logger.info(f"Started distributed processing (worker: {self.queue_manager.worker_id})")
+        logger.info("Started distributed processing (worker: %s)", self.queue_manager.worker_id)
 
         try:
             while self.running:
@@ -446,15 +467,15 @@ class DistributedProcessor:
                     self.queue_manager.complete_issue(issue.id, result)
 
                 except Exception as e:
-                    logger.exception(f"Error processing issue {issue.id}: {e}")
+                    logger.exception("Error processing issue %s: %s", issue.id, e)
                     self.queue_manager.fail_issue(issue, str(e))
 
                 iteration_count += 1
 
         except KeyboardInterrupt:
             logger.info("Processing interrupted by user")
-        except Exception as e:
-            logger.exception(f"Unexpected error in processing loop: {e}")
+        except Exception:
+            logger.exception("Unexpected error in processing loop")
         finally:
             self.running = False
             logger.info("Stopped distributed processing")
@@ -468,16 +489,33 @@ class DistributedProcessor:
 class RedisConfig:
     """Helper for Redis configuration."""
 
-    @staticmethod
-    def from_environment() -> dict[str, str]:
-        """Get Redis configuration from environment variables."""
-        import os
+    class RedisEnvConfig(TypedDict, total=False):
+        redis_url: str
+        queue_prefix: str
+        worker_id: str
 
-        return {
-            "redis_url": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
-            "queue_prefix": os.getenv("AI_LINTING_QUEUE_PREFIX", "ai_linting"),
-            "worker_id": os.getenv("AI_LINTING_WORKER_ID"),
-        }
+    @staticmethod
+    def from_environment() -> "RedisConfig.RedisEnvConfig":
+        """Get Redis configuration from environment variables."""
+
+        redis_url_env = os.getenv("REDIS_URL")
+        redis_url: str
+        if redis_url_env is None:
+            redis_url = "redis://localhost:6379/0"
+        else:
+            redis_url = redis_url_env
+        queue_prefix_env = os.getenv("AI_LINTING_QUEUE_PREFIX")
+        queue_prefix: str
+        if queue_prefix_env is None:
+            queue_prefix = "ai_linting"
+        else:
+            queue_prefix = queue_prefix_env
+        config: RedisConfig.RedisEnvConfig = {}
+        config["redis_url"] = redis_url
+        config["queue_prefix"] = queue_prefix
+        worker_id: str = os.getenv("AI_LINTING_WORKER_ID") or ""
+        config["worker_id"] = worker_id
+        return config
 
     @staticmethod
     def create_queue_manager(**kwargs) -> RedisQueueManager | None:
@@ -487,13 +525,23 @@ class RedisConfig:
             return None
 
         try:
-            config = RedisConfig.from_environment()
-            config.update(kwargs)
+            base_config = RedisConfig.from_environment()
+            # Merge kwargs skipping None values to satisfy type expectations
+            merged: RedisConfig.RedisEnvConfig = {}
+            merged.update(base_config)
+            redis_url_kw = kwargs.get("redis_url")
+            if redis_url_kw is not None:
+                merged["redis_url"] = str(redis_url_kw)
+            queue_prefix_kw = kwargs.get("queue_prefix")
+            if queue_prefix_kw is not None:
+                merged["queue_prefix"] = str(queue_prefix_kw)
+            worker_id_kw = kwargs.get("worker_id")
+            if worker_id_kw is not None:
+                merged["worker_id"] = str(worker_id_kw)
+            return RedisQueueManager(**merged)
 
-            return RedisQueueManager(**config)
-
-        except Exception as e:
-            logger.exception(f"Failed to create Redis queue manager: {e}")
+        except Exception:
+            logger.exception("Failed to create Redis queue manager")
             return None
 
 
