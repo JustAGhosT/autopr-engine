@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 class IssueSeverity(str, Enum):
     """Severity levels for code issues."""
+    WARNING = "warning"
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"

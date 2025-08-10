@@ -21,10 +21,8 @@ Note: This is the updated agent framework. Legacy agent imports have been remove
 """
 
 import warnings
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Generic, Type
 
-# Import base classes and models
-from autopr.agents.base import BaseAgent
+# Import models
 from autopr.agents.models import (
     IssueSeverity,
     CodeIssue,
@@ -33,23 +31,20 @@ from autopr.agents.models import (
     CodeAnalysisReport
 )
 
-# Import the new modular agent classes
+# Import modular agent IO types
 from .code_quality_agent import (
-    CodeQualityAgent,
     CodeQualityInputs,
-    CodeQualityOutputs
+    CodeQualityOutputs,
 )
 
 from .platform_analysis_agent import (
-    PlatformAnalysisAgent,
     PlatformAnalysisInputs,
-    PlatformAnalysisOutputs
+    PlatformAnalysisOutputs,
 )
 
 from .linting_agent import (
-    LintingAgent,
     LintingInputs,
-    LintingOutputs
+    LintingOutputs,
 )
 
 from autopr.agents.agents import (
@@ -57,16 +52,12 @@ from autopr.agents.agents import (
     BaseAgent,
     CodeQualityAgent,
     PlatformAnalysisAgent,
-    LintingAgent
+    LintingAgent,
 )
 
 # Import crew from the crew module
 from .crew.main import AutoPRCrew
-from autopr.utils.volume_utils import (
-    volume_to_quality_mode,
-    get_volume_config,
-    get_volume_level_name,
-)
+
 
 # Show deprecation warning for old import path
 warnings.warn(
@@ -79,14 +70,14 @@ __all__ = [
     # Base classes
     'BaseAgent',
     'VolumeConfig',
-    
+
     # Models
     'IssueSeverity',
     'CodeIssue',
     'PlatformComponent',
     'PlatformAnalysis',
     'CodeAnalysisReport',
-    
+
     # Agents
     'CodeQualityAgent',
     'CodeQualityInputs',
@@ -97,7 +88,7 @@ __all__ = [
     'LintingAgent',
     'LintingInputs',
     'LintingOutputs',
-    
+
     # Crew
     'AutoPRCrew'
 ]

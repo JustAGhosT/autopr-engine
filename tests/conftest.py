@@ -13,7 +13,12 @@ from collections.abc import AsyncGenerator
 
 import pytest  # type: ignore
 import pytest_asyncio  # type: ignore
-import toml  # type: ignore
+
+# Prefer stdlib tomllib (Py3.11+), then fallback to tomli; avoid requiring 'toml' package
+try:  # Python 3.11+
+    import tomllib as toml  # type: ignore[import-not-found]
+except ModuleNotFoundError:  # Fallback for older interpreters
+    import tomli as toml  # type: ignore[import-not-found]
 from aiohttp import ClientSession
 
 # Import volume utilities (placeholder for future use)
@@ -36,7 +41,8 @@ def get_warning_filters(volume: int) -> List[str]:
     # Load the pyproject.toml file from the project root
     project_root = Path(__file__).parent.parent
     pyproject_path = project_root / "pyproject.toml"
-    with open(pyproject_path) as f:
+    # tomllib/tomli expect a binary file handle
+    with open(pyproject_path, "rb") as f:
         config = toml.load(f)
 
     # Get the volume warnings configuration

@@ -5,7 +5,7 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import logging
 from pathlib import Path
@@ -451,7 +451,7 @@ class AIInteractionDB:
     def cleanup_old_interactions(self, days_to_keep: int = 30):
         """Clean up old interactions to keep database size manageable."""
         with sqlite3.connect(self.db_path) as conn:
-            cutoff_date = datetime.now().isoformat()[:10]  # YYYY-MM-DD format
+            cutoff_date = datetime.now(timezone.utc).isoformat()[:10]  # YYYY-MM-DD format
 
             # Delete old interactions (keeping last N days)
             conn.execute(
@@ -480,7 +480,7 @@ class AIInteractionDB:
         """Get information about the database file and tables."""
         db_path = Path(self.db_path)
 
-        info = {
+        info: dict[str, Any] = {
             "database_path": str(db_path.absolute()),
             "database_exists": db_path.exists(),
             "database_size_mb": 0.0,
@@ -495,6 +495,7 @@ class AIInteractionDB:
 
                 # Get table counts
                 tables = ["ai_interactions", "performance_sessions"]
+                table_counts: dict[str, int] = {}
                 for table in tables:
                     try:
                         # Use parameterized query with table name validation
@@ -502,9 +503,11 @@ class AIInteractionDB:
                             count = conn.execute(
                                 "SELECT COUNT(*) as count FROM " + table
                             ).fetchone()["count"]
-                            info["table_counts"][table] = count
+                            table_counts[table] = int(count)
                     except sqlite3.OperationalError:
-                        info["table_counts"][table] = 0
+                        table_counts[table] = 0
+
+                info["table_counts"] = table_counts
 
         return info
 
@@ -530,7 +533,7 @@ class IssueQueueManager:
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
-                            datetime.now().isoformat(),
+                            datetime.now(timezone.utc).isoformat(),
                             session_id,
                             issue["file_path"],
                             issue["line_number"],
@@ -562,12 +565,12 @@ class IssueQueueManager:
 
             # Build query with optional filters
             where_conditions = ["status = 'pending'"]
-            params = []
+            params_str: list[str] = []
 
             if filter_types:
                 placeholders = ",".join("?" * len(filter_types))
                 where_conditions.append(f"error_code IN ({placeholders})")
-                params.extend(filter_types)
+                params_str.extend(filter_types)
 
             where_clause = " AND ".join(where_conditions)
 
@@ -577,9 +580,9 @@ class IssueQueueManager:
                 ORDER BY priority DESC, created_timestamp ASC
                 LIMIT ?
             """
-            params.append(limit)
+            exec_params: list[Any] = [*params_str, int(limit)]
 
-            cursor = conn.execute(query, params)
+            cursor = conn.execute(query, exec_params)
             issues = [dict(row) for row in cursor.fetchall()]
 
             # Mark issues as in_progress and assign worker
@@ -595,7 +598,7 @@ class IssueQueueManager:
                         processing_started_at = ?
                     WHERE id IN ({placeholders})
                     """,
-                    [worker_id, datetime.now().isoformat(), *issue_ids],
+                    [worker_id, datetime.now(timezone.utc).isoformat(), *issue_ids],
                 )
                 conn.commit()
 
@@ -607,37 +610,37 @@ class IssueQueueManager:
         """Update the status and results of a specific issue."""
         with sqlite3.connect(self.db.db_path) as conn:
             update_fields = ["status = ?"]
-            params = [status]
+            params: list[Any] = [status]
 
             if status in {"completed", "failed"}:
                 update_fields.append("processing_completed_at = ?")
-                params.append(datetime.now().isoformat())
+                params.append(datetime.now(timezone.utc).isoformat())
 
             if fix_result:
                 if "fix_successful" in fix_result:
                     update_fields.append("fix_successful = ?")
-                    params.append(fix_result["fix_successful"])
+                    params.append(bool(fix_result["fix_successful"]))
 
                 if "confidence_score" in fix_result:
                     update_fields.append("confidence_score = ?")
-                    params.append(fix_result["confidence_score"])
+                    params.append(float(fix_result["confidence_score"]))
 
                 if "ai_response" in fix_result:
                     update_fields.append("ai_response = ?")
-                    params.append(fix_result["ai_response"])
+                    params.append(str(fix_result["ai_response"]))
 
                 if "error_message" in fix_result:
                     update_fields.append("error_message = ?")
-                    params.append(fix_result["error_message"])
+                    params.append(str(fix_result["error_message"]))
 
-            params.append(issue_id)
+            exec_params: list[Any] = [*params, int(issue_id)]
 
             # Build update query safely
             if update_fields:
                 update_query = (
                     f"UPDATE linting_issues_queue SET {', '.join(update_fields)} WHERE id = ?"
                 )
-                conn.execute(update_query, params)
+                conn.execute(update_query, exec_params)
             conn.commit()
 
     def retry_failed_issue(self, issue_id: int) -> bool:
@@ -736,7 +739,7 @@ class IssueQueueManager:
     def cleanup_old_queue_items(self, days_to_keep: int = 7):
         """Clean up old completed/failed queue items."""
         with sqlite3.connect(self.db.db_path) as conn:
-            cutoff_date = datetime.now().isoformat()[:10]  # YYYY-MM-DD format
+            cutoff_date = datetime.now(timezone.utc).isoformat()[:10]  # YYYY-MM-DD format
 
             conn.execute(
                 """
@@ -751,7 +754,7 @@ class IssueQueueManager:
     def reset_stale_issues(self, timeout_minutes: int = 30):
         """Reset issues that have been in_progress for too long."""
         with sqlite3.connect(self.db.db_path) as conn:
-            timeout_time = datetime.now().replace(microsecond=0)
+            timeout_time = datetime.now(timezone.utc).replace(microsecond=0)
             timeout_time = timeout_time.replace(minute=timeout_time.minute - timeout_minutes)
 
             conn.execute(
@@ -793,7 +796,7 @@ class DatabaseManager:
     def export_to_json(self, filepath: str, include_sessions: bool = True):
         """Export database contents to JSON file."""
         export_data = {
-            "export_timestamp": datetime.now().isoformat(),
+            "export_timestamp": datetime.now(timezone.utc).isoformat(),
             "database_info": self.db.get_database_info(),
             "interactions": self.db.get_all_interactions(),
         }
@@ -804,14 +807,14 @@ class DatabaseManager:
         # Include queue statistics
         export_data["queue_statistics"] = self.queue_manager.get_queue_statistics()
 
-        with open(filepath, "w", encoding="utf-8") as f:
+        with Path(filepath).open("w", encoding="utf-8") as f:
             json.dump(export_data, f, indent=2, ensure_ascii=False, default=str)
 
         logger.info(f"Database exported to {filepath}")
 
     def import_from_json(self, filepath: str):
         """Import interactions from JSON file (for data migration)."""
-        with open(filepath, encoding="utf-8") as f:
+        with Path(filepath).open(encoding="utf-8") as f:
             data = json.load(f)
 
         interactions = data.get("interactions", [])
@@ -821,7 +824,9 @@ class DatabaseManager:
                 self.db.log_interaction(interaction)
             except Exception as e:
                 logger.exception(
-                    f"Failed to import interaction {interaction.get('id', 'unknown')}: {e}"
+                    "Failed to import interaction %s: %s",
+                    interaction.get("id", "unknown"),
+                    e,
                 )
 
         logger.info(f"Imported {len(interactions)} interactions from {filepath}")
@@ -840,13 +845,13 @@ class DatabaseManager:
                 "success_rate": stats["success_rate"],
                 "queue_pending": queue_stats["overall"]["pending"],
                 "queue_in_progress": queue_stats["overall"]["in_progress"],
-                "last_check": datetime.now().isoformat(),
+                "last_check": datetime.now(timezone.utc).isoformat(),
             }
         except Exception as e:
             return {
                 "status": "error",
                 "error": str(e),
-                "last_check": datetime.now().isoformat(),
+                "last_check": datetime.now(timezone.utc).isoformat(),
             }
 
     def maintenance(self, cleanup_days: int = 30):

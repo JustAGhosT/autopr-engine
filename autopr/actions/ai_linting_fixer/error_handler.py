@@ -7,7 +7,7 @@ capabilities that integrate with the existing display system.
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import logging
 import operator
@@ -75,7 +75,7 @@ class ErrorContext:
     workflow_step: str | None = None
     user_action: str | None = None
     system_state: dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     session_id: str | None = None
 
 
@@ -188,56 +188,44 @@ class ErrorHandler:
         self, exception: Exception, context: ErrorContext | None = None
     ) -> ErrorCategory:
         """Categorize an exception based on its type and context."""
-        error_type = type(exception).__name__
+        error_type = type(exception).__name__.lower()
         error_message = str(exception).lower()
 
-        # File system errors
-        if "file not found" in error_message or "no such file" in error_message:
-            return ErrorCategory.FILE_NOT_FOUND
-        if "permission denied" in error_message or "access denied" in error_message:
-            return ErrorCategory.PERMISSION_DENIED
-        if "disk space" in error_message or "no space left" in error_message:
-            return ErrorCategory.DISK_SPACE
+        patterns: list[tuple[tuple[str, ...], ErrorCategory]] = [
+            (("file not found", "no such file"), ErrorCategory.FILE_NOT_FOUND),
+            (("permission denied", "access denied"), ErrorCategory.PERMISSION_DENIED),
+            (("disk space", "no space left"), ErrorCategory.DISK_SPACE),
+            (("timed out", "timeout"), ErrorCategory.API_TIMEOUT),
+            (("rate limit", "too many requests"), ErrorCategory.API_RATE_LIMIT),
+            (("network", "connection"), ErrorCategory.NETWORK_ERROR),
+            (("authentication", "unauthorized"), ErrorCategory.AUTHENTICATION_ERROR),
+            (("syntax", "syntaxerror"), ErrorCategory.SYNTAX_ERROR),
+            (("parse", "parsing"), ErrorCategory.PARSING_ERROR),
+            (("lint", "flake8"), ErrorCategory.LINTING_ERROR),
+            (("ai", "model"), ErrorCategory.AI_MODEL_ERROR),
+            (("response",), ErrorCategory.AI_RESPONSE_ERROR),
+            (("confidence low",), ErrorCategory.AI_CONFIDENCE_LOW),
+            (("memory", "memoryerror"), ErrorCategory.MEMORY_ERROR),
+            (("config", "configuration"), ErrorCategory.CONFIGURATION_ERROR),
+            (("workflow",), ErrorCategory.WORKFLOW_ERROR),
+            (("orchestration",), ErrorCategory.ORCHESTRATION_ERROR),
+        ]
 
-        # Network/API errors
-        if "timeout" in error_message or "timed out" in error_message:
-            return ErrorCategory.API_TIMEOUT
-        if "rate limit" in error_message or "too many requests" in error_message:
-            return ErrorCategory.API_RATE_LIMIT
-        if "network" in error_message or "connection" in error_message:
-            return ErrorCategory.NETWORK_ERROR
-        if "authentication" in error_message or "unauthorized" in error_message:
-            return ErrorCategory.AUTHENTICATION_ERROR
+        for keywords, category in patterns:
+            # Special handling for AI_RESPONSE_ERROR requiring response + (ai|llm)
+            if category == ErrorCategory.AI_RESPONSE_ERROR:
+                if "response" in error_message and ("ai" in error_message or "llm" in error_message):
+                    return category
+                continue
 
-        # Code analysis errors
-        if "syntax" in error_message or "syntaxerror" in error_type.lower():
-            return ErrorCategory.SYNTAX_ERROR
-        if "parse" in error_message or "parsing" in error_message:
-            return ErrorCategory.PARSING_ERROR
-        if "lint" in error_message or "flake8" in error_message:
-            return ErrorCategory.LINTING_ERROR
+            # Special handling for AI_CONFIDENCE_LOW requiring both words
+            if category == ErrorCategory.AI_CONFIDENCE_LOW:
+                if "confidence" in error_message and "low" in error_message:
+                    return category
+                continue
 
-        # AI/LLM errors
-        if "ai" in error_message or "model" in error_message:
-            return ErrorCategory.AI_MODEL_ERROR
-        if "response" in error_message and ("ai" in error_message or "llm" in error_message):
-            return ErrorCategory.AI_RESPONSE_ERROR
-        if "confidence" in error_message and "low" in error_message:
-            return ErrorCategory.AI_CONFIDENCE_LOW
-
-        # System errors
-        if "memory" in error_message or "memoryerror" in error_type.lower():
-            return ErrorCategory.MEMORY_ERROR
-        if "timeout" in error_message:
-            return ErrorCategory.TIMEOUT_ERROR
-        if "config" in error_message or "configuration" in error_message:
-            return ErrorCategory.CONFIGURATION_ERROR
-
-        # Workflow errors
-        if "workflow" in error_message:
-            return ErrorCategory.WORKFLOW_ERROR
-        if "orchestration" in error_message:
-            return ErrorCategory.ORCHESTRATION_ERROR
+            if any(k in error_message for k in keywords) or any(k in error_type for k in keywords):
+                return category
 
         return ErrorCategory.UNKNOWN_ERROR
 
@@ -323,7 +311,7 @@ class ErrorHandler:
                 callback(error_info)
             except Exception as e:
                 # Don't let callback errors break the error handling
-                logging.exception(f"Error in error callback: {e}")
+                logging.exception("Error in error callback: %s", e)
 
         return error_info
 
@@ -365,7 +353,7 @@ class ErrorHandler:
             try:
                 callback(error_info, strategy)
             except Exception as e:
-                logging.exception(f"Error in recovery callback: {e}")
+                logging.exception("Error in recovery callback: %s", e)
 
         # Update retry count
         error_info.retry_count += 1
@@ -411,7 +399,7 @@ class ErrorHandler:
         file_path = Path(file_path)
 
         summary = self.get_error_summary()
-        summary["exported_at"] = datetime.now().isoformat()
+        summary["exported_at"] = datetime.now(timezone.utc).isoformat()
         summary["errors"] = [
             {
                 "error_id": error.error_id,
@@ -434,7 +422,7 @@ class ErrorHandler:
 
         import json
 
-        with open(file_path, "w", encoding="utf-8") as f:
+        with Path(file_path).open("w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2, default=str)
 
 

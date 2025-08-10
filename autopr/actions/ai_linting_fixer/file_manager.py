@@ -4,7 +4,7 @@ File Manager Module
 This module handles file operations, backups, and safe file modifications.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import operator
 from pathlib import Path
@@ -37,7 +37,7 @@ class FileManager:
                 return ""
 
             # Create backup filename with timestamp
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             backup_name = f"{file_path_obj.stem}.backup_{timestamp}{file_path_obj.suffix}"
             backup_path = Path(self.backup_directory) / backup_name
 
@@ -71,7 +71,7 @@ class FileManager:
                 backup_path = self.create_backup(file_path)
 
             # Write the new content
-            with open(file_path, "w", encoding="utf-8") as f:
+            with Path(file_path).open("w", encoding="utf-8") as f:
                 f.write(content)
 
             logger.info(f"Successfully wrote to file: {file_path}")
@@ -108,7 +108,7 @@ class FileManager:
     def read_file_safely(self, file_path: str) -> tuple[bool, str]:
         """Read a file safely and return success status and content."""
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
             return True, content
         except Exception as e:
@@ -148,8 +148,8 @@ class FileManager:
                 "exists": True,
                 "size_bytes": stat.st_size,
                 "size_mb": stat.st_size / (1024 * 1024),
-                "modified_time": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                "created_time": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                "modified_time": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
+                "created_time": datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc).isoformat(),
                 "is_file": file_path_obj.is_file(),
                 "is_directory": file_path_obj.is_dir(),
                 "extension": file_path_obj.suffix,
@@ -210,7 +210,9 @@ class FileManager:
 
             # Additional filtering by age if specified
             if older_than_days:
-                cutoff_time = datetime.now().timestamp() - (older_than_days * 24 * 60 * 60)
+                cutoff_time = datetime.now(timezone.utc).timestamp() - (
+                    older_than_days * 24 * 60 * 60
+                )
                 backups_to_remove = [
                     b
                     for b in backups_to_remove
@@ -233,41 +235,57 @@ class FileManager:
             logger.exception(f"Failed to cleanup old backups: {e}")
             return 0
 
-    def validate_file_content(self, content: str) -> dict:
+    def validate_file_content(self, content: str) -> dict[str, object]:
         """Validate file content for common issues."""
-        validation_result = {"valid": True, "issues": [], "warnings": []}
+        validation_result: dict[str, object] = {
+            "valid": True,
+            "issues": list[str](),
+            "warnings": list[str](),
+        }
 
         try:
             # Check for empty content
             if not content.strip():
-                validation_result["warnings"].append("File content is empty")
+                warnings_list = validation_result["warnings"]
+                assert isinstance(warnings_list, list)
+                warnings_list.append("File content is empty")
 
             # Check for encoding issues
             try:
                 content.encode("utf-8")
             except UnicodeEncodeError:
-                validation_result["issues"].append("Content contains invalid UTF-8 characters")
+                issues_list = validation_result["issues"]
+                assert isinstance(issues_list, list)
+                issues_list.append("Content contains invalid UTF-8 characters")
                 validation_result["valid"] = False
 
             # Check for extremely long lines
             lines = content.split("\n")
             for i, line in enumerate(lines, 1):
                 if len(line) > 1000:  # Very long lines might indicate issues
-                    validation_result["warnings"].append(
+                    warnings_list = validation_result["warnings"]
+                    assert isinstance(warnings_list, list)
+                    warnings_list.append(
                         f"Line {i} is very long ({len(line)} characters)"
                     )
 
             # Check for mixed line endings
             if "\r\n" in content and "\n" in content:
-                validation_result["warnings"].append("Mixed line endings detected")
+                warnings_list = validation_result["warnings"]
+                assert isinstance(warnings_list, list)
+                warnings_list.append("Mixed line endings detected")
 
             # Check for trailing whitespace
             for i, line in enumerate(lines, 1):
                 if line.rstrip() != line:
-                    validation_result["warnings"].append(f"Line {i} has trailing whitespace")
+                    warnings_list = validation_result["warnings"]
+                    assert isinstance(warnings_list, list)
+                    warnings_list.append(f"Line {i} has trailing whitespace")
 
         except Exception as e:
-            validation_result["issues"].append(f"Validation error: {e}")
+            issues_list = validation_result["issues"]
+            assert isinstance(issues_list, list)
+            issues_list.append(f"Validation error: {e}")
             validation_result["valid"] = False
 
         return validation_result

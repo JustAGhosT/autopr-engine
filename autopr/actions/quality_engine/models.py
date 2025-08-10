@@ -3,11 +3,11 @@ Quality Engine Data Models
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import pydantic
 
-from autopr.actions.base import ActionInputs
+# (Removed unused ActionInputs import)
 from autopr.utils.volume_utils import QualityMode, get_volume_config
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class QualityInputs(pydantic.BaseModel):
     """Input parameters for quality engine operations
-    
+
     The volume parameter (0-1000) can be used to automatically configure quality settings:
     - 0-199: Ultra-fast mode with minimal checks
     - 200-399: Fast mode with essential tools
@@ -39,13 +39,13 @@ class QualityInputs(pydantic.BaseModel):
         le=1000,
         description="Volume level (0-1000) that automatically configures quality settings"
     )
-    
+
     def apply_volume_settings(self, volume: int | None = None) -> None:
         """Apply volume-based configuration to this instance.
-        
+
         Args:
             volume: Volume level (0-1000). If None, uses self.volume.
-            
+
         This will update the instance attributes based on the volume level:
         - mode: QualityMode based on volume
         - max_fixes: Number of fixes to apply (0-100)
@@ -54,25 +54,28 @@ class QualityInputs(pydantic.BaseModel):
         """
         if volume is None:
             volume = self.volume
-            
+
         if volume is None or volume < 0 or volume > 1000:
             logger.warning("Invalid volume level: %s. Must be between 0-1000.", volume)
             return
-            
+
         try:
             # Get volume-based configuration
             volume_config = get_volume_config(volume)
             logger.debug("Applying volume settings for volume %d: %s", volume, volume_config)
-            
+
             # Update instance attributes with volume-based configuration
             for key, value in volume_config.items():
                 if hasattr(self, key):
                     setattr(self, key, value)
                     logger.debug("Set %s = %s", key, value)
                 else:
-                    logger.warning("Volume config key '%s' does not exist in %s", 
-                                key, self.__class__.__name__)
-                    
+                    logger.warning(
+                        "Volume config key '%s' does not exist in %s",
+                        key,
+                        self.__class__.__name__,
+                    )
+
         except Exception as e:
             logger.exception("Failed to apply volume settings: %s", str(e))
             # Fall back to default values based on volume ranges
@@ -101,9 +104,12 @@ class QualityInputs(pydantic.BaseModel):
                 self.max_fixes = 100
                 self.max_issues = 500
                 self.enable_ai_agents = True
-                
-            logger.warning("Falling back to default volume settings for volume %d: %s", 
-                         volume, self.mode.value)
+
+            logger.warning(
+                "Falling back to default volume settings for volume %d: %s",
+                volume,
+                self.mode.value,
+            )
 
 
 class ToolResult(pydantic.BaseModel):
