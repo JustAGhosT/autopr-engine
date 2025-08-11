@@ -12,10 +12,10 @@ Key Principles:
 - Easy to test and modify
 """
 
-from dataclasses import dataclass
-from enum import Enum
 import logging
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from typing import Any, TextIO
 
 from .models import (  # SessionMetrics, # Removed; ProcessingMode, # Removed

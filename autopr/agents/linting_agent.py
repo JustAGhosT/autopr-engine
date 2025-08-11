@@ -5,8 +5,8 @@ and fixing code style and quality issues in a codebase.
 """
 
 import asyncio
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 

@@ -1,8 +1,8 @@
 """Command-line interface for the markdown linter."""
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 try:

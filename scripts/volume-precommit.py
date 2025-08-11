@@ -37,7 +37,8 @@ def _run_with_timeout(cmd: list[str], timeout_seconds: int) -> tuple[int, str, s
     try:
         proc = subprocess.run(
             cmd,
-            check=False, stdout=subprocess.PIPE,
+            check=False,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             timeout=max(1, int(timeout_seconds)),

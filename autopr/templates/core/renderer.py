@@ -5,8 +5,8 @@ Handles rendering of templates with variables and variants.
 """
 
 import logging
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 import jinja2
