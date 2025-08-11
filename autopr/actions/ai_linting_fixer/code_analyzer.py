@@ -7,7 +7,10 @@ This module handles code analysis, validation, and complexity calculations.
 import ast
 import logging
 
-import psutil
+try:
+    import psutil  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover - optional dependency in tests/CI
+    psutil = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -202,6 +205,8 @@ class CodeAnalyzer:
     def get_memory_usage(self) -> float:
         """Get current memory usage in MB."""
         try:
+            if psutil is None:
+                return 0.0
             process = psutil.Process()
             memory_info = process.memory_info()
             return memory_info.rss / 1024 / 1024  # Convert to MB
@@ -212,6 +217,8 @@ class CodeAnalyzer:
     def get_cpu_usage(self) -> float:
         """Get current CPU usage percentage."""
         try:
+            if psutil is None:
+                return 0.0
             return psutil.cpu_percent(interval=0.1)
         except Exception as e:
             logger.debug(f"Error getting CPU usage: {e}")
