@@ -91,7 +91,6 @@ class PlatformReference(TypedDict):
     description: str
     config_file: str
     is_active: bool
-    priority: int
 
 
 class PlatformIndex(TypedDict):

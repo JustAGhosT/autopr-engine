@@ -58,15 +58,15 @@ class IssueFixer:
             )
 
             # Group issues by file for efficient processing
-            issues_by_file = {}
+            issues_by_file: dict[str, list[LintingIssue]] = {}
             for issue in issues:
                 if issue.file_path not in issues_by_file:
                     issues_by_file[issue.file_path] = []
                 issues_by_file[issue.file_path].append(issue)
 
-            fixed_issues = []
-            remaining_issues = []
-            modified_files = []
+            fixed_issues: list[str] = []
+            remaining_issues: list[str] = []
+            modified_files: list[str] = []
 
             # Process each file
             for file_path, file_issues in issues_by_file.items():

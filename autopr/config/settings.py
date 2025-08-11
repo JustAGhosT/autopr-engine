@@ -13,29 +13,17 @@ from enum import StrEnum
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-from pydantic import BaseModel, Field, SecretStr, field_validator
-import yaml
+from pydantic import BaseModel, Field as _Field, SecretStr, field_validator
+import yaml  # type: ignore[import-untyped]
 
 try:
     # Pydantic 2.0+ (preferred)
     from pydantic_settings import BaseSettings
 except ImportError:
-    try:
-        # Pydantic 1.x fallback
-        from pydantic.env_settings import BaseSettings
-    except ImportError:
-        # Final fallback - create a basic BaseSettings class
-        from pydantic import BaseModel
-
-        class BaseSettings(BaseModel):
-            """Fallback BaseSettings implementation for compatibility."""
-
-            class Config:
-                env_file = ".env"
-                env_file_encoding = "utf-8"
-                case_sensitive = False
+    # Pydantic 1.x fallback
+    from pydantic.env_settings import BaseSettings  # type: ignore[no-redef]
 
 
 class Environment(StrEnum):
@@ -68,10 +56,15 @@ class LLMProvider(StrEnum):
     TOGETHER = "together"
 
 
+Field = cast(Any, _Field)
+
+
 class GitHubConfig(BaseModel):
     """GitHub integration configuration."""
 
-    token: str
+    token: SecretStr | None = Field(None, env="GITHUB_TOKEN")
+    app_id: int | None = Field(None, env="GITHUB_APP_ID")
+    private_key: SecretStr | None = Field(None, env="GITHUB_PRIVATE_KEY")
     timeout: int = 30
     base_url: str = "https://api.github.com"
 
@@ -84,8 +77,14 @@ class GitHubConfig(BaseModel):
 
     @field_validator("token")
     @classmethod
-    def validate_token(cls, v: str) -> str:
-        if not v or not v.startswith(("ghp_", "github_pat_")):
+    def validate_token(cls, v: SecretStr | None) -> SecretStr | None:
+        if v is None:
+            return v
+        try:
+            token_value = v.get_secret_value()
+        except Exception:
+            token_value = str(v)
+        if not token_value or not token_value.startswith(("ghp_", "github_pat_")):
             raise ValueError("Invalid GitHub token format")
         return v
 
@@ -128,10 +127,10 @@ class LLMConfig(BaseModel):
     )
 
     # General LLM settings
-    max_tokens: int = Field(4000, env="LLM_MAX_TOKENS")
-    temperature: float = Field(0.7, env="LLM_TEMPERATURE")
-    timeout: int = Field(60, env="LLM_TIMEOUT")
-    max_retries: int = Field(3, env="LLM_MAX_RETRIES")
+    max_tokens: int = Field(default=4000, env="LLM_MAX_TOKENS")
+    temperature: float = Field(default=0.7, env="LLM_TEMPERATURE")
+    timeout: int = Field(default=60, env="LLM_TIMEOUT")
+    max_retries: int = Field(default=3, env="LLM_MAX_RETRIES")
 
     @field_validator("temperature")
     @classmethod
@@ -145,112 +144,112 @@ class LLMConfig(BaseModel):
 class DatabaseConfig(BaseModel):
     """Database configuration."""
 
-    url: str | None = Field(None, env="DATABASE_URL")
-    pool_size: int = Field(10, env="DATABASE_POOL_SIZE")
-    max_overflow: int = Field(20, env="DATABASE_MAX_OVERFLOW")
-    pool_timeout: int = Field(30, env="DATABASE_POOL_TIMEOUT")
-    pool_recycle: int = Field(3600, env="DATABASE_POOL_RECYCLE")
-    echo: bool = Field(False, env="DATABASE_ECHO")
+    url: str | None = Field(default=None, env="DATABASE_URL")
+    pool_size: int = Field(default=10, env="DATABASE_POOL_SIZE")
+    max_overflow: int = Field(default=20, env="DATABASE_MAX_OVERFLOW")
+    pool_timeout: int = Field(default=30, env="DATABASE_POOL_TIMEOUT")
+    pool_recycle: int = Field(default=3600, env="DATABASE_POOL_RECYCLE")
+    echo: bool = Field(default=False, env="DATABASE_ECHO")
 
 
 class RedisConfig(BaseModel):
     """Redis configuration."""
 
-    url: str | None = Field(None, env="REDIS_URL")
-    host: str = Field("localhost", env="REDIS_HOST")
-    port: int = Field(6379, env="REDIS_PORT")
-    db: int = Field(0, env="REDIS_DB")
-    password: SecretStr | None = Field(None, env="REDIS_PASSWORD")
-    ssl: bool = Field(False, env="REDIS_SSL")
-    timeout: int = Field(5, env="REDIS_TIMEOUT")
-    max_connections: int = Field(50, env="REDIS_MAX_CONNECTIONS")
+    url: str | None = Field(default=None, env="REDIS_URL")
+    host: str = Field(default="localhost", env="REDIS_HOST")
+    port: int = Field(default=6379, env="REDIS_PORT")
+    db: int = Field(default=0, env="REDIS_DB")
+    password: SecretStr | None = Field(default=None, env="REDIS_PASSWORD")
+    ssl: bool = Field(default=False, env="REDIS_SSL")
+    timeout: int = Field(default=5, env="REDIS_TIMEOUT")
+    max_connections: int = Field(default=50, env="REDIS_MAX_CONNECTIONS")
 
 
 class WorkflowConfig(BaseModel):
     """Workflow execution configuration."""
 
-    max_concurrent: int = Field(10, env="MAX_CONCURRENT_WORKFLOWS")
-    timeout: int = Field(300, env="WORKFLOW_TIMEOUT")
-    retry_attempts: int = Field(3, env="WORKFLOW_RETRY_ATTEMPTS")
-    retry_delay: int = Field(5, env="WORKFLOW_RETRY_DELAY")
-    enable_parallel_execution: bool = Field(True, env="ENABLE_PARALLEL_EXECUTION")
+    max_concurrent: int = Field(default=10, env="MAX_CONCURRENT_WORKFLOWS")
+    timeout: int = Field(default=300, env="WORKFLOW_TIMEOUT")
+    retry_attempts: int = Field(default=3, env="WORKFLOW_RETRY_ATTEMPTS")
+    retry_delay: int = Field(default=5, env="WORKFLOW_RETRY_DELAY")
+    enable_parallel_execution: bool = Field(default=True, env="ENABLE_PARALLEL_EXECUTION")
 
 
 class MonitoringConfig(BaseModel):
     """Monitoring and observability configuration."""
 
-    enable_metrics: bool = Field(True, env="ENABLE_METRICS")
-    metrics_port: int = Field(8000, env="METRICS_PORT")
-    enable_tracing: bool = Field(False, env="ENABLE_TRACING")
-    jaeger_endpoint: str | None = Field(None, env="JAEGER_ENDPOINT")
-    sentry_dsn: SecretStr | None = Field(None, env="SENTRY_DSN")
-    log_level: LogLevel = Field(LogLevel.INFO, env="LOG_LEVEL")
-    structured_logging: bool = Field(True, env="STRUCTURED_LOGGING")
+    enable_metrics: bool = Field(default=True, env="ENABLE_METRICS")
+    metrics_port: int = Field(default=8000, env="METRICS_PORT")
+    enable_tracing: bool = Field(default=False, env="ENABLE_TRACING")
+    jaeger_endpoint: str | None = Field(default=None, env="JAEGER_ENDPOINT")
+    sentry_dsn: SecretStr | None = Field(default=None, env="SENTRY_DSN")
+    log_level: LogLevel = Field(default=LogLevel.INFO, env="LOG_LEVEL")
+    structured_logging: bool = Field(default=True, env="STRUCTURED_LOGGING")
 
 
 class SecurityConfig(BaseModel):
     """Security configuration."""
 
-    secret_key: SecretStr | None = Field(None, env="SECRET_KEY")
-    jwt_secret: SecretStr | None = Field(None, env="JWT_SECRET")
-    jwt_expiry: int = Field(3600, env="JWT_EXPIRY")  # seconds
-    rate_limit_per_minute: int = Field(60, env="RATE_LIMIT_PER_MINUTE")
-    enable_cors: bool = Field(True, env="ENABLE_CORS")
+    secret_key: SecretStr | None = Field(default=None, env="SECRET_KEY")
+    jwt_secret: SecretStr | None = Field(default=None, env="JWT_SECRET")
+    jwt_expiry: int = Field(default=3600, env="JWT_EXPIRY")  # seconds
+    rate_limit_per_minute: int = Field(default=60, env="RATE_LIMIT_PER_MINUTE")
+    enable_cors: bool = Field(default=True, env="ENABLE_CORS")
     allowed_origins: list[str] = Field(default_factory=list, env="ALLOWED_ORIGINS")
-    enable_csrf_protection: bool = Field(True, env="ENABLE_CSRF_PROTECTION")
+    enable_csrf_protection: bool = Field(default=True, env="ENABLE_CSRF_PROTECTION")
 
 
 class ErrorHandlerConfig(BaseModel):
     """Error handling configuration for AI linting fixer and other components."""
 
     # Error handling settings
-    enabled: bool = Field(True, env="ERROR_HANDLER_ENABLED")
-    log_errors: bool = Field(True, env="ERROR_HANDLER_LOG_ERRORS")
-    display_errors: bool = Field(True, env="ERROR_HANDLER_DISPLAY_ERRORS")
-    export_errors: bool = Field(False, env="ERROR_HANDLER_EXPORT_ERRORS")
+    enabled: bool = Field(default=True, env="ERROR_HANDLER_ENABLED")
+    log_errors: bool = Field(default=True, env="ERROR_HANDLER_LOG_ERRORS")
+    display_errors: bool = Field(default=True, env="ERROR_HANDLER_DISPLAY_ERRORS")
+    export_errors: bool = Field(default=False, env="ERROR_HANDLER_EXPORT_ERRORS")
 
     # Error categorization
-    auto_categorize: bool = Field(True, env="ERROR_HANDLER_AUTO_CATEGORIZE")
-    severity_threshold: str = Field("LOW", env="ERROR_HANDLER_SEVERITY_THRESHOLD")
+    auto_categorize: bool = Field(default=True, env="ERROR_HANDLER_AUTO_CATEGORIZE")
+    severity_threshold: str = Field(default="LOW", env="ERROR_HANDLER_SEVERITY_THRESHOLD")
 
     # Recovery settings
-    enable_recovery: bool = Field(True, env="ERROR_HANDLER_ENABLE_RECOVERY")
-    max_retry_attempts: int = Field(3, env="ERROR_HANDLER_MAX_RETRIES")
-    retry_delay_seconds: float = Field(1.0, env="ERROR_HANDLER_RETRY_DELAY")
-    exponential_backoff: bool = Field(True, env="ERROR_HANDLER_EXPONENTIAL_BACKOFF")
+    enable_recovery: bool = Field(default=True, env="ERROR_HANDLER_ENABLE_RECOVERY")
+    max_retry_attempts: int = Field(default=3, env="ERROR_HANDLER_MAX_RETRIES")
+    retry_delay_seconds: float = Field(default=1.0, env="ERROR_HANDLER_RETRY_DELAY")
+    exponential_backoff: bool = Field(default=True, env="ERROR_HANDLER_EXPONENTIAL_BACKOFF")
 
     # Display settings
-    use_colors: bool = Field(True, env="ERROR_HANDLER_USE_COLORS")
-    use_emojis: bool = Field(True, env="ERROR_HANDLER_USE_EMOJIS")
-    verbose_mode: bool = Field(False, env="ERROR_HANDLER_VERBOSE")
+    use_colors: bool = Field(default=True, env="ERROR_HANDLER_USE_COLORS")
+    use_emojis: bool = Field(default=True, env="ERROR_HANDLER_USE_EMOJIS")
+    verbose_mode: bool = Field(default=False, env="ERROR_HANDLER_VERBOSE")
 
     # Export settings
-    export_format: str = Field("json", env="ERROR_HANDLER_EXPORT_FORMAT")
-    export_directory: str = Field("./logs", env="ERROR_HANDLER_EXPORT_DIR")
-    auto_export: bool = Field(False, env="ERROR_HANDLER_AUTO_EXPORT")
+    export_format: str = Field(default="json", env="ERROR_HANDLER_EXPORT_FORMAT")
+    export_directory: str = Field(default="./logs", env="ERROR_HANDLER_EXPORT_DIR")
+    auto_export: bool = Field(default=False, env="ERROR_HANDLER_AUTO_EXPORT")
 
     # Callback settings
-    enable_callbacks: bool = Field(True, env="ERROR_HANDLER_ENABLE_CALLBACKS")
-    external_notifications: bool = Field(False, env="ERROR_HANDLER_EXTERNAL_NOTIFICATIONS")
+    enable_callbacks: bool = Field(default=True, env="ERROR_HANDLER_ENABLE_CALLBACKS")
+    external_notifications: bool = Field(default=False, env="ERROR_HANDLER_EXTERNAL_NOTIFICATIONS")
 
     # Integration settings
-    integrate_with_logging: bool = Field(True, env="ERROR_HANDLER_INTEGRATE_LOGGING")
-    integrate_with_metrics: bool = Field(True, env="ERROR_HANDLER_INTEGRATE_METRICS")
-    integrate_with_workflows: bool = Field(True, env="ERROR_HANDLER_INTEGRATE_WORKFLOWS")
+    integrate_with_logging: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_LOGGING")
+    integrate_with_metrics: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_METRICS")
+    integrate_with_workflows: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_WORKFLOWS")
 
 
 class AILintingConfig(BaseModel):
     """AI Linting Fixer specific configuration."""
 
     # Core settings
-    enabled: bool = Field(True, env="AI_LINTING_ENABLED")
-    default_provider: str = Field("openai", env="AI_LINTING_DEFAULT_PROVIDER")
-    default_model: str = Field("gpt-4", env="AI_LINTING_DEFAULT_MODEL")
+    enabled: bool = Field(default=True, env="AI_LINTING_ENABLED")
+    default_provider: str = Field(default="openai", env="AI_LINTING_DEFAULT_PROVIDER")
+    default_model: str = Field(default="gpt-4", env="AI_LINTING_DEFAULT_MODEL")
 
     # Processing settings
-    max_workers: int = Field(4, env="AI_LINTING_MAX_WORKERS")
-    max_fixes_per_run: int = Field(10, env="AI_LINTING_MAX_FIXES")
-    timeout_seconds: int = Field(300, env="AI_LINTING_TIMEOUT")
+    max_workers: int = Field(default=4, env="AI_LINTING_MAX_WORKERS")
+    max_fixes_per_run: int = Field(default=10, env="AI_LINTING_MAX_FIXES")
+    timeout_seconds: int = Field(default=300, env="AI_LINTING_TIMEOUT")
 
     # Fix types
     default_fix_types: list[str] = Field(
@@ -259,9 +258,9 @@ class AILintingConfig(BaseModel):
     )
 
     # Quality settings
-    confidence_threshold: float = Field(0.7, env="AI_LINTING_CONFIDENCE_THRESHOLD")
-    syntax_validation: bool = Field(True, env="AI_LINTING_SYNTAX_VALIDATION")
-    create_backups: bool = Field(True, env="AI_LINTING_CREATE_BACKUPS")
+    confidence_threshold: float = Field(default=0.7, env="AI_LINTING_CONFIDENCE_THRESHOLD")
+    syntax_validation: bool = Field(default=True, env="AI_LINTING_SYNTAX_VALIDATION")
+    create_backups: bool = Field(default=True, env="AI_LINTING_CREATE_BACKUPS")
 
     # Error handling integration
     error_handler: ErrorHandlerConfig = Field(default_factory=ErrorHandlerConfig)
@@ -281,9 +280,9 @@ class AutoPRSettings(BaseSettings):
     """
 
     # Environment and basic settings
-    environment: Environment = Field(Environment.DEVELOPMENT, env="AUTOPR_ENVIRONMENT")
-    debug: bool = Field(False, env="DEBUG")
-    version: str = Field("1.0.0", env="AUTOPR_VERSION")
+    environment: Environment = Field(default=Environment.DEVELOPMENT, env="AUTOPR_ENVIRONMENT")
+    debug: bool = Field(default=False, env="DEBUG")
+    version: str = Field(default="1.0.0", env="AUTOPR_VERSION")
 
     # Configuration sections
     github: GitHubConfig = Field(default_factory=GitHubConfig)
@@ -443,10 +442,10 @@ class AutoPRSettings(BaseSettings):
         # Add common settings
         config.update(
             {
-                "max_tokens": self.llm.max_tokens,
-                "temperature": self.llm.temperature,
-                "timeout": self.llm.timeout,
-                "max_retries": self.llm.max_retries,
+                "max_tokens": str(self.llm.max_tokens),
+                "temperature": str(self.llm.temperature),
+                "timeout": str(self.llm.timeout),
+                "max_retries": str(self.llm.max_retries),
             }
         )
 

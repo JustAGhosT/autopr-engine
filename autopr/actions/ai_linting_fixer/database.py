@@ -493,17 +493,21 @@ class AIInteractionDB:
             with sqlite3.connect(self.db_path) as conn:
                 conn.row_factory = sqlite3.Row
 
-                # Get table counts
+                # Get table counts using an explicit allowlist to avoid SQL injection
                 tables = ["ai_interactions", "performance_sessions"]
                 table_counts: dict[str, int] = {}
+                allowed_queries: dict[str, str] = {
+                    "ai_interactions": "SELECT COUNT(*) as count FROM ai_interactions",
+                    "performance_sessions": "SELECT COUNT(*) as count FROM performance_sessions",
+                }
+
                 for table in tables:
                     try:
-                        # Use parameterized query with table name validation
-                        if table in tables:  # Validate table name
-                            count = conn.execute(
-                                "SELECT COUNT(*) as count FROM " + table
-                            ).fetchone()["count"]
-                            table_counts[table] = int(count)
+                        query = allowed_queries.get(table)
+                        if not query:
+                            continue
+                        count_row = conn.execute(query).fetchone()
+                        table_counts[table] = int(count_row["count"]) if count_row else 0
                     except sqlite3.OperationalError:
                         table_counts[table] = 0
 
@@ -563,43 +567,35 @@ class IssueQueueManager:
         with sqlite3.connect(self.db.db_path) as conn:
             conn.row_factory = sqlite3.Row
 
-            # Build query with optional filters
-            where_conditions = ["status = 'pending'"]
-            params_str: list[str] = []
+            # Build query with optional filters using parameterization and no f-strings
+            conditions: list[str] = ["status = ?"]
+            params: list[Any] = ["pending"]
 
             if filter_types:
                 placeholders = ",".join("?" * len(filter_types))
-                where_conditions.append(f"error_code IN ({placeholders})")
-                params_str.extend(filter_types)
+                conditions.append("error_code IN (" + placeholders + ")")
+                params.extend(filter_types)
 
-            where_clause = " AND ".join(where_conditions)
+            query = (
+                "SELECT * FROM linting_issues_queue WHERE "
+                + " AND ".join(conditions)
+                + " ORDER BY priority DESC, created_timestamp ASC LIMIT ?"
+            )
+            params.append(int(limit))
 
-            query = f"""
-                SELECT * FROM linting_issues_queue
-                WHERE {where_clause}
-                ORDER BY priority DESC, created_timestamp ASC
-                LIMIT ?
-            """
-            exec_params: list[Any] = [*params_str, int(limit)]
-
-            cursor = conn.execute(query, exec_params)
+            cursor = conn.execute(query, params)
             issues = [dict(row) for row in cursor.fetchall()]
 
             # Mark issues as in_progress and assign worker
             if issues and worker_id:
-                issue_ids = [issue["id"] for issue in issues]
+                issue_ids = [int(issue["id"]) for issue in issues if isinstance(issue.get("id"), (int, str))]
                 placeholders = ",".join("?" * len(issue_ids))
-
-                conn.execute(
-                    f"""
-                    UPDATE linting_issues_queue
-                    SET status = 'in_progress',
-                        assigned_worker_id = ?,
-                        processing_started_at = ?
-                    WHERE id IN ({placeholders})
-                    """,
-                    [worker_id, datetime.now(timezone.utc).isoformat(), *issue_ids],
-                )
+                update_query = (
+                    "UPDATE linting_issues_queue "
+                    "SET status = 'in_progress', assigned_worker_id = ?, processing_started_at = ? "
+                    "WHERE id IN (" + placeholders + ")"
+                )  # nosec B608: ids are validated integers from prior SELECT
+                conn.execute(update_query, [worker_id, datetime.now(timezone.utc).isoformat(), *issue_ids])
                 conn.commit()
 
             return issues
@@ -635,11 +631,21 @@ class IssueQueueManager:
 
             exec_params: list[Any] = [*params, int(issue_id)]
 
-            # Build update query safely
+            # Build update query safely using an allowlist of fields
+            allowed_set = {
+                "status = ?",
+                "processing_completed_at = ?",
+                "fix_successful = ?",
+                "confidence_score = ?",
+                "ai_response = ?",
+                "error_message = ?",
+            }
+            if not set(update_fields).issubset(allowed_set):
+                raise ValueError("Invalid update fields detected")
             if update_fields:
                 update_query = (
-                    f"UPDATE linting_issues_queue SET {', '.join(update_fields)} WHERE id = ?"
-                )
+                    "UPDATE linting_issues_queue SET " + ", ".join(update_fields) + " WHERE id = ?"
+                )  # nosec B608: fields are from allowlist above
                 conn.execute(update_query, exec_params)
             conn.commit()
 
@@ -693,38 +699,39 @@ class IssueQueueManager:
                 where_conditions.append("session_id = ?")
                 params.append(session_id)
 
-            where_clause = f"WHERE {' AND '.join(where_conditions)}" if where_conditions else ""
+            where_clause_prefix = ("WHERE " + " AND ".join(where_conditions)) if where_conditions else ""
 
             # Overall statistics
-            stats_query = f"""
-                SELECT
-                    COALESCE(COUNT(*), 0) as total_issues,
-                    COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending,
-                    COALESCE(SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END), 0) as in_progress,
-                    COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed,
-                    COALESCE(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END), 0) as failed,
-                    COALESCE(SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END), 0) as skipped,
-                    COALESCE(SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END), 0) as successful_fixes,
-                    COALESCE(AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END), 0) as avg_confidence
-                FROM linting_issues_queue {where_clause}
-            """
+            stats_query = (
+                "SELECT "
+                "COALESCE(COUNT(*), 0) as total_issues, "
+                "COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending, "
+                "COALESCE(SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END), 0) as in_progress, "
+                "COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed, "
+                "COALESCE(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END), 0) as failed, "
+                "COALESCE(SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END), 0) as skipped, "
+                "COALESCE(SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END), 0) as successful_fixes, "
+                "COALESCE(AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END), 0) as avg_confidence "
+                "FROM linting_issues_queue "
+                + where_clause_prefix
+            )
 
             overall_stats = dict(conn.execute(stats_query, params).fetchone())
 
             # Issue type breakdown
-            type_stats_query = f"""
-                SELECT
-                    error_code,
-                    COALESCE(COUNT(*), 0) as count,
-                    COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed,
-                    COALESCE(SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END), 0) as successful,
-                    COALESCE(AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END), 0) as avg_confidence
-                FROM linting_issues_queue {where_clause}
-                GROUP BY error_code
-                ORDER BY count DESC
-            """
+            type_query = (
+                "SELECT "
+                "error_code, "
+                "COALESCE(COUNT(*), 0) as count, "
+                "COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed, "
+                "COALESCE(SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END), 0) as successful, "
+                "COALESCE(AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END), 0) as avg_confidence "
+                "FROM linting_issues_queue "
+                + where_clause_prefix +
+                " GROUP BY error_code ORDER BY count DESC"
+            )
 
-            type_stats = [dict(row) for row in conn.execute(type_stats_query, params).fetchall()]
+            type_stats = [dict(row) for row in conn.execute(type_query, params).fetchall()]
 
             return {
                 "overall": overall_stats,

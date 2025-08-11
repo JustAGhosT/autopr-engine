@@ -28,6 +28,7 @@ class PlatformAnalysisInputs:
         file_paths: List of file paths to analyze (relative to repo_path)
         context: Additional context for the analysis
     """
+
     repo_path: str
     file_paths: list[str] | None = None
     context: dict[str, Any] | None = None
@@ -46,6 +47,7 @@ class PlatformAnalysisOutputs:
         config_files: List of detected configuration files
         analysis: The raw PlatformAnalysis object
     """
+
     platforms: list[tuple[str, float]]  # (platform_name, confidence)
     primary_platform: tuple[str, float]
     tools: list[str]
@@ -210,7 +212,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             return max(analysis.confidence_scores.items(), key=lambda x: x[1])[0]
         return PlatformType.UNKNOWN.value
 
-    def _get_platform_info(self, platform_id: str) -> Optional[dict[str, Any]]:
+    def _get_platform_info(self, platform_id: str | PlatformType) -> Optional[dict[str, Any]]:
         """Get information about a specific platform by ID.
 
         Args:
@@ -219,36 +221,63 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         Returns:
             Dictionary with details about the platform, or None if not found
         """
+        # Support callers passing enum types or raw IDs
+        platform_id_str = platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
         config_manager = PlatformConfigManager()
-        platform_config = config_manager.get_platform(platform_id)
+        platform_config = config_manager.get_platform(platform_id_str)
         if not platform_config:
             return None
 
-        # Safely get enum values with fallback to string representation
+        # Normalize from either dataclass PlatformConfig or dict
         def get_enum_value(enum_obj):
             if enum_obj is None:
                 return None
-            if hasattr(enum_obj, 'value'):
-                return enum_obj.value
-            return str(enum_obj)
+            return getattr(enum_obj, 'value', str(enum_obj))
 
-        # Safely get attributes with defaults
-        def get_attr(obj, attr, default=None):
-            return getattr(obj, attr, default) if hasattr(obj, attr) else default
-
-        # Safely get detection rules with defaults
-        detection_rules: dict[str, list[str]] = {}
-        if platform_config and 'detection' in platform_config:
-            detection = platform_config.get('detection') or {}
+        # Dataclass path (tests pass a PlatformConfig subclass)
+        if hasattr(platform_config, '__dataclass_fields__'):
+            detection = getattr(platform_config, 'detection', {}) or {}
             detection_rules = {
                 'files': detection.get('files', []),
                 'dependencies': detection.get('dependencies', []),
                 'folder_patterns': detection.get('folder_patterns', []),
                 'commit_patterns': detection.get('commit_patterns', []),
                 'content_patterns': detection.get('content_patterns', []),
-                'package_scripts': detection.get('package_scripts', [])
+                'package_scripts': detection.get('package_scripts', []),
+            }
+            return {
+                'id': getattr(platform_config, 'id', None),
+                'name': getattr(platform_config, 'name', None),
+                'display_name': getattr(platform_config, 'display_name', getattr(platform_config, 'name', None)),
+                'description': getattr(platform_config, 'description', None),
+                'type': get_enum_value(getattr(platform_config, 'type', None)),
+                'category': get_enum_value(getattr(platform_config, 'category', None)) or getattr(platform_config, 'category', None),
+                'subcategory': getattr(platform_config, 'subcategory', None),
+                'tags': getattr(platform_config, 'tags', []) or [],
+                'status': get_enum_value(getattr(platform_config, 'status', None)),
+                'documentation_url': getattr(platform_config, 'documentation_url', None),
+                'is_active': getattr(platform_config, 'is_active', True),
+                'is_beta': getattr(platform_config, 'is_beta', False),
+                'is_deprecated': getattr(platform_config, 'is_deprecated', False),
+                'version': getattr(platform_config, 'version', None),
+                'last_updated': getattr(platform_config, 'last_updated', None),
+                'supported_languages': getattr(platform_config, 'supported_languages', []) or [],
+                'supported_frameworks': getattr(platform_config, 'supported_frameworks', []) or [],
+                'integrations': getattr(platform_config, 'integrations', []) or [],
+                'detection_rules': detection_rules,
+                'project_config': getattr(platform_config, 'project_config', {}) or {},
             }
 
+        # Dict path (manager returns to_dict minimal structure)
+        detection = platform_config.get('detection') or {}
+        dict_detection_rules: dict[str, list[str]] = {
+            'files': detection.get('files', []),
+            'dependencies': detection.get('dependencies', []),
+            'folder_patterns': detection.get('folder_patterns', []),
+            'commit_patterns': detection.get('commit_patterns', []),
+            'content_patterns': detection.get('content_patterns', []),
+            'package_scripts': detection.get('package_scripts', []),
+        }
         return {
             'id': platform_config.get('id'),
             'name': platform_config.get('name'),
@@ -256,20 +285,20 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             'description': platform_config.get('description'),
             'type': None,
             'category': platform_config.get('category'),
-            'subcategory': None,
-            'tags': [],
+            'subcategory': platform_config.get('subcategory'),
+            'tags': platform_config.get('tags', []),
             'status': None,
-            'documentation_url': None,
+            'documentation_url': platform_config.get('documentation_url'),
             'is_active': platform_config.get('is_active', True),
-            'is_beta': False,
-            'is_deprecated': False,
-            'version': None,
-            'last_updated': None,
-            'supported_languages': [],
-            'supported_frameworks': [],
-            'integrations': [],
-            'detection_rules': detection_rules,
-            'project_config': platform_config.get('project_config', {})
+            'is_beta': platform_config.get('is_beta', False),
+            'is_deprecated': platform_config.get('is_deprecated', False),
+            'version': platform_config.get('version'),
+            'last_updated': platform_config.get('last_updated'),
+            'supported_languages': platform_config.get('supported_languages', []),
+            'supported_frameworks': platform_config.get('supported_frameworks', []),
+            'integrations': platform_config.get('integrations', []),
+            'detection_rules': dict_detection_rules,
+            'project_config': platform_config.get('project_config', {}),
         }
 
     def get_supported_platforms(self) -> list[dict]:
