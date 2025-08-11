@@ -1,6 +1,7 @@
 """Comprehensive pytest tests for VolumeConfig validation."""
-from pathlib import Path
+
 import sys
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -19,10 +20,13 @@ if project_root not in sys.path:
 print("Attempting to import VolumeConfig...")
 try:
     from autopr.agents.base.volume_config import VolumeConfig
+
     print("Successfully imported VolumeConfig")
     from autopr.utils.volume_utils import volume_to_quality_mode
+
     print("Successfully imported volume_to_quality_mode")
     from autopr.enums import QualityMode
+
     print("Successfully imported QualityMode")
 except ImportError as e:
     print(f"Import error: {e}")
@@ -45,6 +49,7 @@ TEST_CASES = [
     ("empty string", 500, {"enable_ai_agents": ""}, False, True),
     ("invalid string", 500, {"enable_ai_agents": "invalid"}, False, True),
 ]
+
 
 @pytest.mark.parametrize("test_name,volume,config_dict,expected_ai_agents,should_pass", TEST_CASES)
 def test_volume_config_initialization(
@@ -73,6 +78,7 @@ def test_volume_config_initialization(
     assert config.config.get("enable_ai_agents") is expected_ai_agents
     print(f"✅ Config: {config.config}")
 
+
 def test_volume_config_defaults():
     """Test VolumeConfig default values."""
     print("\n=== Testing Default Values ===")
@@ -89,6 +95,7 @@ def test_volume_config_defaults():
     # Check enable_ai_agents default is True
     assert config.config.get("enable_ai_agents") is True
     print("✅ Default enable_ai_agents is True")
+
 
 def test_volume_config_volume_validation():
     """Test volume parameter validation."""

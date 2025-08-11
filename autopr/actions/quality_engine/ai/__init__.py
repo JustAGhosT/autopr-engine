@@ -30,13 +30,13 @@ except Exception:  # pragma: no cover
     run_ai_analysis = None  # type: ignore[assignment]
 
 __all__ = [
+    "AICodeAnalyzer",
+    "AIHandler",
+    "CodeSuggestion",
     "QualityMode",
-    "run_ai_analysis",
-    "initialize_llm_manager",
-    "create_tool_result_from_ai_analysis",
     "analyze_code_architecture",
     "analyze_security_issues",
-    "AICodeAnalyzer",
-    "CodeSuggestion",
-    "AIHandler",
+    "create_tool_result_from_ai_analysis",
+    "initialize_llm_manager",
+    "run_ai_analysis",
 ]

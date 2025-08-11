@@ -23,10 +23,9 @@ def ask_windows_confirmation() -> bool:
         response = input("Continue with Windows-adapted quality analysis? (y/n): ").lower().strip()
         if response in ["y", "yes"]:
             return True
-        elif response in ["n", "no"]:
+        if response in ["n", "no"]:
             return False
-        else:
-            print("Please enter 'y' or 'n'.")
+        print("Please enter 'y' or 'n'.")
 
 
 def main(args: list[str] | None = None) -> int:

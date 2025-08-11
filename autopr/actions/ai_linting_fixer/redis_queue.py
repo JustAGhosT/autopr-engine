@@ -5,16 +5,16 @@ Provides Redis-based distributed processing capabilities for AI linting operatio
 This enables horizontal scaling across multiple workers and systems.
 """
 
-from collections.abc import Callable
-from dataclasses import asdict, dataclass
-from datetime import UTC, datetime, timedelta
-from enum import Enum
 import json
 import logging
 import os
 import time
-from typing import Any, TypedDict
 import uuid
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime, timedelta
+from enum import Enum
+from typing import Any, TypedDict
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,9 @@ try:
     from redis.exceptions import (
         ConnectionError as RedisConnectionError,  # type: ignore[import-not-found, import-untyped]
     )
-    from redis.exceptions import RedisError  # type: ignore[import-not-found, import-untyped]
+    from redis.exceptions import (
+        RedisError,  # type: ignore[import-not-found, import-untyped]
+    )
 
     REDIS_AVAILABLE = True
 except ImportError:
@@ -325,9 +327,7 @@ class RedisQueueManager:
                     "worker_id": self.worker_id,
                     "processed_count": self.processed_count,
                     "failed_count": self.failed_count,
-                    "uptime_seconds": (
-                        datetime.now(UTC) - self.start_time
-                    ).total_seconds(),
+                    "uptime_seconds": (datetime.now(UTC) - self.start_time).total_seconds(),
                 },
                 "active_workers": self._get_active_workers(),
             }

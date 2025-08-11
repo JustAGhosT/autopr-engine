@@ -4,8 +4,8 @@ AutoPR Workflow Base Classes
 Base classes and interfaces for workflow implementation.
 """
 
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 from typing import Any
 
 logger = logging.getLogger(__name__)

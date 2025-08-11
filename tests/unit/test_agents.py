@@ -1,14 +1,20 @@
 """
 Tests for the AutoPR Agent Framework.
 """
+
 import asyncio
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.agents.crew.main import AutoPRCrew
-from autopr.agents.models import CodeAnalysisReport, CodeIssue, PlatformAnalysis, PlatformComponent
+from autopr.agents.models import (
+    CodeAnalysisReport,
+    CodeIssue,
+    PlatformAnalysis,
+    PlatformComponent,
+)
 
 
 class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
@@ -18,24 +24,16 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
     CODE_QUALITY_METRICS = {
         "maintainability_index": 85.5,
         "test_coverage": 78.2,
-        "duplication": 2.1
+        "duplication": 2.1,
     }
 
     CODE_QUALITY_ISSUES = [
-        {
-            "file": "test.py",
-            "line": 1,
-            "message": "Missing docstring",
-            "severity": "low"
-        }
+        {"file": "test.py", "line": 1, "message": "Missing docstring", "severity": "low"}
     ]
 
     PLATFORM_COMPONENTS = [
         PlatformComponent(
-            name="Python",
-            version="3.9",
-            confidence=0.95,
-            evidence=["File extensions: .py"]
+            name="Python", version="3.9", confidence=0.95, evidence=["File extensions: .py"]
         )
     ]
 
@@ -46,7 +44,7 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
             message="Missing docstring",
             severity="low",
             rule_id="missing-docstring",
-            category="style"
+            category="style",
         )
     ]
 
@@ -64,21 +62,22 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
     def _create_mock_code_quality_agent(self) -> MagicMock:
         """Create and return a mock code quality agent."""
         mock_agent = MagicMock()
-        mock_agent.analyze_code_quality = AsyncMock(return_value={
-            "metrics": self.CODE_QUALITY_METRICS,
-            "issues": self.CODE_QUALITY_ISSUES
-        })
+        mock_agent.analyze_code_quality = AsyncMock(
+            return_value={"metrics": self.CODE_QUALITY_METRICS, "issues": self.CODE_QUALITY_ISSUES}
+        )
         return mock_agent
 
     def _create_mock_platform_agent(self) -> MagicMock:
         """Create and return a mock platform analysis agent."""
         mock_agent = MagicMock()
-        mock_agent.analyze_platform = AsyncMock(return_value=PlatformAnalysis(
-            platform="Python",
-            confidence=0.95,
-            components=self.PLATFORM_COMPONENTS,
-            recommendations=["Consider adding type hints"]
-        ))
+        mock_agent.analyze_platform = AsyncMock(
+            return_value=PlatformAnalysis(
+                platform="Python",
+                confidence=0.95,
+                components=self.PLATFORM_COMPONENTS,
+                recommendations=["Consider adding type hints"],
+            )
+        )
         return mock_agent
 
     def _create_mock_linting_agent(self) -> MagicMock:
@@ -94,7 +93,7 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
             code_quality_agent=self.mock_code_quality_agent,
             platform_agent=self.mock_platform_agent,
             linting_agent=self.mock_linting_agent,
-            llm_provider=self.mock_llm_provider
+            llm_provider=self.mock_llm_provider,
         )
 
     @patch("autopr.agents.crew.main.Crew")
@@ -113,9 +112,13 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
             crew = self._create_crew_instance()
 
             # Setup task mocks
-            with patch.object(crew, "_create_code_quality_task") as mock_create_cq_task, \
-                 patch.object(crew, "_create_platform_analysis_task") as mock_create_pa_task, \
-                 patch.object(crew, "_create_linting_task") as mock_create_lint_task:
+            with patch.object(
+                crew, "_create_code_quality_task"
+            ) as mock_create_cq_task, patch.object(
+                crew, "_create_platform_analysis_task"
+            ) as mock_create_pa_task, patch.object(
+                crew, "_create_linting_task"
+            ) as mock_create_lint_task:
 
                 # Configure task mocks to return completed futures
                 for mock_task in [mock_create_cq_task, mock_create_pa_task, mock_create_lint_task]:
@@ -124,17 +127,18 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
                     mock_task.return_value = future
 
                 # Configure specific task responses
-                mock_create_cq_task.return_value.set_result({
-                    "metrics": self.CODE_QUALITY_METRICS,
-                    "issues": self.CODE_QUALITY_ISSUES
-                })
+                mock_create_cq_task.return_value.set_result(
+                    {"metrics": self.CODE_QUALITY_METRICS, "issues": self.CODE_QUALITY_ISSUES}
+                )
 
-                mock_create_pa_task.return_value.set_result(PlatformAnalysis(
-                    platform="Python",
-                    confidence=0.95,
-                    components=self.PLATFORM_COMPONENTS,
-                    recommendations=["Consider adding type hints"]
-                ))
+                mock_create_pa_task.return_value.set_result(
+                    PlatformAnalysis(
+                        platform="Python",
+                        confidence=0.95,
+                        components=self.PLATFORM_COMPONENTS,
+                        recommendations=["Consider adding type hints"],
+                    )
+                )
 
                 mock_create_lint_task.return_value.set_result(self.LINT_ISSUES)
 

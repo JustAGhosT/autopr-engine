@@ -3,6 +3,7 @@ Template Registry
 
 Manages template discovery, loading, and caching.
 """
+
 # mypy: disable-error-code=import-untyped
 
 import logging
@@ -77,16 +78,15 @@ class TemplateRegistry:
                 try:
                     self._load_template_metadata(metadata_path, base_dir)
                 except Exception:
-                    logger.exception(
-                        "Failed to load template from %s", metadata_path
-                    )
+                    logger.exception("Failed to load template from %s", metadata_path)
 
     def _load_template_metadata(self, metadata_path: Path, base_dir: Path) -> None:
         """Load template metadata from a YAML file."""
         # Local runtime import via importlib to avoid mypy 'import-untyped' on PyYAML
         import importlib
-        from typing import Any, cast
-        _yaml = cast(Any, importlib.import_module("yaml"))
+        from typing import cast
+
+        _yaml = cast("Any", importlib.import_module("yaml"))
 
         with metadata_path.open(encoding="utf-8") as f:
             metadata_dict = _yaml.safe_load(f) or {}

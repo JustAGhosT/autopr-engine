@@ -69,6 +69,7 @@ class Jinja2TemplateProvider(TemplateProvider):
 
         try:
             import yaml  # type: ignore[import-not-found, import-untyped]
+
             with metadata_file.open(encoding="utf-8") as f:
                 return yaml.safe_load(f)
         except Exception:

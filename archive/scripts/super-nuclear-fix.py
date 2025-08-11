@@ -3,8 +3,8 @@
 Super Nuclear Fix - Temporarily disable problematic files that cause IDE validation
 """
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def disable_problematic_files():
@@ -22,12 +22,14 @@ def disable_problematic_files():
     workflow_file.write_text("# Workflow disabled at Volume 0\n")
     print(f"Created empty placeholder {workflow_file}")
 
+
 def create_volume_0_marker():
     """Create a marker file to indicate Volume 0 mode"""
 
     marker_file = Path(".volume-0-active")
     marker_file.write_text("Volume 0 active - all validation disabled\n")
     print(f"Created {marker_file}")
+
 
 def main():
     print("SUPER NUCLEAR FIX - Volume 0 Mode")
@@ -44,6 +46,7 @@ def main():
     print("  rm .volume-0-active")
 
     print("\nNow restart your IDE for complete silence!")
+
 
 if __name__ == "__main__":
     main()

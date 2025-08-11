@@ -5,9 +5,9 @@ Runs the whitespace fixer on staged files and re-stages them if modified.
 """
 
 import hashlib
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def get_file_hash(file_path):

@@ -59,9 +59,8 @@ def main():
     if add_files(unstaged_files):
         print("SUCCESS: Successfully added unstaged changes")
         return 0
-    else:
-        print("ERROR: Failed to add unstaged changes")
-        return 1
+    print("ERROR: Failed to add unstaged changes")
+    return 1
 
 
 if __name__ == "__main__":

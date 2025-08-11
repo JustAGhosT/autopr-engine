@@ -44,7 +44,7 @@ class PyTestTool(Tool):
         if process.returncode == 5:
             # No tests collected
             return []
-        elif process.returncode not in [0, 1]:
+        if process.returncode not in [0, 1]:
             error_message = stderr.decode().strip()
             print(f"Error running pytest: {error_message}")
             return [{"error": f"PyTest execution failed: {error_message}"}]
@@ -66,8 +66,7 @@ class PyTestTool(Tool):
             # If no JSON found, check if tests passed
             if process.returncode == 0:
                 return []  # All tests passed
-            else:
-                return [{"error": "PyTest produced no JSON output"}]
+            return [{"error": "PyTest produced no JSON output"}]
 
         return self._format_output(json_output)
 

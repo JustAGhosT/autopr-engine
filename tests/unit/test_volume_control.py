@@ -3,10 +3,10 @@
 
 import json
 import os
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 # Add volume-control to path
 test_dir = Path(__file__).parent
@@ -24,17 +24,23 @@ class BaseVolumeTest(unittest.TestCase):
         Path(".vscode").mkdir(exist_ok=True)
         self.vscode_settings = Path(".vscode/settings.json")
         with open(self.vscode_settings, "w") as f:
-            json.dump({
-                "python.enabled": False,
-                "git.enabled": False,
-                "yaml.validate": False,
-                "problems.decorations.enabled": False
-            }, f, indent=2)
+            json.dump(
+                {
+                    "python.enabled": False,
+                    "git.enabled": False,
+                    "yaml.validate": False,
+                    "problems.decorations.enabled": False,
+                },
+                f,
+                indent=2,
+            )
 
     def tearDown(self):
         os.chdir(self.original_cwd)
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
+
 
 class TestVolumeControl(BaseVolumeTest):
     def test_volume_transitions(self):
@@ -66,6 +72,7 @@ class TestVolumeControl(BaseVolumeTest):
         knob.set_volume(0)  # Should not raise
         knob.set_volume(1000)  # Should not raise
 
+
 class TestCommitVolumeControl(BaseVolumeTest):
     def test_separate_volumes(self):
         dev_knob = VolumeKnob("dev")
@@ -82,6 +89,7 @@ class TestCommitVolumeControl(BaseVolumeTest):
 
         self.assertIn("python", dev_tools)
         self.assertIn("yaml", commit_tools)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

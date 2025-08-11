@@ -3,6 +3,7 @@ Main crew module for the AutoPR Agent Framework.
 
 This module contains the main AutoPRCrew class that orchestrates the code analysis agents.
 """
+
 import asyncio
 import logging
 from pathlib import Path
@@ -18,6 +19,7 @@ from autopr.agents.crew.tasks import (
 from autopr.agents.models import CodeAnalysisReport, CodeIssue, PlatformAnalysis
 
 # Local lightweight stubs to avoid optional dependency during type checking/runtime
+
 
 class Crew:  # type: ignore[no-redef]
     def __init__(self, *args, **kwargs) -> None:
@@ -39,7 +41,7 @@ class AutoPRCrew:
         llm_model: str = "gpt-4",
         volume: int | None = None,
         context: str | None = None,  # e.g., "pr", "dev", "checkin"
-        **kwargs
+        **kwargs,
     ):
         """Initialize the AutoPR crew with specialized agents.
 
@@ -53,6 +55,7 @@ class AutoPRCrew:
         if volume is None:
             try:
                 from autopr.config.settings import get_settings
+
                 settings = get_settings()
                 ctx = (context or "").lower()
                 if ctx == "pr":
@@ -71,11 +74,7 @@ class AutoPRCrew:
         self.llm_provider = get_llm_provider_manager()
 
         # Initialize agents with volume context
-        agent_kwargs = {
-            **kwargs,
-            "volume": self.volume,
-            "llm_model": llm_model
-        }
+        agent_kwargs = {**kwargs, "volume": self.volume, "llm_model": llm_model}
 
         # Import agents lazily to avoid optional dependency issues during static analysis
         try:
@@ -89,6 +88,7 @@ class AutoPRCrew:
                 PlatformAnalysisAgent as _PlatformAnalysisAgent,  # type: ignore[import-not-found]
             )
         except Exception:  # pragma: no cover
+
             class _CodeQualityAgent:  # type: ignore
                 def __init__(self, **_kw):
                     pass
@@ -118,9 +118,14 @@ class AutoPRCrew:
 
         # Ensure agent backstories include volume context for tests, even when agents are mocked
         try:
-            from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+            from autopr.actions.quality_engine.volume_mapping import (
+                get_volume_level_name,
+            )
+
             level_name = get_volume_level_name(self.volume)
-            volume_suffix = f"You are currently operating at volume level {self.volume} ({level_name})."
+            volume_suffix = (
+                f"You are currently operating at volume level {self.volume} ({level_name})."
+            )
             for agent in (self.code_quality_agent, self.platform_agent, self.linting_agent):
                 current_backstory = getattr(agent, "backstory", "") or ""
                 current_backstory_str = str(current_backstory)
@@ -201,10 +206,7 @@ class AutoPRCrew:
         return result  # type: ignore[return-value]
 
     async def analyze_repository(
-        self,
-        repo_path: str | Path,
-        volume: int | None = None,
-        **analysis_kwargs
+        self, repo_path: str | Path, volume: int | None = None, **analysis_kwargs
     ) -> CodeAnalysisReport | dict[str, Any]:
         """
         Run a full analysis of the repository with volume-based quality control.
@@ -231,7 +233,7 @@ class AutoPRCrew:
         context = {
             "repo_path": str(repo_path.absolute()),
             "volume": current_volume,
-            **analysis_kwargs
+            **analysis_kwargs,
         }
 
         # Create tasks for each analysis type with volume context and track their types
@@ -242,7 +244,9 @@ class AutoPRCrew:
             return {"metrics": {"score": 85}, "issues": []}
 
         async def _stub_platform():
-            return PlatformAnalysis(platform="unknown", confidence=1.0, components=[], recommendations=[])
+            return PlatformAnalysis(
+                platform="unknown", confidence=1.0, components=[], recommendations=[]
+            )
 
         async def _stub_linting():
             return []
@@ -283,7 +287,10 @@ class AutoPRCrew:
 
         for task_name, result in zip(task_names, results, strict=False):
             if isinstance(result, Exception):
-                logger.error(f"Error in {task_name} analysis: {result!s}", exc_info=isinstance(result, Exception))
+                logger.error(
+                    f"Error in {task_name} analysis: {result!s}",
+                    exc_info=isinstance(result, Exception),
+                )
                 continue
 
             try:
@@ -299,13 +306,15 @@ class AutoPRCrew:
                         logger.warning("Linting result contains non-CodeIssue objects")
                     linting_issues = result
                 else:
-                    logger.warning(f"Unexpected result type for {task_name}: {type(result).__name__}")
+                    logger.warning(
+                        f"Unexpected result type for {task_name}: {type(result).__name__}"
+                    )
             except Exception as e:
                 logger.error(f"Error processing {task_name} result: {e}", exc_info=True)
 
         # Generate the final report
         return cast(
-            CodeAnalysisReport,
+            "CodeAnalysisReport",
             generate_analysis_summary(
                 code_quality=code_quality,
                 platform_analysis=platform_analysis,

@@ -1,5 +1,6 @@
 """Minimal test for VolumeConfig within project structure."""
 
+
 def test_volume_config_import():
     """Test that VolumeConfig can be imported and instantiated."""
     # Import inside test to isolate any import issues

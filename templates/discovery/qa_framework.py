@@ -18,7 +18,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from autopr.quality.template_metrics import QualityMetrics, get_quality_analyzer, get_quality_scorer
+from autopr.quality.template_metrics import (
+    QualityMetrics,
+    get_quality_analyzer,
+    get_quality_scorer,
+)
 
 from .report_generators import (
     ReportGeneratorFactory,
@@ -26,7 +30,11 @@ from .report_generators import (
     generate_report,
     save_report,
 )
-from .template_validators import ValidationIssue, ValidationSeverity, get_validator_registry
+from .template_validators import (
+    ValidationIssue,
+    ValidationSeverity,
+    get_validator_registry,
+)
 
 # Import modular components
 from .validation_rules import get_validation_rules

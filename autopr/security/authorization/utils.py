@@ -72,7 +72,7 @@ def get_authorization_manager(
             _AuthSingleton.manager = EnterpriseAuthorizationManager()
             logger.info("Created basic EnterpriseAuthorizationManager")
 
-    return cast(Any, _AuthSingleton.manager)
+    return cast("Any", _AuthSingleton.manager)
 
 
 def get_access_logger() -> AuthorizationAuditLogger:
@@ -185,9 +185,8 @@ def validate_permission_hierarchy(permissions: list[str]) -> bool:
     max_level = max(permission_levels.get(p, 0) for p in permissions)
 
     missing_required = (
-        (max_level >= READ_REQUIRED_LEVEL and Permission.READ.value not in permissions)
-        or (max_level >= WRITE_REQUIRED_LEVEL and Permission.WRITE.value not in permissions)
-    )
+        max_level >= READ_REQUIRED_LEVEL and Permission.READ.value not in permissions
+    ) or (max_level >= WRITE_REQUIRED_LEVEL and Permission.WRITE.value not in permissions)
     return not missing_required
 
 

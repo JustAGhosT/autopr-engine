@@ -4,6 +4,7 @@ Volume configuration for agent quality control.
 This module provides the VolumeConfig class which handles configuration that varies
 based on a volume level (0-1000), where 0 is the lowest strictness and 1000 is the highest.
 """
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -14,29 +15,30 @@ from autopr.utils.volume_utils import volume_to_quality_mode
 @dataclass
 class VolumeConfig:
     """Configuration for volume-based quality control.
-    
+
     This class handles configuration that varies based on a volume level (0-1000),
     where 0 is the lowest strictness and 1000 is the highest. It supports automatic
     conversion of various boolean-like values for configuration parameters.
-    
+
     Boolean Conversion Rules:
     - True values: True, 'true', 'True', '1', 1, 'yes', 'y', 'on' (case-insensitive)
     - False values: False, 'false', 'False', '0', 0, 'no', 'n', 'off', '' (empty string)
     - None values: Will raise ValueError as they are not valid for boolean fields
     - Any other value will be treated as False with a warning
-    
+
     Attributes:
         volume: Integer between 0-1000 representing the volume level
         quality_mode: The quality mode derived from the volume level
         config: Dictionary of configuration parameters
     """
+
     volume: int = 500  # Default to moderate level (500/1000)
     quality_mode: QualityMode | None = None
     config: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         """Initialize volume-based configuration with enhanced boolean handling.
-        
+
         This method:
         1. Validates and clamps the volume to 0-1000 range
         2. Loads default quality mode and config if not provided
@@ -92,27 +94,28 @@ class VolumeConfig:
     @staticmethod
     def _warn_about_conversion(value: Any) -> None:
         """Issue a warning about failed boolean conversion.
-        
+
         Args:
             value: The value that failed boolean conversion
         """
         import warnings
+
         warnings.warn(
             f"Could not convert value '{value}' to boolean, defaulting to False",
             UserWarning,
-            stacklevel=3  # Adjusted for additional call level
+            stacklevel=3,  # Adjusted for additional call level
         )
 
     @staticmethod
     def _convert_to_bool(value: Any) -> bool:
         """Convert various boolean-like values to Python bool.
-        
+
         Args:
             value: The value to convert to boolean
-            
+
         Returns:
             bool: The converted boolean value
-            
+
         Raises:
             ValueError: If the value is None or an empty string (when strict=True)
         """

@@ -32,24 +32,28 @@ def validate_config(config: QualityEngineConfig) -> None:
                 )
 
 
-def _merge_quality_from_dict(quality_config: dict[str, Any], default_config: dict[str, Any]) -> None:
+def _merge_quality_from_dict(
+    quality_config: dict[str, Any], default_config: dict[str, Any]
+) -> None:
     """Merge quality configuration dict into the default config in-place."""
     # Merge default mode
     if "default_mode" in quality_config:
-        default_config["default_mode"] = cast(str, quality_config["default_mode"])
+        default_config["default_mode"] = cast("str", quality_config["default_mode"])
 
     # Merge tools
     if isinstance(quality_config.get("tools"), dict):
-        merged_tools: dict[str, Any] = dict(cast(dict[str, Any], default_config.get("tools", {})))
-        for tool, tool_config in cast(dict[str, Any], quality_config["tools"]).items():
-            merged_tools[cast(str, tool)] = cast(dict[str, Any], tool_config)
+        merged_tools: dict[str, Any] = dict(cast("dict[str, Any]", default_config.get("tools", {})))
+        for tool, tool_config in cast("dict[str, Any]", quality_config["tools"]).items():
+            merged_tools[cast("str", tool)] = cast("dict[str, Any]", tool_config)
         default_config["tools"] = merged_tools
 
     # Merge modes
     if isinstance(quality_config.get("modes"), dict):
-        merged_modes: dict[str, list[str]] = dict(cast(dict[str, list[str]], default_config.get("modes", {})))
-        for mode, tools in cast(dict[str, Any], quality_config["modes"]).items():
-            merged_modes[cast(str, mode)] = cast(list[str], tools)
+        merged_modes: dict[str, list[str]] = dict(
+            cast("dict[str, list[str]]", default_config.get("modes", {}))
+        )
+        for mode, tools in cast("dict[str, Any]", quality_config["modes"]).items():
+            merged_modes[cast("str", mode)] = cast("list[str]", tools)
         default_config["modes"] = merged_modes
 
 
@@ -60,7 +64,7 @@ def _load_toml_config(config_path: str) -> dict[str, Any]:
     except Exception:
         return {}
     with open(config_path, "rb") as f:
-        return cast(dict[str, Any], toml_mod.load(f))  # type: ignore[attr-defined]
+        return cast("dict[str, Any]", toml_mod.load(f))  # type: ignore[attr-defined]
 
 
 def _load_yaml_config(config_path: str) -> dict[str, Any]:
@@ -70,7 +74,7 @@ def _load_yaml_config(config_path: str) -> dict[str, Any]:
     except Exception:
         return {}
     with open(config_path, encoding="utf-8") as f:
-        return cast(dict[str, Any], yaml_mod.safe_load(f)) or {}  # type: ignore[attr-defined]
+        return cast("dict[str, Any]", yaml_mod.safe_load(f)) or {}  # type: ignore[attr-defined]
 
 
 def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
@@ -125,9 +129,19 @@ def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
             if config_path.endswith(".toml"):
                 file_config = _load_toml_config(config_path)
                 # Extract tool configuration from pyproject.toml
-                autopr_section = cast(dict[str, Any] | None, file_config.get("autopr")) if file_config else None
-                if autopr_section and isinstance(autopr_section, dict) and "quality" in autopr_section:
-                    _merge_quality_from_dict(cast(dict[str, Any], autopr_section["quality"]), default_config)
+                autopr_section = (
+                    cast("dict[str, Any] | None", file_config.get("autopr"))
+                    if file_config
+                    else None
+                )
+                if (
+                    autopr_section
+                    and isinstance(autopr_section, dict)
+                    and "quality" in autopr_section
+                ):
+                    _merge_quality_from_dict(
+                        cast("dict[str, Any]", autopr_section["quality"]), default_config
+                    )
 
             elif config_path.endswith(".yaml") or config_path.endswith(".yml"):
                 yaml_config = _load_yaml_config(config_path)

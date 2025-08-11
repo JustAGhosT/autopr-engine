@@ -6,11 +6,7 @@ from autopr.agents.agents import PlatformAnalysisAgent
 
 class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        self.agent = PlatformAnalysisAgent(
-            volume=500,
-            verbose=False,
-            llm_model="gpt-4"
-        )
+        self.agent = PlatformAnalysisAgent(volume=500, verbose=False, llm_model="gpt-4")
 
     @patch("autopr.actions.platform_detection.PlatformDetector")
     async def test_analyze_platform_returns_platform_analysis(self, mock_detector):
@@ -47,6 +43,7 @@ class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):
 
         # Test that subsequent calls return the same instance
         self.assertIs(self.agent.platform_detector, mock_detector_instance)
+
 
 if __name__ == "__main__":
     # Run async tests

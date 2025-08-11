@@ -208,7 +208,7 @@ def main():
     print("Found template files:")
     for file_type, files in template_files.items():
         print(f"  {file_type.upper()}: {len(files)} files")
-    print("")
+    print()
 
     # Validate templates
     results = validate_templates(template_files)
@@ -232,9 +232,8 @@ def main():
             f"{len(results['consistency_issues'])} consistency issues"
         )
         return 1
-    else:
-        print("\n✅ All templates are valid!")
-        return 0
+    print("\n✅ All templates are valid!")
+    return 0
 
 
 if __name__ == "__main__":

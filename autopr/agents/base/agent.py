@@ -5,18 +5,23 @@ This module provides the BaseAgent class which serves as the foundation for all
 AutoPR agents. It handles common functionality like initialization, logging, and
 volume-based configuration.
 """
+
 import logging
 from typing import Any, Generic, TypeVar
 
 # Optional dependency: provide a lightweight fallback when crewai is unavailable
 try:  # pragma: no cover - runtime optional import
-    from crewai import Agent as CrewAgent  # type: ignore[import-not-found,import-untyped]
+    from crewai import (
+        Agent as CrewAgent,  # type: ignore[import-not-found,import-untyped]
+    )
 except Exception:  # pragma: no cover
+
     class CrewAgent:  # type: ignore[no-redef]
         def __init__(self, *args, **kwargs) -> None:
             # Minimal stub to satisfy tests without crewai installed
             for key, value in kwargs.items():
                 setattr(self, key, value)
+
 
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.agents.base.volume_config import VolumeConfig
@@ -32,14 +37,14 @@ OutputT = TypeVar("OutputT")
 
 class BaseAgent(Generic[InputT, OutputT]):
     """Base class for all AutoPR agents.
-    
+
     This class provides common functionality for all agents, including:
     - Initialization with LLM provider and volume configuration
     - Logging and error handling
     - Template method pattern for agent execution
-    
+
     Subclasses should implement the `_execute` method with agent-specific logic.
-    
+
     Attributes:
         name: The name of the agent
         role: The role description of the agent
@@ -63,10 +68,10 @@ class BaseAgent(Generic[InputT, OutputT]):
         allow_delegation: bool = False,
         max_iter: int = 5,
         max_rpm: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize the base agent.
-        
+
         Args:
             name: The name of the agent
             role: The role description of the agent
@@ -91,7 +96,10 @@ class BaseAgent(Generic[InputT, OutputT]):
 
         # Augment backstory with volume context for visibility in tests
         try:
-            from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+            from autopr.actions.quality_engine.volume_mapping import (
+                get_volume_level_name,
+            )
+
             level_name = get_volume_level_name(self.volume_config.volume)
             self.backstory = f"{self.backstory}\nYou are currently operating at volume level {self.volume_config.volume} ({level_name})."
         except Exception:
@@ -124,7 +132,7 @@ class BaseAgent(Generic[InputT, OutputT]):
             allow_delegation=self.allow_delegation,
             max_iter=self.max_iter,
             max_rpm=self.max_rpm,
-            **kwargs
+            **kwargs,
         )
 
     async def execute(self, inputs: InputT) -> OutputT:

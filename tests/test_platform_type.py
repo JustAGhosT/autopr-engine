@@ -13,5 +13,6 @@ class TestPlatformType(unittest.TestCase):
         self.assertEqual(PlatformType.CLOUD.value, "cloud")
         self.assertEqual(PlatformType.VCS.value, "vcs")
 
+
 if __name__ == "__main__":
     unittest.main()

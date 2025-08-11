@@ -4,7 +4,7 @@ from autopr.security.validation_models import ValidationResult, ValidationSeveri
 class NumberValidator:
     """Number validation functionality."""
 
-    def _validate_number(self, key: str, value: float | int) -> ValidationResult:
+    def _validate_number(self, key: str, value: float) -> ValidationResult:
         """Validate numeric input."""
         result = ValidationResult(is_valid=True)
 

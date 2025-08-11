@@ -3,6 +3,7 @@ Agent definitions for the AutoPR Agent Framework.
 
 This module defines the specialized agents used in the AutoPR code analysis pipeline.
 """
+
 from typing import Any
 
 from pydantic import BaseModel, field_validator
@@ -11,8 +12,10 @@ from pydantic import BaseModel, field_validator
 try:  # pragma: no cover - import-time compatibility shim
     from crewai import Agent  # type: ignore[import-not-found]
 except Exception:  # pragma: no cover
+
     class Agent:  # type: ignore[no-redef]
         """Fallback Agent stub used when crewai is unavailable."""
+
 
 from autopr.actions import platform_detection
 from autopr.actions.llm import get_llm_provider_manager
@@ -49,6 +52,7 @@ class VolumeConfig(BaseModel):
     def model_post_init(self, __context: Any) -> None:  # type: ignore[override]
         # Populate defaults from volume mapping if not provided
         from autopr.utils.volume_utils import volume_to_quality_mode
+
         if self.quality_mode is None or self.config is None:
             mode, default_config = volume_to_quality_mode(self.volume)
             if self.quality_mode is None:
@@ -91,7 +95,7 @@ class BaseAgent(Agent):
             backstory=backstory,  # Will be updated after initialization
             llm=get_llm_provider_manager().get_provider(llm_model),
             allow_delegation=True,
-            **kwargs
+            **kwargs,
         )
 
         # Now set up our custom attributes after parent initialization
@@ -121,8 +125,10 @@ class BaseAgent(Agent):
         return {
             "volume": self._volume,
             "volume_level": get_volume_level_name(self._volume),
-            "quality_mode": self._volume_config.quality_mode.value if self._volume_config.quality_mode else None,
-            "quality_config": self._volume_config.config or {}
+            "quality_mode": (
+                self._volume_config.quality_mode.value if self._volume_config.quality_mode else None
+            ),
+            "quality_config": self._volume_config.config or {},
         }
 
 
@@ -143,7 +149,7 @@ class CodeQualityAgent(BaseAgent):
             and quality metrics. You excel at identifying potential issues and suggesting
             improvements. You have a keen eye for detail and a deep understanding of
             software engineering best practices.""",
-            **kwargs
+            **kwargs,
         )
 
         # Initialize the quality engine with volume configuration
@@ -153,8 +159,7 @@ class CodeQualityAgent(BaseAgent):
         if self.volume_config.config:
             # Apply any quality engine specific configurations from volume config
             quality_config = {
-                k: v for k, v in self.volume_config.config.items()
-                if k.startswith("quality_")
+                k: v for k, v in self.volume_config.config.items() if k.startswith("quality_")
             }
             if quality_config:
                 # Apply quality config to the quality engine if needed
@@ -202,16 +207,22 @@ class PlatformAnalysisAgent(BaseAgent):
             interact and can identify potential integration issues.
 
             Your analysis depth and thoroughness are adjusted based on the current volume level.""",
-            **kwargs
+            **kwargs,
         )
 
         # Defer detector creation so tests can patch the class before first access
         self._platform_detector: platform_detection.PlatformDetector | None = None
 
         # Configure platform detector based on volume if needed
-        if self.volume_config.config and "platform_scan_depth" in self.volume_config.config and self._platform_detector is not None:
+        if (
+            self.volume_config.config
+            and "platform_scan_depth" in self.volume_config.config
+            and self._platform_detector is not None
+        ):
             if hasattr(self._platform_detector, "scan_depth"):
-                self._platform_detector.scan_depth = self.volume_config.config["platform_scan_depth"]
+                self._platform_detector.scan_depth = self.volume_config.config[
+                    "platform_scan_depth"
+                ]
 
     @property
     def platform_detector(self) -> platform_detection.PlatformDetector:
@@ -221,7 +232,9 @@ class PlatformAnalysisAgent(BaseAgent):
             # Configure platform detector based on volume if needed
             if self.volume_config.config and "platform_scan_depth" in self.volume_config.config:
                 try:
-                    self._platform_detector.scan_depth = self.volume_config.config["platform_scan_depth"]
+                    self._platform_detector.scan_depth = self.volume_config.config[
+                        "platform_scan_depth"
+                    ]
                 except Exception:
                     # Some PlatformDetector implementations may not support dynamic attributes
                     pass
@@ -265,16 +278,15 @@ class LintingAgent(BaseAgent):
             can spot even the most subtle style violations.
 
             Your strictness and thoroughness are adjusted based on the current volume level.""",
-            **kwargs
+            **kwargs,
         )
 
         # Configure linting fixer based on volume
         linting_config = {}
         if self.volume_config.config:
-            linting_config.update({
-                k: v for k, v in self.volume_config.config.items()
-                if k.startswith("linting_")
-            })
+            linting_config.update(
+                {k: v for k, v in self.volume_config.config.items() if k.startswith("linting_")}
+            )
 
         # Import locally to avoid type-resolution issues during static analysis
         from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
@@ -284,7 +296,7 @@ class LintingAgent(BaseAgent):
         # Adjust verbosity based on volume
         self._verbose = False
         if self.volume_config.quality_mode:
-            self._verbose = (self.volume_config.quality_mode != QualityMode.ULTRA_FAST)
+            self._verbose = self.volume_config.quality_mode != QualityMode.ULTRA_FAST
 
     @property
     def linting_fixer(self) -> Any:
@@ -320,35 +332,37 @@ class LintingAgent(BaseAgent):
                 with open(file_path, encoding="utf-8") as f:
                     file_content = f.read()
             except UnicodeDecodeError as e:
-                return [CodeIssue(
-                    file_path=file_path,
-                    line_number=0,
-                    column=0,
-                    message=f"Failed to decode file: {e!s}. File may be binary or use a different encoding.",
-                    severity=IssueSeverity.HIGH,
-                    rule_id="encoding-error",
-                    category="error",
-                    fix=None
-                )]
+                return [
+                    CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        column=0,
+                        message=f"Failed to decode file: {e!s}. File may be binary or use a different encoding.",
+                        severity=IssueSeverity.HIGH,
+                        rule_id="encoding-error",
+                        category="error",
+                        fix=None,
+                    )
+                ]
 
             # Fix issues using the linting fixer
             try:
                 fixed_content, issues = await self._linting_fixer.fix_code(
-                    file_path=file_path,
-                    file_content=file_content,
-                    verbose=self._verbose
+                    file_path=file_path, file_content=file_content, verbose=self._verbose
                 )
             except Exception as e:
-                return [CodeIssue(
-                    file_path=file_path,
-                    line_number=0,
-                    column=0,
-                    message=f"Linting failed: {e!s}",
-                    severity=IssueSeverity.HIGH,
-                    rule_id="linting-error",
-                    category="error",
-                    fix=None
-                )]
+                return [
+                    CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        column=0,
+                        message=f"Linting failed: {e!s}",
+                        severity=IssueSeverity.HIGH,
+                        rule_id="linting-error",
+                        category="error",
+                        fix=None,
+                    )
+                ]
 
             # Write the fixed content back to the file if it changed
             if fixed_content != file_content:
@@ -360,16 +374,18 @@ class LintingAgent(BaseAgent):
                         print(f"Fixed {len(issues)} issues in {file_path}")
                 except Exception as e:
                     # If we can't write the file, log it and continue
-                    issues.append(CodeIssue(
-                        file_path=file_path,
-                        line_number=0,
-                        column=0,
-                        message=f"Failed to write fixes to file: {e!s}",
-                        severity=IssueSeverity.HIGH,
-                        rule_id="write-error",
-                        category="error",
-                        fix=None
-                    ))
+                    issues.append(
+                        CodeIssue(
+                            file_path=file_path,
+                            line_number=0,
+                            column=0,
+                            message=f"Failed to write fixes to file: {e!s}",
+                            severity=IssueSeverity.HIGH,
+                            rule_id="write-error",
+                            category="error",
+                            fix=None,
+                        )
+                    )
 
             return issues
 
@@ -383,13 +399,15 @@ class LintingAgent(BaseAgent):
             # For any other unexpected errors, return an error issue
             if self._verbose:
                 print(f"Unexpected error fixing issues in {file_path}: {e!s}")
-            return [CodeIssue(
-                file_path=file_path,
-                line_number=0,
-                column=0,
-                message=f"Unexpected error: {e!s}",
-                severity=IssueSeverity.HIGH,
-                rule_id="unexpected-error",
-                category="error",
-                fix=None
-            )]
+            return [
+                CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    column=0,
+                    message=f"Unexpected error: {e!s}",
+                    severity=IssueSeverity.HIGH,
+                    rule_id="unexpected-error",
+                    category="error",
+                    fix=None,
+                )
+            ]

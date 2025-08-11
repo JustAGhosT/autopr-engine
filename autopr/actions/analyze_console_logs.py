@@ -1,8 +1,8 @@
 import asyncio
 import logging
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 import pydantic
@@ -46,10 +46,14 @@ class AnalyzeConsoleLogs(Action[Inputs, Outputs]):
 
                 try:
                     # Use thread to avoid blocking in async context
-                    lines = await asyncio.to_thread(Path(filepath).read_text, encoding="utf-8", errors="ignore")
+                    lines = await asyncio.to_thread(
+                        Path(filepath).read_text, encoding="utf-8", errors="ignore"
+                    )
                     for i, line in enumerate(lines.splitlines(), 1):
                         if log_pattern.search(line):
-                            found_logs.append({"file": filepath, "line": i, "content": line.strip()})
+                            found_logs.append(
+                                {"file": filepath, "line": i, "content": line.strip()}
+                            )
                 except Exception:
                     logger.exception("Failed reading file: %s", filepath)
                     continue

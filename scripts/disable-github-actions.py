@@ -22,36 +22,31 @@ def main():
         current_settings = {}
 
     # Add GitHub Actions specific disable settings
-    current_settings.update({
-        # Disable GitHub Actions extension completely
-        "github-actions.validate": False,
-        "github-actions.enableWorkflowValidation": False,
-        "github-actions.enableSchemaValidation": False,
-
-        # Disable YAML validation for GitHub Actions
-        "yaml.validate": False,
-        "yaml.schemas": {},
-        "yaml.customTags": [],
-        "yaml.format.enable": False,
-        "yaml.hover": False,
-        "yaml.completion": False,
-        "yaml.validate.enable": False,
-        "yaml.schemaStore.enable": False,
-
-        # Disable ALL problems display
-        "problems.decorations.enabled": False,
-        "problems.showCurrentInStatus": False,
-
-        # Disable ALL hover and completion
-        "editor.hover.enabled": False,
-        "editor.quickSuggestions": {
-            "other": False,
-            "comments": False,
-            "strings": False
-        },
-        "editor.suggestOnTriggerCharacters": False,
-        "editor.acceptSuggestionOnEnter": "off"
-    })
+    current_settings.update(
+        {
+            # Disable GitHub Actions extension completely
+            "github-actions.validate": False,
+            "github-actions.enableWorkflowValidation": False,
+            "github-actions.enableSchemaValidation": False,
+            # Disable YAML validation for GitHub Actions
+            "yaml.validate": False,
+            "yaml.schemas": {},
+            "yaml.customTags": [],
+            "yaml.format.enable": False,
+            "yaml.hover": False,
+            "yaml.completion": False,
+            "yaml.validate.enable": False,
+            "yaml.schemaStore.enable": False,
+            # Disable ALL problems display
+            "problems.decorations.enabled": False,
+            "problems.showCurrentInStatus": False,
+            # Disable ALL hover and completion
+            "editor.hover.enabled": False,
+            "editor.quickSuggestions": {"other": False, "comments": False, "strings": False},
+            "editor.suggestOnTriggerCharacters": False,
+            "editor.acceptSuggestionOnEnter": "off",
+        }
+    )
 
     # Write the updated settings
     vscode_dir.mkdir(exist_ok=True)
@@ -68,6 +63,7 @@ def main():
     print("2. Wait 5 seconds")
     print("3. Reopen your IDE")
     print("4. Check Problems panel - should be EMPTY")
+
 
 if __name__ == "__main__":
     main()

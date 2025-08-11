@@ -23,17 +23,13 @@ def force_ide_refresh():
     print("✅ Created refresh trigger file")
 
     # Remove any cached settings
-    cache_dirs = [
-        ".vscode/.cache",
-        ".cursor/.cache",
-        ".pytest_cache",
-        "__pycache__"
-    ]
+    cache_dirs = [".vscode/.cache", ".cursor/.cache", ".pytest_cache", "__pycache__"]
 
     for cache_dir in cache_dirs:
         if os.path.exists(cache_dir):
             try:
                 import shutil
+
                 shutil.rmtree(cache_dir)
                 print(f"✅ Removed cache: {cache_dir}")
             except Exception as e:
@@ -48,7 +44,7 @@ def force_ide_refresh():
         (".flake8", "Flake8 Config"),
         (".markdownlint.json", "MarkdownLint Config"),
         ("cspell.json", "CSpell Config"),
-        ("mypy.ini", "MyPy Config")
+        ("mypy.ini", "MyPy Config"),
     ]
 
     for file_path, description in config_files:
@@ -82,6 +78,7 @@ def force_ide_refresh():
     print("   - Or try 'Python: Restart Language Server'")
 
     print(f"\n⏰ Refresh triggered at: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
 
 if __name__ == "__main__":
     force_ide_refresh()

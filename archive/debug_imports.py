@@ -1,4 +1,5 @@
 """Debug script to test imports and environment."""
+
 import importlib
 import inspect
 import os
@@ -11,6 +12,7 @@ def print_header(title):
     print(f" {title} ".center(80, "="))
     print("=" * 80)
 
+
 # Print environment information
 print_header("ENVIRONMENT INFORMATION")
 print(f"Python {sys.version}")
@@ -21,6 +23,7 @@ print(f"Python executable: {sys.executable}")
 print_header("PYTHON PATH")
 for i, path in enumerate(sys.path, 1):
     print(f"{i:2d}. {path}")
+
 
 # Function to test importing a module
 def test_import(module_name):
@@ -50,7 +53,9 @@ def test_import(module_name):
                         continue
                     # Check for package directory
                     package_dir = os.path.join(path, partial_path)
-                    if os.path.isdir(package_dir) and os.path.isfile(os.path.join(package_dir, "__init__.py")):
+                    if os.path.isdir(package_dir) and os.path.isfile(
+                        os.path.join(package_dir, "__init__.py")
+                    ):
                         print(f"  ✅ Found package directory: {package_dir}")
                     # Check for module file
                     module_file = os.path.join(path, *parts) + ".py"
@@ -73,8 +78,10 @@ def test_import(module_name):
     except Exception as e:
         print(f"❌ Error importing {module_name}: {e}")
         import traceback
+
         traceback.print_exc()
         return None
+
 
 # Test importing autopr package
 autopr = test_import("autopr")
@@ -93,13 +100,16 @@ if crew is not None:
         if AutoPRCrew is not None:
             print(f"✅ Found AutoPRCrew class: {AutoPRCrew}")
             print(f"  Module: {AutoPRCrew.__module__}")
-            print(f"  File: {inspect.getfile(AutoPRCrew) if hasattr(inspect, 'getfile') else 'unknown'}")
+            print(
+                f"  File: {inspect.getfile(AutoPRCrew) if hasattr(inspect, 'getfile') else 'unknown'}"
+            )
         else:
             print("❌ AutoPRCrew class not found in autopr.agents.crew")
             print(f"Available attributes: {[a for a in dir(crew) if not a.startswith('_')]}")
     except Exception as e:
         print(f"❌ Error accessing AutoPRCrew: {e}")
         import traceback
+
         traceback.print_exc()
 
 # Test importing volume_mapping module
@@ -118,6 +128,7 @@ if volume_mapping is not None:
     except Exception as e:
         print(f"❌ Error calling get_volume_level_name: {e}")
         import traceback
+
         traceback.print_exc()
 
 print_header("TEST COMPLETE")

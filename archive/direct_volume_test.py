@@ -1,6 +1,7 @@
 """Direct test for VolumeConfig validation."""
-from pathlib import Path
+
 import sys
+from pathlib import Path
 
 # Add project root to path
 project_root = str(Path(__file__).parent.absolute())
@@ -13,6 +14,7 @@ print("\n=== Direct VolumeConfig Test ===\n")
 print("1. Importing VolumeConfig...")
 try:
     from autopr.agents.agents import VolumeConfig
+
     print(f"✅ Successfully imported VolumeConfig from {VolumeConfig.__module__}")
 except Exception as e:
     print(f"❌ Failed to import VolumeConfig: {e}")

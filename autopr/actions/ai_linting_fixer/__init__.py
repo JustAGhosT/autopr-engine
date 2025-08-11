@@ -60,15 +60,9 @@ except ImportError:
 
 # Main class (optional AI imports)
 try:
-    from .ai_linting_fixer import (
-        AILintingFixer as _AILintingFixer,
-    )
-    from .ai_linting_fixer import (
-        create_ai_linting_fixer as _create_ai_linting_fixer,
-    )
-    from .ai_linting_fixer import (
-        run_ai_linting_fixer as _run_ai_linting_fixer,
-    )
+    from .ai_linting_fixer import AILintingFixer as _AILintingFixer
+    from .ai_linting_fixer import create_ai_linting_fixer as _create_ai_linting_fixer
+    from .ai_linting_fixer import run_ai_linting_fixer as _run_ai_linting_fixer
 
     AILintingFixer = _AILintingFixer
     create_ai_linting_fixer = _create_ai_linting_fixer

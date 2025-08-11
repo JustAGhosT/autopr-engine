@@ -6,8 +6,8 @@ HiFi-style volume control with 0-1000 scale in ticks of 5.
 """
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add the volume-control directory to the path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -158,15 +158,15 @@ def main():
         show_help()
         return
 
-    elif command == "status":
+    if command == "status":
         show_status()
         return
 
-    elif command == "autofix":
+    if command == "autofix":
         autofix_current()
         return
 
-    elif command in ["dev", "commit"]:
+    if command in ["dev", "commit"]:
         knob_type = command
         knob = DevVolumeKnob() if knob_type == "dev" else CommitVolumeKnob()
 

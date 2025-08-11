@@ -185,7 +185,7 @@ def main():
     print("Found configuration files:")
     for file_type, files in config_files.items():
         print(f"  {file_type.upper()}: {len(files)} files")
-    print("")
+    print()
 
     # Validate configurations
     results = validate_configurations(config_files)
@@ -208,9 +208,8 @@ def main():
             f"{len(results['duplicates'])} duplicates, and {len(results['issues'])} issues"
         )
         return 1
-    else:
-        print("\n✅ All configurations are valid!")
-        return 0
+    print("\n✅ All configurations are valid!")
+    return 0
 
 
 if __name__ == "__main__":

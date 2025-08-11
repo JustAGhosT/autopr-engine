@@ -3,9 +3,10 @@ Linting Agent for AutoPR.
 This module provides the LintingAgent class which is responsible for identifying
 and fixing code style and quality issues in a codebase.
 """
+
 import asyncio
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,7 @@ class LintingInputs:
         fix: Whether to automatically fix issues when possible
         context: Additional context for the linter
     """
+
     file_path: str
     code: str | None = None
     language: str | None = None
@@ -53,6 +55,7 @@ class LintingOutputs:
         fix_summary: Summary of fixes applied
         metrics: Dictionary of linting metrics
     """
+
     file_path: str
     original_code: str
     fixed_code: str | None = None
@@ -107,7 +110,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             allow_delegation=allow_delegation,
             max_iter=max_iter,
             max_rpm=max_rpm,
-            **kwargs
+            **kwargs,
         )
 
         # Initialize the AI linting fixer (constructor manages its own LLM manager)
@@ -167,7 +170,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                         e.object,
                         e.start,
                         e.end,
-                        f"{e.reason} in file {inputs.file_path}"
+                        f"{e.reason} in file {inputs.file_path}",
                     ) from e
                 except OSError as e:
                     error_msg = f"Error reading file {inputs.file_path}: {e!s}"

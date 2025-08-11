@@ -108,7 +108,7 @@ class TestVolumeIntegration(unittest.TestCase):
             mode=QualityMode.SMART,  # Will be overridden
             max_fixes=50,  # Will be overridden
             enable_ai_agents=True,  # Will be overridden
-            volume=0
+            volume=0,
         )
 
         # Apply volume settings

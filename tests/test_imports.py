@@ -1,10 +1,12 @@
 """Test file to verify imports from the codebase."""
+
 from unittest.mock import patch
 
 
 def test_import_volume_config():
     """Test importing VolumeConfig from agents.py."""
     from autopr.agents.agents import VolumeConfig
+
     assert VolumeConfig is not None
 
     # Test basic initialization
@@ -15,15 +17,18 @@ def test_import_volume_config():
     assert "enable_ai_agents" in config.config
     assert isinstance(config.config["enable_ai_agents"], bool)
 
+
 def test_import_crew():
     """Test importing AutoPRCrew from crew.py."""
     from autopr.agents.crew import AutoPRCrew
+
     assert AutoPRCrew is not None
 
     # Test basic initialization with mocks
     with patch("autopr.agents.crew.get_llm_provider_manager"):
         crew = AutoPRCrew(llm_model="test-model")
         assert crew is not None
+
 
 def test_import_volume_mapping():
     """Test importing from volume_mapping.py."""

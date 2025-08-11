@@ -5,13 +5,14 @@ This module provides backward compatibility for code that imports agents from th
 monolithic agents.py file. It re-exports the new modular agent classes from their
 new locations.
 """
+
 import warnings
 
 # Show deprecation warning
 warnings.warn(
     "The 'agents.agents' module is deprecated. Import directly from 'agents' instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export models from the models module
@@ -38,14 +39,12 @@ __all__ = [
     # Base classes
     "BaseAgent",
     "VolumeConfig",
-
     # Models
     "IssueSeverity",
     "CodeIssue",
     "PlatformComponent",
     "PlatformAnalysis",
     "CodeAnalysisReport",
-
     # Agents
     "CodeQualityAgent",
     "CodeQualityInputs",

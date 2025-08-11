@@ -24,5 +24,6 @@ class TestMinimalPlatformAnalysisAgent(unittest.TestCase):
         self.assertIsNone(result)
         mock_manager.get_platform.assert_called_once_with(PlatformType.UNKNOWN.value)
 
+
 if __name__ == "__main__":
     unittest.main()

@@ -4,11 +4,11 @@ This module includes volume-based warning control and other test configurations.
 """
 
 import asyncio
-from collections.abc import AsyncGenerator
 import os
-from pathlib import Path
 import sys
 import warnings
+from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import pytest  # type: ignore
 import pytest_asyncio  # type: ignore
@@ -18,6 +18,7 @@ try:  # Python 3.11+
     import tomllib as toml  # type: ignore[import-not-found]
 except ModuleNotFoundError:  # Fallback for older interpreters
     import tomli as toml  # type: ignore[import-not-found]
+
 from aiohttp import ClientSession
 
 # Import volume utilities (placeholder for future use)
@@ -91,7 +92,7 @@ def _wrap_warnings_warn(volume: int):
 
         # Maximum: treat all warnings as errors
         if volume >= 1000:
-            exc = (category or Warning)
+            exc = category or Warning
             raise exc(message)  # type: ignore[misc]
 
         # Default behavior for other volumes
@@ -168,7 +169,7 @@ async def http_session() -> AsyncGenerator[ClientSession, None]:
         yield session
 
 
-@pytest.fixture()
+@pytest.fixture
 def github_token() -> str:
     """
     Provide a GitHub token for testing.
@@ -178,7 +179,7 @@ def github_token() -> str:
     return os.getenv("GITHUB_TOKEN", "test_token")
 
 
-@pytest.fixture()
+@pytest.fixture
 def linear_api_key() -> str:
     """
     Provide a Linear API key for testing.

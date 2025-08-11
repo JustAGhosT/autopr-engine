@@ -16,14 +16,14 @@ def check_tool_disabled(tool_name, command, expected_exit=0):
         if result.returncode == expected_exit:
             print(f"✅ {tool_name}: DISABLED")
             return True
-        else:
-            print(f"❌ {tool_name}: STILL RUNNING (exit code: {result.returncode})")
-            if result.stdout:
-                print(f"   Output: {result.stdout.strip()}")
-            return False
+        print(f"❌ {tool_name}: STILL RUNNING (exit code: {result.returncode})")
+        if result.stdout:
+            print(f"   Output: {result.stdout.strip()}")
+        return False
     except Exception as e:
         print(f"❌ {tool_name}: ERROR - {e}")
         return False
+
 
 def main():
     print("🔍 VERIFYING LEVEL 0 (NO LINTING) STATUS")
@@ -46,7 +46,7 @@ def main():
         (".flake8", "Flake8 config"),
         (".markdownlint.json", "MarkdownLint config"),
         ("cspell.json", "CSpell config"),
-        (".vscode/settings.json", "VS Code settings")
+        (".vscode/settings.json", "VS Code settings"),
     ]
 
     for file_path, description in config_files:
@@ -73,6 +73,7 @@ def main():
     print("   1. Reload the window: Ctrl+Shift+P → 'Developer: Reload Window'")
     print("   2. Or restart Cursor completely")
     print("   3. Check if any extensions are still running")
+
 
 if __name__ == "__main__":
     main()

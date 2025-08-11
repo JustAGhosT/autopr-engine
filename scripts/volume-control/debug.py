@@ -3,8 +3,8 @@
 Debug script to show exactly what settings are applied at different volumes
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add volume-control to path
 volume_control_path = Path(__file__).parent / "volume-control"
@@ -36,7 +36,7 @@ def main():
             "python.languageServer",
             "git.enabled",
             "problems.decorations.enabled",
-            "files.associations"
+            "files.associations",
         ]
 
         for setting in important_settings:
@@ -46,6 +46,7 @@ def main():
         print("\nAll settings:")
         for key, value in sorted(settings.items()):
             print(f"  {key}: {value}")
+
 
 if __name__ == "__main__":
     main()

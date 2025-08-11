@@ -37,7 +37,7 @@ class QualityInputs(pydantic.BaseModel):
         None,
         ge=0,
         le=1000,
-        description="Volume level (0-1000) that automatically configures quality settings"
+        description="Volume level (0-1000) that automatically configures quality settings",
     )
 
     def apply_volume_settings(self, volume: int | None = None) -> None:

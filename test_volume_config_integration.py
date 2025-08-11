@@ -1,6 +1,7 @@
 """Integration test for VolumeConfig and QualityMode."""
-from pathlib import Path
+
 import sys
+from pathlib import Path
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -13,10 +14,12 @@ print("Testing VolumeConfig and QualityMode integration...")
 try:
     from autopr.agents.base.volume_config import VolumeConfig
     from autopr.enums import QualityMode
+
     print("✅ Successfully imported VolumeConfig and QualityMode")
 except ImportError as e:
     print(f"❌ Error importing modules: {e}")
     raise
+
 
 def test_volume_config():
     """Test VolumeConfig initialization and quality mode mapping."""
@@ -46,17 +49,21 @@ def test_volume_config():
 
     for volume, expected_mode in test_cases:
         config = VolumeConfig(volume=volume)
-        assert config.quality_mode == expected_mode, \
-            f"Expected {expected_mode} for volume {volume}, got {config.quality_mode}"
+        assert (
+            config.quality_mode == expected_mode
+        ), f"Expected {expected_mode} for volume {volume}, got {config.quality_mode}"
     print("✅ Volume to quality mode mapping works")
 
     # Test boolean conversion in config
-    config = VolumeConfig(volume=500, config={
-        "enable_ai_agents": "true",
-        "allow_updates": "yes",
-        "is_verified": "1",
-        "has_issues": "false",
-    })
+    config = VolumeConfig(
+        volume=500,
+        config={
+            "enable_ai_agents": "true",
+            "allow_updates": "yes",
+            "is_verified": "1",
+            "has_issues": "false",
+        },
+    )
 
     assert config.config["enable_ai_agents"] is True
     assert config.config["allow_updates"] is True
@@ -65,6 +72,7 @@ def test_volume_config():
     print("✅ Boolean conversion in config works")
 
     print("✅ All VolumeConfig tests passed!")
+
 
 if __name__ == "__main__":
     test_volume_config()

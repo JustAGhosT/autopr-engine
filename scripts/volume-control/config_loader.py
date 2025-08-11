@@ -16,9 +16,9 @@ class VolumeConfigLoader:
         # Try multiple possible locations for config files
         possible_config_dirs = [
             Path(__file__).parent / "configs",  # Default location
-            Path.cwd() / "configs",             # Current working directory
+            Path.cwd() / "configs",  # Current working directory
             Path.cwd() / "scripts" / "volume-control" / "configs",  # From project root
-            Path.home() / ".config" / "volume-control"  # User config directory
+            Path.home() / ".config" / "volume-control",  # User config directory
         ]
 
         # Use provided config_dir if specified, otherwise find first existing directory
@@ -57,7 +57,9 @@ class VolumeConfigLoader:
                     tool_name = config.get("tool", config_file.stem)
                     self.tools[tool_name] = config
                     print(f"Loaded config for {tool_name} from {config_file}")
-                    print(f"  Activation levels: {list(config.get('activation_levels', {}).keys())}")
+                    print(
+                        f"  Activation levels: {list(config.get('activation_levels', {}).keys())}"
+                    )
             except Exception as e:
                 print(f"ERROR loading {config_file}: {e!s}")
 
@@ -119,7 +121,7 @@ class VolumeConfigLoader:
         summary = {
             "volume": volume,
             "active_tools": self.get_active_tools(volume),
-            "tool_details": {}
+            "tool_details": {},
         }
 
         for tool_name in self.tools.keys():
@@ -129,10 +131,11 @@ class VolumeConfigLoader:
             summary["tool_details"][tool_name] = {
                 "active": is_active,
                 "settings_applied": settings_count,
-                "description": self.tools[tool_name].get("description", "No description")
+                "description": self.tools[tool_name].get("description", "No description"),
             }
 
         return summary
+
 
 def main():
     """Test the configuration loader"""
@@ -150,6 +153,7 @@ def main():
         for tool, details in summary["tool_details"].items():
             status = "ACTIVE" if details["active"] else "inactive"
             print(f"  {tool}: {status} ({details['settings_applied']} settings)")
+
 
 if __name__ == "__main__":
     main()

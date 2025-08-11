@@ -1,11 +1,13 @@
 """Debug script for CrewAI boolean validation issue."""
-from pathlib import Path
+
 import sys
+from pathlib import Path
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+
 
 def debug_crew_instantiation():
     """Debug the AutoPRCrew instantiation process."""
@@ -34,8 +36,10 @@ def debug_crew_instantiation():
     except Exception as e:
         print(f"\n❌ Error: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     print("Debugging CrewAI instantiation...")

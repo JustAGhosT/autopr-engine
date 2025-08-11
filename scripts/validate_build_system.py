@@ -197,7 +197,7 @@ def main():
     print("Found build files:")
     for file_type, files in build_files.items():
         print(f"  {file_type.upper()}: {len(files)} files")
-    print("")
+    print()
 
     # Validate build system
     results = validate_build_system(build_files)
@@ -225,9 +225,8 @@ def main():
             f"{len(results['package_management_issues'])} package management issues"
         )
         return 1
-    else:
-        print("\n✅ Build system is properly configured!")
-        return 0
+    print("\n✅ Build system is properly configured!")
+    return 0
 
 
 if __name__ == "__main__":

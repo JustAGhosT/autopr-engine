@@ -1,8 +1,9 @@
 """Minimal test for VolumeConfig validation."""
+
 import logging
-from pathlib import Path
 import sys
 import traceback
+from pathlib import Path
 
 # Set up debug logging to file
 log_file = Path("volume_config_test.log")
@@ -12,18 +13,17 @@ if log_file.exists():
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(log_file),
-        logging.StreamHandler(sys.stdout)
-    ]
+    handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
 
+
 def log_section(title):
     """Log a section header for better readability."""
-    logger.info("\n" + "="*50)
+    logger.info("\n" + "=" * 50)
     logger.info(f" {title} ")
-    logger.info("="*50)
+    logger.info("=" * 50)
+
 
 log_section("Starting VolumeConfig Test")
 
@@ -36,6 +36,7 @@ log_section("Attempting to import VolumeConfig")
 
 try:
     from autopr.agents.base.volume_config import VolumeConfig
+
     logger.info("✅ Successfully imported VolumeConfig and QualityMode")
 
     log_section("Testing VolumeConfig Initialization")
@@ -52,7 +53,9 @@ try:
     log_section("Testing Custom Volume")
     for volume in [0, 250, 500, 750, 1000]:
         config = VolumeConfig(volume=volume)
-        logger.info(f"✅ Volume {volume} -> Mode: {config.quality_mode}, AI Agents: {config.config.get('enable_ai_agents')}")
+        logger.info(
+            f"✅ Volume {volume} -> Mode: {config.quality_mode}, AI Agents: {config.config.get('enable_ai_agents')}"
+        )
 
     # Test 3: Boolean validation with different input types
     log_section("Testing Boolean Validation")
@@ -66,7 +69,7 @@ try:
         (1, "integer 1"),
         (0, "integer 0"),
         ("1", 'string "1"'),
-        ("0", 'string "0"')
+        ("0", 'string "0"'),
     ]
 
     for value, desc in test_cases:

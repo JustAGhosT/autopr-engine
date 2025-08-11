@@ -4,6 +4,7 @@ Volume-related utility functions for AutoPR.
 This module provides volume-based configuration and utilities that can be imported
 without creating circular dependencies between modules.
 """
+
 from typing import Any
 
 from autopr.enums import QualityMode
@@ -18,13 +19,13 @@ MIN_ISSUES = 10  # Minimum number of issues to report
 def get_volume_level_name(volume: int) -> str:
     """
     Get a human-readable name for a volume level.
-    
+
     Args:
         volume: Volume level from 0 to 1000
-        
+
     Returns:
         Human-readable name of the volume level (e.g., 'Silent', 'Quiet')
-        
+
     Raises:
         ValueError: If volume is outside 0-1000 range or not an integer
     """
@@ -43,46 +44,42 @@ def get_volume_level_name(volume: int) -> str:
 
     if volume < THRESHOLD_QUIET:
         return "Quiet"
-    elif volume < THRESHOLD_MODERATE:
+    if volume < THRESHOLD_MODERATE:
         return "Moderate"
-    elif volume < THRESHOLD_BALANCED:
+    if volume < THRESHOLD_BALANCED:
         return "Balanced"
-    elif volume < THRESHOLD_THOROUGH:
+    if volume < THRESHOLD_THOROUGH:
         return "Thorough"
-    else:
-        return "Maximum"
+    return "Maximum"
 
 
 def get_volume_config(volume: int) -> dict[str, Any]:
     """
     Get the complete configuration for a given volume level.
-    
+
     Args:
         volume: Volume level from 0 to 1000
-        
+
     Returns:
         Dictionary with 'mode' and configuration settings that can be used to update QualityInputs
-        
+
     Raises:
         ValueError: If volume is outside 0-1000 range or not an integer
     """
     quality_mode, config = volume_to_quality_mode(volume)
-    return {
-        "mode": quality_mode,
-        **config
-    }
+    return {"mode": quality_mode, **config}
 
 
 def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
     """
     Map a volume level (0-1000) to a QualityMode and configuration.
-    
+
     Args:
         volume: Volume level from 0 to 1000
-        
+
     Returns:
         Tuple of (QualityMode, config_dict) where config_dict contains tool-specific settings
-        
+
     Raises:
         ValueError: If volume is outside 0-1000 range or not an integer
     """

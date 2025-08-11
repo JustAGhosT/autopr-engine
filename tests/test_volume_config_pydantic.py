@@ -1,8 +1,9 @@
 """Test Pydantic validation for VolumeConfig."""
+
 import logging
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Set up debug logging
 logging.basicConfig(level=logging.DEBUG)
@@ -13,8 +14,8 @@ project_root = str(Path(__file__).parent.parent.absolute())
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 # Debug: Print Python path and current working directory
 logger.debug(f"Python path: {sys.path}")
@@ -23,10 +24,12 @@ logger.debug(f"Current working directory: {os.getcwd()}")
 # Try to import VolumeConfig with error handling
 try:
     from autopr.agents.agents import VolumeConfig
+
     logger.debug("Successfully imported VolumeConfig")
 except ImportError as e:
     logger.error(f"Failed to import VolumeConfig: {e}")
     raise
+
 
 def test_volume_config_boolean_validation():
     """Test that VolumeConfig properly validates boolean fields."""
@@ -54,6 +57,7 @@ def test_volume_config_boolean_validation():
 
     config = VolumeConfig(volume=500, config={"enable_ai_agents": False})
     assert config.config["enable_ai_agents"] is False
+
 
 def test_volume_config_initialization():
     """Test VolumeConfig initialization and type conversion."""

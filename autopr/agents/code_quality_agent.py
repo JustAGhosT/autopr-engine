@@ -4,8 +4,9 @@ Code Quality Agent for AutoPR.
 This module provides the CodeQualityAgent class which is responsible for analyzing
 and improving code quality based on various metrics and best practices.
 """
-from dataclasses import dataclass
+
 import json
+from dataclasses import dataclass
 from json import JSONDecodeError
 from typing import Any
 
@@ -60,7 +61,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         allow_delegation: bool = False,
         max_iter: int = 3,
         max_rpm: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize the CodeQualityAgent.
 
@@ -85,13 +86,16 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
             allow_delegation=allow_delegation,
             max_iter=max_iter,
             max_rpm=max_rpm,
-            **kwargs
+            **kwargs,
         )
         # Initialize LLM provider if not done by BaseAgent
         if not hasattr(self, "llm_provider"):
             from autopr.actions.llm.manager import LLMProviderManager
+
             # Minimal default config; provider selection handled later
-            self.llm_provider = LLMProviderManager({"default_provider": "azure_openai", "providers": {}})
+            self.llm_provider = LLMProviderManager(
+                {"default_provider": "azure_openai", "providers": {}}
+            )
 
     async def _execute(self, inputs: CodeQualityInputs) -> CodeQualityOutputs:
         """Analyze code quality and provide improvement suggestions.
@@ -110,11 +114,13 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
 
         try:
             # Get response from the LLM (manager.complete is synchronous)
-            response = self.llm_provider.complete({
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.2,
-                "max_tokens": 2000,
-            })
+            response = self.llm_provider.complete(
+                {
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2,
+                    "max_tokens": 2000,
+                }
+            )
 
             # Parse the response
             result = self._parse_response(response.content)
@@ -232,11 +238,12 @@ Format your response as a JSON object with the following structure:
         except JSONDecodeError as e:
             # If JSON parsing fails, return a default response with the error
             return {
-                "issues": [{
-                    "message": f"Failed to parse LLM response: {e!s}",
-                    "severity": "error"
-                }],
+                "issues": [
+                    {"message": f"Failed to parse LLM response: {e!s}", "severity": "error"}
+                ],
                 "score": 0.0,
                 "metrics": {"error": "Response parsing failed"},
-                "suggestions": ["The code quality analysis could not be completed due to a parsing error."],
+                "suggestions": [
+                    "The code quality analysis could not be completed due to a parsing error."
+                ],
             }

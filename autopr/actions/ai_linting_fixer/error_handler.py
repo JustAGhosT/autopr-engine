@@ -5,14 +5,14 @@ This module provides comprehensive error handling, categorization, and display
 capabilities that integrate with the existing display system.
 """
 
+import logging
+import operator
+import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-import logging
-import operator
 from pathlib import Path
-import traceback
 from typing import Any
 from uuid import uuid4
 
@@ -214,7 +214,9 @@ class ErrorHandler:
         for keywords, category in patterns:
             # Special handling for AI_RESPONSE_ERROR requiring response + (ai|llm)
             if category == ErrorCategory.AI_RESPONSE_ERROR:
-                if "response" in error_message and ("ai" in error_message or "llm" in error_message):
+                if "response" in error_message and (
+                    "ai" in error_message or "llm" in error_message
+                ):
                     return category
                 continue
 

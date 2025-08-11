@@ -62,8 +62,7 @@ class DependencyScannerTool(Tool):
                         if "safety: command not found" in error:
                             summary_lines.append("Safety is not installed. Run: pip install safety")
                             continue
-                        else:
-                            print(f"Error running safety: {error}")
+                        print(f"Error running safety: {error}")
 
                     # Parse safety output
                     if stdout:

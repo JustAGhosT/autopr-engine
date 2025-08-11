@@ -4,6 +4,7 @@ from typing import Any
 try:
     from fastapi import HTTPException, status
 except Exception:  # pragma: no cover - type-checking fallback
+
     class _HTTPException(Exception):
         def __init__(self, status_code: int, detail: str) -> None:  # minimal runtime stub
             super().__init__(detail)
@@ -20,13 +21,18 @@ import jwt  # type: ignore[import-untyped]
 try:
     from passlib.context import CryptContext  # type: ignore[import-untyped]
 except Exception:  # pragma: no cover - minimal runtime fallback for typing
+
     class CryptContext:  # type: ignore[no-redef]
         def __init__(self, *args, **kwargs) -> None:
             pass
+
         def verify(self, *_args: Any, **_kwargs: Any) -> bool:
             return False
+
         def hash(self, *_args: Any, **_kwargs: Any) -> str:
             return ""
+
+
 import structlog
 
 logger = structlog.get_logger(__name__)

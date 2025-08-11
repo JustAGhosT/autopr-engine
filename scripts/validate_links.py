@@ -152,9 +152,8 @@ def main():
     if broken_links:
         print(f"\n⚠️  Found {len(broken_links)} files with broken links")
         return 1
-    else:
-        print("\n✅ All links are valid!")
-        return 0
+    print("\n✅ All links are valid!")
+    return 0
 
 
 if __name__ == "__main__":

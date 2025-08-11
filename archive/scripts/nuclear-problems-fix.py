@@ -18,7 +18,6 @@ def update_vscode_settings():
         "github-actions.workflows.pinned.workflows": [],
         "github-actions.workflows.pinned.refresh.enabled": False,
         "redhat.vscode-yaml": False,
-
         # YAML validation - Complete disable
         "yaml.schemaStore.enable": False,
         "yaml.schemaStore.url": "",
@@ -27,42 +26,32 @@ def update_vscode_settings():
         "yaml.yamlVersion": "1.1",
         "yaml.disableAdditionalProperties": True,
         "yaml.suggest.parentSkeletonSelectedFirst": False,
-
         # PowerShell - Complete disable
         "powershell.scriptAnalysis.enable": False,
         "powershell.scriptAnalysis.settingsPath": "",
         "powershell.codeFormatting.preset": "None",
         "powershell.integratedConsole.suppressStartupBanner": True,
-
         # Problems panel - Nuclear disable
         "problems.showCurrentInStatus": False,
         "problems.decorations.enabled": False,
         "problems.visibility": False,
-
         # Language servers - Complete disable
         "redhat.vscode-yaml.enable": False,
         "ms-vscode.powershell.enable": False,
         "github.vscode-github-actions.enable": False,
-
         # Workspace validation - Disable
-        "files.associations": {
-            "*.yml": "plaintext",
-            "*.yaml": "plaintext",
-            "*.ps1": "plaintext"
-        },
-
+        "files.associations": {"*.yml": "plaintext", "*.yaml": "plaintext", "*.ps1": "plaintext"},
         # Extension-specific disables
         "workbench.enableExperiments": False,
         "telemetry.telemetryLevel": "off",
         "update.enableWindowsBackgroundUpdates": False,
-
         # Additional language disables
         "html.validate.scripts": False,
         "html.validate.styles": False,
         "css.validate": False,
         "json.validate.enable": False,
         "typescript.validate.enable": False,
-        "javascript.validate.enable": False
+        "javascript.validate.enable": False,
     }
 
     # Read existing settings
@@ -81,6 +70,7 @@ def update_vscode_settings():
 
     print("Applied nuclear VS Code settings")
 
+
 def create_ignore_files():
     """Create ignore files for problematic validations"""
 
@@ -93,6 +83,7 @@ def create_ignore_files():
     gh_ignore.write_text(".github/workflows/*.yml\n.github/workflows/*.yaml\n")
 
     print("Created ignore files")
+
 
 def main():
     print("NUCLEAR PROBLEMS FIX")
@@ -111,6 +102,7 @@ def main():
     print("- Press Ctrl+Shift+P")
     print("- Type 'Developer: Reload Window'")
     print("- Or restart your computer")
+
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@ Platform Analysis Agent for AutoPR.
 This module provides the PlatformAnalysisAgent class which is responsible for
 analyzing codebases to detect the underlying platform, frameworks, and technologies.
 """
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -129,7 +130,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             analysis = await self.detector.analyze(
                 repo_path=str(repo_path),
                 file_paths=[str(p) for p in file_paths] if file_paths else None,
-                context=inputs.context or {}
+                context=inputs.context or {},
             )
 
             # Extract the primary platform safely
@@ -166,7 +167,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
                 frameworks=[],
                 languages=[],
                 config_files=unique_config_files,
-                analysis=analysis
+                analysis=analysis,
             )
 
         except Exception:
@@ -193,7 +194,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
                 frameworks=[],
                 languages=[],
                 config_files=[],
-                analysis=error_analysis
+                analysis=error_analysis,
             )
 
     def _get_primary_platform(self, analysis: PlatformDetectorOutputs) -> str:
@@ -222,7 +223,9 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             Dictionary with details about the platform, or None if not found
         """
         # Support callers passing enum types or raw IDs
-        platform_id_str = platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
+        platform_id_str = (
+            platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
+        )
         config_manager = PlatformConfigManager()
         platform_config = config_manager.get_platform(platform_id_str)
         if not platform_config:
@@ -248,10 +251,13 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             return {
                 "id": getattr(platform_config, "id", None),
                 "name": getattr(platform_config, "name", None),
-                "display_name": getattr(platform_config, "display_name", getattr(platform_config, "name", None)),
+                "display_name": getattr(
+                    platform_config, "display_name", getattr(platform_config, "name", None)
+                ),
                 "description": getattr(platform_config, "description", None),
                 "type": get_enum_value(getattr(platform_config, "type", None)),
-                "category": get_enum_value(getattr(platform_config, "category", None)) or getattr(platform_config, "category", None),
+                "category": get_enum_value(getattr(platform_config, "category", None))
+                or getattr(platform_config, "category", None),
                 "subcategory": getattr(platform_config, "subcategory", None),
                 "tags": getattr(platform_config, "tags", []) or [],
                 "status": get_enum_value(getattr(platform_config, "status", None)),

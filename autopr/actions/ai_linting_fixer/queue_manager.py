@@ -6,9 +6,9 @@ Extracted from database module to improve modularity and security.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 import logging
 import sqlite3
+from datetime import UTC, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,9 @@ class IssueQueueManager:
 
             # Mark issues as in_progress and assign worker
             if issues and worker_id:
-                issue_ids = [int(issue["id"]) for issue in issues if isinstance(issue.get("id"), (int, str))]
+                issue_ids = [
+                    int(issue["id"]) for issue in issues if isinstance(issue.get("id"), (int, str))
+                ]
                 placeholders = self._safe_in_placeholders(len(issue_ids))
                 update_query = (
                     "UPDATE linting_issues_queue "
@@ -205,7 +207,9 @@ class IssueQueueManager:
                 where_conditions.append("session_id = ?")
                 params.append(session_id)
 
-            where_clause_prefix = ("WHERE " + " AND ".join(where_conditions)) if where_conditions else ""
+            where_clause_prefix = (
+                ("WHERE " + " AND ".join(where_conditions)) if where_conditions else ""
+            )
 
             # Overall statistics
             stats_query = (

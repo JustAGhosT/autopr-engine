@@ -5,10 +5,10 @@ Tool for all code quality checks and AI-powered fixes
 """
 
 import asyncio
-from dataclasses import dataclass
-from enum import Enum
 import json
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
@@ -45,11 +45,11 @@ class CodeLinter:
 
         if mode == LintMode.SMART:
             return await self._smart_mode(files)
-        elif mode == LintMode.FAST:
+        if mode == LintMode.FAST:
             return await self._fast_mode(files)
-        elif mode == LintMode.COMPREHENSIVE:
+        if mode == LintMode.COMPREHENSIVE:
             return await self._comprehensive_mode(files)
-        elif mode == LintMode.AI_ONLY:
+        if mode == LintMode.AI_ONLY:
             return await self._ai_only_mode(files)
 
     async def _smart_mode(self, files: list[str] | None) -> dict[str, Any]:

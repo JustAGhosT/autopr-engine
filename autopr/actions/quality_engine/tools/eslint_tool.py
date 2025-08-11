@@ -153,7 +153,11 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
                         "column_number": message.get("column", 0),
                         "message": message.get("message", "Unknown issue"),
                         "code": message.get("ruleId", "unknown"),
-                        "level": "error" if message.get("severity", 1) == ESLINT_SEVERITY_ERROR else "warning",
+                        "level": (
+                            "error"
+                            if message.get("severity", 1) == ESLINT_SEVERITY_ERROR
+                            else "warning"
+                        ),
                     }
                     issues.append(issue)
 

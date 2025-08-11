@@ -1,6 +1,7 @@
 """Minimal test for VolumeConfig import and basic functionality."""
-from pathlib import Path
+
 import sys
+from pathlib import Path
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -10,6 +11,7 @@ if project_root not in sys.path:
 print("Attempting to import VolumeConfig...")
 try:
     from autopr.agents.base.volume_config import VolumeConfig
+
     print("✅ Successfully imported VolumeConfig")
 
     # Test basic functionality
@@ -22,4 +24,5 @@ try:
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback
+
     traceback.print_exc()

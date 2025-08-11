@@ -40,41 +40,30 @@ from autopr.agents.models import (
 )
 
 # Import modular agent IO types
-from .code_quality_agent import (
-    CodeQualityInputs,
-    CodeQualityOutputs,
-)
+from .code_quality_agent import CodeQualityInputs, CodeQualityOutputs
 
 # Import crew from the crew module
 from .crew.main import AutoPRCrew
-from .linting_agent import (
-    LintingInputs,
-    LintingOutputs,
-)
-from .platform_analysis_agent import (
-    PlatformAnalysisInputs,
-    PlatformAnalysisOutputs,
-)
+from .linting_agent import LintingInputs, LintingOutputs
+from .platform_analysis_agent import PlatformAnalysisInputs, PlatformAnalysisOutputs
 
 # Show deprecation warning for old import path
 warnings.warn(
     "The 'agents.agents' module is deprecated. Import directly from 'agents' instead.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 __all__ = [
     # Base classes
     "BaseAgent",
     "VolumeConfig",
-
     # Models
     "IssueSeverity",
     "CodeIssue",
     "PlatformComponent",
     "PlatformAnalysis",
     "CodeAnalysisReport",
-
     # Agents
     "CodeQualityAgent",
     "CodeQualityInputs",
@@ -85,7 +74,6 @@ __all__ = [
     "LintingAgent",
     "LintingInputs",
     "LintingOutputs",
-
     # Crew
-    "AutoPRCrew"
+    "AutoPRCrew",
 ]

@@ -1,11 +1,12 @@
 """
 Tests for CrewAI integration with volume control in AutoPR Engine.
 """
+
 # mypy: ignore-errors
 # Standard library imports
 import importlib
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # Third-party imports
@@ -15,20 +16,25 @@ if TYPE_CHECKING:
     # Provide lightweight type stubs to satisfy type checkers
     class CrewAIAgent:  # type: ignore[dead-code,too-many-ancestors]
         pass
+
     pytest: Any
 else:
     try:
         pytest = importlib.import_module("pytest")  # type: ignore[assignment]
     except Exception:
+
         class _PytestModule:  # type: ignore
             def __getattr__(self, _name: str) -> Any:
                 return None
+
         pytest = _PytestModule()  # type: ignore
     try:
         CrewAIAgent = importlib.import_module("crewai").Agent  # type: ignore[assignment]
     except Exception:
+
         class CrewAIAgent:  # type: ignore[no-redef]
             pass
+
 
 # Patch the agent classes before they're imported
 sys.modules["autopr.agents.code_quality_agent"] = Mock()
@@ -57,6 +63,7 @@ class MockTask:
     async def execute(self, *args, **kwargs) -> dict[str, Any]:
         """Execute the mock task and return a result."""
         return {"status": "success", "task": self.name, "output": self.expected_output}
+
 
 # Mock task creation functions
 
@@ -113,7 +120,7 @@ def mock_agents(monkeypatch):
             backstory="I'm an expert at analyzing code quality and architecture.",
             llm_model="test-model",
             volume=500,  # Default to medium volume
-            verbose=True
+            verbose=True,
         ),
         "platform_analysis_agent": MockPlatformAnalysisAgent(
             name="Platform Analysis Agent",
@@ -122,7 +129,7 @@ def mock_agents(monkeypatch):
             backstory="I'm an expert at analyzing platforms and dependencies.",
             llm_model="test-model",
             volume=500,  # Default to medium volume
-            verbose=True
+            verbose=True,
         ),
         "linting_agent": MockLintingAgent(
             name="Linting Agent",
@@ -131,8 +138,8 @@ def mock_agents(monkeypatch):
             backstory="I'm an expert at finding and fixing code style issues.",
             llm_model="test-model",
             volume=500,  # Default to medium volume
-            verbose=True
-        )
+            verbose=True,
+        ),
     }
 
     # Patch the task creation functions
@@ -146,7 +153,9 @@ def mock_agents(monkeypatch):
         return MockTask("linting_task")
 
     monkeypatch.setattr("autopr.agents.crew.tasks.create_code_quality_task", _mk_code_quality_task)
-    monkeypatch.setattr("autopr.agents.crew.tasks.create_platform_analysis_task", _mk_platform_analysis_task)
+    monkeypatch.setattr(
+        "autopr.agents.crew.tasks.create_platform_analysis_task", _mk_platform_analysis_task
+    )
     monkeypatch.setattr("autopr.agents.crew.tasks.create_linting_task", _mk_linting_task)
 
     return agents
@@ -155,6 +164,7 @@ def mock_agents(monkeypatch):
 @pytest.fixture
 def crew(mock_llm_provider_manager, mock_agents, monkeypatch):
     """Create a test crew instance with mocked dependencies."""
+
     # Create a mock AutoPRCrew class that won't instantiate real agents
     class MockAutoPRCrew:
         def __init__(self, llm_model: str = "test-model", volume: int = 500, **kwargs):
@@ -167,17 +177,21 @@ def crew(mock_llm_provider_manager, mock_agents, monkeypatch):
                 setattr(self, name, agent)
 
             # Mock the analyze method
-            self.analyze = MagicMock(return_value={
-                "code_quality": {"metrics": {"score": 85}},
-                "platform_analysis": {"platforms": ["test"]},
-                "linting_issues": []
-            })
+            self.analyze = MagicMock(
+                return_value={
+                    "code_quality": {"metrics": {"score": 85}},
+                    "platform_analysis": {"platforms": ["test"]},
+                    "linting_issues": [],
+                }
+            )
 
     # Patch the AutoPRCrew class to use our mock
     monkeypatch.setattr("autopr.agents.crew.main.AutoPRCrew", MockAutoPRCrew)
 
     # Now create the crew - this will use our mock class
-    with patch("autopr.agents.crew.main.get_llm_provider_manager", return_value=mock_llm_provider_manager):
+    with patch(
+        "autopr.agents.crew.main.get_llm_provider_manager", return_value=mock_llm_provider_manager
+    ):
         return AutoPRCrew(llm_model="test-model", volume=500)
 
 
@@ -214,14 +228,14 @@ class TestCrewVolumeIntegration:
             "code_quality": {
                 "summary": "Test code quality analysis",
                 "issues": [],
-                "metrics": {"score": 85, "total_issues": 0}
+                "metrics": {"score": 85, "total_issues": 0},
             },
             "platform_analysis": {
                 "platforms": ["python"],
                 "confidence": 0.9,
-                "workflow_type": "single_platform"
+                "workflow_type": "single_platform",
             },
-            "linting_issues": []
+            "linting_issues": [],
         }
 
         return mock_crew
@@ -252,19 +266,22 @@ class TestCrewVolumeIntegration:
         assert "linting_issues" in result
         assert result["code_quality"]["metrics"]["score"] == 85
 
-    @pytest.mark.parametrize("volume,expected_mode", [
-        (0, QualityMode.ULTRA_FAST),
-        (100, QualityMode.FAST),  # Updated to match actual implementation
-        (200, QualityMode.FAST),
-        (300, QualityMode.SMART),  # Updated to match actual implementation
-        (400, QualityMode.SMART),
-        (500, QualityMode.SMART),
-        (600, QualityMode.COMPREHENSIVE),
-        (700, QualityMode.COMPREHENSIVE),
-        (800, QualityMode.AI_ENHANCED),
-        (900, QualityMode.AI_ENHANCED),
-        (1000, QualityMode.AI_ENHANCED),
-    ])
+    @pytest.mark.parametrize(
+        "volume,expected_mode",
+        [
+            (0, QualityMode.ULTRA_FAST),
+            (100, QualityMode.FAST),  # Updated to match actual implementation
+            (200, QualityMode.FAST),
+            (300, QualityMode.SMART),  # Updated to match actual implementation
+            (400, QualityMode.SMART),
+            (500, QualityMode.SMART),
+            (600, QualityMode.COMPREHENSIVE),
+            (700, QualityMode.COMPREHENSIVE),
+            (800, QualityMode.AI_ENHANCED),
+            (900, QualityMode.AI_ENHANCED),
+            (1000, QualityMode.AI_ENHANCED),
+        ],
+    )
     def test_volume_mapping(self, volume, expected_mode):
         """Test that volume levels map to the correct quality modes."""
         config = get_volume_config(volume)
@@ -273,11 +290,11 @@ class TestCrewVolumeIntegration:
     def test_crew_with_custom_volume(self, mock_llm_provider_manager):
         """Test that crew respects custom volume settings."""
         # Create a crew with custom volume
-        with patch("autopr.agents.crew.main.get_llm_provider_manager", return_value=mock_llm_provider_manager):
-            crew = AutoPRCrew(
-                llm_model="gpt-4",
-                volume=800  # High volume for thorough analysis
-            )
+        with patch(
+            "autopr.agents.crew.main.get_llm_provider_manager",
+            return_value=mock_llm_provider_manager,
+        ):
+            crew = AutoPRCrew(llm_model="gpt-4", volume=800)  # High volume for thorough analysis
 
             # Verify volume is set correctly
             assert crew.volume == 800
@@ -302,46 +319,60 @@ class TestCrewVolumeIntegration:
         assert len(result["linting_issues"]) > 0
         assert result["linting_issues"][0]["issue"] == "unused-import"
 
-    @pytest.mark.parametrize("volume,expected_mode", [
-        (0, QualityMode.ULTRA_FAST),
-        (100, QualityMode.FAST),  # Updated to match actual implementation
-        (200, QualityMode.FAST),
-        (300, QualityMode.SMART),  # Updated to match actual implementation
-        (400, QualityMode.SMART),
-        (500, QualityMode.SMART),
-        (600, QualityMode.COMPREHENSIVE),
-        (700, QualityMode.COMPREHENSIVE),
-        (800, QualityMode.AI_ENHANCED),
-        (900, QualityMode.AI_ENHANCED),
-        (1000, QualityMode.AI_ENHANCED),
-    ])
-    def test_volume_to_quality_mode_mapping(self, crew, volume: int, expected_mode: QualityMode, monkeypatch):
+    @pytest.mark.parametrize(
+        "volume,expected_mode",
+        [
+            (0, QualityMode.ULTRA_FAST),
+            (100, QualityMode.FAST),  # Updated to match actual implementation
+            (200, QualityMode.FAST),
+            (300, QualityMode.SMART),  # Updated to match actual implementation
+            (400, QualityMode.SMART),
+            (500, QualityMode.SMART),
+            (600, QualityMode.COMPREHENSIVE),
+            (700, QualityMode.COMPREHENSIVE),
+            (800, QualityMode.AI_ENHANCED),
+            (900, QualityMode.AI_ENHANCED),
+            (1000, QualityMode.AI_ENHANCED),
+        ],
+    )
+    def test_volume_to_quality_mode_mapping(
+        self, crew, volume: int, expected_mode: QualityMode, monkeypatch
+    ):
         """Test that volume levels correctly map to quality modes."""
+
         # Mock the _create_quality_inputs method to avoid real agent instantiation
         def mock_create_quality_inputs(vol):
             class MockQualityInputs:
                 def __init__(self, mode):
                     self.mode = mode
+
             return MockQualityInputs(expected_mode)
 
         monkeypatch.setattr(crew, "_create_quality_inputs", mock_create_quality_inputs)
 
         # Now test the method
         quality_inputs = crew._create_quality_inputs(volume)
-        assert quality_inputs.mode == expected_mode, \
-            f"Volume {volume} should map to {expected_mode}, got {quality_inputs.mode}"
+        assert (
+            quality_inputs.mode == expected_mode
+        ), f"Volume {volume} should map to {expected_mode}, got {quality_inputs.mode}"
 
-    @pytest.mark.parametrize("volume,expected_depth", [
-        (0, "quick"),
-        (100, "quick"),
-        (300, "standard"),
-        (500, "standard"),
-        (700, "thorough"),
-        (900, "thorough"),
-        (1000, "thorough"),
-    ])
-    def test_volume_affects_analysis_depth(self, crew, volume: int, expected_depth: str, monkeypatch):
+    @pytest.mark.parametrize(
+        "volume,expected_depth",
+        [
+            (0, "quick"),
+            (100, "quick"),
+            (300, "standard"),
+            (500, "standard"),
+            (700, "thorough"),
+            (900, "thorough"),
+            (1000, "thorough"),
+        ],
+    )
+    def test_volume_affects_analysis_depth(
+        self, crew, volume: int, expected_depth: str, monkeypatch
+    ):
         """Test that volume level affects the analysis depth in task descriptions."""
+
         # Create a mock task
         class MockTask:
             def __init__(self, description):
@@ -356,20 +387,26 @@ class TestCrewVolumeIntegration:
         # Now test the method
         task = crew._create_code_quality_task(
             Path("/test/repo"),
-            {"volume": volume, "volume_context": {}, "quality_inputs": {"mode": "smart"}}
+            {"volume": volume, "volume_context": {}, "quality_inputs": {"mode": "smart"}},
         )
         assert f"Perform a {expected_depth} analysis" in task.description
 
-    @pytest.mark.parametrize("volume,expected_autofix", [
-        (0, False),
-        (100, False),
-        (400, False),
-        (600, True),
-        (800, True),
-        (1000, True),
-    ])
-    def test_volume_affects_linting_autofix(self, crew, volume: int, expected_autofix: bool, monkeypatch):
+    @pytest.mark.parametrize(
+        "volume,expected_autofix",
+        [
+            (0, False),
+            (100, False),
+            (400, False),
+            (600, True),
+            (800, True),
+            (1000, True),
+        ],
+    )
+    def test_volume_affects_linting_autofix(
+        self, crew, volume: int, expected_autofix: bool, monkeypatch
+    ):
         """Test that volume level affects auto-fix behavior in linting tasks."""
+
         # Create a mock task
         class MockTask:
             def __init__(self, context: dict[str, Any]):
@@ -384,21 +421,27 @@ class TestCrewVolumeIntegration:
         # Now test the method
         task = crew._create_linting_task(
             Path("/test/repo"),
-            {"volume": volume, "volume_context": {}, "quality_inputs": {"mode": "smart"}}
+            {"volume": volume, "volume_context": {}, "quality_inputs": {"mode": "smart"}},
         )
         assert task.context["auto_fix"] == expected_autofix
 
-    @pytest.mark.parametrize("volume,expected_detail", [
-        (0, "focused"),
-        (100, "focused"),
-        (200, "detailed"),
-        (400, "detailed"),
-        (600, "exhaustive"),
-        (800, "exhaustive"),
-        (1000, "exhaustive"),
-    ])
-    def test_volume_affects_detail_level(self, crew, volume: int, expected_detail: str, monkeypatch):
+    @pytest.mark.parametrize(
+        "volume,expected_detail",
+        [
+            (0, "focused"),
+            (100, "focused"),
+            (200, "detailed"),
+            (400, "detailed"),
+            (600, "exhaustive"),
+            (800, "exhaustive"),
+            (1000, "exhaustive"),
+        ],
+    )
+    def test_volume_affects_detail_level(
+        self, crew, volume: int, expected_detail: str, monkeypatch
+    ):
         """Test that volume level affects the detail level in code quality tasks."""
+
         # Create a mock task
         class MockTask:
             def __init__(self, description):
@@ -413,7 +456,7 @@ class TestCrewVolumeIntegration:
         # Now test the method
         task = crew._create_code_quality_task(
             Path("/test/repo"),
-            {"volume": volume, "volume_context": {}, "quality_inputs": {"mode": "smart"}}
+            {"volume": volume, "volume_context": {}, "quality_inputs": {"mode": "smart"}},
         )
         assert f"Focus on {expected_detail} examination" in task.description
 
@@ -444,6 +487,7 @@ class TestCrewVolumeIntegration:
     @pytest.mark.asyncio()
     async def test_full_analysis_with_volume(self, crew, monkeypatch):
         """Test end-to-end analysis with volume control."""
+
         # Mock the analyze_repository method to return expected results
         async def mock_analyze_repo(self, repo_path, volume=None, **kwargs):
             vol = volume if volume is not None else self.volume
@@ -459,7 +503,7 @@ class TestCrewVolumeIntegration:
                 "summary": summary,
                 "code_quality": {"score": 90, "issues": []},
                 "platform_analysis": {"platforms": ["python"], "confidence": 0.9},
-                "linting_issues": []
+                "linting_issues": [],
             }
 
         monkeypatch.setattr(crew.__class__, "_analyze_repository", mock_analyze_repo)
@@ -523,6 +567,7 @@ class TestCrewVolumeIntegration:
 
 class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
     """Base class for mock agents that properly inherits from CrewAI Agent."""
+
     def __init__(self, name: str, role: str, goal: str, backstory: str, **kwargs):
         """Initialize the mock agent with basic attributes."""
         # Store the mock llm provider first (bypass pydantic setattr before parent init)
@@ -531,9 +576,19 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
         # Remove any kwargs that will be passed explicitly to avoid duplication
         agent_kwargs = kwargs.copy()
         for key in [
-            "llm_model", "volume", "tools", "max_iter", "max_execution_time",
-            "respect_context_window", "step_callback", "memory", "cache",
-            "function_calling_llm", "max_rpm", "max_retries", "retry_delay",
+            "llm_model",
+            "volume",
+            "tools",
+            "max_iter",
+            "max_execution_time",
+            "respect_context_window",
+            "step_callback",
+            "memory",
+            "cache",
+            "function_calling_llm",
+            "max_rpm",
+            "max_retries",
+            "retry_delay",
         ]:
             agent_kwargs.pop(key, None)
         # Also remove explicit constructor args to avoid duplicate keywords
@@ -550,7 +605,7 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
                 verbose=agent_kwargs.pop("verbose", False),
                 allow_delegation=agent_kwargs.pop("allow_delegation", False),
                 llm=self.llm,
-                **agent_kwargs
+                **agent_kwargs,
             )
         except Exception:
             # If parent signature differs in test environment, skip calling it
@@ -561,7 +616,9 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
         object.__setattr__(self, "volume", kwargs.get("volume", 500))
         object.__setattr__(self, "max_iter", kwargs.get("max_iter", 3))
         object.__setattr__(self, "max_execution_time", kwargs.get("max_execution_time", 60))
-        object.__setattr__(self, "respect_context_window", kwargs.get("respect_context_window", True))
+        object.__setattr__(
+            self, "respect_context_window", kwargs.get("respect_context_window", True)
+        )
         object.__setattr__(self, "step_callback", kwargs.get("step_callback"))
         object.__setattr__(self, "memory", kwargs.get("memory", True))
         object.__setattr__(self, "cache", kwargs.get("cache", True))
@@ -571,7 +628,9 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
         object.__setattr__(self, "retry_delay", kwargs.get("retry_delay", 1))
 
         # Mock the execute_task method (bypass pydantic setattr)
-        object.__setattr__(self, "execute_task", AsyncMock(return_value="Mock task execution result"))
+        object.__setattr__(
+            self, "execute_task", AsyncMock(return_value="Mock task execution result")
+        )
 
         # Add a mock for the analyze method if it doesn't exist
         if not hasattr(self, "analyze"):
@@ -588,6 +647,7 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
 
 class MockCodeQualityAgent(MockBaseAgent):
     """Mock code quality agent."""
+
     def __init__(self, **kwargs):
         kwargs.pop("name", None)
         kwargs.pop("role", None)
@@ -598,14 +658,17 @@ class MockCodeQualityAgent(MockBaseAgent):
             role="Analyze code quality and architecture",
             goal="Identify code quality issues and architectural improvements",
             backstory="I'm an expert at analyzing code quality and architecture.",
-            **kwargs
+            **kwargs,
         )
         # Ensure analyze is properly mocked (bypass pydantic setattr)
-        object.__setattr__(self, "analyze", AsyncMock(return_value={"quality_analysis": "Mock quality analysis"}))
+        object.__setattr__(
+            self, "analyze", AsyncMock(return_value={"quality_analysis": "Mock quality analysis"})
+        )
 
 
 class MockPlatformAnalysisAgent(MockBaseAgent):
     """Mock platform analysis agent."""
+
     def __init__(self, **kwargs):
         kwargs.pop("name", None)
         kwargs.pop("role", None)
@@ -616,14 +679,21 @@ class MockPlatformAnalysisAgent(MockBaseAgent):
             role="Analyze platform and dependencies",
             goal="Identify platform-specific issues and optimizations",
             backstory="I'm an expert at analyzing platforms and dependencies.",
-            **kwargs
+            **kwargs,
         )
         # Ensure analyze is properly mocked (bypass pydantic setattr)
-        object.__setattr__(self, "analyze", AsyncMock(return_value={"platform_analysis": "Mock platform analysis", "confidence": 0.9}))
+        object.__setattr__(
+            self,
+            "analyze",
+            AsyncMock(
+                return_value={"platform_analysis": "Mock platform analysis", "confidence": 0.9}
+            ),
+        )
 
 
 class MockLintingAgent(MockBaseAgent):
     """Mock linting agent."""
+
     def __init__(self, **kwargs):
         kwargs.pop("name", None)
         kwargs.pop("role", None)
@@ -634,8 +704,12 @@ class MockLintingAgent(MockBaseAgent):
             role="Find and fix linting issues",
             goal="Identify and fix code style and quality issues",
             backstory="I'm an expert at finding and fixing code style issues.",
-            **kwargs
+            **kwargs,
         )
         # Ensure analyze and fix_issues are properly mocked (bypass pydantic setattr)
-        object.__setattr__(self, "analyze", AsyncMock(return_value={"linting_analysis": "Mock linting analysis"}))
-        object.__setattr__(self, "fix_issues", MagicMock(return_value={"fixed_issues": [], "remaining_issues": []}))
+        object.__setattr__(
+            self, "analyze", AsyncMock(return_value={"linting_analysis": "Mock linting analysis"})
+        )
+        object.__setattr__(
+            self, "fix_issues", MagicMock(return_value={"fixed_issues": [], "remaining_issues": []})
+        )

@@ -9,7 +9,12 @@ import logging
 import os
 from typing import Any
 
-from .models import AILintingFixerInputs, AILintingFixerOutputs, OrchestrationConfig, WorkflowResult
+from .models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    OrchestrationConfig,
+    WorkflowResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +124,10 @@ def _execute_with_temporal(
     try:
         from datetime import timedelta
 
-        from temporalio import activity, workflow  # type: ignore[import-not-found]  # type: ignore
+        from temporalio import (  # type: ignore[import-not-found]  # type: ignore
+            activity,
+            workflow,
+        )
 
         @activity.defn
         async def ai_linting_activity(input_data: dict[str, Any]) -> dict[str, Any]:

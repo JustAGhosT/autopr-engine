@@ -47,6 +47,13 @@ repos:
   # Quality Engine - Fast mode for pre-commit (non-blocking by default)
   - repo: local
     hooks:
+      - id: volume-precommit
+        name: Volume-aware pre-commit
+        entry: python scripts/volume-precommit.py
+        language: system
+        pass_filenames: true
+        stages: [manual]
+        verbose: true
       - id: quality-engine-fast
         name: AutoPR Quality Engine (Fast Mode)
         entry: python -m autopr.actions.quality_engine

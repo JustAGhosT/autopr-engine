@@ -1,8 +1,9 @@
 """
 Minimal test script to verify VolumeConfig boolean handling.
 """
-from pathlib import Path
+
 import sys
+from pathlib import Path
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -32,21 +33,22 @@ def test_volume_config():
     print("\n2. Testing custom volume...")
     for volume in [0, 250, 500, 750, 1000]:
         config = VolumeConfig(volume=volume)
-        print(f"Volume {volume} -> Mode: {config.quality_mode}, "
-              f"AI Agents: {config.config['enable_ai_agents']}")
+        print(
+            f"Volume {volume} -> Mode: {config.quality_mode}, "
+            f"AI Agents: {config.config['enable_ai_agents']}"
+        )
         assert isinstance(config.quality_mode, QualityMode)
         assert isinstance(config.config["enable_ai_agents"], bool)
 
     # Test explicit config override
     print("\n3. Testing explicit config override...")
-    custom_config = {
-        "enable_ai_agents": "true"  # Should be converted to bool
-    }
+    custom_config = {"enable_ai_agents": "true"}  # Should be converted to bool
     config = VolumeConfig(volume=500, config=custom_config)
     print(f"Config with overrides: {config.config}")
     assert config.config["enable_ai_agents"] is True  # Should be converted to bool
 
     print("\nAll VolumeConfig tests passed!")
+
 
 if __name__ == "__main__":
     test_volume_config()

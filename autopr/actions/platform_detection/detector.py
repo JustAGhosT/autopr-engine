@@ -82,7 +82,12 @@ class PlatformDetector:
         )
 
     # Compatibility shim for older call sites/tests expecting 'analyze' with repo_path
-    async def analyze(self, repo_path: str, file_paths: list[str] | None = None, context: dict[str, Any] | None = None) -> PlatformDetectorOutputs:
+    async def analyze(
+        self,
+        repo_path: str,
+        file_paths: list[str] | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> PlatformDetectorOutputs:
         """Analyze repository path by building inputs and delegating to run().
         This method preserves compatibility with tests that call detector.analyze(repo_path).
         """

@@ -4,11 +4,11 @@ File Manager Module
 This module handles file operations, backups, and safe file modifications.
 """
 
-from datetime import UTC, datetime
 import logging
 import operator
-from pathlib import Path
 import shutil
+from datetime import UTC, datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -210,9 +210,7 @@ class FileManager:
 
             # Additional filtering by age if specified
             if older_than_days:
-                cutoff_time = datetime.now(UTC).timestamp() - (
-                    older_than_days * 24 * 60 * 60
-                )
+                cutoff_time = datetime.now(UTC).timestamp() - (older_than_days * 24 * 60 * 60)
                 backups_to_remove = [
                     b
                     for b in backups_to_remove
@@ -265,9 +263,7 @@ class FileManager:
                 if len(line) > 1000:  # Very long lines might indicate issues
                     warnings_list = validation_result["warnings"]
                     assert isinstance(warnings_list, list)
-                    warnings_list.append(
-                        f"Line {i} is very long ({len(line)} characters)"
-                    )
+                    warnings_list.append(f"Line {i} is very long ({len(line)} characters)")
 
             # Check for mixed line endings
             if "\r\n" in content and "\n" in content:

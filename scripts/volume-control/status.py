@@ -5,8 +5,8 @@ Volume Control Status Utility
 Shows current status of both dev and commit volume knobs
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Ensure we can import from current directory
 sys.path.insert(0, str(Path(__file__).parent))
@@ -27,7 +27,9 @@ def main():
     # Show current status
     print("CURRENT VOLUME SETTINGS:")
     print(f"  Dev Volume:    {dev_knob.get_volume()}/1000 - {dev_knob.get_volume_description()}")
-    print(f"  Commit Volume: {commit_knob.get_volume()}/1000 - {commit_knob.get_volume_description()}")
+    print(
+        f"  Commit Volume: {commit_knob.get_volume()}/1000 - {commit_knob.get_volume_description()}"
+    )
 
     print("\nACTIVE TOOLS:")
     dev_tools = loader.get_active_tools(dev_knob.get_volume())
@@ -57,6 +59,7 @@ def main():
     print("  Development mode:    dev=200, commit=500  (basic IDE, standard commit checks)")
     print("  Production ready:    dev=500, commit=1000 (full IDE, maximum commit checks)")
     print("  Complete silence:    dev=0, commit=0     (no IDE noise, no commit checks)")
+
 
 if __name__ == "__main__":
     main()

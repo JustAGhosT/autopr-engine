@@ -5,6 +5,7 @@ Crew Orchestration Module
 
 This module provides the AutoPRCrew class for orchestrating code analysis agents.
 """
+
 # Import the main crew implementation
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.agents.code_quality_agent import CodeQualityAgent
@@ -16,4 +17,10 @@ from . import tasks
 from .main import AutoPRCrew
 
 # Re-export the AutoPRCrew class
-__all__ = ["AutoPRCrew", "get_llm_provider_manager", "CodeQualityAgent", "PlatformAnalysisAgent", "LintingAgent"]
+__all__ = [
+    "AutoPRCrew",
+    "CodeQualityAgent",
+    "LintingAgent",
+    "PlatformAnalysisAgent",
+    "get_llm_provider_manager",
+]

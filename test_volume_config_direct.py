@@ -1,4 +1,5 @@
 """Minimal test for VolumeConfig without project imports."""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -19,14 +20,14 @@ class QualityMode(Enum):
 
         if volume < 100:
             return cls.ULTRA_FAST
-        elif volume < 300:
+        if volume < 300:
             return cls.FAST
-        elif volume < 700:
+        if volume < 700:
             return cls.SMART
-        elif volume < 900:
+        if volume < 900:
             return cls.COMPREHENSIVE
-        else:
-            return cls.AI_ENHANCED
+        return cls.AI_ENHANCED
+
 
 def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
     """Minimal implementation for testing."""
@@ -42,9 +43,11 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
     }
     return mode, config
 
+
 @dataclass
 class VolumeConfig:
     """Minimal VolumeConfig implementation for testing."""
+
     volume: int
     config: dict[str, Any] = None
 
@@ -72,6 +75,7 @@ class VolumeConfig:
         if isinstance(value, str):
             return value.lower() in ("true", "1", "t", "y", "yes")
         return bool(value)
+
 
 # Test cases
 test_cases = [

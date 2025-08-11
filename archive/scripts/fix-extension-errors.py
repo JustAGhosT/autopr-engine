@@ -4,10 +4,10 @@ Fix Extension Errors - Clear caches and restart IDE to resolve file access error
 """
 
 import os
-from pathlib import Path
 import platform
 import shutil
 import subprocess
+from pathlib import Path
 
 
 def main():
@@ -84,17 +84,26 @@ def main():
     print("🔄 Attempting to reload IDE...")
     try:
         if platform.system() == "Windows":
-            subprocess.run(["code", "--command", "workbench.action.reloadWindow"],
-                         capture_output=True, timeout=5, check=False)
+            subprocess.run(
+                ["code", "--command", "workbench.action.reloadWindow"],
+                capture_output=True,
+                timeout=5,
+                check=False,
+            )
         else:
-            subprocess.run(["code", "--command", "workbench.action.reloadWindow"],
-                         capture_output=True, timeout=5, check=False)
+            subprocess.run(
+                ["code", "--command", "workbench.action.reloadWindow"],
+                capture_output=True,
+                timeout=5,
+                check=False,
+            )
         print("   ✅ IDE reload command sent")
     except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
         print("   ⚠️  Could not send reload command automatically")
 
     # Clean up touch file
     import time
+
     time.sleep(0.1)
     if os.path.exists(touch_file):
         os.remove(touch_file)
@@ -120,6 +129,7 @@ def main():
     print("- Clean Problems panel")
     print("- Faster IDE startup")
     print("- No extension conflicts")
+
 
 if __name__ == "__main__":
     main()

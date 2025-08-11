@@ -41,7 +41,7 @@ class VolumeKnob:
         config = {
             "knob_name": self.knob_name,
             "volume": volume,
-            "last_updated": datetime.utcnow().isoformat() + "Z"  # ISO 8601 with UTC timezone
+            "last_updated": datetime.utcnow().isoformat() + "Z",  # ISO 8601 with UTC timezone
         }
         with open(self.config_file, "w") as f:
             json.dump(config, f, indent=2)
@@ -108,28 +108,27 @@ class VolumeKnob:
 
         if volume == 0:
             return "OFF - No linting"
-        elif volume <= 50:
+        if volume <= 50:
             return f"ULTRA QUIET ({volume}/1000) - Only critical errors"
-        elif volume <= 100:
+        if volume <= 100:
             return f"QUIET ({volume}/1000) - Basic syntax only"
-        elif volume <= 200:
+        if volume <= 200:
             return f"LOW ({volume}/1000) - Basic formatting"
-        elif volume <= 300:
+        if volume <= 300:
             return f"MEDIUM-LOW ({volume}/1000) - Standard formatting"
-        elif volume <= 400:
+        if volume <= 400:
             return f"MEDIUM ({volume}/1000) - Standard + imports"
-        elif volume <= 500:
+        if volume <= 500:
             return f"MEDIUM-HIGH ({volume}/1000) - Enhanced checks"
-        elif volume <= 600:
+        if volume <= 600:
             return f"HIGH ({volume}/1000) - Strict mode"
-        elif volume <= 700:
+        if volume <= 700:
             return f"VERY HIGH ({volume}/1000) - Very strict"
-        elif volume <= 800:
+        if volume <= 800:
             return f"LOUD ({volume}/1000) - Extreme checks"
-        elif volume <= 900:
+        if volume <= 900:
             return f"VERY LOUD ({volume}/1000) - Maximum strictness"
-        else:
-            return f"MAXIMUM ({volume}/1000) - Nuclear mode"
+        return f"MAXIMUM ({volume}/1000) - Nuclear mode"
 
     def get_volume_level(self) -> str:
         """Get volume level category"""
@@ -137,28 +136,27 @@ class VolumeKnob:
 
         if volume == 0:
             return "OFF"
-        elif volume <= 50:
+        if volume <= 50:
             return "ULTRA_QUIET"
-        elif volume <= 100:
+        if volume <= 100:
             return "QUIET"
-        elif volume <= 200:
+        if volume <= 200:
             return "LOW"
-        elif volume <= 300:
+        if volume <= 300:
             return "MEDIUM_LOW"
-        elif volume <= 400:
+        if volume <= 400:
             return "MEDIUM"
-        elif volume <= 500:
+        if volume <= 500:
             return "MEDIUM_HIGH"
-        elif volume <= 600:
+        if volume <= 600:
             return "HIGH"
-        elif volume <= 700:
+        if volume <= 700:
             return "VERY_HIGH"
-        elif volume <= 800:
+        if volume <= 800:
             return "LOUD"
-        elif volume <= 900:
+        if volume <= 900:
             return "VERY_LOUD"
-        else:
-            return "MAXIMUM"
+        return "MAXIMUM"
 
 
 class DevVolumeKnob(VolumeKnob):
@@ -170,6 +168,7 @@ class DevVolumeKnob(VolumeKnob):
     def apply_volume_settings(self):
         """Apply the current volume settings to the development environment"""
         volume = self.current_volume
+
     def apply_volume_settings(self):
         """Apply the current volume settings to the development environment"""
         volume = self.current_volume
@@ -179,6 +178,7 @@ class DevVolumeKnob(VolumeKnob):
 
         # Use JSON migration system
         from json_migrations import json_migrations
+
         config = json_migrations.migrate_to_level(volume, "commit")
 
         # Apply pre-commit configuration settings
@@ -211,10 +211,13 @@ class DevVolumeKnob(VolumeKnob):
 
         # Substitute potential errors
         print("Environment refresh triggered")
-        print("If using VS Code or Cursor, consider manually reloading the window and restarting the language server.")
+        print(
+            "If using VS Code or Cursor, consider manually reloading the window and restarting the language server."
+        )
 
         # Use JSON migration system
         from json_migrations import json_migrations
+
         config = json_migrations.migrate_to_level(volume, "dev")
 
         # Apply VS Code settings
@@ -261,6 +264,7 @@ class DevVolumeKnob(VolumeKnob):
     def _apply_config_files_from_json(self, config: dict[str, Any]):
         """Apply configuration files from JSON migration config"""
         from json_migrations import json_migrations
+
         volume = self.current_volume
 
         # Apply Ruff config
@@ -311,7 +315,7 @@ class DevVolumeKnob(VolumeKnob):
                     pyproject_data["tool"]["ruff"] = {
                         "line-length": 120,
                         "target-version": "py312",
-                        "exclude": [".*", "*/venv/*", "*/__pycache__/*", "*/build/*", "*/dist/*"]
+                        "exclude": [".*", "*/venv/*", "*/__pycache__/*", "*/build/*", "*/dist/*"],
                     }
                     if "lint" not in pyproject_data["tool"]["ruff"]:
                         pyproject_data["tool"]["ruff"]["lint"] = {}
@@ -341,28 +345,74 @@ class DevVolumeKnob(VolumeKnob):
                         "allow_untyped_globals": True,
                         "allow_untyped_calls": True,
                         "allow_incomplete_defs": True,
-                        "allow_untyped_defs": True
+                        "allow_untyped_defs": True,
                     }
 
                 if "flake8" in pyproject_data["tool"]:
                     pyproject_data["tool"]["flake8"] = {
                         "max-line-length": 120,
-                        "extend-ignore": ["E", "W", "F", "C", "N", "D", "S", "B", "A", "COM", "DTZ", "ISC", "G", "INP", "Q", "SIM", "TCH", "TID", "T20", "PYI", "PT", "PIE", "RET", "SLF", "SLOT", "PTH", "RSE", "TRY", "NPY", "AIR", "ARG", "LOG", "RED", "BLE", "FBT", "C90", "ICN", "PGH", "PLR", "PLW", "PLE", "PL", "RUF", "ANN", "UP", "C4"],
-                        "per-file-ignores": ["*:E,W,F,C,N,D,S,B,A,COM,DTZ,ISC,G,INP,Q,SIM,TCH,TID,T20,PYI,PT,PIE,RET,SLF,SLOT,PTH,RSE,TRY,NPY,AIR,ARG,LOG,RED,BLE,FBT,C90,ICN,PGH,PLR,PLW,PLE,PL,RUF,ANN,UP,C4"]
+                        "extend-ignore": [
+                            "E",
+                            "W",
+                            "F",
+                            "C",
+                            "N",
+                            "D",
+                            "S",
+                            "B",
+                            "A",
+                            "COM",
+                            "DTZ",
+                            "ISC",
+                            "G",
+                            "INP",
+                            "Q",
+                            "SIM",
+                            "TCH",
+                            "TID",
+                            "T20",
+                            "PYI",
+                            "PT",
+                            "PIE",
+                            "RET",
+                            "SLF",
+                            "SLOT",
+                            "PTH",
+                            "RSE",
+                            "TRY",
+                            "NPY",
+                            "AIR",
+                            "ARG",
+                            "LOG",
+                            "RED",
+                            "BLE",
+                            "FBT",
+                            "C90",
+                            "ICN",
+                            "PGH",
+                            "PLR",
+                            "PLW",
+                            "PLE",
+                            "PL",
+                            "RUF",
+                            "ANN",
+                            "UP",
+                            "C4",
+                        ],
+                        "per-file-ignores": [
+                            "*:E,W,F,C,N,D,S,B,A,COM,DTZ,ISC,G,INP,Q,SIM,TCH,TID,T20,PYI,PT,PIE,RET,SLF,SLOT,PTH,RSE,TRY,NPY,AIR,ARG,LOG,RED,BLE,FBT,C90,ICN,PGH,PLR,PLW,PLE,PL,RUF,ANN,UP,C4"
+                        ],
                     }
 
                 if "bandit" in pyproject_data["tool"]:
-                    pyproject_data["tool"]["bandit"] = {
-                        "skips": ["ALL"],
-                        "exclude_dirs": ["*"]
-                    }
+                    pyproject_data["tool"]["bandit"] = {"skips": ["ALL"], "exclude_dirs": ["*"]}
 
                 if "pydocstyle" in pyproject_data["tool"]:
                     pyproject_data["tool"]["pydocstyle"] = {
                         "inherit": False,
                         "ignore": ["ALL"],
                         "match": "",
-                        "match_dir": ""
+                        "match_dir": "",
                     }
 
         # Save updated pyproject.toml
@@ -387,6 +437,7 @@ class DevVolumeKnob(VolumeKnob):
 
         # Remove the touch file after a short delay
         import time
+
         time.sleep(0.1)
         if os.path.exists(touch_file):
             os.remove(touch_file)
@@ -395,14 +446,20 @@ class DevVolumeKnob(VolumeKnob):
         try:
             if platform.system() == "Windows":
                 # On Windows, try to reload VS Code window
-                subprocess.run([
-                    "code", "--command", "workbench.action.reloadWindow"
-                ], capture_output=True, timeout=5, check=False)
+                subprocess.run(
+                    ["code", "--command", "workbench.action.reloadWindow"],
+                    capture_output=True,
+                    timeout=5,
+                    check=False,
+                )
             else:
                 # On other platforms, try to reload VS Code window
-                subprocess.run([
-                    "code", "--command", "workbench.action.reloadWindow"
-                ], capture_output=True, timeout=5, check=False)
+                subprocess.run(
+                    ["code", "--command", "workbench.action.reloadWindow"],
+                    capture_output=True,
+                    timeout=5,
+                    check=False,
+                )
         except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
             # If VS Code command fails, just continue
             pass
@@ -416,6 +473,7 @@ class DevVolumeKnob(VolumeKnob):
 
         # Completely fix and cleanup logic maintaining clarity between refreshed tracking/debug case env
         # Rational delay injection-user reinitiated inspection finalizes readiness global test results
+
 
 class CommitVolumeKnob(VolumeKnob):
     """Commit Volume Knob"""
@@ -431,6 +489,7 @@ class CommitVolumeKnob(VolumeKnob):
 
         # Use JSON migration system
         from json_migrations import json_migrations
+
         config = json_migrations.migrate_to_level(volume, "commit")
 
         # Apply pre-commit configuration
@@ -449,7 +508,7 @@ class CommitVolumeKnob(VolumeKnob):
         print("Updated pre-commit configuration")
         print(f"Config: {pre_commit_config}")
 
-#Make sure this is applied only as a direct substitution for the respective portion of the code. Everything else in the file remains unmodified.
+        # Make sure this is applied only as a direct substitution for the respective portion of the code. Everything else in the file remains unmodified.
         print(f"   Config: {pre_commit_config}")
 
 
@@ -494,6 +553,7 @@ def main():
 
     # Apply the settings
     knob.apply_volume_settings()
+
 
 def main():
     """Entry point for volume control knob operations"""
@@ -542,6 +602,7 @@ def main():
         knob.apply_volume_settings()
         print(f"Active Knob: {knob.knob_name.upper()}")
         print(f"Current Volume: {knob.get_volume()} / 1000")
+
 
 if __name__ == "__main__":
     main()

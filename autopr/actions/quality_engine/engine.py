@@ -136,14 +136,16 @@ class QualityEngine(Action):
                 # Replace the old tool with the new one
                 self.tools[new_tool] = self.tools.pop(old_tool)
 
-    def _determine_tools_for_mode(self, mode: QualityMode, files: list[str], volume: int = 500) -> list[str]:
+    def _determine_tools_for_mode(
+        self, mode: QualityMode, files: list[str], volume: int = 500
+    ) -> list[str]:
         """Determine which tools to run based on mode, files, and volume level.
-        
+
         Args:
             mode: Quality mode to use
             files: List of files to analyze
             volume: Volume level from 0-1000 that influences tool selection and configuration
-            
+
         Returns:
             List of tool names to run
         """
@@ -181,20 +183,18 @@ class QualityEngine(Action):
         if isinstance(tool_settings, dict):
             if "enabled" in tool_settings:
                 return tool_settings
-            else:
-                return {"enabled": True, "config": tool_settings}
-        else:
-            return {"enabled": True, "config": {}}
+            return {"enabled": True, "config": tool_settings}
+        return {"enabled": True, "config": {}}
 
     def _validate_volume(self, volume: int) -> int:
         """Validate that the volume is within the expected range (0-1000).
-        
+
         Args:
             volume: The volume level to validate
-            
+
         Returns:
             The validated volume (clamped to 0-1000 range)
-            
+
         Raises:
             ValueError: If volume is not an integer
         """
@@ -202,18 +202,20 @@ class QualityEngine(Action):
             raise ValueError(f"Volume must be an integer, got {type(volume).__name__}")
         return max(0, min(1000, volume))  # Clamp to 0-1000 range
 
-    async def execute(self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None) -> QualityOutputs:
+    async def execute(
+        self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None
+    ) -> QualityOutputs:
         """Execute the quality engine with the given inputs and volume level.
-        
+
         Args:
             inputs: Quality engine input parameters
             context: Context dictionary for the execution
             volume: Volume level from 0-1000 that influences quality strictness.
                    If None, uses inputs.volume if set, otherwise defaults to 500.
-                   
+
         Returns:
             QualityOutputs with the results of the quality checks
-            
+
         Raises:
             ValueError: If volume is not an integer or is outside the 0-1000 range
         """
@@ -232,21 +234,14 @@ class QualityEngine(Action):
         volume_level = get_volume_level_name(volume)  # Directly use the imported function
 
         logger.info(
-            "Executing Quality Engine",
-            mode=inputs.mode,
-            volume=volume,
-            volume_level=volume_level
+            "Executing Quality Engine", mode=inputs.mode, volume=volume, volume_level=volume_level
         )
 
         # Determine files to check
         files_to_check = inputs.files or ["."]
 
         # Determine tools to run based on mode and volume
-        tools_to_run = self._determine_tools_for_mode(
-            inputs.mode,
-            files_to_check,
-            volume=volume
-        )
+        tools_to_run = self._determine_tools_for_mode(inputs.mode, files_to_check, volume=volume)
 
         # Filter tools based on what's actually available
         available_tools = [tool for tool in tools_to_run if tool in self.tools]

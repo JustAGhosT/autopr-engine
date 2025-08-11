@@ -5,11 +5,11 @@ Handles detection, parsing, and analysis of linting issues from various tools
 including flake8, pylint, mypy, and other Python linting tools.
 """
 
-from dataclasses import dataclass
-from enum import Enum
 import logging
 import operator
 import subprocess
+from dataclasses import dataclass
+from enum import Enum
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -243,20 +243,20 @@ class Flake8Parser:
         """Get the content of a specific line from a file."""
         try:
             from pathlib import Path
+
             with Path(file_path).open(encoding="utf-8") as f:
                 lines = f.readlines()
                 if 1 <= line_number <= len(lines):
                     return lines[line_number - 1].rstrip("\n\r")
         except Exception as e:
-            logger.debug(
-                "Failed to read line content from %s:%s - %s", file_path, line_number, e
-            )
+            logger.debug("Failed to read line content from %s:%s - %s", file_path, line_number, e)
         return ""
 
     def _extract_context(self, file_path: str, line_number: int) -> tuple[str | None, str | None]:
         """Extract function and class context for the given line."""
         try:
             from pathlib import Path
+
             with Path(file_path).open(encoding="utf-8") as f:
                 lines = f.readlines()
 
@@ -290,9 +290,7 @@ class Flake8Parser:
             return function_name, class_name
 
         except Exception as e:
-            logger.debug(
-                "Failed to extract context from %s:%s - %s", file_path, line_number, e
-            )
+            logger.debug("Failed to extract context from %s:%s - %s", file_path, line_number, e)
             return None, None
 
 

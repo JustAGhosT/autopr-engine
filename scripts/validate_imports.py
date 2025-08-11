@@ -292,9 +292,8 @@ def main():
     if broken_imports:
         print(f"\n⚠️  Found {len(broken_imports)} files with broken imports")
         return 1
-    else:
-        print("\n✅ All imports are valid!")
-        return 0
+    print("\n✅ All imports are valid!")
+    return 0
 
 
 if __name__ == "__main__":

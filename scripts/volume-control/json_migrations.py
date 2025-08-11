@@ -45,20 +45,15 @@ class JSONMigrations:
 
         if volume <= defined_levels[0]:
             return tool_configs[str(defined_levels[0])]
-        elif volume >= defined_levels[-1]:
+        if volume >= defined_levels[-1]:
             return tool_configs[str(defined_levels[-1])]
-        else:
-            # Find the closest level
-            closest_level = min(defined_levels, key=lambda x: abs(x - volume))
-            return tool_configs[str(closest_level)]
+        # Find the closest level
+        closest_level = min(defined_levels, key=lambda x: abs(x - volume))
+        return tool_configs[str(closest_level)]
 
     def migrate_to_level(self, volume: int, knob_type: str) -> dict[str, Any]:
         """Migrate to a specific volume level"""
-        result = {
-            "volume": volume,
-            "checks": [],
-            "configs": {}
-        }
+        result = {"volume": volume, "checks": [], "configs": {}}
 
         if knob_type == "dev":
             # Load dev-specific configurations

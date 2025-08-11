@@ -23,12 +23,13 @@ except Exception:  # pragma: no cover
             "QualityEngine DI container is unavailable. Optional dependencies may be missing (e.g., toml/yaml)."
         )
 
+
 __all__ = [
+    "Handler",
     "QualityEngine",
     "QualityInputs",
-    "QualityOutputs",
     "QualityMode",
-    "Handler",
+    "QualityOutputs",
     "Tool",
     "container",
     "get_engine",

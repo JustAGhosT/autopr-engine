@@ -1,8 +1,8 @@
 """Main Axolo integration client."""
 
-from datetime import datetime
 import logging
 import os
+from datetime import datetime
 from typing import Any
 
 import aiohttp
@@ -95,7 +95,9 @@ class AxoloIntegration:
             self.github_client = GitHubClient(os.getenv("GITHUB_TOKEN"))
 
             # Slack client (if using direct API)
-            from slack_sdk.web.async_client import AsyncWebClient  # type: ignore[import-not-found]
+            from slack_sdk.web.async_client import (
+                AsyncWebClient,  # type: ignore[import-not-found]
+            )
 
             self.slack_client = AsyncWebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 

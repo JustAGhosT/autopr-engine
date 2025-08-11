@@ -1,6 +1,6 @@
+import unittest
 from dataclasses import dataclass
 from pathlib import Path
-import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.actions.platform_detection.schema import (
@@ -9,12 +9,16 @@ from autopr.actions.platform_detection.schema import (
     PlatformStatus,
     PlatformType,
 )
-from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent, PlatformAnalysisInputs
+from autopr.agents.platform_analysis_agent import (
+    PlatformAnalysisAgent,
+    PlatformAnalysisInputs,
+)
 
 
 @dataclass
 class MockPlatformConfig(PlatformConfig):
     """Mock PlatformConfig for testing."""
+
     def __init__(self, **kwargs):
         # Set default values for required fields
         defaults = {
@@ -34,8 +38,8 @@ class MockPlatformConfig(PlatformConfig):
                 "dependencies": ["test-package"],
                 "folder_patterns": ["test/*"],
                 "content_patterns": [r"test-pattern"],
-                "package_scripts": ["test"]
-            }
+                "package_scripts": ["test"],
+            },
         }
         defaults.update(kwargs)
         super().__init__(**defaults)
@@ -89,13 +93,13 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
                 "folder_patterns": ["test/*"],
                 "commit_patterns": ["test:.*"],
                 "content_patterns": [r"test-pattern"],
-                "package_scripts": ["test"]
+                "package_scripts": ["test"],
             },
             project_config={
                 "build_command": "npm run build",
                 "start_command": "npm start",
-                "output_directory": "dist"
-            }
+                "output_directory": "dist",
+            },
         )
 
         # Setup mock to return our test config
@@ -138,19 +142,24 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Verify project config
         self.assertIn("project_config", result)
-        self.assertEqual(result["project_config"], {
-            "build_command": "npm run build",
-            "start_command": "npm start",
-            "output_directory": "dist"
-        })
+        self.assertEqual(
+            result["project_config"],
+            {
+                "build_command": "npm run build",
+                "start_command": "npm start",
+                "output_directory": "dist",
+            },
+        )
 
         # Verify the config manager was called correctly
         mock_manager.get_platform.assert_called_once_with(PlatformType.REACT.value)
 
         # Test with a known platform type
         platform_info = self.agent._get_platform_info(PlatformType.IDE)
+
     def test_get_platform_info_unknown_platform(self):
         """Test getting platform info for an unknown platform type."""
+
         # Test with an unknown platform type
         class UnknownPlatform(PlatformType):
             UNKNOWN = "unknown_platform"
@@ -168,10 +177,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Mock the detector's analyze method to return a mock analysis
         mock_analysis_instance = MagicMock()
-        mock_analysis_instance.platforms = [
-            (PlatformType.REACT, 0.9),
-            (PlatformType.NEXT_JS, 0.8)
-        ]
+        mock_analysis_instance.platforms = [(PlatformType.REACT, 0.9), (PlatformType.NEXT_JS, 0.8)]
         mock_analysis_instance.tools = ["npm", "yarn"]
         mock_analysis_instance.frameworks = ["React", "Next.js"]
         mock_analysis_instance.languages = ["TypeScript", "JavaScript"]
@@ -181,8 +187,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Call the method
         inputs = PlatformAnalysisInputs(
-            repo_path="/path/to/repo",
-            file_paths=["package.json", "next.config.js"]
+            repo_path="/path/to/repo", file_paths=["package.json", "next.config.js"]
         )
 
         result = await self.agent.analyze_platforms(inputs)
@@ -205,8 +210,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Verify the detector was called with the correct arguments
         mock_detector_instance.analyze.assert_called_once_with(
-            Path("/path/to/repo"),
-            file_paths=["package.json", "next.config.js"]
+            Path("/path/to/repo"), file_paths=["package.json", "next.config.js"]
         )
 
 

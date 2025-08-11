@@ -4,8 +4,9 @@ End-to-end tests for volume control in AutoPR Engine.
 These tests verify the complete flow of volume control from the CrewAI orchestration
 down to individual agent tasks and quality inputs.
 """
-from pathlib import Path
+
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -18,7 +19,7 @@ from autopr.enums import QualityMode
 class TestVolumeControlE2E:
     """End-to-end tests for volume control feature."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def mock_llm_provider(self):
         """Mock LLM provider to avoid actual API calls."""
         with patch("autopr.agents.crew.get_llm_provider_manager") as mock_manager:
@@ -26,12 +27,12 @@ class TestVolumeControlE2E:
             mock_manager.return_value.get_llm.return_value = mock_llm
             yield mock_llm
 
-    @pytest.fixture()
+    @pytest.fixture
     def mock_agents(self):
         """Mock agent classes to avoid actual LLM calls."""
-        with patch("autopr.agents.crew.CodeQualityAgent") as mock_qa_agent, \
-             patch("autopr.agents.crew.PlatformAnalysisAgent") as mock_pa_agent, \
-             patch("autopr.agents.crew.LintingAgent") as mock_lint_agent:
+        with patch("autopr.agents.crew.CodeQualityAgent") as mock_qa_agent, patch(
+            "autopr.agents.crew.PlatformAnalysisAgent"
+        ) as mock_pa_agent, patch("autopr.agents.crew.LintingAgent") as mock_lint_agent:
 
             # Set up mock agent instances
             mock_qa_agent.return_value = MagicMock()
@@ -44,7 +45,7 @@ class TestVolumeControlE2E:
                 "linting": mock_lint_agent.return_value,
             }
 
-    @pytest.fixture()
+    @pytest.fixture
     def test_repo(self):
         """Create a temporary test repository."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -53,15 +54,20 @@ class TestVolumeControlE2E:
             test_file.write_text('def hello():\n    print("Hello, World!")\n')
             yield temp_dir
 
-    @pytest.mark.parametrize("volume,expected_mode,expected_level", [
-        (0, QualityMode.FAST, "Silent"),
-        (100, QualityMode.FAST, "Quiet"),
-        (300, QualityMode.FAST, "Moderate"),
-        (450, QualityMode.SMART, "Balanced"),
-        (700, QualityMode.COMPREHENSIVE, "Thorough"),
-        (900, QualityMode.COMPREHENSIVE, "Maximum"),
-    ])
-    def test_volume_propagation(self, test_repo, mock_llm_provider, mock_agents, volume, expected_mode, expected_level):
+    @pytest.mark.parametrize(
+        "volume,expected_mode,expected_level",
+        [
+            (0, QualityMode.FAST, "Silent"),
+            (100, QualityMode.FAST, "Quiet"),
+            (300, QualityMode.FAST, "Moderate"),
+            (450, QualityMode.SMART, "Balanced"),
+            (700, QualityMode.COMPREHENSIVE, "Thorough"),
+            (900, QualityMode.COMPREHENSIVE, "Maximum"),
+        ],
+    )
+    def test_volume_propagation(
+        self, test_repo, mock_llm_provider, mock_agents, volume, expected_mode, expected_level
+    ):
         """Test that volume settings propagate correctly through the entire pipeline."""
         # Arrange
         crew = AutoPRCrew(llm_model="gpt-4", volume=volume)
@@ -69,10 +75,7 @@ class TestVolumeControlE2E:
         # Configure mock agent responses
         mock_agents["code_quality"].analyze_code.return_value = []  # No code quality issues
         mock_agents["platform_analysis"].analyze_platform.return_value = PlatformAnalysis(
-            platform="python",
-            components=[],
-            confidence=0.9,
-            metadata={}
+            platform="python", components=[], confidence=0.9, metadata={}
         )
         mock_agents["linting"].analyze_code.return_value = []  # No linting issues
 
@@ -104,10 +107,7 @@ class TestVolumeControlE2E:
             agent.analyze_code.return_value = []
             if hasattr(agent, "analyze_platform"):
                 agent.analyze_platform.return_value = PlatformAnalysis(
-                    platform="python",
-                    components=[],
-                    confidence=0.9,
-                    metadata={}
+                    platform="python", components=[], confidence=0.9, metadata={}
                 )
 
         # Run analysis with low volume
@@ -131,7 +131,9 @@ class TestVolumeControlE2E:
                         volume_contexts.append(kwargs["context"]["volume"])
 
                 # Verify we found volume context in the calls
-                assert len(volume_contexts) > 0, f"Expected volume context in analyze_code calls for {agent_name}"
+                assert (
+                    len(volume_contexts) > 0
+                ), f"Expected volume context in analyze_code calls for {agent_name}"
 
     def test_volume_affects_auto_fix_behavior(self, test_repo, mock_llm_provider, mock_agents):
         """Test that volume affects whether auto-fixes are applied."""
@@ -144,7 +146,7 @@ class TestVolumeControlE2E:
             severity=IssueSeverity.WARNING,
             rule_id="missing-docstring",
             fix_suggestion='Add docstring: """Module docstring."""',
-            fix_confidence=0.9
+            fix_confidence=0.9,
         )
 
         # Configure mock agent to return the linting issue

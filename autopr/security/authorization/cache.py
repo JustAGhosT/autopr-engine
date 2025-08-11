@@ -32,10 +32,9 @@ class PermissionCache:
             if datetime.utcnow().timestamp() - timestamp < self.ttl_seconds:
                 logger.debug("Permission cache hit", cache_key=cache_key)
                 return result
-            else:
-                # Remove expired entry
-                del self.cache[cache_key]
-                logger.debug("Permission cache expired", cache_key=cache_key)
+            # Remove expired entry
+            del self.cache[cache_key]
+            logger.debug("Permission cache expired", cache_key=cache_key)
 
         return None
 

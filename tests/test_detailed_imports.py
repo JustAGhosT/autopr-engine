@@ -1,4 +1,5 @@
 """Detailed test to diagnose import issues in pytest."""
+
 import importlib
 import os
 import sys
@@ -9,6 +10,7 @@ def print_header(title):
     print("\n" + "=" * 80)
     print(f" {title} ".center(80, "="))
     print("=" * 80)
+
 
 def test_environment():
     """Test the Python environment and paths."""
@@ -27,10 +29,12 @@ def test_environment():
     print("\nChecking if autopr is importable:")
     try:
         import autopr
+
         print(f"✅ autopr imported successfully from: {autopr.__file__}")
     except ImportError as e:
         print(f"❌ Failed to import autopr: {e}")
         raise
+
 
 def test_import_crew():
     """Test importing the crew module with detailed diagnostics."""
@@ -69,16 +73,17 @@ def test_import_crew():
             if hasattr(module, "AutoPRCrew"):
                 print("✅ Found AutoPRCrew class")
                 return module.AutoPRCrew
-            else:
-                print(f"❌ AutoPRCrew class not found in {module_path}")
-                print(f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}")
-                raise AttributeError(f"AutoPRCrew not found in {module_path}")
+            print(f"❌ AutoPRCrew class not found in {module_path}")
+            print(f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}")
+            raise AttributeError(f"AutoPRCrew not found in {module_path}")
 
     except Exception as e:
         print(f"❌ Error importing {module_path}: {e}")
         import traceback
+
         traceback.print_exc()
         raise
+
 
 def test_volume_mapping_import():
     """Test importing the volume mapping module with detailed diagnostics."""
@@ -97,13 +102,13 @@ def test_volume_mapping_import():
             result = module.get_volume_level_name(500)
             print(f"✅ get_volume_level_name(500) = {result}")
             return result
-        else:
-            print(f"❌ get_volume_level_name function not found in {module_path}")
-            print(f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}")
-            raise AttributeError(f"get_volume_level_name not found in {module_path}")
+        print(f"❌ get_volume_level_name function not found in {module_path}")
+        print(f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}")
+        raise AttributeError(f"get_volume_level_name not found in {module_path}")
 
     except Exception as e:
         print(f"❌ Error importing {module_path}: {e}")
         import traceback
+
         traceback.print_exc()
         raise
