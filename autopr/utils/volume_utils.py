@@ -36,10 +36,10 @@ def get_volume_level_name(volume: int) -> str:
         
     if volume == 0:
         return "Silent"
-    THRESHOLD_QUIET = 200
-    THRESHOLD_MODERATE = 400
-    THRESHOLD_BALANCED = 600
-    THRESHOLD_THOROUGH = 800
+    THRESHOLD_QUIET = 100
+    THRESHOLD_MODERATE = 300
+    THRESHOLD_BALANCED = 500
+    THRESHOLD_THOROUGH = 700
 
     if volume < THRESHOLD_QUIET:
         return "Quiet"

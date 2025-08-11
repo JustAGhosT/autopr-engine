@@ -59,6 +59,12 @@ def get_llm_provider_manager() -> LLMProviderManager:
     if _provider_manager is not None:
         return _provider_manager
 
+    # Allow disabling LLM provider initialization in tests/CI to avoid network calls
+    if os.getenv("AUTOPR_DISABLE_LLM_INIT", "0") in {"1", "true", "True"}:
+        # Create a manager with no providers to satisfy callers
+        _provider_manager = LLMProviderManager({"default_provider": "none", "providers": {}})
+        return _provider_manager
+
     # Load configuration from environment
     config: dict[str, Any] = {
         "default_provider": os.getenv("AUTOPR_DEFAULT_LLM_PROVIDER", "openai"),

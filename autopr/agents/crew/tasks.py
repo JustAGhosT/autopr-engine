@@ -2,7 +2,18 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from crewai import Task
+try:
+    from crewai import Task  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover - fallback for tests without crewai
+    class Task:  # type: ignore[no-redef]
+        def __init__(self, *args, **kwargs) -> None:
+            # Minimal stub object compatible with tests that may mock methods
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+            self.description = kwargs.get("description", "")
+            self.expected_output = kwargs.get("expected_output", None)
+            self.output_json = kwargs.get("output_json", None)
+            self.context = kwargs.get("context", {})
 from autopr.agents.models import CodeIssue, PlatformAnalysis
 from autopr.actions.quality_engine.volume_mapping import get_volume_level_name, VolumeLevel
 

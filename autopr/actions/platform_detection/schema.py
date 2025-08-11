@@ -138,7 +138,7 @@ class PlatformConfig:
     name: str
     category: str
     description: str
-    priority: int
+    priority: int = 0
 
     # Display information
     display_name: str = ""
@@ -208,7 +208,16 @@ class PlatformConfig:
 
         # Handle enums and special types
         status = PlatformStatus(data.get("status", "active")) if "status" in data else None
-        platform_type = PlatformType(data["type"]) if "type" in data else None
+        platform_type_val = data.get("type")
+        if isinstance(platform_type_val, PlatformType):
+            platform_type = platform_type_val
+        elif isinstance(platform_type_val, str):
+            try:
+                platform_type = PlatformType(platform_type_val)
+            except Exception:
+                platform_type = PlatformType.GENERAL
+        else:
+            platform_type = None
 
         # Handle source more flexibly
         source = None

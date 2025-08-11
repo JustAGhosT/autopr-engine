@@ -22,7 +22,7 @@ try:
     # Pydantic 2.0+ (preferred)
     from pydantic_settings import BaseSettings
 except ImportError:
-    # Pydantic 1.x fallback
+        # Pydantic 1.x fallback
     from pydantic.env_settings import BaseSettings  # type: ignore[no-redef]
 
 
@@ -199,6 +199,14 @@ class SecurityConfig(BaseModel):
     enable_csrf_protection: bool = Field(default=True, env="ENABLE_CSRF_PROTECTION")
 
 
+class VolumeDefaults(BaseModel):
+    """Default volume levels for different run contexts."""
+
+    pr: int = Field(default=500, env="AUTOPR_VOLUME_PR")
+    dev: int = Field(default=500, env="AUTOPR_VOLUME_DEV")
+    checkin: int = Field(default=500, env="AUTOPR_VOLUME_CHECKIN")
+
+
 class ErrorHandlerConfig(BaseModel):
     """Error handling configuration for AI linting fixer and other components."""
 
@@ -293,6 +301,7 @@ class AutoPRSettings(BaseSettings):
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     ai_linting: AILintingConfig = Field(default_factory=AILintingConfig)
+    volume_defaults: VolumeDefaults = Field(default_factory=VolumeDefaults)
 
     # Custom settings for extensions
     custom: dict[str, Any] = Field(default_factory=dict)

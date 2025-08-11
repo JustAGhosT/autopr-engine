@@ -39,7 +39,7 @@ class QualityMode(str, Enum):
             return cls.FAST
         elif volume < 600:
             return cls.SMART
-        elif volume < 800:
+        elif volume <= 800:
             return cls.COMPREHENSIVE
         else:
             return cls.AI_ENHANCED

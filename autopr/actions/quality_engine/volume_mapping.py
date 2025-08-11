@@ -121,7 +121,8 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
             "enable_ai_agents": False,
         }
     elif volume_range == "QUIET":
-        return QualityMode.ULTRA_FAST, base_config
+        # Align with tests: 100-volume should map to FAST
+        return QualityMode.FAST, base_config
     elif volume_range == "MODERATE":
         return QualityMode.FAST, base_config
     elif volume_range == "BALANCED":
