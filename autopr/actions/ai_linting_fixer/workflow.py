@@ -7,7 +7,7 @@ orchestration systems and enterprise workflow platforms.
 
 import logging
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -64,7 +64,7 @@ class WorkflowEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: str(uuid4()))
     workflow_id: str
     event_type: str  # started, progress, completed, failed, retry
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     step_name: str
 
     # Event data
@@ -142,19 +142,19 @@ class WorkflowIntegrationMixin:
             try:
                 self.workflow_context.progress_callback(event)
             except Exception as e:
-                logger.exception(f"Progress callback failed: {e}")
+                logger.exception("Progress callback failed: %s", e)
 
         elif event_type == "failed" and self.workflow_context.error_callback:
             try:
                 self.workflow_context.error_callback(event)
             except Exception as e:
-                logger.exception(f"Error callback failed: {e}")
+                logger.exception("Error callback failed: %s", e)
 
         elif event_type == "completed" and self.workflow_context.completion_callback:
             try:
                 self.workflow_context.completion_callback(event)
             except Exception as e:
-                logger.exception(f"Completion callback failed: {e}")
+                logger.exception("Completion callback failed: %s", e)
 
     def should_retry(self, error: Exception, attempt: int) -> bool:
         """Determine if operation should be retried based on workflow config."""
@@ -188,7 +188,7 @@ class WorkflowIntegrationMixin:
             return base_delay * (2**attempt)
         return base_delay
 
-    def create_workflow_result(self, success: bool, **kwargs) -> WorkflowResult:
+    def create_workflow_result(self, *, success: bool, **kwargs) -> WorkflowResult:
         """Create standardized workflow result."""
         if not self.workflow_context:
             workflow_id = str(uuid4())
@@ -235,7 +235,7 @@ class WorkflowEventBus:
                 try:
                     callback(event)
                 except Exception as e:
-                    logger.exception(f"Event subscriber callback failed: {e}")
+                    logger.exception("Event subscriber callback failed: %s", e)
 
         # Publish to wildcard subscribers
         if "*" in self.subscribers:
@@ -243,7 +243,7 @@ class WorkflowEventBus:
                 try:
                     callback(event)
                 except Exception as e:
-                    logger.exception(f"Wildcard event subscriber callback failed: {e}")
+                    logger.exception("Wildcard event subscriber callback failed: %s", e)
 
 
 # Global event bus instance

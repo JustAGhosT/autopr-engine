@@ -1,6 +1,7 @@
 import asyncio
-import os
+import logging
 import re
+from pathlib import Path
 from typing import Any
 
 from .tool_base import Tool
@@ -32,10 +33,10 @@ class InterrogateTool(Tool):
 
         # Interrogate is best run on directories. We'll find the unique directories
         # from the file list and run Interrogate on them.
-        directories = sorted(list(set(os.path.dirname(f) for f in files if os.path.dirname(f))))
+        directories = sorted({str(Path(f).parent) for f in files if str(Path(f).parent)})
         if not directories:
             # Handle case where all files are in the root directory
-            if any(os.path.dirname(f) == "" for f in files):
+            if any(str(Path(f).parent) in {"", "."} for f in files):
                 directories = ["."]
             else:
                 return []
@@ -59,7 +60,7 @@ class InterrogateTool(Tool):
             error_message = stderr.decode().strip()
             if not error_message and stdout:
                 error_message = stdout.decode().strip()
-            print(f"Error running interrogate: {error_message}")
+            logging.error("Error running interrogate: %s", error_message)
             return [{"error": f"Interrogate execution failed: {error_message}"}]
 
         if not stdout:

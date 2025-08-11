@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Quality Metrics - Backward Compatibility Module
 ===============================================
@@ -20,8 +19,8 @@ from .quality_models import (
 from .quality_scorer import QualityScorer
 
 # Global instances for backward compatibility
-_scorer_instance = None
-_analyzer_instance = None
+_scorer_instance: QualityScorer | None = None
+_analyzer_instance: QualityAnalyzer | None = None
 
 
 def get_quality_scorer() -> QualityScorer:
