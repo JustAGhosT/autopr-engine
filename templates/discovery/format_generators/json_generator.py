@@ -6,8 +6,8 @@ JSON Format Generator Module
 Generates documentation in JSON format.
 """
 
-from datetime import datetime
 import json
+from datetime import datetime
 from typing import Any
 
 from ..content_analyzer import TemplateAnalysis

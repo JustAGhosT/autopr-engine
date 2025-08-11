@@ -5,16 +5,16 @@ Provides Redis-based distributed processing capabilities for AI linting operatio
 This enables horizontal scaling across multiple workers and systems.
 """
 
-from collections.abc import Callable
-from dataclasses import asdict, dataclass
-from datetime import UTC, datetime, timedelta
-from enum import Enum
 import json
 import logging
 import os
 import time
-from typing import Any, TypedDict
 import uuid
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime, timedelta
+from enum import Enum
+from typing import Any, TypedDict
 
 logger = logging.getLogger(__name__)
 

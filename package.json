@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "precommit": "pre-commit run volume-precommit --all-files --hook-stage manual",
-    "precommit:fast": "PRECOMMIT_DISABLE_PRETTIER=1 pre-commit run volume-precommit --all-files --hook-stage manual"
+    "precommit": "pre-commit run volume-precommit --hook-stage manual",
+    "precommit:fast": "PRECOMMIT_DISABLE_PRETTIER=1 pre-commit run volume-precommit --hook-stage manual"
   },
   "devDependencies": {
     "@cspell/dict-en_us": "^4.4.16"

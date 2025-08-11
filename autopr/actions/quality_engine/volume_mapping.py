@@ -8,9 +8,9 @@ This module provides functions to map volume levels (0-1000) to quality modes
 and configurations that control the behavior of the quality engine.
 """
 
+import warnings
 from enum import Enum
 from typing import Any, TypedDict
-import warnings
 
 # Import from the new location
 from autopr.utils.volume_utils import get_volume_config as _get_volume_config

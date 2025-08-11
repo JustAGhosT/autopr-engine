@@ -6,8 +6,8 @@ This example demonstrates how to integrate the new error handler system
 with the AI linting fixer for comprehensive error tracking and display.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 # Add the project root to the path
