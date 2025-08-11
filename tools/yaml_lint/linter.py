@@ -1,8 +1,8 @@
 """Core YAML linter implementation with auto-fixing."""
 
-import re
 from collections.abc import Callable
 from pathlib import Path
+import re
 from typing import Any
 
 try:

@@ -5,10 +5,10 @@ Tool for all code quality checks and AI-powered fixes
 """
 
 import asyncio
-import json
-import sys
 from dataclasses import dataclass
 from enum import Enum
+import json
+import sys
 from typing import Any
 
 from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs

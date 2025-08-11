@@ -10,6 +10,7 @@ from typing import Any
 # Optional CodeAnalyzer (psutil optional dep)
 try:
     from .code_analyzer import CodeAnalyzer as _CodeAnalyzer
+
     CODE_ANALYZER_AVAILABLE = True
 except Exception:
     _CodeAnalyzer = None  # type: ignore[assignment]

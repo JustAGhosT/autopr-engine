@@ -3,8 +3,8 @@
 Super Nuclear Fix - Temporarily disable problematic files that cause IDE validation
 """
 
-import shutil
 from pathlib import Path
+import shutil
 
 
 def disable_problematic_files():

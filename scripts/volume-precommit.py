@@ -20,15 +20,31 @@ from __future__ import annotations
 
 import importlib.util
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 
 def _run(cmd: list[str]) -> int:
     print("+", " ".join(cmd))
     return subprocess.call(cmd)
+
+
+def _run_with_timeout(cmd: list[str], timeout_seconds: int) -> tuple[int, str, str]:
+    """Run a command with a timeout; return (rc, stdout, stderr)."""
+    print("+", " ".join(cmd), f"(timeout={timeout_seconds}s)")
+    try:
+        proc = subprocess.run(
+            cmd,
+            check=False, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=max(1, int(timeout_seconds)),
+        )
+        return proc.returncode, proc.stdout, proc.stderr
+    except subprocess.TimeoutExpired as e:
+        return 124, e.stdout or "", e.stderr or ""
 
 
 def _select_files_by_ext(files: list[str], exts: list[str]) -> list[str]:
@@ -128,7 +144,7 @@ def main(argv: list[str]) -> int:
             print("Prettier not found; skipping.")
 
     # Tier 2: security + typing
-    if 300 <= volume < 600:
+    if 200 <= volume < 600:
         # Bandit (non-blocking)
         rc |= _run(
             [
@@ -157,6 +173,60 @@ def main(argv: list[str]) -> int:
             ]
         )
 
+        # Optional persistence of issues from Ruff into DB (non-blocking)
+        if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "0") in {"1", "true", "True"} and py_files:
+            try:
+                # Run ruff in JSON to capture findings
+                rc_json, out_json, _ = _run_with_timeout(
+                    [
+                        sys.executable,
+                        "-m",
+                        "ruff",
+                        "check",
+                        "--output-format",
+                        "json",
+                        *py_files,
+                    ],
+                    timeout_seconds=8,
+                )
+                if out_json.strip():
+                    import json
+
+                    from autopr.actions.ai_linting_fixer.database import (
+                        AIInteractionDB,  # type: ignore
+                    )
+                    from autopr.actions.ai_linting_fixer.queue_manager import (
+                        IssueQueueManager,
+                    )  # type: ignore
+
+                    findings = json.loads(out_json)
+                    issues: list[dict[str, object]] = []
+                    for f in findings:
+                        loc = f.get("location") or {}
+                        issues.append(
+                            {
+                                "file_path": f.get("filename", ""),
+                                "line_number": int(loc.get("row", 0) or 0),
+                                "column_number": int(loc.get("column", 0) or 0),
+                                "error_code": str(f.get("code", "RUFF")),
+                                "message": str(f.get("message", ""))[:500],
+                                "priority": 5,
+                                "line_content": "",
+                            }
+                        )
+
+                    if issues:
+                        db_path = os.getenv("AUTOPR_DB_PATH", ".autopr/ai_interactions.db")
+                        Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+                        db = AIInteractionDB(db_path=db_path)
+                        q = IssueQueueManager(db)
+                        session_id = os.getenv("GITHUB_RUN_ID") or os.getenv("CI") or "local"
+                        limit = int(os.getenv("AUTOPR_PRECOMMIT_QUEUE_LIMIT", "100"))
+                        queued = q.queue_issues(session_id, issues[: max(1, limit)])
+                        print(f"Queued {queued} issues to DB (non-blocking), limit={limit}")
+            except Exception as e:
+                print(f"Queueing issues failed (non-blocking): {e}")
+
     # Tier 3: comprehensive quality engine
     if volume >= 600:
         # Use comprehensive mode, stricter; pass filenames if any
@@ -165,9 +235,52 @@ def main(argv: list[str]) -> int:
             qe_cmd.extend(["--files", *files])
         rc |= _run(qe_cmd)
 
+    # Optional AI suggestions at low volume (non-blocking)
+    if volume < 300 and os.getenv("AUTOPR_PRECOMMIT_AI_SUGGEST", "0") in {"1", "true", "True"}:
+        if os.getenv("AUTOPR_DISABLE_LLM_INIT", "0") in {"1", "true", "True"}:
+            print("AI suggest skipped: AUTOPR_DISABLE_LLM_INIT=1")
+        else:
+            ai_timeout = int(os.getenv("AUTOPR_PRECOMMIT_AI_TIMEOUT", "5"))
+            ai_provider: str | None = os.getenv("AUTOPR_PRECOMMIT_AI_PROVIDER")
+            ai_model: str | None = os.getenv("AUTOPR_PRECOMMIT_AI_MODEL")
+            ai_cmd = [
+                sys.executable,
+                "-m",
+                "autopr.actions.quality_engine",
+                "--mode",
+                "ai_enhanced",
+            ]
+            targets = py_files if py_files else []
+            if targets:
+                ai_cmd.extend(["--files", *targets])
+            if ai_provider:
+                ai_cmd.extend(["--ai-provider", ai_provider])
+            if ai_model:
+                ai_cmd.extend(["--ai-model", ai_model])
+
+            rc_ai, out, err = _run_with_timeout(ai_cmd, ai_timeout)
+            max_findings = int(os.getenv("AUTOPR_PRECOMMIT_AI_MAX_FINDINGS", "20"))
+            if out:
+                lines = [ln for ln in out.splitlines() if ln.strip()]
+                if max_findings > 0 and len(lines) > max_findings:
+                    print("AI suggestions (truncated):")
+                    print("\n".join(lines[:max_findings]))
+                    print(f"... ({len(lines) - max_findings} more lines)")
+                else:
+                    print(out)
+            if err:
+                print(err)
+
     # In low volume mode, never block the commit; this is advisory only
     if volume < 300:
-        print("Completed in low-volume mode (<300): non-blocking. Set AUTOPR_PRECOMMIT_VOLUME=300 or 600 for stricter checks.")
+        print(
+            "Completed in low-volume mode (<300): non-blocking.\n"
+            "Next steps:\n"
+            "  - Apply fixes across the repo: pre-commit run volume-precommit --all-files --hook-stage manual\n"
+            "  - Increase strictness temporarily (bash): AUTOPR_PRECOMMIT_VOLUME=300 npm run precommit\n"
+            "  - Increase strictness temporarily (PowerShell): $env:AUTOPR_PRECOMMIT_VOLUME='300'; npm run precommit\n"
+            "  - Make volume persistent: set AUTOPR_VOLUME_DEV=300 (or AUTOPR_VOLUME_CHECKIN/AUTOPR_VOLUME_PR) in your environment\n"
+        )
         return 0
 
     return 0 if rc == 0 else 1
