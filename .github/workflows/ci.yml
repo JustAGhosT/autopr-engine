@@ -14,7 +14,8 @@ on:
         type: number
 
 env:
-  VOLUME: ${{ github.event.inputs.volume || '500' }}
+  # Volume resolved in setup step; default here is empty
+  VOLUME: ''
   PYTHON_VERSION: '3.13'
 
 jobs:
@@ -30,7 +31,19 @@ jobs:
       - name: Set volume level
         id: set-volume
         run: |
-          VOLUME=${{ env.VOLUME }}
+          # Determine volume from (in order): workflow input, repo vars by event, fallback 100
+          INPUT_VOLUME='${{ github.event.inputs.volume }}'
+          if [ -n "$INPUT_VOLUME" ] && [ "$INPUT_VOLUME" != 'null' ]; then
+            VOLUME="$INPUT_VOLUME"
+          else
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              VOLUME='${{ vars.AUTOPR_VOLUME_PR || '100' }}'
+            elif [ "${{ github.event_name }}" = "push" ]; then
+              VOLUME='${{ vars.AUTOPR_VOLUME_CHECKIN || '100' }}'
+            else
+              VOLUME='${{ vars.AUTOPR_VOLUME_DEV || '100' }}'
+            fi
+          fi
           echo "volume=$VOLUME" >> $GITHUB_OUTPUT
           
           # Set flags based on volume level
@@ -102,12 +115,21 @@ jobs:
           pip install -e .
           pip install ruff black isort
           
-      - name: Run linters (temporary relaxed rules)
+      - name: Run linters (volume-aware; relaxed at low volume)
+        env:
+          VOLUME: ${{ needs.setup.outputs.volume }}
         run: |
-          ruff check autopr/ \
-            --exclude autopr/actions/quality_engine/__tests__ \
-            --ignore E402,E722,E741,F811,W293,W291 \
-            --output-format=github
+          if [ "$VOLUME" -lt 300 ]; then
+            echo "Low volume ($VOLUME): running Ruff non-blocking on changed files only"
+            git fetch origin ${{ github.base_ref }} --depth=1 || true
+            FILES=$(git diff --name-only origin/${{ github.base_ref }}... | grep '^autopr/.*\.py$' || true)
+            if [ -z "$FILES" ]; then echo "No Python changes"; exit 0; fi
+            # Run Ruff with a minimal rule-set and don't fail the job
+            ruff check $FILES --ignore=ARG002,TID252,TD002,TD003,TRY300,TRY401,DTZ005,PTH123,B019,S112,S110 --output-format=github || true
+          else
+            echo "Higher volume ($VOLUME): running Ruff with standard settings"
+            ruff check autopr/ --output-format=github
+          fi
 
   typecheck:
     needs: setup

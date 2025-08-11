@@ -7,7 +7,13 @@ A comprehensive AI-powered linting fixer with modular architecture.
 from collections.abc import Callable
 from typing import Any
 
-from .code_analyzer import CodeAnalyzer
+# Optional CodeAnalyzer (psutil optional dep)
+try:
+    from .code_analyzer import CodeAnalyzer as _CodeAnalyzer
+    CODE_ANALYZER_AVAILABLE = True
+except Exception:
+    _CodeAnalyzer = None  # type: ignore[assignment]
+    CODE_ANALYZER_AVAILABLE = False
 from .detection import IssueDetector
 from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode
 from .error_handler import (
@@ -110,7 +116,7 @@ __all__ = [
     "validate_orchestration_config",
 ]
 
-# Remove AI components from __all__ if not available
+# Remove optional components from __all__ if not available
 if not AI_COMPONENTS_AVAILABLE:
     __all__ = [item for item in __all__ if item != "AIAgentManager"]
 
@@ -120,3 +126,10 @@ if not AI_LINTING_FIXER_AVAILABLE:
         for item in __all__
         if item not in ["AILintingFixer", "create_ai_linting_fixer", "run_ai_linting_fixer"]
     ]
+
+if not CODE_ANALYZER_AVAILABLE:
+    __all__ = [item for item in __all__ if item != "CodeAnalyzer"]
+
+# Public name binding (if available)
+if CODE_ANALYZER_AVAILABLE:
+    CodeAnalyzer = _CodeAnalyzer  # type: ignore[misc]
