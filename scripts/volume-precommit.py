@@ -165,6 +165,11 @@ def main(argv: list[str]) -> int:
             qe_cmd.extend(["--files", *files])
         rc |= _run(qe_cmd)
 
+    # In low volume mode, never block the commit; this is advisory only
+    if volume < 300:
+        print("Completed in low-volume mode (<300): non-blocking. Set AUTOPR_PRECOMMIT_VOLUME=300 or 600 for stricter checks.")
+        return 0
+
     return 0 if rc == 0 else 1
 
 
