@@ -10,8 +10,8 @@ Automatically fixes:
 """
 
 import argparse
-import re
 from pathlib import Path
+import re
 
 
 class WhitespaceFixer:

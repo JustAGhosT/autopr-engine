@@ -5,11 +5,11 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
+from datetime import UTC, datetime
 import json
 import logging
-import sqlite3
-from datetime import UTC, datetime
 from pathlib import Path
+import sqlite3
 from typing import Any
 
 from .queue_manager import IssueQueueManager

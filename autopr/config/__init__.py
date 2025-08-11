@@ -9,11 +9,11 @@ Centralized configuration management system with:
 - Backward compatibility
 """
 
+from dataclasses import dataclass, field
 import os
 import pathlib
-import warnings
-from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
+import warnings
 
 import yaml
 

@@ -10,7 +10,10 @@ import logging
 import time
 from typing import Any
 
-import psutil
+try:
+    import psutil  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover - optional in CI/tests
+    psutil = None  # type: ignore[assignment]
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -156,6 +159,8 @@ class MetricsCollector:
     def sample_resource_usage(self) -> None:
         """Sample current resource usage."""
         try:
+            if psutil is None:
+                return
             # Memory usage
             process = psutil.Process()
             memory_mb = process.memory_info().rss / 1024 / 1024

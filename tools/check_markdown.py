@@ -1,7 +1,7 @@
 import operator
 import os
-import re
 from pathlib import Path
+import re
 
 # Configuration
 MAX_LINE_LENGTH = 120

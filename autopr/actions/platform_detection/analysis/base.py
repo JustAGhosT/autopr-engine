@@ -4,9 +4,9 @@ Base classes and interfaces for file analysis.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 import fnmatch
 import logging
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 

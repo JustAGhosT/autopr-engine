@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import importlib.util
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 
 def _run(cmd: list[str]) -> int:

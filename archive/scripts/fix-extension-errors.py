@@ -4,10 +4,10 @@ Fix Extension Errors - Clear caches and restart IDE to resolve file access error
 """
 
 import os
+from pathlib import Path
 import platform
 import shutil
 import subprocess
-from pathlib import Path
 
 
 def main():

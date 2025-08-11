@@ -7,9 +7,9 @@ Extracts and analyzes YAML templates from the template directory.
 Provides comprehensive template discovery, parsing, and categorization.
 """
 
-import json
 from collections import defaultdict
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Any
 

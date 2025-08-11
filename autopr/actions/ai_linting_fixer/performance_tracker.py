@@ -4,11 +4,11 @@ Performance Tracker Module
 This module tracks performance metrics and analytics for AI linting operations.
 """
 
+from datetime import datetime
 import json
 import logging
-import time
-from datetime import datetime
 from pathlib import Path
+import time
 from typing import Any
 
 logger = logging.getLogger(__name__)
