@@ -23,7 +23,7 @@ from autopr.agents.base import BaseAgent
 @dataclass
 class PlatformAnalysisInputs:
     """Inputs for the PlatformAnalysisAgent.
-
+    
     Attributes:
         repo_path: Path to the repository root
         file_paths: List of file paths to analyze (relative to repo_path)
@@ -38,7 +38,7 @@ class PlatformAnalysisInputs:
 @dataclass
 class PlatformAnalysisOutputs:
     """Outputs from the PlatformAnalysisAgent.
-
+    
     Attributes:
         platforms: List of detected platforms with confidence scores
         primary_platform: The primary platform with highest confidence
@@ -60,12 +60,12 @@ class PlatformAnalysisOutputs:
 
 class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOutputs]):
     """Agent for analyzing codebases to detect platforms and technologies.
-
+    
     This agent analyzes a codebase to detect the underlying platform, frameworks,
     and technologies being used. It uses a combination of file pattern matching
     and LLM-based analysis to provide accurate detection.
     """
-
+    
     def __init__(
         self,
         volume: int = 500,  # Default to moderate level (500/1000)
@@ -77,7 +77,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         **kwargs: Any
     ) -> None:
         """Initialize the PlatformAnalysisAgent.
-
+        
         Args:
             volume: Volume level (0-1000) for analysis depth
             verbose: Whether to enable verbose logging
@@ -103,42 +103,42 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             max_rpm=max_rpm,
             **kwargs
         )
-
+        
         # Initialize the platform detector
         self.detector = PlatformDetector()
-
+    
     async def _execute(self, inputs: PlatformAnalysisInputs) -> PlatformAnalysisOutputs:
         """Analyze a codebase to detect platforms and technologies.
-
+        
         Args:
             inputs: The input data for the agent
-
+            
         Returns:
             PlatformAnalysisOutputs containing the analysis results
         """
         try:
             # Convert repo_path to Path object
             repo_path = Path(inputs.repo_path)
-
+            
             # If no specific file paths provided, analyze the entire repository
             if not inputs.file_paths:
                 file_paths = None
             else:
                 file_paths = [repo_path / path for path in inputs.file_paths]
-
+            
             # Perform the platform analysis
             analysis = await self.detector.analyze(
                 repo_path=str(repo_path),
                 file_paths=[str(p) for p in file_paths] if file_paths else None,
                 context=inputs.context or {},
             )
-
+            
             # Extract the primary platform safely
             primary_platform = self._get_primary_platform(analysis)
-
+            
             # Safely get the primary platform's confidence score
             primary_confidence = analysis.confidence_scores.get(primary_platform, 0.0)
-
+            
             # Prepare the platforms list with name-confidence pairs
             platforms_list = [
                 (platform_name, confidence)
@@ -174,7 +174,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             # Log the error and return a default response
             # Prefer logging in real code; keeping minimal message only if verbose is set
             _ = self.verbose
-
+            
             # Create a default analysis with error information
             error_analysis = PlatformDetectorOutputs(
                 primary_platform=PlatformType.UNKNOWN.value,
@@ -186,7 +186,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
                 migration_opportunities=[],
                 hybrid_workflow_analysis=None,
             )
-
+            
             return PlatformAnalysisOutputs(
                 platforms=[("unknown", 1.0)],
                 primary_platform=("unknown", 1.0),
@@ -196,13 +196,13 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
                 config_files=[],
                 analysis=error_analysis,
             )
-
+    
     def _get_primary_platform(self, analysis: PlatformDetectorOutputs) -> str:
         """Get the primary platform from the analysis results.
-
+        
         Args:
             analysis: The platform analysis results
-
+            
         Returns:
             The primary platform identifier as a string
         """
@@ -215,10 +215,10 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
 
     def _get_platform_info(self, platform_id: str | PlatformType) -> dict[str, Any] | None:
         """Get information about a specific platform by ID.
-
+        
         Args:
             platform_id: The platform ID to get information for
-
+            
         Returns:
             Dictionary with details about the platform, or None if not found
         """
@@ -230,7 +230,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         platform_config = config_manager.get_platform(platform_id_str)
         if not platform_config:
             return None
-
+            
         # Normalize from either dataclass PlatformConfig or dict
         def get_enum_value(enum_obj):
             if enum_obj is None:
@@ -306,10 +306,10 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             "detection_rules": dict_detection_rules,
             "project_config": platform_config.get("project_config", {}),
         }
-
+    
     def get_supported_platforms(self) -> list[dict]:
         """Get a list of all supported platforms.
-
+        
         Returns:
             List of dictionaries with platform information for all supported platforms
         """
