@@ -1,7 +1,6 @@
 """Minimal test script to verify AutoPRCrew import."""
-import sys
-import os
 from pathlib import Path
+import sys
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -17,7 +16,7 @@ try:
     from autopr.agents.crew import AutoPRCrew
     print("✅ Successfully imported AutoPRCrew")
     print(f"AutoPRCrew class: {AutoPRCrew}")
-    
+
     # Create a mock LLM provider manager
     class MockLLMProviderManager:
         def get_provider(self, provider_name):
@@ -25,15 +24,15 @@ try:
                 def complete(self, request):
                     return None
             return MockProvider()
-        
+
         def complete(self, request):
             return None
-    
+
     # Patch the get_llm_provider_manager function
     import autopr.agents.crew as crew_module
     original_get_llm = crew_module.get_llm_provider_manager
     crew_module.get_llm_provider_manager = MockLLMProviderManager
-    
+
     try:
         # Try to create an instance of AutoPRCrew
         print("\nCreating AutoPRCrew instance...")
@@ -46,7 +45,7 @@ try:
     finally:
         # Restore the original function
         crew_module.get_llm_provider_manager = original_get_llm
-    
+
 except Exception as e:
     print(f"❌ Failed to import AutoPRCrew: {e}")
     import traceback

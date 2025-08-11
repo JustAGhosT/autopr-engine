@@ -7,6 +7,7 @@ from enum import Enum
 
 import pydantic
 from structlog import get_logger
+
 from autopr.enums import QualityMode
 
 logger = get_logger(__name__)

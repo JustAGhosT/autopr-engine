@@ -10,7 +10,7 @@ utility functions.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .validation_types import ValidationIssue, ValidationSeverity
 
@@ -33,7 +33,7 @@ class QualityMetrics:
     def __post_init__(self) -> None:
         """Calculate derived metrics after initialization."""
         if self.analysis_timestamp is None:
-            self.analysis_timestamp = datetime.now(timezone.utc)
+            self.analysis_timestamp = datetime.now(UTC)
 
         # Count issues by severity
         self.errors_count = sum(

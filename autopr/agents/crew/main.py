@@ -6,17 +6,16 @@ This module contains the main AutoPRCrew class that orchestrates the code analys
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from autopr.actions.llm import get_llm_provider_manager
-from autopr.agents.models import CodeAnalysisReport, CodeIssue, PlatformAnalysis
 from autopr.agents.crew.tasks import (
     create_code_quality_task,
-    create_platform_analysis_task,
     create_linting_task,
+    create_platform_analysis_task,
     generate_analysis_summary,
 )
-
+from autopr.agents.models import CodeAnalysisReport, CodeIssue, PlatformAnalysis
 
 # Local lightweight stubs to avoid optional dependency during type checking/runtime
 
@@ -38,8 +37,8 @@ class AutoPRCrew:
     def __init__(
         self,
         llm_model: str = "gpt-4",
-        volume: Optional[int] = None,
-        context: Optional[str] = None,  # e.g., "pr", "dev", "checkin"
+        volume: int | None = None,
+        context: str | None = None,  # e.g., "pr", "dev", "checkin"
         **kwargs
     ):
         """Initialize the AutoPR crew with specialized agents.
@@ -80,9 +79,15 @@ class AutoPRCrew:
 
         # Import agents lazily to avoid optional dependency issues during static analysis
         try:
-            from autopr.agents.code_quality_agent import CodeQualityAgent as _CodeQualityAgent  # type: ignore[import-not-found]
-            from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent as _PlatformAnalysisAgent  # type: ignore[import-not-found]
-            from autopr.agents.linting_agent import LintingAgent as _LintingAgent  # type: ignore[import-not-found]
+            from autopr.agents.code_quality_agent import (
+                CodeQualityAgent as _CodeQualityAgent,  # type: ignore[import-not-found]
+            )
+            from autopr.agents.linting_agent import (
+                LintingAgent as _LintingAgent,  # type: ignore[import-not-found]
+            )
+            from autopr.agents.platform_analysis_agent import (
+                PlatformAnalysisAgent as _PlatformAnalysisAgent,  # type: ignore[import-not-found]
+            )
         except Exception:  # pragma: no cover
             class _CodeQualityAgent:  # type: ignore
                 def __init__(self, **_kw):
@@ -105,9 +110,9 @@ class AutoPRCrew:
 
         # Ensure volume attribute is present on agents (even when mocked)
         try:
-            setattr(self.code_quality_agent, "volume", self.volume)
-            setattr(self.platform_agent, "volume", self.volume)
-            setattr(self.linting_agent, "volume", self.volume)
+            self.code_quality_agent.volume = self.volume
+            self.platform_agent.volume = self.volume
+            self.linting_agent.volume = self.volume
         except Exception:
             pass
 
@@ -119,7 +124,7 @@ class AutoPRCrew:
             for agent in (self.code_quality_agent, self.platform_agent, self.linting_agent):
                 current_backstory = getattr(agent, "backstory", "") or ""
                 current_backstory_str = str(current_backstory)
-                setattr(agent, "backstory", f"{current_backstory_str}\n{volume_suffix}".strip())
+                agent.backstory = f"{current_backstory_str}\n{volume_suffix}".strip()
         except Exception:
             pass
 
@@ -135,19 +140,19 @@ class AutoPRCrew:
         self._crew = self.crew  # type: ignore[assignment]
 
     # The following helpers are expected by tests; they delegate to task builders
-    def _create_code_quality_task(self, repo_path: Union[str, Path], context: dict[str, Any]):
+    def _create_code_quality_task(self, repo_path: str | Path, context: dict[str, Any]):
         return create_code_quality_task(repo_path, context, self.code_quality_agent)
 
-    def _create_platform_analysis_task(self, repo_path: Union[str, Path], context: dict[str, Any]):
+    def _create_platform_analysis_task(self, repo_path: str | Path, context: dict[str, Any]):
         return create_platform_analysis_task(repo_path, context, self.platform_agent)
 
-    def _create_linting_task(self, repo_path: Union[str, Path], context: dict[str, Any]):
+    def _create_linting_task(self, repo_path: str | Path, context: dict[str, Any]):
         return create_linting_task(repo_path, context, self.linting_agent)
 
     def analyze(
         self,
-        repo_path: Optional[Union[str, Path]] = None,
-        volume: Optional[int] = None,
+        repo_path: str | Path | None = None,
+        volume: int | None = None,
         **kwargs,
     ):
         """Compatibility wrapper used by tests; sync if no loop, awaitable if inside a loop."""
@@ -197,8 +202,8 @@ class AutoPRCrew:
 
     async def analyze_repository(
         self,
-        repo_path: Union[str, Path],
-        volume: Optional[int] = None,
+        repo_path: str | Path,
+        volume: int | None = None,
         **analysis_kwargs
     ) -> CodeAnalysisReport | dict[str, Any]:
         """
@@ -276,9 +281,9 @@ class AutoPRCrew:
         platform_analysis = None
         linting_issues = []
 
-        for task_name, result in zip(task_names, results):
+        for task_name, result in zip(task_names, results, strict=False):
             if isinstance(result, Exception):
-                logger.error(f"Error in {task_name} analysis: {str(result)}", exc_info=isinstance(result, Exception))
+                logger.error(f"Error in {task_name} analysis: {result!s}", exc_info=isinstance(result, Exception))
                 continue
 
             try:

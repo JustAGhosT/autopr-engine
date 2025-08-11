@@ -1,11 +1,11 @@
 """GitHub API client for AutoPR with retry logic and rate limiting."""
 
 import asyncio
+from dataclasses import dataclass
+from datetime import UTC, datetime
 import logging
 import random
 import time
-from dataclasses import dataclass
-from datetime import UTC, datetime
 from typing import Any, TypeVar, Union
 
 from aiohttp import ClientError, ClientResponse, ClientResponseError, ClientSession, ClientTimeout

@@ -10,8 +10,8 @@ scoring algorithms used to calculate quality metrics from validation results.
 
 from typing import Any
 
-from .validation_types import ValidationIssue, ValidationSeverity
 from .quality_models import DEFAULT_CATEGORY_WEIGHTS, DEFAULT_SEVERITY_WEIGHTS, QualityMetrics
+from .validation_types import ValidationIssue, ValidationSeverity
 
 
 class QualityScorer:

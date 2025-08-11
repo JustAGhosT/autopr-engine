@@ -33,7 +33,7 @@ def get_volume_level_name(volume: int) -> str:
     if not MIN_VOLUME <= volume <= MAX_VOLUME:
         msg = f"Volume must be between {MIN_VOLUME} and {MAX_VOLUME}, got {volume}"
         raise ValueError(msg)
-        
+
     if volume == 0:
         return "Silent"
     THRESHOLD_QUIET = 100
@@ -102,7 +102,7 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
 
     # Get the quality mode based on volume
     quality_mode = QualityMode.from_volume(volume)
-    
+
     # Special case for minimum volume - ultra minimal checks
     if volume == MIN_VOLUME:
         return quality_mode, {

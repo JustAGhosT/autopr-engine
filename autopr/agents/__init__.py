@@ -22,13 +22,21 @@ Note: This is the updated agent framework. Legacy agent imports have been remove
 
 import warnings
 
+from autopr.agents.agents import (
+    BaseAgent,
+    CodeQualityAgent,
+    LintingAgent,
+    PlatformAnalysisAgent,
+    VolumeConfig,
+)
+
 # Import models
 from autopr.agents.models import (
-    IssueSeverity,
+    CodeAnalysisReport,
     CodeIssue,
-    PlatformComponent,
+    IssueSeverity,
     PlatformAnalysis,
-    CodeAnalysisReport
+    PlatformComponent,
 )
 
 # Import modular agent IO types
@@ -37,27 +45,16 @@ from .code_quality_agent import (
     CodeQualityOutputs,
 )
 
-from .platform_analysis_agent import (
-    PlatformAnalysisInputs,
-    PlatformAnalysisOutputs,
-)
-
+# Import crew from the crew module
+from .crew.main import AutoPRCrew
 from .linting_agent import (
     LintingInputs,
     LintingOutputs,
 )
-
-from autopr.agents.agents import (
-    VolumeConfig,
-    BaseAgent,
-    CodeQualityAgent,
-    PlatformAnalysisAgent,
-    LintingAgent,
+from .platform_analysis_agent import (
+    PlatformAnalysisInputs,
+    PlatformAnalysisOutputs,
 )
-
-# Import crew from the crew module
-from .crew.main import AutoPRCrew
-
 
 # Show deprecation warning for old import path
 warnings.warn(
@@ -68,27 +65,27 @@ warnings.warn(
 
 __all__ = [
     # Base classes
-    'BaseAgent',
-    'VolumeConfig',
+    "BaseAgent",
+    "VolumeConfig",
 
     # Models
-    'IssueSeverity',
-    'CodeIssue',
-    'PlatformComponent',
-    'PlatformAnalysis',
-    'CodeAnalysisReport',
+    "IssueSeverity",
+    "CodeIssue",
+    "PlatformComponent",
+    "PlatformAnalysis",
+    "CodeAnalysisReport",
 
     # Agents
-    'CodeQualityAgent',
-    'CodeQualityInputs',
-    'CodeQualityOutputs',
-    'PlatformAnalysisAgent',
-    'PlatformAnalysisInputs',
-    'PlatformAnalysisOutputs',
-    'LintingAgent',
-    'LintingInputs',
-    'LintingOutputs',
+    "CodeQualityAgent",
+    "CodeQualityInputs",
+    "CodeQualityOutputs",
+    "PlatformAnalysisAgent",
+    "PlatformAnalysisInputs",
+    "PlatformAnalysisOutputs",
+    "LintingAgent",
+    "LintingInputs",
+    "LintingOutputs",
 
     # Crew
-    'AutoPRCrew'
+    "AutoPRCrew"
 ]

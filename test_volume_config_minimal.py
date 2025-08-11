@@ -1,7 +1,6 @@
 """Minimal test for VolumeConfig import and basic functionality."""
-import sys
-import os
 from pathlib import Path
+import sys
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -12,14 +11,14 @@ print("Attempting to import VolumeConfig...")
 try:
     from autopr.agents.base.volume_config import VolumeConfig
     print("✅ Successfully imported VolumeConfig")
-    
+
     # Test basic functionality
     print("\nTesting VolumeConfig initialization:")
     config = VolumeConfig()
     print(f"✅ Volume: {config.volume}")
     print(f"✅ Quality Mode: {config.quality_mode}")
     print(f"✅ Config: {config.config}")
-    
+
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback

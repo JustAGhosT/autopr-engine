@@ -160,7 +160,7 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
             return issues
 
         except json.JSONDecodeError:
-            logging.error("Failed to parse ESLint output as JSON")
+            logging.exception("Failed to parse ESLint output as JSON")
             return [
                 {
                     "filename": "",

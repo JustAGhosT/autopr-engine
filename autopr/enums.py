@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class QualityMode(str, Enum):
     """
     Defines the quality analysis modes for the AutoPR system.
@@ -12,9 +13,9 @@ class QualityMode(str, Enum):
     COMPREHENSIVE = "comprehensive"
     AI_ENHANCED = "ai_enhanced"
     SMART = "smart"
-    
+
     @classmethod
-    def from_volume(cls, volume: int) -> 'QualityMode':
+    def from_volume(cls, volume: int) -> "QualityMode":
         """
         Map a volume level (0-1000) to a QualityMode.
         
@@ -26,7 +27,7 @@ class QualityMode(str, Enum):
         """
         if not 0 <= volume <= 1000:
             raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
-            
+
         # Thresholds aligned with tests:
         # 0 -> ULTRA_FAST
         # 100-299 -> FAST

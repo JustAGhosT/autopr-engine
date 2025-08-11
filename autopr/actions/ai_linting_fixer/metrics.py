@@ -5,9 +5,9 @@ Comprehensive performance tracking and analysis for AI linting operations,
 including timing, throughput, resource usage, and quality metrics.
 """
 
+from datetime import datetime
 import logging
 import time
-from datetime import datetime
 from typing import Any
 
 import psutil

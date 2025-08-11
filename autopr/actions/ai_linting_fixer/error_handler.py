@@ -7,7 +7,7 @@ capabilities that integrate with the existing display system.
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 import logging
 import operator
@@ -75,7 +75,7 @@ class ErrorContext:
     workflow_step: str | None = None
     user_action: str | None = None
     system_state: dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     session_id: str | None = None
 
 
@@ -399,7 +399,7 @@ class ErrorHandler:
         file_path = Path(file_path)
 
         summary = self.get_error_summary()
-        summary["exported_at"] = datetime.now(timezone.utc).isoformat()
+        summary["exported_at"] = datetime.now(UTC).isoformat()
         summary["errors"] = [
             {
                 "error_id": error.error_id,

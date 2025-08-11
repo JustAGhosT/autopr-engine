@@ -1,6 +1,6 @@
 from typing import Any
-# mypy: disable-error-code=misc
 
+# mypy: disable-error-code=misc
 import structlog
 
 from autopr.security.validation_models import ValidationResult, ValidationSeverity

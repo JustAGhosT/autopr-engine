@@ -1,14 +1,14 @@
 """Minimal pytest test to diagnose import issues."""
-import sys
-import os
 from pathlib import Path
+import sys
+
 
 def test_import_paths():
     """Test that the Python path is set up correctly."""
     print("\nPython path in pytest:")
     for p in sys.path:
         print(f"  {p}")
-    
+
     # Check if project root is in path
     project_root = str(Path(__file__).parent.parent.absolute())
     assert project_root in sys.path, f"Project root {project_root} not in sys.path"

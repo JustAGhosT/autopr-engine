@@ -5,13 +5,14 @@ Level 0 Complete Verification
 This script verifies that Level 0 (no linting) is completely working
 """
 
-import subprocess
 import os
+import subprocess
+
 
 def check_tool_disabled(tool_name, command, expected_exit=0):
     """Check if a tool is disabled"""
     try:
-        result = subprocess.run(command.split(), capture_output=True, text=True)        
+        result = subprocess.run(command.split(), capture_output=True, text=True, check=False)
         if result.returncode == expected_exit:
             print(f"✅ {tool_name}: DISABLED")
             return True
@@ -27,18 +28,18 @@ def check_tool_disabled(tool_name, command, expected_exit=0):
 def main():
     print("🔍 VERIFYING LEVEL 0 (NO LINTING) STATUS")
     print("=" * 50)
-    
+
     # Check Python linting tools
     print("\n🐍 Python Linting Tools:")
     check_tool_disabled("Flake8", "flake8 scripts/volume-control/volume_knob.py")
     check_tool_disabled("Ruff", "ruff check scripts/volume-control/volume_knob.py")
     check_tool_disabled("MyPy", "mypy scripts/volume-control/volume_knob.py")
-    
+
     # Check other linting tools
     print("\n📝 Other Linting Tools:")
     check_tool_disabled("MarkdownLint", "npx markdownlint README.md")
     check_tool_disabled("CSpell", "npx cspell README.md")
-    
+
     # Check configuration files
     print("\n⚙️ Configuration Files:")
     config_files = [
@@ -47,17 +48,17 @@ def main():
         ("cspell.json", "CSpell config"),
         (".vscode/settings.json", "VS Code settings")
     ]
-    
+
     for file_path, description in config_files:
         if os.path.exists(file_path):
             print(f"✅ {description}: EXISTS")
         else:
             print(f"❌ {description}: MISSING")
-    
+
     # Check pyproject.toml
     print("\n📦 PyProject.toml:")
     if os.path.exists("pyproject.toml"):
-        with open("pyproject.toml", "r") as f:
+        with open("pyproject.toml") as f:
             content = f.read()
             if "[tool.flake8]" in content or "[tool.ruff]" in content or "[tool.mypy]" in content:
                 print("❌ PyProject.toml: STILL HAS LINTING CONFIGS")
@@ -65,7 +66,7 @@ def main():
                 print("✅ PyProject.toml: LINTING CONFIGS REMOVED")
     else:
         print("❌ PyProject.toml: MISSING")
-    
+
     print("\n" + "=" * 50)
     print("🎯 LEVEL 0 VERIFICATION COMPLETE")
     print("\n💡 If you still see errors in Cursor:")
@@ -74,4 +75,4 @@ def main():
     print("   3. Check if any extensions are still running")
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -7,13 +7,13 @@ This enables horizontal scaling across multiple workers and systems.
 
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
 import logging
+import os
 import time
 from typing import Any, TypedDict
-import os
 import uuid
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 # Optional Redis dependency
 try:
     import redis  # type: ignore[import-not-found, import-untyped]
-    from redis.exceptions import ConnectionError as RedisConnectionError  # type: ignore[import-not-found, import-untyped]
+    from redis.exceptions import (
+        ConnectionError as RedisConnectionError,  # type: ignore[import-not-found, import-untyped]
+    )
     from redis.exceptions import RedisError  # type: ignore[import-not-found, import-untyped]
 
     REDIS_AVAILABLE = True
@@ -70,7 +72,7 @@ class QueuedIssue:
 
     def __post_init__(self):
         if self.created_at is None:
-            self.created_at = datetime.now(timezone.utc)
+            self.created_at = datetime.now(UTC)
         if not self.id:
             self.id = str(uuid.uuid4())
 
@@ -108,7 +110,7 @@ class ProcessingResult:
 
     def __post_init__(self):
         if self.processed_at is None:
-            self.processed_at = datetime.now(timezone.utc)
+            self.processed_at = datetime.now(UTC)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -157,7 +159,7 @@ class RedisQueueManager:
         # Statistics
         self.processed_count = 0
         self.failed_count = 0
-        self.start_time = datetime.now(timezone.utc)
+        self.start_time = datetime.now(UTC)
 
     def _connect(self):
         """Establish Redis connection."""
@@ -235,7 +237,7 @@ class RedisQueueManager:
 
             # Move to processing queue
             issue.assigned_worker = self.worker_id
-            issue.processing_started_at = datetime.now(timezone.utc)
+            issue.processing_started_at = datetime.now(UTC)
 
             processing_data = json.dumps(issue.to_dict())
             assert self.redis_client is not None
@@ -294,7 +296,7 @@ class RedisQueueManager:
                 {
                     **issue.to_dict(),
                     "final_error": error_message,
-                    "failed_at": datetime.now(timezone.utc).isoformat(),
+                    "failed_at": datetime.now(UTC).isoformat(),
                 }
             )
             assert self.redis_client is not None
@@ -324,7 +326,7 @@ class RedisQueueManager:
                     "processed_count": self.processed_count,
                     "failed_count": self.failed_count,
                     "uptime_seconds": (
-                        datetime.now(timezone.utc) - self.start_time
+                        datetime.now(UTC) - self.start_time
                     ).total_seconds(),
                 },
                 "active_workers": self._get_active_workers(),
@@ -337,7 +339,7 @@ class RedisQueueManager:
     def _get_active_workers(self) -> list[dict[str, Any]]:
         """Get list of active workers."""
         try:
-            cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=5)
+            cutoff_time = datetime.now(UTC) - timedelta(minutes=5)
             cutoff_timestamp = cutoff_time.timestamp()
 
             # Get workers that have sent heartbeat in last 5 minutes
@@ -349,7 +351,7 @@ class RedisQueueManager:
                         {
                             "worker_id": worker_id,
                             "last_seen": datetime.fromtimestamp(
-                                float(last_seen), tz=timezone.utc
+                                float(last_seen), tz=UTC
                             ).isoformat(),
                         }
                     )
@@ -371,7 +373,7 @@ class RedisQueueManager:
     def cleanup_stale_processing(self, timeout_minutes: int = 30):
         """Clean up stale processing items."""
         try:
-            cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=timeout_minutes)
+            cutoff_time = datetime.now(UTC) - timedelta(minutes=timeout_minutes)
 
             stale_count = 0
             assert self.redis_client is not None

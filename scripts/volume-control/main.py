@@ -5,14 +5,14 @@ Main Volume Control for AutoPR Engine
 HiFi-style volume control with 0-1000 scale in ticks of 5.
 """
 
-import sys
 import os
 from pathlib import Path
+import sys
 
 # Add the volume-control directory to the path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from volume_knob import DevVolumeKnob, CommitVolumeKnob
+from volume_knob import CommitVolumeKnob, DevVolumeKnob
 
 
 def show_help():
@@ -66,7 +66,7 @@ def show_status():
     """Show current volume status"""
     dev_knob = DevVolumeKnob()
     commit_knob = CommitVolumeKnob()
-    
+
     print("🎛️ CURRENT VOLUME STATUS")
     print("=" * 60)
     print(f"Dev Environment Volume: {dev_knob.get_volume()}/1000")
@@ -77,7 +77,7 @@ def show_status():
     print(f"  Level: {commit_knob.get_volume_level()}")
     print(f"  Description: {commit_knob.get_volume_description()}")
     print()
-    
+
     # Show recommendations
     if dev_knob.get_volume() == 0:
         print("💡 Dev Volume is OFF - no linting in IDE")
@@ -91,7 +91,7 @@ def show_status():
     else:
         print("💡 Dev Volume is HIGH - strict linting")
         print("   To decrease: python main.py dev down 1")
-    
+
     if commit_knob.get_volume() == 0:
         print("💡 Commit Volume is OFF - no commit checks")
         print("   To start: python main.py commit 50")
@@ -107,16 +107,16 @@ def autofix_current():
     """Autofix issues at current volume levels"""
     dev_knob = DevVolumeKnob()
     commit_knob = CommitVolumeKnob()
-    
+
     print("🔧 AUTOFIXING CURRENT VOLUME LEVELS")
     print("=" * 60)
-    
+
     # Autofix dev volume
     if dev_knob.get_volume() > 0:
         print(f"🔧 Autofixing Dev Volume {dev_knob.get_volume()}/1000")
         print(f"   Level: {dev_knob.get_volume_level()}")
         print(f"   Description: {dev_knob.get_volume_description()}")
-        
+
         # Run appropriate autofix commands based on level
         level = dev_knob.get_volume_level()
         if level in ["ULTRA_QUIET", "QUIET", "LOW"]:
@@ -132,17 +132,17 @@ def autofix_current():
             os.system("ruff check . --fix")
             os.system("black .")
             os.system("isort .")
-    
+
     # Autofix commit volume
     if commit_knob.get_volume() > 0:
         print(f"🔧 Autofixing Commit Volume {commit_knob.get_volume()}/1000")
         print(f"   Level: {commit_knob.get_volume_level()}")
         print(f"   Description: {commit_knob.get_volume_description()}")
-        
+
         # Run pre-commit autofix
         print("   Running: pre-commit run --all-files")
         os.system("pre-commit run --all-files")
-    
+
     print("✅ Autofix complete!")
 
 
@@ -151,32 +151,32 @@ def main():
     if len(sys.argv) < 2:
         show_status()
         return
-    
+
     command = sys.argv[1].lower()
-    
+
     if command == "help":
         show_help()
         return
-    
+
     elif command == "status":
         show_status()
         return
-    
+
     elif command == "autofix":
         autofix_current()
         return
-    
+
     elif command in ["dev", "commit"]:
         knob_type = command
         knob = DevVolumeKnob() if knob_type == "dev" else CommitVolumeKnob()
-        
+
         if len(sys.argv) < 3:
             print(f"❌ Missing volume for {knob_type}")
             print(f"Usage: python main.py {knob_type} <0-1000>")
             return
-        
+
         subcommand = sys.argv[2].lower()
-        
+
         if subcommand == "up":
             steps = int(sys.argv[3]) if len(sys.argv) >= 4 else 1
             knob.volume_up(steps)
@@ -191,22 +191,22 @@ def main():
                 print(f"❌ Invalid volume: {subcommand}")
                 print("Volume must be a number between 0 and 1000 (multiple of 5)")
                 return
-        
+
         # Apply the settings
         knob.apply_volume_settings()
-        
+
         print(f"\n🎛️ {knob_type.upper()} VOLUME: {knob.get_volume()}/1000")
         print(f"📝 Description: {knob.get_volume_description()}")
-        
+
         # Show next steps
         if knob.get_volume() > 0:
-            print(f"\n💡 To autofix this level: python main.py autofix")
+            print("\n💡 To autofix this level: python main.py autofix")
             print(f"💡 To adjust: python main.py {knob_type} up 1 or down 1")
-    
+
     else:
         print(f"❌ Unknown command: {command}")
         print("Use 'python main.py help' for usage information")
 
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -1,7 +1,6 @@
 """Minimal test script to verify AutoPRCrew import and instantiation."""
-import sys
-import os
 from pathlib import Path
+import sys
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent.resolve())
@@ -13,11 +12,11 @@ try:
     print("Attempting to import AutoPRCrew...")
     from autopr.agents.crew import AutoPRCrew
     print("✅ Successfully imported AutoPRCrew")
-    
+
     print("\nAttempting to instantiate AutoPRCrew...")
     crew = AutoPRCrew()
     print("✅ Successfully instantiated AutoPRCrew")
-    
+
 except Exception as e:
     print(f"\n❌ Error: {e}", file=sys.stderr)
     import traceback

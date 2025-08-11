@@ -3,7 +3,8 @@ Agent definitions for the AutoPR Agent Framework.
 
 This module defines the specialized agents used in the AutoPR code analysis pipeline.
 """
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, field_validator
 
 # Provide a fallback for typing/mypy when crewai is not available
@@ -13,24 +14,20 @@ except Exception:  # pragma: no cover
     class Agent:  # type: ignore[no-redef]
         """Fallback Agent stub used when crewai is unavailable."""
 
-        pass
+from autopr.actions import platform_detection
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs
-from autopr.utils.volume_utils import QualityMode
-import autopr.actions.platform_detection as platform_detection
-from autopr.utils.volume_utils import get_volume_level_name
-from autopr.agents.models import IssueSeverity
-
-from autopr.agents.models import CodeIssue
+from autopr.agents.models import CodeIssue, IssueSeverity
+from autopr.utils.volume_utils import QualityMode, get_volume_level_name
 
 
 class VolumeConfig(BaseModel):
     """Pydantic model for validating volume configuration (used in tests)."""
 
     volume: int = 500
-    quality_mode: Optional[QualityMode] = None
-    config: Optional[Dict[str, Any]] = None
+    quality_mode: QualityMode | None = None
+    config: dict[str, Any] | None = None
 
     @field_validator("volume")
     @classmethod
@@ -41,7 +38,7 @@ class VolumeConfig(BaseModel):
 
     @field_validator("config")
     @classmethod
-    def _validate_config(cls, v: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def _validate_config(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
         if v is None:
             return v
         # Enforce that enable_ai_agents, if provided, must be boolean
@@ -119,7 +116,7 @@ class BaseAgent(Agent):
         """Get the volume configuration."""
         return self._volume_config
 
-    def get_volume_context(self) -> Dict[str, Any]:
+    def get_volume_context(self) -> dict[str, Any]:
         """Get context about the current volume level for agent tasks."""
         return {
             "volume": self._volume,
@@ -168,7 +165,7 @@ class CodeQualityAgent(BaseAgent):
         """Get the quality engine instance."""
         return self._quality_engine
 
-    async def analyze_code_quality(self, repo_path: str) -> Dict[str, Any]:
+    async def analyze_code_quality(self, repo_path: str) -> dict[str, Any]:
         """Analyze code quality for the given repository."""
         # Build minimal inputs and delegate to the quality engine
         inputs = QualityInputs(files=[repo_path], volume=self.volume)
@@ -209,12 +206,12 @@ class PlatformAnalysisAgent(BaseAgent):
         )
 
         # Defer detector creation so tests can patch the class before first access
-        self._platform_detector: Optional[platform_detection.PlatformDetector] = None
+        self._platform_detector: platform_detection.PlatformDetector | None = None
 
         # Configure platform detector based on volume if needed
         if self.volume_config.config and "platform_scan_depth" in self.volume_config.config and self._platform_detector is not None:
             if hasattr(self._platform_detector, "scan_depth"):
-                setattr(self._platform_detector, "scan_depth", self.volume_config.config["platform_scan_depth"])
+                self._platform_detector.scan_depth = self.volume_config.config["platform_scan_depth"]
 
     @property
     def platform_detector(self) -> platform_detection.PlatformDetector:
@@ -224,7 +221,7 @@ class PlatformAnalysisAgent(BaseAgent):
             # Configure platform detector based on volume if needed
             if self.volume_config.config and "platform_scan_depth" in self.volume_config.config:
                 try:
-                    setattr(self._platform_detector, "scan_depth", self.volume_config.config["platform_scan_depth"])  # noqa: B009
+                    self._platform_detector.scan_depth = self.volume_config.config["platform_scan_depth"]
                 except Exception:
                     # Some PlatformDetector implementations may not support dynamic attributes
                     pass
@@ -304,7 +301,7 @@ class LintingAgent(BaseAgent):
         """Set the verbosity setting."""
         self._verbose = value
 
-    async def fix_code_issues(self, file_path: str) -> List[CodeIssue]:
+    async def fix_code_issues(self, file_path: str) -> list[CodeIssue]:
         """Fix code style and quality issues in the specified file.
 
         Args:
@@ -320,14 +317,14 @@ class LintingAgent(BaseAgent):
         try:
             # Get the file content
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     file_content = f.read()
             except UnicodeDecodeError as e:
                 return [CodeIssue(
                     file_path=file_path,
                     line_number=0,
                     column=0,
-                    message=f"Failed to decode file: {str(e)}. File may be binary or use a different encoding.",
+                    message=f"Failed to decode file: {e!s}. File may be binary or use a different encoding.",
                     severity=IssueSeverity.HIGH,
                     rule_id="encoding-error",
                     category="error",
@@ -346,7 +343,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     column=0,
-                    message=f"Linting failed: {str(e)}",
+                    message=f"Linting failed: {e!s}",
                     severity=IssueSeverity.HIGH,
                     rule_id="linting-error",
                     category="error",
@@ -356,7 +353,7 @@ class LintingAgent(BaseAgent):
             # Write the fixed content back to the file if it changed
             if fixed_content != file_content:
                 try:
-                    with open(file_path, 'w', encoding='utf-8') as f:
+                    with open(file_path, "w", encoding="utf-8") as f:
                         f.write(fixed_content)
 
                     if self._verbose:
@@ -367,7 +364,7 @@ class LintingAgent(BaseAgent):
                         file_path=file_path,
                         line_number=0,
                         column=0,
-                        message=f"Failed to write fixes to file: {str(e)}",
+                        message=f"Failed to write fixes to file: {e!s}",
                         severity=IssueSeverity.HIGH,
                         rule_id="write-error",
                         category="error",
@@ -385,12 +382,12 @@ class LintingAgent(BaseAgent):
         except Exception as e:
             # For any other unexpected errors, return an error issue
             if self._verbose:
-                print(f"Unexpected error fixing issues in {file_path}: {str(e)}")
+                print(f"Unexpected error fixing issues in {file_path}: {e!s}")
             return [CodeIssue(
                 file_path=file_path,
                 line_number=0,
                 column=0,
-                message=f"Unexpected error: {str(e)}",
+                message=f"Unexpected error: {e!s}",
                 severity=IssueSeverity.HIGH,
                 rule_id="unexpected-error",
                 category="error",

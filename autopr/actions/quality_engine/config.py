@@ -1,7 +1,7 @@
 """Configuration loading for the Quality Engine."""
 
-import os
 import importlib
+import os
 from typing import Any, cast
 
 import pydantic
@@ -69,7 +69,7 @@ def _load_yaml_config(config_path: str) -> dict[str, Any]:
         yaml_mod = importlib.import_module("yaml")  # type: ignore[import-not-found]
     except Exception:
         return {}
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         return cast(dict[str, Any], yaml_mod.safe_load(f)) or {}  # type: ignore[attr-defined]
 
 

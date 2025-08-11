@@ -5,7 +5,7 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import json
 import logging
 from pathlib import Path
@@ -454,7 +454,7 @@ class AIInteractionDB:
     def cleanup_old_interactions(self, days_to_keep: int = 30):
         """Clean up old interactions to keep database size manageable."""
         with sqlite3.connect(self.db_path) as conn:
-            cutoff_date = datetime.now(timezone.utc).isoformat()[:10]  # YYYY-MM-DD format
+            cutoff_date = datetime.now(UTC).isoformat()[:10]  # YYYY-MM-DD format
 
             # Delete old interactions (keeping last N days)
             conn.execute(
@@ -510,7 +510,7 @@ class DatabaseManager:
     def export_to_json(self, filepath: str, include_sessions: bool = True):
         """Export database contents to JSON file."""
         export_data = {
-            "export_timestamp": datetime.now(timezone.utc).isoformat(),
+            "export_timestamp": datetime.now(UTC).isoformat(),
             "database_info": self.db.get_database_info(),
             "interactions": self.db.get_all_interactions(),
         }
@@ -559,13 +559,13 @@ class DatabaseManager:
                 "success_rate": stats["success_rate"],
                 "queue_pending": queue_stats["overall"]["pending"],
                 "queue_in_progress": queue_stats["overall"]["in_progress"],
-                "last_check": datetime.now(timezone.utc).isoformat(),
+                "last_check": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             return {
                 "status": "error",
                 "error": str(e),
-                "last_check": datetime.now(timezone.utc).isoformat(),
+                "last_check": datetime.now(UTC).isoformat(),
             }
 
     def maintenance(self, cleanup_days: int = 30):

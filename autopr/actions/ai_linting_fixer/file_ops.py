@@ -8,12 +8,12 @@ and atomic operations for the AI linting system.
 import ast
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import logging
 from pathlib import Path
 import shutil
 import tempfile
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +222,7 @@ class BackupManager:
 class SafeFileOperations:
     """Provides safe file operations with validation and rollback capabilities."""
 
-    def __init__(self, backup_manager: Optional[BackupManager] = None):
+    def __init__(self, backup_manager: BackupManager | None = None):
         self.backup_manager = backup_manager or BackupManager()
         self.validator = FileValidator()
         self.temp_files: list[str] = []
@@ -414,7 +414,7 @@ class SafeFileOperations:
                 "path": str(path.absolute()),
                 "size_bytes": stat.st_size,
                 "size_lines": len(content.splitlines()),
-                "last_modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+                "last_modified": datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 "is_syntax_valid": is_valid,
                 "syntax_error": syntax_error,
                 "complexity_score": complexity,

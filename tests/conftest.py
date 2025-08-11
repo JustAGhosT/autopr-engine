@@ -4,12 +4,11 @@ This module includes volume-based warning control and other test configurations.
 """
 
 import asyncio
-import os
-import warnings
-import sys
-from pathlib import Path
-from typing import List
 from collections.abc import AsyncGenerator
+import os
+from pathlib import Path
+import sys
+import warnings
 
 import pytest  # type: ignore
 import pytest_asyncio  # type: ignore
@@ -29,7 +28,7 @@ def get_volume_level() -> int:
     return int(os.environ.get("AUTOPR_TEST_VOLUME_LEVEL", "500"))
 
 
-def get_warning_filters(volume: int) -> List[str]:
+def get_warning_filters(volume: int) -> list[str]:
     """Get warning filters based on the current volume level.
 
     Args:

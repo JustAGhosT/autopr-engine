@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+
 
 class TestAgentImports(unittest.TestCase):
     def test_import_platform_analysis_agent(self):
@@ -9,7 +9,7 @@ class TestAgentImports(unittest.TestCase):
             self.assertTrue(True, "Successfully imported PlatformAnalysisAgent")
         except ImportError as e:
             self.fail(f"Failed to import PlatformAnalysisAgent: {e}")
-    
+
     def test_import_platform_type(self):
         """Test that we can import PlatformType."""
         try:

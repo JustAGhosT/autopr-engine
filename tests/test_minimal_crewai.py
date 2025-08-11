@@ -1,10 +1,8 @@
 """
 Minimal test script to diagnose CrewAI integration test issues.
 """
-import sys
-import os
-import pytest
 from pathlib import Path
+import sys
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent.parent)
@@ -40,7 +38,7 @@ if __name__ == "__main__":
     instantiate_result = False
     if import_result:
         instantiate_result = test_instantiate_autopr_crew()
-    
+
     if import_result and instantiate_result:
         print("\n✅ All tests passed!")
         sys.exit(0)

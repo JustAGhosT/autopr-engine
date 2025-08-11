@@ -15,7 +15,8 @@ import logging
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, Field as _Field, SecretStr, field_validator
+from pydantic import BaseModel, SecretStr, field_validator
+from pydantic import Field as _Field
 import yaml  # type: ignore[import-untyped]
 
 try:

@@ -1,6 +1,6 @@
 """Debug script for CrewAI boolean validation issue."""
-import sys
 from pathlib import Path
+import sys
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent)
@@ -12,25 +12,25 @@ def debug_crew_instantiation():
     try:
         # Import with debug prints
         print("\n=== Importing modules ===")
-        from autopr.agents.crew import AutoPRCrew
         from autopr.actions.quality_engine.models import QualityInputs
         from autopr.actions.quality_engine.volume_mapping import get_volume_config
-        
+        from autopr.agents.crew import AutoPRCrew
+
         print("\n=== Testing volume mapping ===")
         volume = 500
         config = get_volume_config(volume)
         print(f"Volume config for {volume}:", config)
-        print(f"enable_ai_agents type:", type(config["enable_ai_agents"]).__name__)
-        
+        print("enable_ai_agents type:", type(config["enable_ai_agents"]).__name__)
+
         print("\n=== Testing QualityInputs creation ===")
         inputs = QualityInputs()
         print("Default QualityInputs:", inputs.dict())
-        
+
         print("\n=== Testing AutoPRCrew instantiation ===")
         crew = AutoPRCrew(llm_model="gpt-4")
         print("✅ Successfully instantiated AutoPRCrew")
         return True
-        
+
     except Exception as e:
         print(f"\n❌ Error: {e}", file=sys.stderr)
         import traceback

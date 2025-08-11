@@ -11,10 +11,10 @@ from ..base.action import Action
 from .config import load_config
 from .handler_registry import HandlerRegistry
 from .models import QualityInputs, QualityMode, QualityOutputs
-from .volume_mapping import get_volume_config, get_volume_level_name
 from .platform_detector import PlatformDetector
 from .tool_runner import determine_smart_tools, run_tool
 from .tools.registry import ToolRegistry
+from .volume_mapping import get_volume_level_name
 
 logger = structlog.get_logger(__name__)
 
@@ -157,7 +157,7 @@ class QualityEngine(Action):
             tools = list(self.tools.keys())  # All available tools
         else:  # AI_ENHANCED or other modes
             tools = list(self.tools.keys())
-            
+
         # Adjust tools based on volume level
         if volume < 100:  # Very quiet - minimal tools
             tools = [t for t in tools if t in {"ruff"}]
@@ -166,7 +166,7 @@ class QualityEngine(Action):
         elif volume < 700:  # Moderate - standard tools
             tools = [t for t in tools if t not in {"pylint", "mypy"}]
         # At higher volumes, use all tools determined by the quality mode
-            
+
         return tools
 
     def _get_tool_config(self, tool_name: str) -> Any:
@@ -185,7 +185,7 @@ class QualityEngine(Action):
                 return {"enabled": True, "config": tool_settings}
         else:
             return {"enabled": True, "config": {}}
-            
+
     def _validate_volume(self, volume: int) -> int:
         """Validate that the volume is within the expected range (0-1000).
         
@@ -219,21 +219,21 @@ class QualityEngine(Action):
         """
         # Determine the volume to use, with proper precedence
         if volume is None:
-            volume = getattr(inputs, 'volume', 500)  # Default to 500 if not specified
-        
+            volume = getattr(inputs, "volume", 500)  # Default to 500 if not specified
+
         # Validate volume is an integer and within range
         volume = self._validate_volume(volume)
-        
+
         # Apply volume settings to inputs if volume was explicitly provided
-        if hasattr(inputs, 'apply_volume_settings'):
+        if hasattr(inputs, "apply_volume_settings"):
             inputs.apply_volume_settings(volume)
-        
+
         # Get volume level name for logging
         volume_level = get_volume_level_name(volume)  # Directly use the imported function
-        
+
         logger.info(
-            "Executing Quality Engine", 
-            mode=inputs.mode, 
+            "Executing Quality Engine",
+            mode=inputs.mode,
             volume=volume,
             volume_level=volume_level
         )
@@ -243,7 +243,7 @@ class QualityEngine(Action):
 
         # Determine tools to run based on mode and volume
         tools_to_run = self._determine_tools_for_mode(
-            inputs.mode, 
+            inputs.mode,
             files_to_check,
             volume=volume
         )

@@ -6,11 +6,10 @@ Extracted from database module to improve modularity and security.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import logging
 import sqlite3
 from typing import Any
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,7 @@ class IssueQueueManager:
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
-                            datetime.now(timezone.utc).isoformat(),
+                            datetime.now(UTC).isoformat(),
                             session_id,
                             issue["file_path"],
                             issue["line_number"],
@@ -102,7 +101,7 @@ class IssueQueueManager:
                     "SET status = 'in_progress', assigned_worker_id = ?, processing_started_at = ? "
                     f"WHERE id IN ({placeholders})"
                 )  # nosec B608: ids are validated integers from prior SELECT; placeholders only
-                conn.execute(update_query, [worker_id, datetime.now(timezone.utc).isoformat(), *issue_ids])
+                conn.execute(update_query, [worker_id, datetime.now(UTC).isoformat(), *issue_ids])
                 conn.commit()
 
             return issues
@@ -117,7 +116,7 @@ class IssueQueueManager:
 
             if status in {"completed", "failed"}:
                 update_fields.append("processing_completed_at = ?")
-                params.append(datetime.now(timezone.utc).isoformat())
+                params.append(datetime.now(UTC).isoformat())
 
             if fix_result:
                 if "fix_successful" in fix_result:
@@ -253,7 +252,7 @@ class IssueQueueManager:
     def cleanup_old_queue_items(self, days_to_keep: int = 7) -> None:
         """Clean up old completed/failed queue items."""
         with sqlite3.connect(self.db.db_path) as conn:
-            cutoff_date = datetime.now(timezone.utc).isoformat()[:10]  # YYYY-MM-DD format
+            cutoff_date = datetime.now(UTC).isoformat()[:10]  # YYYY-MM-DD format
 
             conn.execute(
                 """
@@ -268,7 +267,7 @@ class IssueQueueManager:
     def reset_stale_issues(self, timeout_minutes: int = 30) -> None:
         """Reset issues that have been in_progress for too long."""
         with sqlite3.connect(self.db.db_path) as conn:
-            timeout_time = datetime.now(timezone.utc).replace(microsecond=0)
+            timeout_time = datetime.now(UTC).replace(microsecond=0)
             timeout_time = timeout_time.replace(minute=timeout_time.minute - timeout_minutes)
 
             conn.execute(

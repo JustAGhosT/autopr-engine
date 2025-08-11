@@ -4,7 +4,7 @@ File Manager Module
 This module handles file operations, backups, and safe file modifications.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import logging
 import operator
 from pathlib import Path
@@ -37,7 +37,7 @@ class FileManager:
                 return ""
 
             # Create backup filename with timestamp
-            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             backup_name = f"{file_path_obj.stem}.backup_{timestamp}{file_path_obj.suffix}"
             backup_path = Path(self.backup_directory) / backup_name
 
@@ -148,8 +148,8 @@ class FileManager:
                 "exists": True,
                 "size_bytes": stat.st_size,
                 "size_mb": stat.st_size / (1024 * 1024),
-                "modified_time": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
-                "created_time": datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc).isoformat(),
+                "modified_time": datetime.fromtimestamp(stat.st_mtime, tz=UTC).isoformat(),
+                "created_time": datetime.fromtimestamp(stat.st_ctime, tz=UTC).isoformat(),
                 "is_file": file_path_obj.is_file(),
                 "is_directory": file_path_obj.is_dir(),
                 "extension": file_path_obj.suffix,
@@ -210,7 +210,7 @@ class FileManager:
 
             # Additional filtering by age if specified
             if older_than_days:
-                cutoff_time = datetime.now(timezone.utc).timestamp() - (
+                cutoff_time = datetime.now(UTC).timestamp() - (
                     older_than_days * 24 * 60 * 60
                 )
                 backups_to_remove = [

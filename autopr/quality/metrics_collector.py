@@ -4,7 +4,7 @@ Comprehensive system for tracking performance, accuracy, and user satisfaction m
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 import json
 import sqlite3
 import statistics
@@ -430,7 +430,7 @@ class MetricsCollector:
             "summary": {
                 "timeframe": timeframe,
                 "health_score": health_score,
-                "report_generated": datetime.now(tz=timezone.utc).isoformat(),
+                "report_generated": datetime.now(tz=UTC).isoformat(),
             },
             "metrics": metrics.dict(),
             "benchmarks": benchmarks,
@@ -440,7 +440,7 @@ class MetricsCollector:
 
     def _get_start_time(self, timeframe: str) -> datetime:
         """Convert timeframe string to datetime."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         if timeframe.endswith("d"):
             days = int(timeframe[:-1])
             return now - timedelta(days=days)
@@ -674,7 +674,7 @@ class MetricsCollector:
         total_comments = result[0]
 
         # Calculate hours elapsed
-        hours_elapsed = (datetime.now(tz=timezone.utc) - start_time).total_seconds() / 3600
+        hours_elapsed = (datetime.now(tz=UTC) - start_time).total_seconds() / 3600
         return total_comments / hours_elapsed if hours_elapsed > 0 else 0.0
 
     def _calculate_resource_utilization(

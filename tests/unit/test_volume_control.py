@@ -3,10 +3,10 @@
 
 import json
 import os
-import tempfile
-import unittest
 from pathlib import Path
 import sys
+import tempfile
+import unittest
 
 # Add volume-control to path
 test_dir = Path(__file__).parent
@@ -14,7 +14,7 @@ scripts_dir = test_dir.parent.parent / "scripts" / "volume-control"
 sys.path.insert(0, str(scripts_dir))
 
 from volume_knob import VolumeKnob
-from config_loader import VolumeConfigLoader
+
 
 class BaseVolumeTest(unittest.TestCase):
     def setUp(self):
@@ -23,14 +23,14 @@ class BaseVolumeTest(unittest.TestCase):
         os.chdir(self.temp_dir)
         Path(".vscode").mkdir(exist_ok=True)
         self.vscode_settings = Path(".vscode/settings.json")
-        with open(self.vscode_settings, 'w') as f:
+        with open(self.vscode_settings, "w") as f:
             json.dump({
                 "python.enabled": False,
                 "git.enabled": False,
                 "yaml.validate": False,
                 "problems.decorations.enabled": False
             }, f, indent=2)
-    
+
     def tearDown(self):
         os.chdir(self.original_cwd)
         import shutil
@@ -39,24 +39,24 @@ class BaseVolumeTest(unittest.TestCase):
 class TestVolumeControl(BaseVolumeTest):
     def test_volume_transitions(self):
         knob = VolumeKnob("dev")
-        
+
         # Test 0 → 50 transition
         knob.set_volume(0)
         settings = json.loads(self.vscode_settings.read_text())
         self.assertFalse(settings.get("python.enabled", True))
-        
+
         knob.set_volume(50)
         settings = json.loads(self.vscode_settings.read_text())
         self.assertTrue(settings.get("python.enabled"))
         self.assertTrue(settings.get("git.enabled"))
         self.assertFalse(settings.get("yaml.validate", True))
-        
+
         # Test 50 → 0 transition
         knob.set_volume(0)
         settings = json.loads(self.vscode_settings.read_text())
         self.assertFalse(settings.get("python.enabled", True))
         self.assertEqual(settings.get("python.languageServer"), "None")
-        
+
     def test_volume_validation(self):
         knob = VolumeKnob("dev")
         with self.assertRaises(ValueError):
@@ -70,16 +70,16 @@ class TestCommitVolumeControl(BaseVolumeTest):
     def test_separate_volumes(self):
         dev_knob = VolumeKnob("dev")
         commit_knob = VolumeKnob("commit")
-        
+
         dev_knob.set_volume(50)
         commit_knob.set_volume(200)
-        
+
         self.assertEqual(dev_knob.get_volume(), 50)
         self.assertEqual(commit_knob.get_volume(), 200)
-        
+
         dev_tools = set(dev_knob.config_loader.get_active_tools(50))
         commit_tools = set(commit_knob.config_loader.get_active_tools(200))
-        
+
         self.assertIn("python", dev_tools)
         self.assertIn("yaml", commit_tools)
 

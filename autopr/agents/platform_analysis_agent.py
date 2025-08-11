@@ -4,17 +4,17 @@ Platform Analysis Agent for AutoPR.
 This module provides the PlatformAnalysisAgent class which is responsible for
 analyzing codebases to detect the underlying platform, frameworks, and technologies.
 """
-from typing import Any, Optional
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
-from autopr.agents.base import BaseAgent
+from autopr.actions.platform_detection.config import PlatformConfigManager
 from autopr.actions.platform_detection.detector import (
     PlatformDetector,
     PlatformDetectorOutputs,
 )
 from autopr.actions.platform_detection.schema import PlatformType
-from autopr.actions.platform_detection.config import PlatformConfigManager
+from autopr.agents.base import BaseAgent
 
 # PlatformAnalysis is now imported from platform_detection.detector as PlatformDetectorOutputs
 
@@ -72,7 +72,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         verbose: bool = False,
         allow_delegation: bool = False,
         max_iter: int = 3,
-        max_rpm: Optional[int] = None,
+        max_rpm: int | None = None,
         **kwargs: Any
     ) -> None:
         """Initialize the PlatformAnalysisAgent.
@@ -212,7 +212,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             return max(analysis.confidence_scores.items(), key=lambda x: x[1])[0]
         return PlatformType.UNKNOWN.value
 
-    def _get_platform_info(self, platform_id: str | PlatformType) -> Optional[dict[str, Any]]:
+    def _get_platform_info(self, platform_id: str | PlatformType) -> dict[str, Any] | None:
         """Get information about a specific platform by ID.
 
         Args:
@@ -232,73 +232,73 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         def get_enum_value(enum_obj):
             if enum_obj is None:
                 return None
-            return getattr(enum_obj, 'value', str(enum_obj))
+            return getattr(enum_obj, "value", str(enum_obj))
 
         # Dataclass path (tests pass a PlatformConfig subclass)
-        if hasattr(platform_config, '__dataclass_fields__'):
-            detection = getattr(platform_config, 'detection', {}) or {}
+        if hasattr(platform_config, "__dataclass_fields__"):
+            detection = getattr(platform_config, "detection", {}) or {}
             detection_rules = {
-                'files': detection.get('files', []),
-                'dependencies': detection.get('dependencies', []),
-                'folder_patterns': detection.get('folder_patterns', []),
-                'commit_patterns': detection.get('commit_patterns', []),
-                'content_patterns': detection.get('content_patterns', []),
-                'package_scripts': detection.get('package_scripts', []),
+                "files": detection.get("files", []),
+                "dependencies": detection.get("dependencies", []),
+                "folder_patterns": detection.get("folder_patterns", []),
+                "commit_patterns": detection.get("commit_patterns", []),
+                "content_patterns": detection.get("content_patterns", []),
+                "package_scripts": detection.get("package_scripts", []),
             }
             return {
-                'id': getattr(platform_config, 'id', None),
-                'name': getattr(platform_config, 'name', None),
-                'display_name': getattr(platform_config, 'display_name', getattr(platform_config, 'name', None)),
-                'description': getattr(platform_config, 'description', None),
-                'type': get_enum_value(getattr(platform_config, 'type', None)),
-                'category': get_enum_value(getattr(platform_config, 'category', None)) or getattr(platform_config, 'category', None),
-                'subcategory': getattr(platform_config, 'subcategory', None),
-                'tags': getattr(platform_config, 'tags', []) or [],
-                'status': get_enum_value(getattr(platform_config, 'status', None)),
-                'documentation_url': getattr(platform_config, 'documentation_url', None),
-                'is_active': getattr(platform_config, 'is_active', True),
-                'is_beta': getattr(platform_config, 'is_beta', False),
-                'is_deprecated': getattr(platform_config, 'is_deprecated', False),
-                'version': getattr(platform_config, 'version', None),
-                'last_updated': getattr(platform_config, 'last_updated', None),
-                'supported_languages': getattr(platform_config, 'supported_languages', []) or [],
-                'supported_frameworks': getattr(platform_config, 'supported_frameworks', []) or [],
-                'integrations': getattr(platform_config, 'integrations', []) or [],
-                'detection_rules': detection_rules,
-                'project_config': getattr(platform_config, 'project_config', {}) or {},
+                "id": getattr(platform_config, "id", None),
+                "name": getattr(platform_config, "name", None),
+                "display_name": getattr(platform_config, "display_name", getattr(platform_config, "name", None)),
+                "description": getattr(platform_config, "description", None),
+                "type": get_enum_value(getattr(platform_config, "type", None)),
+                "category": get_enum_value(getattr(platform_config, "category", None)) or getattr(platform_config, "category", None),
+                "subcategory": getattr(platform_config, "subcategory", None),
+                "tags": getattr(platform_config, "tags", []) or [],
+                "status": get_enum_value(getattr(platform_config, "status", None)),
+                "documentation_url": getattr(platform_config, "documentation_url", None),
+                "is_active": getattr(platform_config, "is_active", True),
+                "is_beta": getattr(platform_config, "is_beta", False),
+                "is_deprecated": getattr(platform_config, "is_deprecated", False),
+                "version": getattr(platform_config, "version", None),
+                "last_updated": getattr(platform_config, "last_updated", None),
+                "supported_languages": getattr(platform_config, "supported_languages", []) or [],
+                "supported_frameworks": getattr(platform_config, "supported_frameworks", []) or [],
+                "integrations": getattr(platform_config, "integrations", []) or [],
+                "detection_rules": detection_rules,
+                "project_config": getattr(platform_config, "project_config", {}) or {},
             }
 
         # Dict path (manager returns to_dict minimal structure)
-        detection = platform_config.get('detection') or {}
+        detection = platform_config.get("detection") or {}
         dict_detection_rules: dict[str, list[str]] = {
-            'files': detection.get('files', []),
-            'dependencies': detection.get('dependencies', []),
-            'folder_patterns': detection.get('folder_patterns', []),
-            'commit_patterns': detection.get('commit_patterns', []),
-            'content_patterns': detection.get('content_patterns', []),
-            'package_scripts': detection.get('package_scripts', []),
+            "files": detection.get("files", []),
+            "dependencies": detection.get("dependencies", []),
+            "folder_patterns": detection.get("folder_patterns", []),
+            "commit_patterns": detection.get("commit_patterns", []),
+            "content_patterns": detection.get("content_patterns", []),
+            "package_scripts": detection.get("package_scripts", []),
         }
         return {
-            'id': platform_config.get('id'),
-            'name': platform_config.get('name'),
-            'display_name': platform_config.get('name'),
-            'description': platform_config.get('description'),
-            'type': None,
-            'category': platform_config.get('category'),
-            'subcategory': platform_config.get('subcategory'),
-            'tags': platform_config.get('tags', []),
-            'status': None,
-            'documentation_url': platform_config.get('documentation_url'),
-            'is_active': platform_config.get('is_active', True),
-            'is_beta': platform_config.get('is_beta', False),
-            'is_deprecated': platform_config.get('is_deprecated', False),
-            'version': platform_config.get('version'),
-            'last_updated': platform_config.get('last_updated'),
-            'supported_languages': platform_config.get('supported_languages', []),
-            'supported_frameworks': platform_config.get('supported_frameworks', []),
-            'integrations': platform_config.get('integrations', []),
-            'detection_rules': dict_detection_rules,
-            'project_config': platform_config.get('project_config', {}),
+            "id": platform_config.get("id"),
+            "name": platform_config.get("name"),
+            "display_name": platform_config.get("name"),
+            "description": platform_config.get("description"),
+            "type": None,
+            "category": platform_config.get("category"),
+            "subcategory": platform_config.get("subcategory"),
+            "tags": platform_config.get("tags", []),
+            "status": None,
+            "documentation_url": platform_config.get("documentation_url"),
+            "is_active": platform_config.get("is_active", True),
+            "is_beta": platform_config.get("is_beta", False),
+            "is_deprecated": platform_config.get("is_deprecated", False),
+            "version": platform_config.get("version"),
+            "last_updated": platform_config.get("last_updated"),
+            "supported_languages": platform_config.get("supported_languages", []),
+            "supported_frameworks": platform_config.get("supported_frameworks", []),
+            "integrations": platform_config.get("integrations", []),
+            "detection_rules": dict_detection_rules,
+            "project_config": platform_config.get("project_config", {}),
         }
 
     def get_supported_platforms(self) -> list[dict]:

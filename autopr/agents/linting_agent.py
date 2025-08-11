@@ -3,16 +3,17 @@ Linting Agent for AutoPR.
 This module provides the LintingAgent class which is responsible for identifying
 and fixing code style and quality issues in a codebase.
 """
-from typing import Any
-from dataclasses import dataclass
-from pathlib import Path
-import logging
 import asyncio
-from autopr.agents.base import BaseAgent
+from dataclasses import dataclass
+import logging
+from pathlib import Path
+from typing import Any
+
 from autopr.actions.ai_linting_fixer import (
     create_ai_linting_fixer as _create_ai_linting_fixer,
 )
 from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.agents.base import BaseAgent
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -273,7 +274,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
             ".md": "markdown",
         }
 
-        return language_map.get(ext, 'text')
+        return language_map.get(ext, "text")
 
     def get_available_rules(self) -> list[dict[str, Any]]:
         """Get a list of all available linting rules.

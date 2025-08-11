@@ -4,8 +4,9 @@ Volume configuration for agent quality control.
 This module provides the VolumeConfig class which handles configuration that varies
 based on a volume level (0-1000), where 0 is the lowest strictness and 1000 is the highest.
 """
-from typing import Any, Dict, Optional
 from dataclasses import dataclass
+from typing import Any
+
 from autopr.enums import QualityMode
 from autopr.utils.volume_utils import volume_to_quality_mode
 
@@ -30,9 +31,9 @@ class VolumeConfig:
         config: Dictionary of configuration parameters
     """
     volume: int = 500  # Default to moderate level (500/1000)
-    quality_mode: Optional[QualityMode] = None
-    config: Optional[Dict[str, Any]] = None
-    
+    quality_mode: QualityMode | None = None
+    config: dict[str, Any] | None = None
+
     def __post_init__(self) -> None:
         """Initialize volume-based configuration with enhanced boolean handling.
         
@@ -47,10 +48,10 @@ class VolumeConfig:
             self.volume = max(0, min(1000, int(self.volume)))
         except (TypeError, ValueError) as e:
             raise ValueError(f"Volume must be an integer between 0-1000, got {self.volume}") from e
-        
+
         # Store user-provided config to preserve it
         user_config = self.config.copy() if self.config else {}
-        
+
         # Get default mode and config based on volume if needed
         if self.quality_mode is None or self.config is None:
             try:
@@ -60,34 +61,34 @@ class VolumeConfig:
                 raise ValueError(
                     f"Failed to get default mode and config for volume {self.volume}"
                 ) from e
-            
+
             # Initialize with default values
             self.quality_mode = mode
             self.config = default_config
-            
+
             # Apply user-provided config on top of defaults
             if user_config:
                 self.config.update(user_config)
-        
+
         # Ensure all boolean values in config are properly typed
         if self.config:
             for key, value in list(self.config.items()):
                 # Only process fields that look like boolean flags
                 if not isinstance(key, str) or not key.lower().startswith(
-                    ('is_', 'has_', 'enable_', 'allow_')
+                    ("is_", "has_", "enable_", "allow_")
                 ):
                     continue
-                    
+
                 # Raise ValueError for None values in boolean fields
                 if value is None:
                     raise ValueError(f"Boolean field '{key}' cannot be None")
-                    
+
                 # Convert to bool based on type
                 if isinstance(value, str):
                     self.config[key] = self._convert_to_bool(value)
                 elif isinstance(value, (int, bool)):
                     self.config[key] = bool(value)
-    
+
     @staticmethod
     def _warn_about_conversion(value: Any) -> None:
         """Issue a warning about failed boolean conversion.
@@ -117,25 +118,25 @@ class VolumeConfig:
         """
         if value is None:
             raise ValueError("Cannot convert None to boolean")
-            
+
         if isinstance(value, bool):
             return value
-            
+
         if isinstance(value, str):
             value = value.strip().lower()
             if not value:  # Empty string
                 return False
-            if value in ('true', 't', 'yes', 'y', 'on', '1'):
+            if value in ("true", "t", "yes", "y", "on", "1"):
                 return True
-            if value in ('false', 'f', 'no', 'n', 'off', '0'):
+            if value in ("false", "f", "no", "n", "off", "0"):
                 return False
             # For any other non-empty string that's not a recognized boolean value
             VolumeConfig._warn_about_conversion(value)
             return False
-                
+
         if isinstance(value, (int, float)):
             return bool(value)
-            
+
         # For any other type, treat as False with a warning
         VolumeConfig._warn_about_conversion(value)
         return False

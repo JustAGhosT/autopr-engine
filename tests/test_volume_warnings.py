@@ -1,6 +1,7 @@
 """Tests for volume-based warning control."""
 
 import warnings
+
 import pytest
 from pytest import mark
 
@@ -19,7 +20,7 @@ def test_silent_volume():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")  # Ensure all warnings are caught
         generate_test_warnings()
-        
+
         # At volume 0, all warnings should be suppressed
         assert len(w) == 0, f"Expected no warnings at volume 0, got {len(w)}"
 
@@ -30,7 +31,7 @@ def test_quiet_volume():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")  # Ensure all warnings are caught
         generate_test_warnings()
-        
+
         # At volume 100, only DeprecationWarning and ResourceWarning should be shown
         warning_types = {type(warning.message) for warning in w}
         assert DeprecationWarning in warning_types, "Expected DeprecationWarning at volume 100"
@@ -44,7 +45,7 @@ def test_balanced_volume():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")  # Ensure all warnings are caught
         generate_test_warnings()
-        
+
         # At volume 500, all warnings should be shown
         warning_types = {type(warning.message) for warning in w}
         assert len(warning_types) >= 2, f"Expected multiple warnings at volume 500, got {warning_types}"

@@ -4,12 +4,13 @@ AI Linting Fixer Package.
 A comprehensive AI-powered linting fixer with modular architecture.
 """
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
-from .code_analyzer import CodeAnalyzer  # noqa: F401
-from .detection import IssueDetector  # noqa: F401
-from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode  # noqa: F401
-from .error_handler import (  # noqa: F401
+from .code_analyzer import CodeAnalyzer
+from .detection import IssueDetector
+from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode
+from .error_handler import (
     ErrorCategory,
     ErrorContext,
     ErrorHandler,
@@ -19,9 +20,9 @@ from .error_handler import (  # noqa: F401
     create_error_context,
     get_default_error_handler,
 )
-from .file_manager import FileManager  # noqa: F401
-from .issue_fixer import IssueFixer  # noqa: F401
-from .models import (  # noqa: F401
+from .file_manager import FileManager
+from .issue_fixer import IssueFixer
+from .models import (
     AILintingFixerInputs,
     AILintingFixerOutputs,
     FixAttemptLog,
@@ -33,14 +34,14 @@ from .models import (  # noqa: F401
     WorkflowEvent,
     WorkflowResult,
 )
-from .orchestration import (  # noqa: F401
+from .orchestration import (
     create_workflow_context,
     detect_available_orchestrators,
     execute_with_orchestration,
     get_orchestration_config,
     validate_orchestration_config,
 )
-from .performance_tracker import PerformanceTracker  # noqa: F401
+from .performance_tracker import PerformanceTracker
 
 # Optional symbols (pre-declared as variables)
 AIAgentManager: Any | None = None
@@ -61,7 +62,11 @@ except ImportError:
 try:
     from .ai_linting_fixer import (
         AILintingFixer as _AILintingFixer,
+    )
+    from .ai_linting_fixer import (
         create_ai_linting_fixer as _create_ai_linting_fixer,
+    )
+    from .ai_linting_fixer import (
         run_ai_linting_fixer as _run_ai_linting_fixer,
     )
 

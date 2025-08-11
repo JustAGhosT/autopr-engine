@@ -1,15 +1,14 @@
 """
 Tests for volume mapping functionality in AutoPR Engine.
 """
+
 import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 from autopr.actions.quality_engine.volume_mapping import (
-    volume_to_quality_mode,
-    get_volume_level_name,
+    VolumeLevel,
     get_volume_config,
-    VolumeLevel
+    get_volume_level_name,
+    volume_to_quality_mode,
 )
 from autopr.enums import QualityMode
 
@@ -34,12 +33,12 @@ class TestVolumeMapping:
         mode, config = volume_to_quality_mode(volume)
         assert mode == expected_mode
         assert set(config.keys()) == expected_config_keys
-        
+
         # Verify config values are reasonable
         assert isinstance(config["enable_ai_agents"], bool)
         assert isinstance(config["max_fixes"], int)
         assert isinstance(config["max_issues"], int)
-        
+
         if volume == 0:
             assert not config["enable_ai_agents"]
             assert config["max_fixes"] == 0

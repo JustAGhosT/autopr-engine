@@ -6,7 +6,7 @@ AutoPR agents. It handles common functionality like initialization, logging, and
 volume-based configuration.
 """
 import logging
-from typing import Any, Optional, TypeVar, Generic
+from typing import Any, Generic, TypeVar
 
 # Optional dependency: provide a lightweight fallback when crewai is unavailable
 try:  # pragma: no cover - runtime optional import
@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 # Define generic type variables for input/output types
-InputT = TypeVar('InputT')
-OutputT = TypeVar('OutputT')
+InputT = TypeVar("InputT")
+OutputT = TypeVar("OutputT")
 
 
 class BaseAgent(Generic[InputT, OutputT]):
@@ -52,7 +52,7 @@ class BaseAgent(Generic[InputT, OutputT]):
         max_rpm: Maximum requests per minute for the agent
         default_volume: Default volume level (0-1000)
     """
-    
+
     def __init__(
         self,
         name: str,
@@ -62,7 +62,7 @@ class BaseAgent(Generic[InputT, OutputT]):
         verbose: bool = False,
         allow_delegation: bool = False,
         max_iter: int = 5,
-        max_rpm: Optional[int] = None,
+        max_rpm: int | None = None,
         **kwargs: Any
     ) -> None:
         """Initialize the base agent.
@@ -165,7 +165,7 @@ class BaseAgent(Generic[InputT, OutputT]):
                 e.args = (f"Error in {self.name}",) + e.args[1:]
             elif not any(self.name in str(arg) for arg in e.args if isinstance(arg, str)):
                 # If the error message doesn't already contain the agent name, prepend it
-                e.args = (f"Error in {self.name}: {str(e)}",) + e.args[1:]
+                e.args = (f"Error in {self.name}: {e!s}",) + e.args[1:]
 
             # Re-raise the original exception with preserved type and attributes
             raise

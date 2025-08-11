@@ -5,9 +5,9 @@ Handles workflow contexts, events, and results for integration with
 orchestration systems and enterprise workflow platforms.
 """
 
-import logging
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+import logging
 from typing import Any
 from uuid import uuid4
 
@@ -64,7 +64,7 @@ class WorkflowEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: str(uuid4()))
     workflow_id: str
     event_type: str  # started, progress, completed, failed, retry
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     step_name: str
 
     # Event data

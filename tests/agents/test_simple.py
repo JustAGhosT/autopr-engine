@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+
 
 class TestSimple(unittest.TestCase):
     def test_simple(self):

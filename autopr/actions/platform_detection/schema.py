@@ -114,12 +114,12 @@ class ProjectConfig(TypedDict, total=False):
     configuration_files: list[str]
 
 
-def _default_detection_rules() -> "DetectionRules":
+def _default_detection_rules() -> DetectionRules:
     # Empty rules by default
     return cast("DetectionRules", {})
 
 
-def _default_project_config() -> "ProjectConfig":
+def _default_project_config() -> ProjectConfig:
     # Empty project config by default
     return cast("ProjectConfig", {})
 

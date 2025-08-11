@@ -4,10 +4,10 @@ Code Quality Agent for AutoPR.
 This module provides the CodeQualityAgent class which is responsible for analyzing
 and improving code quality based on various metrics and best practices.
 """
+from dataclasses import dataclass
 import json
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
+from typing import Any
 
 from autopr.agents.base import BaseAgent
 
@@ -26,7 +26,7 @@ class CodeQualityInputs:
     code: str
     file_path: str
     language: str
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 @dataclass
@@ -40,10 +40,10 @@ class CodeQualityOutputs:
         suggestions: List of improvement suggestions
     """
 
-    issues: List[Dict[str, Any]]
+    issues: list[dict[str, Any]]
     score: float
-    metrics: Dict[str, Any]
-    suggestions: List[str]
+    metrics: dict[str, Any]
+    suggestions: list[str]
 
 
 class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
@@ -59,7 +59,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         verbose: bool = False,
         allow_delegation: bool = False,
         max_iter: int = 3,
-        max_rpm: Optional[int] = None,
+        max_rpm: int | None = None,
         **kwargs: Any
     ) -> None:
         """Initialize the CodeQualityAgent.
@@ -88,7 +88,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
             **kwargs
         )
         # Initialize LLM provider if not done by BaseAgent
-        if not hasattr(self, 'llm_provider'):
+        if not hasattr(self, "llm_provider"):
             from autopr.actions.llm.manager import LLMProviderManager
             # Minimal default config; provider selection handled later
             self.llm_provider = LLMProviderManager({"default_provider": "azure_openai", "providers": {}})
@@ -129,16 +129,16 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         except Exception as e:
             # Log the error and return a default response
             if self.verbose:
-                print(f"Error in CodeQualityAgent: {str(e)}")
+                print(f"Error in CodeQualityAgent: {e!s}")
 
             return CodeQualityOutputs(
-                issues=[{"message": f"Error analyzing code: {str(e)}", "severity": "error"}],
+                issues=[{"message": f"Error analyzing code: {e!s}", "severity": "error"}],
                 score=0.0,
                 metrics={"error": str(e)},
                 suggestions=["Failed to analyze code quality due to an error."],
             )
 
-    def _build_prompt(self, inputs: CodeQualityInputs, config: Dict[str, Any]) -> str:
+    def _build_prompt(self, inputs: CodeQualityInputs, config: dict[str, Any]) -> str:
         """Build the prompt for the LLM based on inputs and configuration.
 
         Args:
@@ -197,7 +197,7 @@ Format your response as a JSON object with the following structure:
 
 """
 
-    def _parse_response(self, response: str) -> Dict[str, Any]:
+    def _parse_response(self, response: str) -> dict[str, Any]:
         """Parse the LLM response into a structured format.
 
         Args:
@@ -233,7 +233,7 @@ Format your response as a JSON object with the following structure:
             # If JSON parsing fails, return a default response with the error
             return {
                 "issues": [{
-                    "message": f"Failed to parse LLM response: {str(e)}",
+                    "message": f"Failed to parse LLM response: {e!s}",
                     "severity": "error"
                 }],
                 "score": 0.0,

@@ -25,14 +25,14 @@ repos:
     rev: 24.1.1
     hooks:
       - id: black
-        args: [--line-length=100, --check]
+        args: [--line-length=100]
         stages: [manual]  # Moved to manual - won't block commits
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
-        args: [--profile=black, --check-only]
+        args: [--profile=black]
         stages: [manual]  # Moved to manual - won't block commits
 
   # Prettier for JSON, YAML, Markdown formatting
@@ -41,7 +41,7 @@ repos:
     hooks:
       - id: prettier
         types_or: [json, yaml, markdown]
-        args: [--prose-wrap=always, --print-width=100, --check]
+        args: [--prose-wrap=always, --print-width=100]
         stages: [manual]  # Moved to manual - won't block commits
 
   # Quality Engine - Fast mode for pre-commit (non-blocking by default)

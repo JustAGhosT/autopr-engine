@@ -7,16 +7,14 @@ Volume-based quality control configuration.
 This module provides functions to map volume levels (0-1000) to quality modes
 and configurations that control the behavior of the quality engine.
 """
-import warnings
-from typing import Dict, Any, Tuple, TypedDict
 from enum import Enum
+from typing import Any, TypedDict
+import warnings
 
 # Import from the new location
-from autopr.utils.volume_utils import (
-    get_volume_config as _get_volume_config,
-    volume_to_quality_mode as _volume_to_quality_mode,
-    get_volume_level_name as _get_volume_level_name
-)
+from autopr.utils.volume_utils import get_volume_config as _get_volume_config
+from autopr.utils.volume_utils import get_volume_level_name as _get_volume_level_name
+from autopr.utils.volume_utils import volume_to_quality_mode as _volume_to_quality_mode
 
 # Show deprecation warning
 warnings.warn(
@@ -84,13 +82,13 @@ def _get_volume_range(volume: int) -> str:
         ValueError: If volume is outside 0-1000 range or not an integer
     """
     _validate_volume(volume)
-        
+
     for name, (min_vol, max_vol) in VOLUME_RANGES.items():
         if min_vol <= volume <= max_vol:
             return name
     return "BALANCED"  # Default fallback
 
-def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
+def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
     """
     Map a volume level (0-1000) to a QualityMode and configuration.
     
@@ -105,14 +103,14 @@ def volume_to_quality_mode(volume: int) -> Tuple[QualityMode, Dict[str, Any]]:
     """
     # This will raise ValueError if volume is invalid
     volume_range = _get_volume_range(volume)
-    
+
     # Base configuration that applies to all modes
-    base_config: Dict[str, Any] = {
+    base_config: dict[str, Any] = {
         "max_fixes": max(1, volume // 20) if volume > 0 else 0,  # 0-50 fixes based on volume
         "max_issues": max(10, volume // 10),  # 10-100 issues based on volume
         "enable_ai_agents": volume > VOLUME_RANGES["MODERATE"][0],
     }
-    
+
     # Map volume ranges to quality modes
     if volume_range == "SILENT":
         return QualityMode.ULTRA_FAST, {
@@ -155,7 +153,7 @@ def get_volume_level_name(volume: int) -> str:
     return volume_range.title()
 
 
-def get_volume_config(volume: int) -> Dict[str, Any]:
+def get_volume_config(volume: int) -> dict[str, Any]:
     """
     Get the complete configuration for a given volume level.
     

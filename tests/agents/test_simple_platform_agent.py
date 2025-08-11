@@ -1,10 +1,9 @@
 import unittest
-from unittest.mock import MagicMock, patch
 
 # Try to import the required modules
 try:
-    from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
     from autopr.actions.platform_detection.schema import PlatformType
+    from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
     print("All imports successful!")
 except ImportError as e:
     print(f"Import error: {e}")
