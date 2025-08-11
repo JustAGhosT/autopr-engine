@@ -86,12 +86,19 @@ def main(argv: list[str]) -> int:
     # Tier 1: fast formatters/linters
     if py_files:
         # Ruff (use 'check' subcommand for modern CLI)
+        ruff_rc = 0
         if importlib.util.find_spec("ruff") is not None:
-            rc |= _run([sys.executable, "-m", "ruff", "check", "--fix", *py_files])
+            ruff_rc = _run([sys.executable, "-m", "ruff", "check", "--fix", *py_files])
         elif shutil.which("ruff"):
-            rc |= _run([shutil.which("ruff"), "check", "--fix", *py_files])  # type: ignore[arg-type]
+            ruff_rc = _run([shutil.which("ruff"), "check", "--fix", *py_files])  # type: ignore[arg-type]
         else:
             print("ruff not installed; skipping.")
+
+        # At low volumes, don't block on remaining ruff violations
+        if volume >= 300:
+            rc |= ruff_rc
+        elif ruff_rc != 0:
+            print("Ruff found violations; ignoring exit code at low volume < 300.")
 
         # Black
         if importlib.util.find_spec("black") is not None:

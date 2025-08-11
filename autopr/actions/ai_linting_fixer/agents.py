@@ -5,9 +5,9 @@ This module provides specialized AI agents that are experts in fixing specific
 types of linting issues, with tailored prompts and strategies for each issue type.
 """
 
-import logging
 from abc import ABC, abstractmethod
 from enum import Enum
+import logging
 from typing import Any
 
 from pydantic import BaseModel
