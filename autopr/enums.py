@@ -26,8 +26,11 @@ class QualityMode(str, Enum):
         Returns:
             QualityMode: The appropriate quality mode for the given volume
         """
-        if not 0 <= volume <= 1000:
-            raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+        MAX_VOLUME = 1000
+        MIN_VOLUME = 0
+        if not MIN_VOLUME <= volume <= MAX_VOLUME:
+            msg = f"Volume must be between {MIN_VOLUME} and {MAX_VOLUME}, got {volume}"
+            raise ValueError(msg)
 
         # Thresholds aligned with tests:
         # 0 -> ULTRA_FAST
@@ -35,12 +38,16 @@ class QualityMode(str, Enum):
         # 300-599 -> SMART
         # 600-799 -> COMPREHENSIVE
         # 800-1000 -> AI_ENHANCED
-        if volume < 100:
+        THRESH_FAST = 100
+        THRESH_SMART = 300
+        THRESH_COMPREHENSIVE = 600
+        THRESH_AI = 800
+        if volume < THRESH_FAST:
             return cls.ULTRA_FAST
-        if volume < 300:
+        if volume < THRESH_SMART:
             return cls.FAST
-        if volume < 600:
+        if volume < THRESH_COMPREHENSIVE:
             return cls.SMART
-        if volume <= 800:
+        if volume <= THRESH_AI:
             return cls.COMPREHENSIVE
         return cls.AI_ENHANCED

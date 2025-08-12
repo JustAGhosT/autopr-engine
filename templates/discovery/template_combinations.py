@@ -6,9 +6,17 @@ Template Combinations Module
 Handles template combinations and use case recommendations.
 """
 
-from typing import Any
+from typing import TypedDict
 
 from .template_models import TemplateCombination, TemplateInfo
+
+
+class CombinationDict(TypedDict):
+    platform: str
+    main_template: str
+    recommended_integrations: list[str]
+    estimated_total_time: str
+    complexity_score: int
 
 
 class TemplateCombinationEngine:
@@ -18,9 +26,9 @@ class TemplateCombinationEngine:
         """Initialize the combination engine."""
         self.templates = templates
 
-    def get_template_combinations(self, use_case: str) -> list[dict[str, Any]]:
+    def get_template_combinations(self, use_case: str) -> list[CombinationDict]:
         """Get recommended template combinations for a specific use case."""
-        combinations: list[dict[str, Any]] = []
+        combinations: list[CombinationDict] = []
 
         # Find use case templates
         use_case_templates = [
@@ -39,7 +47,7 @@ class TemplateCombinationEngine:
 
         # Create combinations for each platform
         for platform in main_template.platforms:
-            combination_data = {
+            combination_data: CombinationDict = {
                 "platform": platform,
                 "main_template": main_template.name,
                 "recommended_integrations": [],
@@ -77,15 +85,15 @@ class TemplateCombinationEngine:
         if not template:
             return []
 
-        recommendations: list[TemplateInfo] = []
         integration_templates = [t for t in self.templates if t.category == "integration"]
 
-        for integration in integration_templates:
-            # Check platform compatibility
-            if any(platform in integration.platforms for platform in template.platforms):
-                # Check feature compatibility
-                if self._has_compatible_features(template, integration):
-                    recommendations.append(integration)
+        # Prefer comprehension for performance and clarity
+        recommendations: list[TemplateInfo] = [
+            integration
+            for integration in integration_templates
+            if any(platform in integration.platforms for platform in template.platforms)
+            and self._has_compatible_features(template, integration)
+        ]
 
         return recommendations[:5]  # Return top 5 recommendations
 
@@ -204,12 +212,16 @@ class TemplateCombinationEngine:
         integration_time = sum(2 for _ in integrations)  # 2 points per integration
         total_score = main_time + integration_time
 
-        if total_score <= 2:
+        thresh_2 = 2
+        thresh_4 = 4
+        thresh_6 = 6
+        thresh_8 = 8
+        if total_score <= thresh_2:
             return "1-2 hours"
-        if total_score <= 4:
+        if total_score <= thresh_4:
             return "3-6 hours"
-        if total_score <= 6:
+        if total_score <= thresh_6:
             return "1-2 days"
-        if total_score <= 8:
+        if total_score <= thresh_8:
             return "3-5 days"
         return "1-2 weeks"

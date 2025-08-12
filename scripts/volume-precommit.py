@@ -11,8 +11,8 @@ Priority of volume sources (first hit wins):
 - Fallback to 500
 
 Tool tiers:
-- volume < 300: ruff (fix), black, isort, optional prettier (if available)
-- 300 <= volume < 600: above + bandit (exit-zero), mypy (lenient)
+- volume <= 300: persist-only (no file modifications). Run Ruff check-only/Black --check, queue findings to DB, exclude tests from scope, skip Prettier.
+- 300 < volume < 600: above + bandit (exit-zero), mypy (lenient)
 - volume >= 600: above + quality engine (comprehensive, stricter)
 """
 
@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from collections import Counter
 
 
 def _run(cmd: list[str]) -> int:
@@ -94,8 +95,8 @@ def _get_unstaged_changes() -> set[str]:
     return set()
 
 
-def _run_ruff_black_isort(py_files: list[str], volume: int, apply_fixes: bool) -> int:
-    """Run Ruff (fix), Black, and isort. Respect volume for Ruff blocking behavior."""
+def _run_ruff_black(py_files: list[str], volume: int, apply_fixes: bool) -> int:
+    """Run Ruff (fix) and Black. Respect volume for Ruff blocking behavior; Ruff handles import sorting."""
     rc = 0
     if not py_files:
         return rc
@@ -130,19 +131,6 @@ def _run_ruff_black_isort(py_files: list[str], volume: int, apply_fixes: bool) -
         rc |= _run([*black_cmd, *py_files])  # type: ignore[arg-type]
     else:
         print("black not installed; skipping.")
-    # isort
-    if importlib.util.find_spec("isort") is not None:
-        isort_cmd = [sys.executable, "-m", "isort", "--profile", "black"]
-        if not apply_fixes:
-            isort_cmd.append("--check-only")
-        rc |= _run([*isort_cmd, *py_files])
-    elif shutil.which("isort"):
-        isort_cmd = [shutil.which("isort"), "--profile", "black"]  # type: ignore[arg-type]
-        if not apply_fixes:
-            isort_cmd.append("--check-only")
-        rc |= _run([*isort_cmd, *py_files])  # type: ignore[arg-type]
-    else:
-        print("isort not installed; skipping.")
     return rc
 
 
@@ -249,6 +237,71 @@ def _persist_ruff_findings(py_files: list[str]) -> int:
         return 0
 
 
+def _collect_ruff_findings(targets: list[str]) -> list[dict]:
+    """Run ruff in JSON mode and return parsed findings list."""
+    try:
+        # Prefer python -m ruff if available; otherwise fall back to CLI
+        cmd: list[str]
+        if importlib.util.find_spec("ruff") is not None:
+            cmd = [sys.executable, "-m", "ruff", "check", "--output-format", "json", *targets]
+        elif shutil.which("ruff"):
+            ruff_bin = shutil.which("ruff")  # type: ignore[assignment]
+            cmd = [str(ruff_bin), "check", "--output-format", "json", *targets]
+        else:
+            print("ruff not installed; cannot collect findings.")
+            return []
+        _rc, out_json, _err = _run_with_timeout(cmd, timeout_seconds=25)
+        if not out_json.strip():
+            return []
+        import json
+
+        return list(json.loads(out_json))
+    except Exception:
+        return []
+
+
+def _persist_findings(findings: list[dict]) -> int:
+    """Persist pre-collected ruff findings to DB. Returns queued count."""
+    if not findings:
+        return 0
+    try:
+        from autopr.actions.ai_linting_fixer.database import (
+            AIInteractionDB,  # type: ignore
+        )
+        from autopr.actions.ai_linting_fixer.queue_manager import (
+            IssueQueueManager,  # type: ignore
+        )
+
+        issues: list[dict[str, object]] = []
+        for f in findings:
+            loc = f.get("location") or {}
+            issues.append(
+                {
+                    "file_path": f.get("filename", ""),
+                    "line_number": int(loc.get("row", 0) or 0),
+                    "column_number": int(loc.get("column", 0) or 0),
+                    "error_code": str(f.get("code", "RUFF")),
+                    "message": str(f.get("message", ""))[:500],
+                    "priority": 5,
+                    "line_content": "",
+                }
+            )
+        if not issues:
+            return 0
+        db_path = os.getenv("AUTOPR_DB_PATH", ".autopr/ai_interactions.db")
+        Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+        db = AIInteractionDB(db_path=db_path)
+        q = IssueQueueManager(db)
+        session_id = os.getenv("GITHUB_RUN_ID") or os.getenv("CI") or "local"
+        limit = int(os.getenv("AUTOPR_PRECOMMIT_QUEUE_LIMIT", "100"))
+        queued = q.queue_issues(session_id, issues[: max(1, limit)])
+        print(f"Queued {queued} issues to DB (non-blocking), limit={limit}")
+        return int(queued)
+    except Exception as e:
+        print(f"Queueing issues failed (non-blocking): {e}")
+        return 0
+
+
 def _run_quality_engine(files: list[str]) -> int:
     """Run comprehensive quality engine (blocking)."""
     cmd = [sys.executable, "-m", "autopr.actions.quality_engine", "--mode", "comprehensive"]
@@ -310,7 +363,9 @@ def main(argv: list[str]) -> int:
 
     # Group files
     py_files = _select_files_by_ext(files, [".py"])
-    if volume < 300:
+    # Exclude helper scripts from lint scope to avoid noisy utility output
+    py_files = [f for f in py_files if not (f.startswith("scripts/") or f.startswith("scripts\\"))]
+    if volume <= 300:
         py_files = [f for f in py_files if not _is_test_file(f)]
     text_files = _select_files_by_ext(
         files, [".json", ".yml", ".yaml", ".md", ".markdown"]
@@ -332,15 +387,51 @@ def main(argv: list[str]) -> int:
             "Stage your changes or stash them to allow auto-fixes."
         )
 
-    rc |= _run_ruff_black_isort(py_files, volume, apply_fixes)
-    rc |= _run_prettier(text_files)
+    # Persist-only at low volumes: never modify files, just collect/persist and show feedback
+    if volume <= 300:
+        apply_fixes = False
+    rc |= _run_ruff_black(py_files, volume, apply_fixes)
+    if volume > 300:
+        rc |= _run_prettier(text_files)
 
-    if 200 <= volume < 600:
+    # For summary details
+    rule_counts: Counter[str] = Counter()
+    file_counts: Counter[str] = Counter()
+    repo_scope_env = os.getenv("AUTOPR_REPO_SCOPE", "0") in {"1", "true", "True"}
+    repo_scope = repo_scope_env
+    queued = 0
+
+    if volume <= 300:
+        # Persist-only path: always queue for repository scope for meaningful progress
+        if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
+            queue_targets = ["autopr"]
+            repo_scope = True
+            findings = _collect_ruff_findings(queue_targets)
+            for f in findings:
+                code = str(f.get("code", "RUFF"))
+                filename = str(f.get("filename", ""))
+                if code:
+                    rule_counts[code] += 1
+                if filename:
+                    file_counts[filename] += 1
+            queued = _persist_findings(findings)
+            if os.getenv("AUTOPR_BG_FIX", "0") in {"1", "true", "True"}:
+                _run_with_timeout([sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120)
+    elif 300 < volume < 600:
         rc |= _run_security_and_typing(py_files)
-        queued = 0
-        if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "0") in {"1", "true", "True"}:
-            queued = _persist_ruff_findings(py_files)
-            # Optionally kick off background fixer immediately (non-blocking)
+        if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
+            # If no explicit files passed, queue for repository scope
+            queue_targets = ["autopr"] if repo_scope_env or not py_files else py_files
+            repo_scope = repo_scope or (not bool(py_files))
+            findings = _collect_ruff_findings(queue_targets)
+            for f in findings:
+                code = str(f.get("code", "RUFF"))
+                filename = str(f.get("filename", ""))
+                if code:
+                    rule_counts[code] += 1
+                if filename:
+                    file_counts[filename] += 1
+            queued = _persist_findings(findings)
             if os.getenv("AUTOPR_BG_FIX", "0") in {"1", "true", "True"}:
                 _run_with_timeout([sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120)
 
@@ -350,23 +441,46 @@ def main(argv: list[str]) -> int:
     if volume < 300 and os.getenv("AUTOPR_PRECOMMIT_AI_SUGGEST", "0") in {"1", "true", "True"}:
         _run_ai_suggestions(py_files)
 
-    if volume < 300:
+    if volume <= 300:
+        # Concise low-volume summary with top rules/files and next-step hint
+        print("Pre-commit summary:")
+        print(f"  Volume: {volume}")
+        print("  Scope: all files (repo)")
+        if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
+            print(f"  Issues persisted to DB: {queued}")
+            if rule_counts:
+                top_rules = ", ".join([f"{code}:{count}" for code, count in rule_counts.most_common(5)])
+                print(f"  Top rules: {top_rules}")
+            if file_counts:
+                from pathlib import Path as _P
+                top_files = ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
+                print(f"  Top files: {top_files}")
+        print("  Result: issues remain. Persist-only mode.")
+        print("  Next: run 'npm run precommit:repo' (set AUTOPR_BG_FIX=1) or 'python scripts/bg-fix-queue.py' with AUTOPR_BG_TYPES to apply fixes.")
         _print_low_volume_note()
         return 0
 
     # Final concise summary
     print("Pre-commit summary:")
     print(f"  Volume: {volume}")
-    if py_files:
-        print(f"  Python files checked: {len(py_files)}")
+    scope_label = "all files (repo)" if repo_scope else (f"{len(py_files)} Python files" if py_files else "no python files")
+    print(f"  Scope: {scope_label}")
     if text_files:
         print(f"  Text files formatted: {len(text_files)}")
-    if 200 <= volume < 600 and os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "0") in {
+    if 200 <= volume < 600 and os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {
         "1",
         "true",
         "True",
     }:
         print(f"  Issues persisted to DB: {queued}")
+        print("  Queue scope: " + ("all files (repo)" if repo_scope else ("staged files" if files else "repository (autopr/) when none staged")))
+        if rule_counts:
+            top_rules = ", ".join([f"{code}:{count}" for code, count in rule_counts.most_common(5)])
+            print(f"  Top rules: {top_rules}")
+        if file_counts:
+            from pathlib import Path as _P
+            top_files = ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
+            print(f"  Top files: {top_files}")
         next_hint = os.getenv("AUTOPR_BG_FIX", "0")
         if next_hint in {"1", "true", "True"}:
             print("  Background fixer: enabled (will process queue).")
