@@ -255,9 +255,6 @@ per-file-ignores = ["__init__.py:F401"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-fixable = ["ALL"]
-unfixable = []
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint]
 extend-select = ["ALL"]
@@ -265,6 +262,9 @@ extend-ignore = [
     "ANN", "D", "E203", "E501", "COM812", "ISC001",
     "B008", "C901", "BLE001", "S311"
 ]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.format]
 quote-style = "double"

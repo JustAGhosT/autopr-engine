@@ -77,8 +77,8 @@ class IssueQueueManager:
             if filter_types:
                 in_ph = self._safe_in_placeholders(len(filter_types))
                 query = (
-                    "SELECT * FROM linting_issues_queue WHERE status = ? "
-                    f"AND error_code IN ({in_ph}) "  # nosec B608: placeholders only
+                    "SELECT * FROM linting_issues_queue WHERE status = ? "  # nosec B608
+                    f"AND error_code IN ({in_ph}) "
                     "ORDER BY priority DESC, created_timestamp ASC LIMIT ?"
                 )
                 params.extend(filter_types)
@@ -98,8 +98,8 @@ class IssueQueueManager:
                     int(issue["id"]) for issue in issues if isinstance(issue.get("id"), (int, str))
                 ]
                 placeholders = self._safe_in_placeholders(len(issue_ids))
-                update_query = (  # nosec B608: ids are validated integers from prior SELECT; placeholders only
-                    "UPDATE linting_issues_queue "
+                update_query = (
+                    "UPDATE linting_issues_queue "  # nosec B608
                     "SET status = 'in_progress', assigned_worker_id = ?, processing_started_at = ? "
                     f"WHERE id IN ({placeholders})"
                 )
@@ -151,8 +151,10 @@ class IssueQueueManager:
             if not set(update_fields).issubset(allowed_set):
                 raise ValueError("Invalid update fields detected")
             if update_fields:
-                update_query = (  # nosec B608: fields are from allowlist above; values parameterized
-                    "UPDATE linting_issues_queue SET " + ", ".join(update_fields) + " WHERE id = ?"
+                update_query = (
+                    "UPDATE linting_issues_queue SET "  # nosec B608
+                    + ", ".join(update_fields)
+                    + " WHERE id = ?"
                 )
                 conn.execute(update_query, exec_params)
             conn.commit()
@@ -212,8 +214,8 @@ class IssueQueueManager:
             )
 
             # Overall statistics
-            stats_query = (  # nosec B608: where clause limited to fixed 'session_id = ?' when present
-                "SELECT "
+            stats_query = (
+                "SELECT "  # nosec B608
                 "COALESCE(COUNT(*), 0) as total_issues, "
                 "COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending, "
                 "COALESCE(SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END), 0) as in_progress, "
@@ -229,8 +231,8 @@ class IssueQueueManager:
             overall_stats = dict(conn.execute(stats_query, params).fetchone())
 
             # Issue type breakdown
-            type_query = (  # nosec B608: where clause limited to fixed 'session_id = ?' when present
-                "SELECT "
+            type_query = (
+                "SELECT "  # nosec B608
                 "error_code, "
                 "COALESCE(COUNT(*), 0) as count, "
                 "COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed, "
