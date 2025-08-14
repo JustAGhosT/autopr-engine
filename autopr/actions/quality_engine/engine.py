@@ -30,6 +30,7 @@ class QualityEngine(Action):
         tool_registry: ToolRegistry | None = None,
         handler_registry: HandlerRegistry | None = None,
         config: Any | None = None,
+        skip_windows_check: bool = False,
     ):
         super().__init__(
             name="quality_engine",
@@ -52,9 +53,10 @@ class QualityEngine(Action):
 
         # Initialize platform detector
         self.platform_detector = PlatformDetector()
+        self.skip_windows_check = skip_windows_check
 
-        # Show Windows warning if needed
-        if self.platform_detector.should_show_windows_warning():
+        # Show Windows warning if needed (unless skipped)
+        if not self.skip_windows_check and self.platform_detector.should_show_windows_warning():
             self._show_windows_warning()
 
         # Filter tools based on platform compatibility
@@ -221,7 +223,9 @@ class QualityEngine(Action):
         """
         # Determine the volume to use, with proper precedence
         if volume is None:
-            volume = getattr(inputs, "volume", 500)  # Default to 500 if not specified
+            volume = getattr(inputs, "volume", None)
+            if volume is None:
+                volume = 500  # Default to 500 if not specified
 
         # Validate volume is an integer and within range
         volume = self._validate_volume(volume)

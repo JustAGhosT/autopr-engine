@@ -86,10 +86,10 @@ def test_import_crew():
 
 
 def test_volume_mapping_import():
-    """Test importing the volume mapping module with detailed diagnostics."""
-    print_header("TESTING VOLUME MAPPING IMPORT")
+    """Test importing the volume utils module with detailed diagnostics."""
+    print_header("TESTING VOLUME UTILS IMPORT")
 
-    module_path = "autopr.actions.quality_engine.volume_mapping"
+    module_path = "autopr.utils.volume_utils"
     print(f"Attempting to import: {module_path}")
 
     try:

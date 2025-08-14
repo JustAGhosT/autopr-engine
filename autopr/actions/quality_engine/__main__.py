@@ -26,6 +26,7 @@ def main() -> None:
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument("--ai-provider", help="AI provider to use for AI-enhanced mode")
     parser.add_argument("--ai-model", help="AI model to use for AI-enhanced mode")
+    parser.add_argument("--skip-windows-check", action="store_true", help="Skip Windows compatibility warnings and checks")
 
     args = parser.parse_args()
 
@@ -50,7 +51,7 @@ def main() -> None:
     )
 
     # Get the engine from the DI container
-    engine = get_engine()
+    engine = get_engine(skip_windows_check=args.skip_windows_check)
 
     # Run the engine and output results
     try:

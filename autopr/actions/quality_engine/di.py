@@ -72,7 +72,7 @@ class QualityEngineContainer(containers.DeclarativeContainer):
     config = providers.Callable(load_config, config_path=config_path)
 
     # The main QualityEngine class
-    engine = providers.Singleton(
+    engine = providers.Factory(
         QualityEngine,
         config_path=config_path,
         tool_registry=tools.registry,
@@ -86,6 +86,6 @@ container = QualityEngineContainer()
 
 
 # Helper function to get the engine instance
-def get_engine() -> QualityEngine:
+def get_engine(skip_windows_check: bool = False) -> QualityEngine:
     """Get the configured QualityEngine instance."""
-    return container.engine()
+    return container.engine(skip_windows_check=skip_windows_check)
