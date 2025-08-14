@@ -10,19 +10,28 @@ from pathlib import Path
 from typing import Any
 
 from autopr.actions.llm import get_llm_provider_manager
-from .async_support import ensure_event_loop, patch_future_set_result_idempotent
-from .normalization import normalize_code_quality_result as _norm_cq
-from .normalization import normalize_platform_result as _norm_plat
-from .normalization import normalize_linting_result as _norm_lint
-from .report_builder import (
-    make_output_mock as _make_output_mock,
-    build_platform_model as _build_platform_model,
-    prefer_platform_labels as _prefer_platform_labels,
-    collect_issues as _collect_issues,
-    select_metrics as _select_metrics,
-)
 import autopr.agents.crew.tasks as crew_tasks
 from autopr.agents.models import CodeAnalysisReport, CodeIssue, PlatformAnalysis
+
+from .async_support import ensure_event_loop, patch_future_set_result_idempotent
+from .normalization import normalize_code_quality_result as _norm_cq
+from .normalization import normalize_linting_result as _norm_lint
+from .normalization import normalize_platform_result as _norm_plat
+from .report_builder import (
+    build_platform_model as _build_platform_model,
+)
+from .report_builder import (
+    collect_issues as _collect_issues,
+)
+from .report_builder import (
+    make_output_mock as _make_output_mock,
+)
+from .report_builder import (
+    prefer_platform_labels as _prefer_platform_labels,
+)
+from .report_builder import (
+    select_metrics as _select_metrics,
+)
 
 # Local lightweight stubs to avoid optional dependency during type checking/runtime
 
@@ -117,9 +126,9 @@ class AutoPRCrew:
                 for name in ("CodeQualityAgent", "LintingAgent", "PlatformAnalysisAgent")
             ):
                 return (
-                    getattr(_crew_mod, "CodeQualityAgent"),
-                    getattr(_crew_mod, "LintingAgent"),
-                    getattr(_crew_mod, "PlatformAnalysisAgent"),
+                    _crew_mod.CodeQualityAgent,
+                    _crew_mod.LintingAgent,
+                    _crew_mod.PlatformAnalysisAgent,
                 )
             from autopr.agents.code_quality_agent import (  # type: ignore[import-not-found]
                 CodeQualityAgent as _CodeQualityAgent,
@@ -147,7 +156,7 @@ class AutoPRCrew:
 
             return _CodeQualityAgent, _LintingAgent, _PlatformAnalysisAgent
 
-    def _instantiate_agents(self, CQA, LA, PAA, agent_kwargs: dict[str, Any]) -> None:  # noqa: ANN001
+    def _instantiate_agents(self, CQA, LA, PAA, agent_kwargs: dict[str, Any]) -> None:
         self.code_quality_agent = CQA(**agent_kwargs)
         platform_agent = PAA(**agent_kwargs)
         self.platform_agent = platform_agent
@@ -428,7 +437,7 @@ class AutoPRCrew:
             **analysis_kwargs,
         }
 
-    def _build_tasks(self, repo_path: Path, context: dict[str, Any], _stub_cq, _stub_pa, _stub_lint):  # noqa: ANN001
+    def _build_tasks(self, repo_path: Path, context: dict[str, Any], _stub_cq, _stub_pa, _stub_lint):
         # Always build real tasks so that execution flows through _execute_task for ordering tests
         # Ensure repo_path is propagated into context for task execute fallback
         ctx = dict(context)
@@ -473,7 +482,7 @@ class AutoPRCrew:
             pass
         return names, tasks
 
-    async def _gather_tasks(self, tasks):  # noqa: ANN001
+    async def _gather_tasks(self, tasks):
         async def _run(task_like):
             import asyncio as _asyncio
 
@@ -489,7 +498,7 @@ class AutoPRCrew:
 
         return await asyncio.gather(*(_run(t) for t in tasks), return_exceptions=True)
 
-    def _process_results(self, task_names, results):  # noqa: ANN001
+    def _process_results(self, task_names, results):
         code_quality: dict[str, Any] = {}
         platform_analysis = None
         linting_issues: list[CodeIssue] = []
@@ -533,7 +542,7 @@ class AutoPRCrew:
         try:
             analyze_attr = getattr(self.code_quality_agent, "analyze", None)
             if getattr(analyze_attr, "side_effect", None) is not None and "error" not in code_quality:
-                code_quality = {**code_quality, "error": str(getattr(analyze_attr, "side_effect"))}
+                code_quality = {**code_quality, "error": str(analyze_attr.side_effect)}
         except Exception:
             pass
 
@@ -547,7 +556,7 @@ class AutoPRCrew:
             logger.warning("Missing 'metrics' in code quality result: %s", result)
         return _norm_cq(result)
 
-    def _normalize_platform_result(self, result: Any) -> PlatformAnalysis | None:  # noqa: ANN401
+    def _normalize_platform_result(self, result: Any) -> PlatformAnalysis | None:
         model = _norm_plat(result)
         if isinstance(model, PlatformAnalysis):
             try:
@@ -558,13 +567,13 @@ class AutoPRCrew:
             logger.warning("Unexpected result type for platform_analysis: %s", type(result).__name__)
         return model
 
-    def _normalize_linting_result(self, result: Any) -> list[CodeIssue]:  # noqa: ANN401
+    def _normalize_linting_result(self, result: Any) -> list[CodeIssue]:
         items = _norm_lint(result)
         if not items:
             logger.warning("Unexpected result type for linting: %s", type(result).__name__)
         return items
 
-    def _coerce_lint_list(self, items: list[Any]) -> list[CodeIssue]:  # noqa: ANN401
+    def _coerce_lint_list(self, items: list[Any]) -> list[CodeIssue]:
         coerced: list[CodeIssue] = []
         for item in items:
             if isinstance(item, CodeIssue):

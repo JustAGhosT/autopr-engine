@@ -4,11 +4,11 @@ import os
 from pathlib import Path
 from typing import Any
 
+from autopr.agents.models import CodeIssue, PlatformAnalysis
 from autopr.utils.volume_utils import (
     VolumeLevel,
     get_volume_level_name,
 )
-from autopr.agents.models import CodeIssue, PlatformAnalysis
 
 
 class _SimpleTask:
@@ -94,7 +94,7 @@ VOLUME_EXHAUSTIVE_THRESHOLD = 800
 VOLUME_DETAILED_THRESHOLD = VolumeLevel.BALANCED.value  # 500
 
 
-def create_code_quality_task(repo_path: str | Path, context: dict[str, Any], agent: Any):  # noqa: ANN201
+def create_code_quality_task(repo_path: str | Path, context: dict[str, Any], agent: Any):
     """Create a task for code quality analysis."""
     volume = context.get("volume", 500)
     volume_level = get_volume_level_name(volume)
@@ -129,7 +129,7 @@ def create_code_quality_task(repo_path: str | Path, context: dict[str, Any], age
 
 def create_platform_analysis_task(
     repo_path: str | Path, context: dict[str, Any], agent: Any
-):  # noqa: ANN201
+):
     """Create a task for platform/tech stack analysis."""
     volume = context.get("volume", VolumeLevel.BALANCED.value)  # Default to balanced (500)
     volume_level = get_volume_level_name(volume)
@@ -158,7 +158,7 @@ def create_platform_analysis_task(
     )
 
 
-def create_linting_task(repo_path: str | Path, context: dict[str, Any], agent: Any):  # noqa: ANN201
+def create_linting_task(repo_path: str | Path, context: dict[str, Any], agent: Any):
     """Create a task for code linting and style enforcement."""
     volume = context.get("volume", 500)
     strictness = "strict" if volume > 700 else "moderate" if volume > 300 else "relaxed"

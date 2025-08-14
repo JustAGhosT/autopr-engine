@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from typing import Any
 
 from autopr.agents.models import CodeIssue, PlatformAnalysis
 from autopr.config.settings import get_settings
@@ -60,7 +61,7 @@ def make_output_mock(
         def __getattr__(self, name: str) -> Any:  # pragma: no cover
             try:
                 return self[name]
-            except KeyError as e:  # noqa: PERF203
+            except KeyError as e:
                 raise AttributeError(name) from e
 
     return _AttrDict(data)
@@ -91,7 +92,7 @@ def build_platform_model(
     )
 
 
-def prefer_platform_labels(  # noqa: C901
+def prefer_platform_labels(
     *,
     plat_model: PlatformAnalysis,
     platform_analysis: PlatformAnalysis | None,
@@ -153,7 +154,7 @@ def prefer_platform_labels(  # noqa: C901
     return plat_model
 
 
-def collect_issues(  # noqa: C901
+def collect_issues(
     *,
     code_quality: dict[str, Any],
     linting_issues: Iterable[CodeIssue],

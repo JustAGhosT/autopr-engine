@@ -1,7 +1,7 @@
 """Minimal pytest test to diagnose import issues."""
 
-import sys
 from pathlib import Path
+import sys
 
 
 def test_import_paths():

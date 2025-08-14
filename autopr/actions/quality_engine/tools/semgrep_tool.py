@@ -83,10 +83,10 @@ class SemgrepTool(Tool):
             except json.JSONDecodeError:
                 print(f"Failed to parse semgrep output: {stdout.decode()}")
                 return [{"error": "Failed to parse semgrep JSON output"}]
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return [{"error": "Semgrep execution timed out"}]
         except Exception as e:
-            return [{"error": f"Semgrep execution error: {str(e)}"}]
+            return [{"error": f"Semgrep execution error: {e!s}"}]
 
     def _parse_semgrep_output(self, output: dict[str, Any]) -> list[dict[str, Any]]:
         """

@@ -1,6 +1,6 @@
 """Shim module: re-export canonical metrics collector from autopr.quality.metrics_collector."""
 
-from autopr.quality.metrics_collector import (  # noqa: F401
+from autopr.quality.metrics_collector import (
     EvaluationMetrics,
     MetricPoint,
     MetricsCollector,

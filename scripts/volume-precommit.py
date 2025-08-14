@@ -18,13 +18,13 @@ Tool tiers:
 
 from __future__ import annotations
 
+from collections import Counter
 import importlib.util
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-from pathlib import Path
-from collections import Counter
 
 
 def _run(cmd: list[str]) -> int:

@@ -4,13 +4,13 @@ Tests for volume mapping functionality in AutoPR Engine.
 
 import pytest
 
+from autopr.enums import QualityMode
 from autopr.utils.volume_utils import (
     VolumeLevel,
     get_volume_config,
     get_volume_level_name,
     volume_to_quality_mode,
 )
-from autopr.enums import QualityMode
 
 
 class TestVolumeMapping:

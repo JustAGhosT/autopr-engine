@@ -4,7 +4,7 @@ from typing import Any
 from autopr.agents.models import CodeIssue, PlatformAnalysis
 
 
-def normalize_code_quality_result(result: Any) -> dict[str, Any]:  # noqa: ANN401
+def normalize_code_quality_result(result: Any) -> dict[str, Any]:
     if isinstance(result, dict):
         if "metrics" not in result:
             # Provide default metrics and surface that this was a degraded path
@@ -13,7 +13,7 @@ def normalize_code_quality_result(result: Any) -> dict[str, Any]:  # noqa: ANN40
     return {"metrics": {"score": 85}, "issues": [], "error": "code_quality_unexpected_type"}
 
 
-def normalize_platform_result(result: Any) -> PlatformAnalysis | None:  # noqa: ANN401
+def normalize_platform_result(result: Any) -> PlatformAnalysis | None:
     if isinstance(result, PlatformAnalysis):
         return result
     # Accept dicts with platform-like keys
@@ -47,7 +47,7 @@ def normalize_platform_result(result: Any) -> PlatformAnalysis | None:  # noqa: 
     return None
 
 
-def _coerce_lint_list(items: list[Any]) -> list[CodeIssue]:  # noqa: ANN401
+def _coerce_lint_list(items: list[Any]) -> list[CodeIssue]:
     coerced: list[CodeIssue] = []
     for item in items:
         if isinstance(item, CodeIssue):
@@ -71,7 +71,7 @@ def _coerce_lint_list(items: list[Any]) -> list[CodeIssue]:  # noqa: ANN401
     return coerced
 
 
-def normalize_linting_result(result: Any) -> list[CodeIssue]:  # noqa: ANN401
+def normalize_linting_result(result: Any) -> list[CodeIssue]:
     if isinstance(result, list):
         return _coerce_lint_list(result)
     if isinstance(result, dict):

@@ -7,6 +7,8 @@ from typing import Any
 
 import structlog
 
+from autopr.utils.volume_utils import get_volume_level_name
+
 from ..base.action import Action
 from .config import load_config
 from .handler_registry import HandlerRegistry
@@ -14,7 +16,6 @@ from .models import QualityInputs, QualityMode, QualityOutputs
 from .platform_detector import PlatformDetector
 from .tool_runner import determine_smart_tools, run_tool
 from .tools.registry import ToolRegistry
-from autopr.utils.volume_utils import get_volume_level_name
 
 logger = structlog.get_logger(__name__)
 
@@ -167,7 +168,7 @@ class QualityEngine(Action):
         for tool_name in tools:
             if tool_name in self.tools:
                 tool_instance = self.tools[tool_name]
-                if hasattr(tool_instance, 'is_available') and tool_instance.is_available():
+                if hasattr(tool_instance, "is_available") and tool_instance.is_available():
                     available_tools.append(tool_name)
                 else:
                     logger.warning(f"Tool {tool_name} is not available, skipping", tool=tool_name)

@@ -14,12 +14,12 @@ This worker is safe to run at low volumes to continuously reduce trivial issues.
 
 from __future__ import annotations
 
-import os
-import subprocess
-import sys
 from collections import defaultdict
 from collections.abc import Iterable
+import os
 from pathlib import Path
+import subprocess
+import sys
 from typing import Any
 
 

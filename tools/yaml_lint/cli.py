@@ -2,8 +2,8 @@
 
 import argparse
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 from .linter import YAMLLinter

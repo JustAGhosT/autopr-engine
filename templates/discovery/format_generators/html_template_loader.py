@@ -6,8 +6,8 @@ that follow the YAML template format structure, similar to the existing
 YAML templates but for HTML generation.
 """
 
-import re
 from pathlib import Path
+import re
 from re import Match
 from typing import Any
 

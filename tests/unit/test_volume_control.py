@@ -3,10 +3,10 @@
 
 import json
 import os
+from pathlib import Path
 import sys
 import tempfile
 import unittest
-from pathlib import Path
 
 # Add volume-control to path
 test_dir = Path(__file__).parent

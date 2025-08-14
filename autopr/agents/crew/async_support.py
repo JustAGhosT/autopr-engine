@@ -26,7 +26,7 @@ def patch_future_set_result_idempotent() -> None:
                 try:
                     self._result = result  # type: ignore[attr-defined]
                 except Exception:
-                    return
+                    return None
 
         asyncio.Future = _PatchedFuture  # type: ignore[assignment]
     except Exception:

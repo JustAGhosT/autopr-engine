@@ -64,7 +64,7 @@ class WindowsSecurityTool(Tool):
                 all_issues.extend(additional_issues)
 
         except Exception as e:
-            all_issues.append({"error": f"Windows Security tool error: {str(e)}"})
+            all_issues.append({"error": f"Windows Security tool error: {e!s}"})
 
         return all_issues
 

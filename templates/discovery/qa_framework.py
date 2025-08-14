@@ -23,7 +23,10 @@ from autopr.quality.template_metrics import (
     get_quality_analyzer,
     get_quality_scorer,
 )
-from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue, ValidationSeverity as QMValidationSeverity
+from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue
+from autopr.quality.template_metrics.validation_types import (
+    ValidationSeverity as QMValidationSeverity,
+)
 
 from .report_generators import (
     ReportGeneratorFactory,
@@ -33,7 +36,11 @@ from .report_generators import (
 )
 from .template_validators import (
     ValidationIssue as LocalValidationIssue,
+)
+from .template_validators import (
     ValidationSeverity as LocalValidationSeverity,
+)
+from .template_validators import (
     get_validator_registry,
 )
 

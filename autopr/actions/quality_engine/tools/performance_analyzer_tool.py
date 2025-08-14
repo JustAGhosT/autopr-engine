@@ -51,7 +51,7 @@ class PerformanceAnalyzerTool(Tool):
     async def _run_scalene_analysis(self, python_files: list[str]) -> list[dict[str, Any]]:
         """Run Scalene performance analysis on Python files."""
         issues = []
-        
+
         try:
             # Check if scalene is installed
             process = await asyncio.create_subprocess_exec(
@@ -71,13 +71,13 @@ class PerformanceAnalyzerTool(Tool):
                     issues.extend(scalene_issues)
         except Exception as e:
             print(f"Error running Python performance analysis: {e}")
-            
+
         return issues
 
     async def _analyze_file_with_scalene(self, py_file: str) -> list[dict[str, Any]]:
         """Analyze a single Python file with Scalene."""
         issues = []
-        
+
         try:
             # Run simple scalene profiling
             out_file = f"{os.path.splitext(py_file)[0]}_profile.json"
@@ -125,18 +125,18 @@ class PerformanceAnalyzerTool(Tool):
                     print(f"Error processing Scalene output: {e}")
         except Exception as e:
             print(f"Error analyzing {py_file} with Scalene: {e}")
-            
+
         return issues
 
     async def _run_static_analysis(self, files: list[str]) -> list[dict[str, Any]]:
         """Run static performance analysis on files."""
         issues = []
-        
+
         # Filter out directories and only process actual files
         actual_files = []
         for f in files:
             # Skip directories and problematic paths
-            if f in ['.', '..', '/', '\\'] or f.endswith(('.', '/', '\\')):
+            if f in [".", "..", "/", "\\"] or f.endswith((".", "/", "\\")):
                 continue
             try:
                 # Check if it's actually a file
@@ -146,7 +146,7 @@ class PerformanceAnalyzerTool(Tool):
             except (OSError, PermissionError):
                 # Skip files we can't access
                 continue
-        
+
         for file in actual_files:
             try:
                 with open(file) as f:
@@ -171,7 +171,7 @@ class PerformanceAnalyzerTool(Tool):
     def _analyze_python_performance(self, file: str, content: str) -> list[dict[str, Any]]:
         """Analyze Python file for performance patterns."""
         issues = []
-        
+
         # Check for list comprehension vs. loops
         if "for " in content and " in range" in content and ".append" in content:
             issues.append(
@@ -195,13 +195,13 @@ class PerformanceAnalyzerTool(Tool):
                     "code": "performance_pattern",
                 }
             )
-            
+
         return issues
 
     def _analyze_js_performance(self, file: str, content: str) -> list[dict[str, Any]]:
         """Analyze JavaScript/TypeScript file for performance patterns."""
         issues = []
-        
+
         # Check for console.log in production code
         if "console.log" in content:
             issues.append(
@@ -213,5 +213,5 @@ class PerformanceAnalyzerTool(Tool):
                     "code": "performance_pattern",
                 }
             )
-            
+
         return issues

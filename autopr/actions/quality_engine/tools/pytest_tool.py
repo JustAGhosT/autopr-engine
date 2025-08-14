@@ -35,8 +35,8 @@ class PyTestTool(Tool):
         """
         target_paths = files if files else ["."]
 
-        # Use a more efficient command with shorter timeout
-        command = ["pytest", "--tb=short", "--maxfail=10", "--timeout=30", *target_paths]
+        # Use a more efficient command without unsupported arguments
+        command = ["pytest", "--tb=short", "--maxfail=10", *target_paths]
 
         extra_args = config.get("args", [])
         command.extend(extra_args)
@@ -60,10 +60,10 @@ class PyTestTool(Tool):
             # For now, just check if tests passed or failed
             if process.returncode == 0:
                 return []  # All tests passed
-            
+
             # If tests failed, return a generic error
             return [{"error": "PyTest found test failures"}]
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return [{"error": "PyTest execution timed out"}]
         except Exception as e:
-            return [{"error": f"PyTest execution error: {str(e)}"}]
+            return [{"error": f"PyTest execution error: {e!s}"}]

@@ -4,8 +4,8 @@ AutoPR Action Registry
 Registry for managing and discovering actions.
 """
 
-import logging
 from collections.abc import Callable
+import logging
 from typing import Any, Generic, Protocol, TypeVar
 
 from autopr.actions.base.action import Action

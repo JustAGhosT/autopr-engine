@@ -1,6 +1,6 @@
-import unittest
 from dataclasses import dataclass
 from pathlib import Path
+import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.actions.platform_detection.schema import (

@@ -230,7 +230,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
 
         # Reset singleton instance to ensure test patches of PlatformConfigManager take effect
         try:  # pragma: no cover - test harness dependent
-            setattr(PlatformConfigManager, "_instance", None)
+            PlatformConfigManager._instance = None
         except Exception:
             pass
         # Use dynamically resolved manager so test patches apply in all orders

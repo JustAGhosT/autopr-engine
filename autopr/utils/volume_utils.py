@@ -52,14 +52,13 @@ def get_volume_level_name(volume: int) -> str:
     # Match the legacy behavior from volume_mapping.py
     if volume <= 199:
         return "Quiet"
-    elif volume <= 399:
+    if volume <= 399:
         return "Moderate"
-    elif volume <= 599:
+    if volume <= 599:
         return "Balanced"
-    elif volume <= 799:
+    if volume <= 799:
         return "Thorough"
-    else:
-        return "Maximum"
+    return "Maximum"
 
 
 def get_volume_config(volume: int) -> dict[str, Any]:

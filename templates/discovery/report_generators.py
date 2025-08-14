@@ -12,17 +12,17 @@ Features:
 - Rich formatting and styling
 """
 
-import json
 from abc import ABC, abstractmethod
 from datetime import datetime
+import json
 from pathlib import Path
 from typing import Any
 
 from autopr.quality.template_metrics import QualityMetrics
+from autopr.quality.template_metrics.validation_enricher import enrich_quality_metrics_issues
 from autopr.quality.template_metrics.validation_types import (
     ValidationSeverity as QMValidationSeverity,
 )
-from autopr.quality.template_metrics.validation_enricher import enrich_quality_metrics_issues
 
 
 class ReportGenerator(ABC):
@@ -78,7 +78,7 @@ class JSONReportGenerator(ReportGenerator):
             },
             "issues": [
                 {
-                    "severity": getattr(issue, "severity").value if getattr(issue, "severity", None) else None,
+                    "severity": issue.severity.value if getattr(issue, "severity", None) else None,
                     "category": getattr(issue, "category", None),
                     "message": getattr(issue, "message", None),
                     "line": getattr(issue, "line", None),
@@ -394,7 +394,7 @@ class HTMLReportGenerator(ReportGenerator):
     </div>"""
         return build_basic_page(
             header=header,
-            generated_at=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             content_html=content_html,
             extra_css=extra_css,
         )

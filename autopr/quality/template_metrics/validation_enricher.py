@@ -74,7 +74,7 @@ def enrich_validation_issues(issues: list[ValidationIssue], template_path: str =
 
 def enrich_quality_metrics_issues(metrics: Any) -> Any:
     """Enrich ValidationIssue objects in a QualityMetrics object."""
-    if hasattr(metrics, 'issues') and hasattr(metrics, 'template_path'):
+    if hasattr(metrics, "issues") and hasattr(metrics, "template_path"):
         enriched_issues = enrich_validation_issues(metrics.issues, metrics.template_path)
         # Create a new object with enriched issues
         enriched_metrics = type(metrics)(

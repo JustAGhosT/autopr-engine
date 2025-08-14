@@ -42,14 +42,14 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
         # Check if npx is available
         if not self.check_command_availability("npx"):
             return False
-        
+
         # Try to check if eslint is available via npx
         try:
             import subprocess
             result = subprocess.run(
-                ["npx", "eslint", "--version"], 
-                capture_output=True, 
-                text=True, 
+                ["npx", "eslint", "--version"],
+                check=False, capture_output=True,
+                text=True,
                 timeout=5
             )
             return result.returncode == 0

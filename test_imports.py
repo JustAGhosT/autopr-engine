@@ -1,7 +1,7 @@
 """Minimal test script to verify imports."""
 
-import sys
 from pathlib import Path
+import sys
 
 print("=== Testing Imports ===")
 print(f"Python version: {sys.version}")
