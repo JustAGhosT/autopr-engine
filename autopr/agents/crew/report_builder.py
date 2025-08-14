@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, Iterable
 
 from autopr.agents.models import CodeIssue, PlatformAnalysis
+from autopr.config.settings import get_settings
 
 
 def make_output_mock(
@@ -17,16 +18,18 @@ def make_output_mock(
 ) -> dict[str, Any]:
     from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
 
+    settings = get_settings()
+    cfg = settings.report_builder
     vol_level = get_volume_level_name(current_volume)
-    if current_volume >= 800:
-        summary_text = "Thorough analysis completed"
-    elif current_volume >= 400:
-        summary_text = "Standard analysis completed"
+    if current_volume >= cfg.thorough_min_volume:
+        summary_text = cfg.summary_message_thorough
+    elif current_volume >= cfg.standard_min_volume:
+        summary_text = cfg.summary_message_standard
     else:
-        summary_text = "Quick analysis completed"
+        summary_text = cfg.summary_message_quick
 
     if isinstance(platform_analysis, PlatformAnalysis):
-        plat_platform = platform_analysis.platform or (last_platform_str or "unknown")
+        plat_platform = platform_analysis.platform or (last_platform_str or cfg.unknown_platform_label)
         plat_dict = {
             "platform": plat_platform,
             "confidence": platform_analysis.confidence,
@@ -36,7 +39,7 @@ def make_output_mock(
     else:
         fallback_platform = last_platform_str
         plat_dict = {
-            "platform": getattr(platform_analysis, "platform", fallback_platform or "unknown") if platform_analysis else (fallback_platform or "unknown"),
+            "platform": getattr(platform_analysis, "platform", fallback_platform or cfg.unknown_platform_label) if platform_analysis else (fallback_platform or cfg.unknown_platform_label),
             "confidence": float(getattr(platform_analysis, "confidence", 0.0)) if platform_analysis else 0.0,
             "components": list(getattr(platform_analysis, "components", [])) if platform_analysis else [],
             "recommendations": list(getattr(platform_analysis, "recommendations", [])) if platform_analysis else [],
@@ -78,7 +81,8 @@ def build_platform_model(
         return model
 
     plat_data = summary_data.get("platform_analysis", {}) or {}
-    platform_str = str(plat_data.get("platform", last_platform_str or "unknown"))
+    cfg = get_settings().report_builder
+    platform_str = str(plat_data.get("platform", last_platform_str or cfg.unknown_platform_label))
     return _PA(
         platform=platform_str,
         confidence=float(plat_data.get("confidence", 0.0)),
@@ -97,7 +101,8 @@ def prefer_platform_labels(  # noqa: C901
     raw_platform_result: Any,
     last_platform_str: str | None,
 ) -> PlatformAnalysis:
-    if prefer_from_future and plat_model.platform == "unknown":
+    cfg = get_settings().report_builder
+    if prefer_from_future and plat_model.platform == cfg.unknown_platform_label:
         prefer = getattr(platform_analysis, "platform", None)
         if prefer is None:
             prefer = last_platform_str
@@ -115,13 +120,13 @@ def prefer_platform_labels(  # noqa: C901
 
     try:
         plat_from_summary = summary_data.get("platform_analysis", {}).get("platform")
-        if plat_from_summary and str(plat_from_summary).lower() != "unknown":
+        if plat_from_summary and str(plat_from_summary).lower() != cfg.unknown_platform_label:
             plat_model.platform = str(plat_from_summary)
     except Exception:
         pass
 
     try:
-        if plat_model.platform == "unknown" and getattr(plat_model, "components", None):
+        if plat_model.platform == cfg.unknown_platform_label and getattr(plat_model, "components", None):
             first_comp = plat_model.components[0]
             name = getattr(first_comp, "name", None)
             if name:
@@ -129,7 +134,7 @@ def prefer_platform_labels(  # noqa: C901
     except Exception:
         pass
 
-    if plat_model.platform == "unknown" and repo_path:
+    if plat_model.platform == cfg.unknown_platform_label and repo_path:
         try:
             from pathlib import Path as _P
 
@@ -137,11 +142,11 @@ def prefer_platform_labels(  # noqa: C901
             if p.exists():
                 for _child in p.rglob("*"):
                     name = _child.name.lower()
-                    if name.endswith(".py"):
-                        plat_model.platform = "Python"
+                    if any(name.endswith(ext) for ext in cfg.python_file_extensions):
+                        plat_model.platform = cfg.python_platform_name
                         break
-                    if name.endswith("package.json"):
-                        plat_model.platform = "JavaScript"
+                    if any(marker.lower() == name for marker in cfg.javascript_markers):
+                        plat_model.platform = cfg.javascript_platform_name
                         break
         except Exception:
             pass

@@ -68,13 +68,10 @@ class ReportGenerator:
         task_health = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
         overall_health = (phase_health + task_health) / 2
 
-        # Determine status color
-        if overall_health >= 80:
-            status_color = "green"
-        elif overall_health >= 60:
-            status_color = "yellow"
-        else:
-            status_color = "red"
+        # Determine status color via shared utility
+        from autopr.reporting.html_utils import status_color_name
+
+        status_color = status_color_name(overall_health)
 
         return {
             "overall_health_score": round(overall_health, 1),

@@ -248,6 +248,38 @@ class ErrorHandlerConfig(BaseModel):
     integrate_with_workflows: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_WORKFLOWS")
 
 
+class ReportBuilderConfig(BaseModel):
+    """Configuration for report builder summary and platform defaults."""
+
+    # Volume thresholds for summary messages
+    thorough_min_volume: int = Field(default=800, env="REPORT_BUILDER_THOROUGH_MIN_VOLUME")
+    standard_min_volume: int = Field(default=400, env="REPORT_BUILDER_STANDARD_MIN_VOLUME")
+
+    # Summary messages by level
+    summary_message_thorough: str = Field(
+        default="Thorough analysis completed", env="REPORT_BUILDER_SUMMARY_THOROUGH"
+    )
+    summary_message_standard: str = Field(
+        default="Standard analysis completed", env="REPORT_BUILDER_SUMMARY_STANDARD"
+    )
+    summary_message_quick: str = Field(
+        default="Quick analysis completed", env="REPORT_BUILDER_SUMMARY_QUICK"
+    )
+
+    # Label to use when platform is not detected
+    unknown_platform_label: str = Field(default="unknown", env="REPORT_BUILDER_UNKNOWN_LABEL")
+
+    # Simple repo-scanning rules to guess platform when unknown
+    python_file_extensions: list[str] = Field(
+        default_factory=lambda: [".py"], env="REPORT_BUILDER_PY_EXTS"
+    )
+    javascript_markers: list[str] = Field(
+        default_factory=lambda: ["package.json"], env="REPORT_BUILDER_JS_MARKERS"
+    )
+    python_platform_name: str = Field(default="Python", env="REPORT_BUILDER_PY_NAME")
+    javascript_platform_name: str = Field(default="JavaScript", env="REPORT_BUILDER_JS_NAME")
+
+
 class AILintingConfig(BaseModel):
     """AI Linting Fixer specific configuration."""
 
@@ -304,6 +336,7 @@ class AutoPRSettings(BaseSettings):
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     ai_linting: AILintingConfig = Field(default_factory=AILintingConfig)
     volume_defaults: VolumeDefaults = Field(default_factory=VolumeDefaults)
+    report_builder: ReportBuilderConfig = Field(default_factory=ReportBuilderConfig)
 
     # Custom settings for extensions
     custom: dict[str, Any] = Field(default_factory=dict)

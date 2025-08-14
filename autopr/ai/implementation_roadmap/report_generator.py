@@ -193,14 +193,11 @@ class ReportGenerator:
         for rec in report_data["recommendations"]:
             recommendations_list += f"<li>{rec}</li>"
 
-        # Determine health color
+        # Determine health color via shared utility
+        from autopr.reporting.html_utils import health_color_from_score
+
         health_score = exec_summary["overall_health_score"]
-        if health_score >= 80:
-            health_color = "#28a745"
-        elif health_score >= 60:
-            health_color = "#ffc107"
-        else:
-            health_color = "#dc3545"
+        health_color = health_color_from_score(health_score)
 
         formatted_html = html_template.format(
             generated_at=exec_summary["generated_at"],
