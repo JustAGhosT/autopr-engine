@@ -26,30 +26,33 @@ class FileManager:
         try:
             Path(self.backup_directory).mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            logger.warning(f"Failed to create backup directory: {e}")
+            logger.warning("Failed to create backup directory: %s", e)
 
-    def create_backup(self, file_path: str) -> str:
-        """Create a backup of the file before modification."""
+    def create_backup(self, file_path: str) -> str | None:
+        """Create a backup of a file before modification."""
         try:
-            file_path_obj = Path(file_path)
-            if not file_path_obj.exists():
-                logger.warning(f"File does not exist: {file_path}")
-                return ""
+            if not Path(self.backup_directory).exists():
+                Path(self.backup_directory).mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            logger.warning("Failed to create backup directory: %s", e)
+            return None
 
-            # Create backup filename with timestamp
+        if not Path(file_path).exists():
+            logger.warning("File does not exist: %s", file_path)
+            return None
+
+        try:
             timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-            backup_name = f"{file_path_obj.stem}.backup_{timestamp}{file_path_obj.suffix}"
-            backup_path = Path(self.backup_directory) / backup_name
+            backup_filename = f"{Path(file_path).stem}.backup_{timestamp}"
+            backup_path = Path(self.backup_directory) / backup_filename
 
-            # Copy the file
             shutil.copy2(file_path, backup_path)
-
-            logger.info(f"Created backup: {backup_path}")
+            logger.info("Created backup: %s", backup_path)
             return str(backup_path)
 
         except Exception as e:
-            logger.exception(f"Failed to create backup for {file_path}: {e}")
-            return ""
+            logger.exception("Failed to create backup for %s: %s", file_path, e)
+            return None
 
     def create_backups(self, file_paths: list) -> int:
         """Create backups for multiple files."""
@@ -61,32 +64,28 @@ class FileManager:
         return successful_backups
 
     def write_file_safely(self, file_path: str, content: str, backup: bool = True) -> bool:
-        """Write content to a file safely with optional backup."""
+        """Write content to a file with optional backup."""
+        backup_path = None
+        if backup:
+            backup_path = self.create_backup(file_path)
+
         try:
-            file_path_obj = Path(file_path)
-
-            # Create backup if requested
-            backup_path = ""
-            if backup and file_path_obj.exists():
-                backup_path = self.create_backup(file_path)
-
-            # Write the new content
             with Path(file_path).open("w", encoding="utf-8") as f:
                 f.write(content)
-
-            logger.info(f"Successfully wrote to file: {file_path}")
+            logger.info("Successfully wrote to file: %s", file_path)
             return True
 
         except Exception as e:
-            logger.exception(f"Failed to write to file {file_path}: {e}")
+            logger.exception("Failed to write to file %s: %s", file_path, e)
 
             # Try to restore from backup if available
             if backup_path and Path(backup_path).exists():
                 try:
-                    self.restore_from_backup(file_path, backup_path)
-                    logger.info(f"Restored {file_path} from backup after write failure")
+                    shutil.copy2(backup_path, file_path)
+                    logger.info("Restored %s from backup after write failure", file_path)
+                    return False
                 except Exception as restore_error:
-                    logger.exception(f"Failed to restore from backup: {restore_error}")
+                    logger.exception("Failed to restore from backup: %s", restore_error)
 
             return False
 
@@ -94,15 +93,15 @@ class FileManager:
         """Restore a file from its backup."""
         try:
             if not Path(backup_path).exists():
-                logger.error(f"Backup file does not exist: {backup_path}")
+                logger.error("Backup file does not exist: %s", backup_path)
                 return False
 
             shutil.copy2(backup_path, file_path)
-            logger.info(f"Restored {file_path} from backup: {backup_path}")
+            logger.info("Restored %s from backup: %s", file_path, backup_path)
             return True
 
         except Exception as e:
-            logger.exception(f"Failed to restore {file_path} from backup {backup_path}: {e}")
+            logger.exception("Failed to restore %s from backup %s: %s", file_path, backup_path, e)
             return False
 
     def read_file_safely(self, file_path: str) -> tuple[bool, str]:
@@ -134,7 +133,7 @@ class FileManager:
         try:
             return Path(file_path).stat().st_size
         except Exception as e:
-            logger.debug(f"Failed to get file size for {file_path}: {e}")
+            logger.debug("Failed to get file size for %s: %s", file_path, e)
             return 0
 
     def get_file_info(self, file_path: str) -> dict:
@@ -146,7 +145,7 @@ class FileManager:
 
             stat = file_path_obj.stat()
         except Exception as e:
-            logger.debug(f"Failed to get file info for {file_path}: {e}")
+            logger.debug("Failed to get file info for %s: %s", file_path, e)
             return {"exists": False, "error": str(e)}
         else:
             return {
@@ -195,7 +194,7 @@ class FileManager:
             # Sort by modification time (newest first)
             backups.sort(key=operator.itemgetter("modified_time"), reverse=True)
         except Exception as e:
-            logger.exception(f"Failed to list backups: {e}")
+            logger.exception("Failed to list backups: %s", e)
             return []
         else:
             return backups
@@ -207,32 +206,31 @@ class FileManager:
             if len(backups) <= max_backups:
                 return 0
 
-            # Remove oldest backups beyond the limit
+            # Remove oldest backups beyond max_backups
             backups_to_remove = backups[max_backups:]
 
             # Additional filtering by age if specified
             if older_than_days:
                 cutoff_time = datetime.now(UTC).timestamp() - (older_than_days * 24 * 60 * 60)
                 backups_to_remove = [
-                    b
-                    for b in backups_to_remove
-                    if datetime.fromisoformat(b["modified_time"]).timestamp() < cutoff_time
+                    backup for backup in backups_to_remove
+                    if datetime.fromisoformat(backup["modified_time"]).timestamp() < cutoff_time
                 ]
 
             removed_count = 0
             for backup in backups_to_remove:
                 try:
                     Path(backup["backup_path"]).unlink()
+                    logger.debug("Removed old backup: %s", backup["backup_path"])
                     removed_count += 1
-                    logger.debug(f"Removed old backup: {backup['backup_path']}")
                 except Exception as e:
-                    logger.warning(f"Failed to remove backup {backup['backup_path']}: {e}")
+                    logger.warning("Failed to remove backup %s: %s", backup["backup_path"], e)
 
-            logger.info(f"Cleaned up {removed_count} old backup files")
+            logger.info("Cleaned up %d old backup files", removed_count)
             return removed_count
 
         except Exception as e:
-            logger.exception(f"Failed to cleanup old backups: {e}")
+            logger.exception("Failed to cleanup old backups: %s", e)
             return 0
 
     def validate_file_content(self, content: str) -> dict[str, object]:
@@ -315,16 +313,18 @@ class FileManager:
             logger.exception(f"Failed to move {source_path} to {destination_path}: {e}")
             return False
 
-    def delete_file_safely(self, file_path: str) -> bool:
+    def delete_file(self, file_path: str) -> bool:
         """Delete a file safely."""
         try:
+            if not Path(file_path).exists():
+                logger.debug("File not found for deletion: %s", file_path)
+                return False
+
             Path(file_path).unlink()
             return True
-        except FileNotFoundError:
-            logger.debug(f"File not found for deletion: {file_path}")
-            return True  # File doesn't exist, so deletion is successful
+
         except Exception as e:
-            logger.exception(f"Failed to delete {file_path}: {e}")
+            logger.exception("Failed to delete file %s: %s", file_path, e)
             return False
 
     def _validate_warnings_list(self, warnings_list: list) -> None:
