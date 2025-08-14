@@ -37,6 +37,29 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
     def category(self) -> str:
         return "linting"
 
+    def is_available(self) -> bool:
+        """Check if ESLint is available via npx."""
+        # Check if npx is available
+        if not self.check_command_availability("npx"):
+            return False
+        
+        # Try to check if eslint is available via npx
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["npx", "eslint", "--version"], 
+                capture_output=True, 
+                text=True, 
+                timeout=5
+            )
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
+            return False
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "npx"
+
     async def run(self, files: list[str], config: ESLintConfig) -> list[LintIssue]:
         """
         Run ESLint on a list of JavaScript/TypeScript files.

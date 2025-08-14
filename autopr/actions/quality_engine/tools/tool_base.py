@@ -3,6 +3,7 @@ Base tool class for quality analysis tools with timeout handling, error handling
 """
 
 import asyncio
+import shutil
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypedDict, TypeVar
@@ -64,6 +65,37 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         """Get a user-friendly display name for the tool."""
         return self.name.replace("_", " ").title()
 
+    def is_available(self) -> bool:
+        """
+        Check if this tool is available and executable.
+        
+        Returns:
+            True if the tool is available, False otherwise
+        """
+        # Default implementation - subclasses can override
+        return True
+
+    def get_required_command(self) -> str | None:
+        """
+        Get the command that this tool requires to be available.
+        
+        Returns:
+            The command name or None if no external command is required
+        """
+        return None
+
+    def check_command_availability(self, command: str) -> bool:
+        """
+        Check if a command is available in the system PATH.
+        
+        Args:
+            command: The command to check
+            
+        Returns:
+            True if the command is available, False otherwise
+        """
+        return shutil.which(command) is not None
+
     async def run_with_timeout(self, files: list[str], config: TConfig) -> ToolExecutionResult:
         """
         Run the tool with timeout handling and error management.
@@ -81,6 +113,22 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         issues = []
 
         try:
+            # Check tool availability first
+            if not self.is_available():
+                required_command = self.get_required_command()
+                if required_command:
+                    error_message = f"Tool '{self.name}' is not available. Required command '{required_command}' not found in PATH. Please install it first."
+                else:
+                    error_message = f"Tool '{self.name}' is not available or properly configured."
+                return ToolExecutionResult(
+                    success=False,
+                    issues=[],
+                    execution_time=time.time() - start_time,
+                    error_message=error_message,
+                    warnings=warnings,
+                    output_summary=f"Tool '{self.name}' not available",
+                )
+
             # Limit files if needed
             if len(files) > self.max_files:
                 warnings.append(f"Limited to first {self.max_files} files (out of {len(files)})")

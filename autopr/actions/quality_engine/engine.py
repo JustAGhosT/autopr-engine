@@ -162,16 +162,26 @@ class QualityEngine(Action):
         else:  # AI_ENHANCED or other modes
             tools = list(self.tools.keys())
 
+        # Filter tools to only include those that are actually available
+        available_tools = []
+        for tool_name in tools:
+            if tool_name in self.tools:
+                tool_instance = self.tools[tool_name]
+                if hasattr(tool_instance, 'is_available') and tool_instance.is_available():
+                    available_tools.append(tool_name)
+                else:
+                    logger.warning(f"Tool {tool_name} is not available, skipping", tool=tool_name)
+
         # Adjust tools based on volume level
         if volume < 100:  # Very quiet - minimal tools
-            tools = [t for t in tools if t in {"ruff"}]
+            available_tools = [t for t in available_tools if t in {"ruff"}]
         elif volume < 300:  # Quiet - lightweight tools only
-            tools = [t for t in tools if t in {"ruff", "bandit", "black"}]
+            available_tools = [t for t in available_tools if t in {"ruff", "bandit", "black"}]
         elif volume < 700:  # Moderate - standard tools
-            tools = [t for t in tools if t not in {"pylint", "mypy"}]
+            available_tools = [t for t in available_tools if t not in {"pylint", "mypy"}]
         # At higher volumes, use all tools determined by the quality mode
 
-        return tools
+        return available_tools
 
     def _get_tool_config(self, tool_name: str) -> Any:
         """Get configuration for a specific tool."""
@@ -230,8 +240,11 @@ class QualityEngine(Action):
         # Validate volume is an integer and within range
         volume = self._validate_volume(volume)
 
-        # Apply volume settings to inputs if volume was explicitly provided
-        if hasattr(inputs, "apply_volume_settings"):
+        # Apply volume settings to inputs if volume was explicitly provided AND no explicit mode was set
+        # This prevents volume settings from overriding CLI mode arguments
+        if hasattr(inputs, "apply_volume_settings") and inputs.mode == QualityMode.SMART:
+            # Only apply volume settings if we're in the default SMART mode
+            # This means no explicit mode was provided via CLI
             inputs.apply_volume_settings(volume)
 
         # Get volume level name for logging
@@ -247,10 +260,15 @@ class QualityEngine(Action):
         # Determine tools to run based on mode and volume
         tools_to_run = self._determine_tools_for_mode(inputs.mode, files_to_check, volume=volume)
 
-        # Filter tools based on what's actually available
-        available_tools = [tool for tool in tools_to_run if tool in self.tools]
+        # Log tool selection
+        logger.info(
+            "Tool selection completed",
+            mode=inputs.mode,
+            tools_selected=tools_to_run,
+            total_tools_available=len(self.tools),
+        )
 
-        if not available_tools:
+        if not tools_to_run:
             logger.warning("No tools available for the specified mode and files")
             return QualityOutputs(
                 success=True,
@@ -272,14 +290,20 @@ class QualityEngine(Action):
         if inputs.mode == QualityMode.COMPREHENSIVE:
             logger.info(
                 "Comprehensive mode activated",
-                tools=available_tools,
+                tools=tools_to_run,
                 file_count=len(files_to_check),
                 file_types=list(set([os.path.splitext(f)[1] for f in files_to_check if "." in f])),
+            )
+        else:
+            logger.info(
+                f"{inputs.mode.value.title()} mode activated",
+                tools=tools_to_run,
+                file_count=len(files_to_check),
             )
 
         # Run tools in parallel for better performance
         tool_tasks = []
-        for tool_name in available_tools:
+        for tool_name in tools_to_run:
             tool_instance = self.tools.get(tool_name)
             if not tool_instance:
                 logger.warning("Tool not available", tool=tool_name)

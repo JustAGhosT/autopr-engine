@@ -12,7 +12,7 @@ class PyTestTool(Tool):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
+        self.default_timeout = 60.0  # Increase timeout to 60 seconds for comprehensive mode
 
     @property
     def name(self) -> str:
@@ -21,6 +21,14 @@ class PyTestTool(Tool):
     @property
     def description(self) -> str:
         return "A tool for running tests using PyTest."
+
+    def is_available(self) -> bool:
+        """Check if pytest is available."""
+        return self.check_command_availability("pytest")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "pytest"
 
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """

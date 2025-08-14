@@ -17,7 +17,7 @@ class SemgrepTool(Tool):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 45.0  # Reduce timeout to 45 seconds for faster execution
+        self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
         self.max_files_per_run = 200  # Higher limit for static analysis
 
     @property
@@ -31,6 +31,14 @@ class SemgrepTool(Tool):
     @property
     def category(self) -> str:
         return "security"
+
+    def is_available(self) -> bool:
+        """Check if semgrep command is available."""
+        return self.check_command_availability("semgrep")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "semgrep"
 
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """

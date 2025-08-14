@@ -18,6 +18,14 @@ class DependencyScannerTool(Tool):
     def description(self) -> str:
         return "Scans Python dependencies for known vulnerabilities using safety."
 
+    def is_available(self) -> bool:
+        """Check if safety command is available."""
+        return self.check_command_availability("safety")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "safety"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> dict[str, Any]:
         """
         Run safety check on project dependencies.
