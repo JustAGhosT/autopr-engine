@@ -5,6 +5,7 @@ This module provides volume-based configuration and utilities that can be import
 without creating circular dependencies between modules.
 """
 
+from enum import Enum
 from typing import Any
 
 from autopr.enums import QualityMode
@@ -14,6 +15,17 @@ AI_AGENTS_THRESHOLD = 200  # Volume level at which to enable AI agents
 MIN_FIXES = 1  # Minimum number of fixes to apply
 MAX_FIXES = 100  # Maximum number of fixes to apply
 MIN_ISSUES = 10  # Minimum number of issues to report
+
+
+class VolumeLevel(Enum):
+    """Named volume levels for better readability"""
+
+    SILENT = 0
+    QUIET = 100
+    MODERATE = 300
+    BALANCED = 500
+    THOROUGH = 700
+    MAXIMUM = 1000
 
 
 def get_volume_level_name(volume: int) -> str:
@@ -37,20 +49,17 @@ def get_volume_level_name(volume: int) -> str:
 
     if volume == 0:
         return "Silent"
-    THRESHOLD_QUIET = 100
-    THRESHOLD_MODERATE = 300
-    THRESHOLD_BALANCED = 500
-    THRESHOLD_THOROUGH = 700
-
-    if volume < THRESHOLD_QUIET:
+    # Match the legacy behavior from volume_mapping.py
+    if volume <= 199:
         return "Quiet"
-    if volume < THRESHOLD_MODERATE:
+    elif volume <= 399:
         return "Moderate"
-    if volume < THRESHOLD_BALANCED:
+    elif volume <= 599:
         return "Balanced"
-    if volume < THRESHOLD_THOROUGH:
+    elif volume <= 799:
         return "Thorough"
-    return "Maximum"
+    else:
+        return "Maximum"
 
 
 def get_volume_config(volume: int) -> dict[str, Any]:
@@ -94,7 +103,6 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
         "max_fixes": min(MAX_FIXES, max(MIN_FIXES, volume // 10)),
         "max_issues": min(100, max(MIN_ISSUES, volume // 5)),
         "enable_ai_agents": volume >= AI_AGENTS_THRESHOLD,
-        "verbose": volume > 500,
     }
 
     # Get the quality mode based on volume

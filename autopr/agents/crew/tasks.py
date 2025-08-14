@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from autopr.actions.quality_engine.volume_mapping import (
+from autopr.utils.volume_utils import (
     VolumeLevel,
     get_volume_level_name,
 )

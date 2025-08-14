@@ -164,7 +164,7 @@ class AutoPRCrew:
 
     def _attach_volume_backstories(self) -> None:
         try:
-            from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+            from autopr.utils.volume_utils import get_volume_level_name
 
             level_name = get_volume_level_name(self.volume)
             volume_suffix = (

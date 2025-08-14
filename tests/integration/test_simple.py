@@ -20,6 +20,6 @@ def test_imports():
 
 def test_volume_imports():
     """Test that we can import volume-related modules."""
-    from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+    from autopr.utils.volume_utils import get_volume_level_name
 
     assert get_volume_level_name(500) == "Balanced"

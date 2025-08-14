@@ -4,7 +4,7 @@ Tests for volume mapping functionality in AutoPR Engine.
 
 import pytest
 
-from autopr.actions.quality_engine.volume_mapping import (
+from autopr.utils.volume_utils import (
     VolumeLevel,
     get_volume_config,
     get_volume_level_name,

@@ -16,7 +16,7 @@ def make_output_mock(
     last_platform_str: str | None,
     create_quality_inputs: Callable[[int], Any],
 ) -> dict[str, Any]:
-    from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+    from autopr.utils.volume_utils import get_volume_level_name
 
     settings = get_settings()
     cfg = settings.report_builder

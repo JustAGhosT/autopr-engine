@@ -33,7 +33,7 @@ def test_import_crew():
 def test_import_volume_mapping():
     """Test importing the volume mapping module."""
     try:
-        from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+        from autopr.utils.volume_utils import get_volume_level_name
 
         assert get_volume_level_name(500) == "Balanced"
         print("✅ Successfully imported get_volume_level_name in pytest")

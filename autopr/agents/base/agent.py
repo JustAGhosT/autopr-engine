@@ -96,9 +96,7 @@ class BaseAgent(Generic[InputT, OutputT]):
 
         # Augment backstory with volume context for visibility in tests
         try:
-            from autopr.actions.quality_engine.volume_mapping import (
-                get_volume_level_name,
-            )
+            from autopr.utils.volume_utils import get_volume_level_name
 
             level_name = get_volume_level_name(self.volume_config.volume)
             self.backstory = f"{self.backstory}\nYou are currently operating at volume level {self.volume_config.volume} ({level_name})."
