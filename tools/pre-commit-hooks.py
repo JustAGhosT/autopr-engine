@@ -19,7 +19,8 @@ def run_command(cmd: List[str], *, capture_output: bool = True) -> subprocess.Co
     try:
         return subprocess.run(cmd, capture_output=capture_output, text=True, check=False)
     except Exception as e:
-        logger.error("Error running command %s: %s", " ".join(cmd), e)
+        cmd_str = " ".join(cmd)
+        logger.error("Error running command %s: %s", cmd_str, e)
         return subprocess.CompletedProcess(cmd, returncode=1, stdout="", stderr=str(e))
 
 

@@ -15,6 +15,7 @@ import os
 import time
 from typing import Any, TypedDict
 import uuid
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -182,24 +183,191 @@ class RedisQueueManager:
         except Exception:
             return False
 
+    def _validate_redis_client(self) -> None:
+        """Validate that Redis client is available."""
+        if self.redis_client is None:
+            raise RuntimeError("Redis client is not initialized")
+
     def enqueue_issue(self, issue: QueuedIssue) -> bool:
         """Add an issue to the pending queue."""
         try:
-            # Serialize issue
-            issue_data = json.dumps(issue.to_dict())
-
-            # Add to priority queue (higher priority = higher score)
-            score = issue.priority * 1000 + int(time.time())  # Priority + timestamp
-
-            assert self.redis_client is not None
-            self.redis_client.zadd(self.pending_queue, {issue_data: score})
-
-            logger.debug(f"Enqueued issue {issue.id} with priority {issue.priority}")
+            self._validate_redis_client()
+            issue_data = {
+                "id": issue.id,
+                "file_path": str(issue.file_path),
+                "issue_type": issue.issue_type,
+                "message": issue.message,
+                "line": issue.line,
+                "column": issue.column,
+                "severity": issue.severity,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+            self.redis_client.lpush(self.issue_queue_key, json.dumps(issue_data))
             return True
-
         except Exception as e:
-            logger.exception(f"Failed to enqueue issue {issue.id}: {e}")
+            logger.error(f"Failed to enqueue issue: {e}")
             return False
+
+    def dequeue_issue(self) -> QueuedIssue | None:
+        """Remove and return the next issue from the queue."""
+        try:
+            self._validate_redis_client()
+            result = self.redis_client.rpop(self.issue_queue_key)
+            if result:
+                data = json.loads(result)
+                return QueuedIssue(
+                    id=data["id"],
+                    file_path=Path(data["file_path"]),
+                    issue_type=data["issue_type"],
+                    message=data["message"],
+                    line=data["line"],
+                    column=data["column"],
+                    severity=data["severity"],
+                )
+            return None
+        except Exception as e:
+            logger.error(f"Failed to dequeue issue: {e}")
+            return None
+
+    def get_queue_length(self) -> int:
+        """Get the current number of issues in the queue."""
+        try:
+            self._validate_redis_client()
+            return self.redis_client.llen(self.issue_queue_key)
+        except Exception as e:
+            logger.error(f"Failed to get queue length: {e}")
+            return 0
+
+    def clear_queue(self) -> bool:
+        """Clear all issues from the queue."""
+        try:
+            self._validate_redis_client()
+            self.redis_client.delete(self.issue_queue_key)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to clear queue: {e}")
+            return False
+
+    def get_queue_stats(self) -> dict:
+        """Get statistics about the queue."""
+        try:
+            self._validate_redis_client()
+            length = self.redis_client.llen(self.issue_queue_key)
+            return {
+                "queue_length": length,
+                "queue_name": self.issue_queue_key,
+                "status": "active" if length > 0 else "empty"
+            }
+        except Exception as e:
+            logger.error(f"Failed to get queue stats: {e}")
+            return {
+                "queue_length": 0,
+                "queue_name": self.issue_queue_key,
+                "status": "error"
+            }
+
+    def peek_queue(self, count: int = 5) -> list[QueuedIssue]:
+        """Peek at the top issues in the queue without removing them."""
+        try:
+            self._validate_redis_client()
+            results = self.redis_client.lrange(self.issue_queue_key, 0, count - 1)
+            issues = []
+            for result in results:
+                data = json.loads(result)
+                issues.append(QueuedIssue(
+                    id=data["id"],
+                    file_path=Path(data["file_path"]),
+                    issue_type=data["issue_type"],
+                    message=data["message"],
+                    line=data["line"],
+                    column=data["column"],
+                    severity=data["severity"],
+                ))
+            return issues
+        except Exception as e:
+            logger.error(f"Failed to peek queue: {e}")
+            return []
+
+    def remove_issue(self, issue_id: str) -> bool:
+        """Remove a specific issue from the queue by ID."""
+        try:
+            self._validate_redis_client()
+            # This is a simplified implementation - in practice you'd need to scan the queue
+            # and remove the specific issue by matching its ID
+            logger.warning("Remove issue by ID not implemented - would need queue scanning")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to remove issue: {e}")
+            return False
+
+    def get_processing_status(self) -> dict:
+        """Get the current processing status."""
+        try:
+            self._validate_redis_client()
+            queue_length = self.redis_client.llen(self.issue_queue_key)
+            processing_count = self.redis_client.get(self.processing_count_key) or 0
+            
+            return {
+                "queue_length": queue_length,
+                "processing_count": int(processing_count),
+                "status": "processing" if int(processing_count) > 0 else "idle"
+            }
+        except Exception as e:
+            logger.error(f"Failed to get processing status: {e}")
+            return {
+                "queue_length": 0,
+                "processing_count": 0,
+                "status": "error"
+            }
+
+    def increment_processing_count(self) -> bool:
+        """Increment the processing count."""
+        try:
+            self._validate_redis_client()
+            self.redis_client.incr(self.processing_count_key)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to increment processing count: {e}")
+            return False
+
+    def decrement_processing_count(self) -> bool:
+        """Decrement the processing count."""
+        try:
+            self._validate_redis_client()
+            self.redis_client.decr(self.processing_count_key)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to decrement processing count: {e}")
+            return False
+
+    def reset_processing_count(self) -> bool:
+        """Reset the processing count to 0."""
+        try:
+            self._validate_redis_client()
+            self.redis_client.set(self.processing_count_key, 0)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to reset processing count: {e}")
+            return False
+
+    def get_health_status(self) -> dict:
+        """Get the health status of the Redis connection."""
+        try:
+            self._validate_redis_client()
+            self.redis_client.ping()
+            return {
+                "status": "healthy",
+                "connection": "active",
+                "queue_accessible": True
+            }
+        except Exception as e:
+            logger.error(f"Redis health check failed: {e}")
+            return {
+                "status": "unhealthy",
+                "connection": "error",
+                "queue_accessible": False,
+                "error": str(e)
+            }
 
     def enqueue_issues(self, issues: list[QueuedIssue]) -> int:
         """Add multiple issues to the pending queue."""
@@ -223,34 +391,6 @@ class RedisQueueManager:
             logger.exception(f"Failed to enqueue issues in batch: {e}")
 
         return enqueued_count
-
-    def dequeue_issue(self, timeout: int = 30) -> QueuedIssue | None:
-        """Get the next issue to process."""
-        try:
-            # Get highest priority issue (blocking operation)
-            assert self.redis_client is not None
-            result = self.redis_client.bzpopmax(self.pending_queue, timeout=timeout)
-
-            if not result:
-                return None  # Timeout
-
-            _, issue_data, _ = result
-            issue = QueuedIssue.from_dict(json.loads(issue_data))
-
-            # Move to processing queue
-            issue.assigned_worker = self.worker_id
-            issue.processing_started_at = datetime.now(UTC)
-
-            processing_data = json.dumps(issue.to_dict())
-            assert self.redis_client is not None
-            self.redis_client.hset(self.processing_queue, issue.id, processing_data)
-
-            logger.debug(f"Dequeued issue {issue.id} for processing")
-            return issue
-
-        except Exception as e:
-            logger.exception(f"Failed to dequeue issue: {e}")
-            return None
 
     def complete_issue(self, issue_id: str, result: ProcessingResult) -> bool:
         """Mark an issue as completed."""

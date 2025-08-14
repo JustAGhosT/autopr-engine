@@ -1,261 +1,81 @@
-"""
-Agent definitions for the AutoPR Agent Framework.
+"""AutoPR Agents for code analysis and quality management."""
 
-This module defines the specialized agents used in the AutoPR code analysis pipeline.
-"""
-
+import asyncio
+import inspect
+import logging
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, field_validator
 
-# Provide a fallback for typing/mypy when crewai is not available
-try:  # pragma: no cover - import-time compatibility shim
-    from crewai import Agent  # type: ignore[import-not-found]
-except Exception:  # pragma: no cover
-
-    class Agent:  # type: ignore[no-redef]
-        """Fallback Agent stub used when crewai is unavailable.
-
-        Accepts arbitrary keyword arguments and assigns them as attributes so
-        subclasses can safely call super().__init__(...) with rich kwargs.
-        """
-
-        def __init__(self, *args, **kwargs) -> None:  # noqa: ARG002 - stub accepts *args
-            for key, value in kwargs.items():
-                setattr(self, key, value)
-
-
 from autopr.actions import platform_detection
-from autopr.actions.llm import get_llm_provider_manager
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs
 from autopr.agents.models import CodeIssue, IssueSeverity
 from autopr.utils.volume_utils import QualityMode, get_volume_level_name
 
+# Import for backward compatibility
+from autopr.utils.volume_utils import volume_to_quality_mode
+
+# Import for local use in methods
+from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
+
 
 class VolumeConfig(BaseModel):
-    """Pydantic model for validating volume configuration (used in tests)."""
+    """Configuration for volume-based quality control."""
 
     volume: int = 500
-    quality_mode: QualityMode | None = None
-    config: dict[str, Any] | None = None
+    quality_mode: QualityMode = QualityMode.SMART
+    config: dict[str, Any] = {}
 
     @field_validator("volume")
     @classmethod
-    def _clamp_volume(cls, v: int) -> int:
-        if not isinstance(v, int):
-            msg = "volume must be int"
-            raise ValueError(msg)
-        return max(0, min(1000, v))
-
-    @field_validator("config")
-    @classmethod
-    def _validate_config(cls, v: dict[str, Any] | None) -> dict[str, Any] | None:
-        if v is None:
-            return v
-        # Enforce that enable_ai_agents, if provided, must be boolean
-        if "enable_ai_agents" in v and not isinstance(v["enable_ai_agents"], bool):
-            msg = "enable_ai_agents must be a boolean"
-            raise ValueError(msg)
+    def validate_volume(cls, v: int) -> int:
+        """Validate volume is between 0 and 1000."""
+        if not 0 <= v <= 1000:
+            raise ValueError("Volume must be between 0 and 1000")
         return v
 
-    def model_post_init(self, __context: Any) -> None:  # type: ignore[override]
-        # Populate defaults from volume mapping if not provided
-        from autopr.utils.volume_utils import volume_to_quality_mode
+    @field_validator("quality_mode")
+    @classmethod
+    def validate_quality_mode(cls, v: QualityMode) -> QualityMode:
+        """Validate quality mode is valid."""
+        if not isinstance(v, QualityMode):
+            raise ValueError("Quality mode must be a valid QualityMode enum")
+        return v
 
-        if self.quality_mode is None or self.config is None:
-            mode, default_config = volume_to_quality_mode(self.volume)
-            if self.quality_mode is None:
-                self.quality_mode = mode
-            if self.config is None:
-                self.config = default_config
-            else:
-                merged = default_config.copy()
-                merged.update(self.config)
-                self.config = merged
+    def apply_volume_settings(self, volume: int) -> None:
+        """Apply volume settings to the configuration."""
+        self.volume = volume
+        self.quality_mode = volume_to_quality_mode(volume)
+        self.config = get_volume_level_name(volume)
 
 
-class BaseAgent(Agent):
-    """Base agent with common configuration and volume control."""
+class BaseAgent:
+    """Base class for all AutoPR agents."""
 
-    def __init__(
-        self,
-        role: str,
-        goal: str,
-        backstory: str,
-        llm_model: str = "gpt-4",
-        volume: int = 500,  # Default to moderate level
-        **kwargs: Any,
-    ) -> None:
-        """Initialize the base agent with common settings.
-
-        Args:
-            role: The role of the agent
-            goal: The goal of the agent
-            backstory: The backstory of the agent
-            llm_model: The LLM model to use (default: 'gpt-4')
-            volume: Volume level (0-1000) controlling quality strictness
-            **kwargs: Additional arguments to pass to the base Agent
-        """
-        # Initialize the base Agent class first to ensure all attributes are set up
-        # We'll update the backstory after initialization
-        super().__init__(
-            role=role,
-            goal=goal,
-            backstory=backstory,  # Will be updated after initialization
-            llm=get_llm_provider_manager().get_provider(llm_model),
-            allow_delegation=True,
-            **kwargs,
-        )
-
-        # Now set up our custom attributes after parent initialization
-        self._volume = max(0, min(1000, volume))  # Clamp to 0-1000 range
-        self._volume_config = VolumeConfig(volume=self._volume)
-
-        # Update the backstory with volume context
-        volume_level = get_volume_level_name(self._volume)
-        self.backstory = f"""{backstory}
-
-        You are currently operating at volume level {self._volume} ({volume_level}).
-        This affects the strictness of your analysis and the depth of your checks.
-        """
+    def __init__(self, role: str, goal: str, backstory: str, **kwargs: Any) -> None:
+        """Initialize the base agent."""
+        self.role = role
+        self.goal = goal
+        self.backstory = backstory
+        self.volume_config = VolumeConfig(**kwargs)
+        self._platform_detector = None
+        self._quality_engine = None
 
     @property
-    def volume(self) -> int:
-        """Get the current volume level (0-1000)."""
-        return self._volume
-
-    @property
-    def volume_config(self) -> VolumeConfig:
-        """Get the volume configuration."""
-        return self._volume_config
-
-    def get_volume_context(self) -> dict[str, Any]:
-        """Get context about the current volume level for agent tasks."""
-        return {
-            "volume": self._volume,
-            "volume_level": get_volume_level_name(self._volume),
-            "quality_mode": (
-                self._volume_config.quality_mode.value if self._volume_config.quality_mode else None
-            ),
-            "quality_config": self._volume_config.config or {},
-        }
-
-
-class CodeQualityAgent(BaseAgent):
-    """Agent responsible for code quality analysis with volume-aware strictness."""
-
-    def __init__(self, **kwargs: Any) -> None:
-        """Initialize the code quality agent with volume control.
-
-        Args:
-            **kwargs: Additional arguments including 'volume' (0-1000)
-        """
-        # Initialize the base agent first
-        super().__init__(
-            role="Senior Code Quality Engineer",
-            goal="Analyze and improve code quality through comprehensive checks with configurable strictness",
-            backstory="""You are an expert in static code analysis, code smells detection,
-            and quality metrics. You excel at identifying potential issues and suggesting
-            improvements. You have a keen eye for detail and a deep understanding of
-            software engineering best practices.""",
-            **kwargs,
-        )
-
-        # Initialize the quality engine with volume configuration
-        self._quality_engine = QualityEngine()
-
-        # Configure quality engine based on volume if needed
-        if self.volume_config.config:
-            # Apply any quality engine specific configurations from volume config
-            quality_config = {
-                k: v for k, v in self.volume_config.config.items() if k.startswith("quality_")
-            }
-            if quality_config:
-                # Apply quality config to the quality engine if needed
-                pass
-
-    @property
-    def quality_engine(self) -> QualityEngine:
-        """Get the quality engine instance."""
-        return self._quality_engine
-
-    async def analyze_code_quality(self, repo_path: str) -> dict[str, Any]:
-        """Analyze code quality for the given repository."""
-        # Build minimal inputs and delegate to the quality engine
-        inputs = QualityInputs(files=[repo_path], volume=self.volume)
-        outputs = await self._quality_engine.run(inputs)
-        # Convert to a plain dict for callers/tests
-        try:
-            return outputs.model_dump()  # type: ignore[attr-defined]
-        except Exception:
-            try:
-                return outputs.dict()  # type: ignore[attr-defined]
-            except Exception:
-                return {
-                    "success": getattr(outputs, "success", True),
-                    "summary": getattr(outputs, "summary", None),
-                }
-
-
-class PlatformAnalysisAgent(BaseAgent):
-    """Agent responsible for platform and technology stack analysis with volume-aware depth."""
-
-    def __init__(self, **kwargs: Any) -> None:
-        """Initialize the platform analysis agent with volume control.
-
-        Args:
-            **kwargs: Additional arguments including 'volume' (0-1000)
-        """
-        # Initialize the base agent first
-        super().__init__(
-            role="Platform Architecture Specialist",
-            goal="Identify and analyze the technology stack and platform architecture with configurable depth",
-            backstory="""You have deep knowledge of various technology stacks, frameworks,
-            and platform architectures. You can detect platform-specific patterns and
-            provide optimization recommendations. You understand how different components
-            interact and can identify potential integration issues.
-
-            Your analysis depth and thoroughness are adjusted based on the current volume level.""",
-            **kwargs,
-        )
-
-        # Defer detector creation so tests can patch the class before first access
-        self._platform_detector: platform_detection.PlatformDetector | None = None
-
-        # Configure platform detector based on volume if needed
-        if (
-            self.volume_config.config
-            and "platform_scan_depth" in self.volume_config.config
-            and self._platform_detector is not None
-            and hasattr(self._platform_detector, "scan_depth")
-        ):
-            self._platform_detector.scan_depth = self.volume_config.config[
-                "platform_scan_depth"
-            ]
-
-    @property
-    def platform_detector(self) -> platform_detection.PlatformDetector:
+    def platform_detector(self) -> Any:
         """Get the platform detector instance."""
         if self._platform_detector is None:
-            self._platform_detector = platform_detection.PlatformDetector()
-            # Configure platform detector based on volume if needed
-            if self.volume_config.config and "platform_scan_depth" in self.volume_config.config:
-                try:
-                    self._platform_detector.scan_depth = self.volume_config.config[
-                        "platform_scan_depth"
-                    ]
-                except Exception:
-                    # Some PlatformDetector implementations may not support dynamic attributes
-                    pass
+            try:
+                self._platform_detector = platform_detection.PlatformDetector()
+            except Exception:
+                pass
         return self._platform_detector
 
     async def analyze_platform(self, repo_path: str) -> Any:
         """Analyze the platform and technology stack."""
         # Delegate directly and return the detector output for compatibility with tests
-        import asyncio
-        import inspect
-
         detector = self.platform_detector
         analyze = detector.analyze
 
@@ -298,9 +118,6 @@ class LintingAgent(BaseAgent):
                 {k: v for k, v in self.volume_config.config.items() if k.startswith("linting_")}
             )
 
-        # Import locally to avoid type-resolution issues during static analysis
-        from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
-
         self._linting_fixer = _AILintingFixer(**linting_config)  # type: ignore[call-arg]
 
         # Adjust verbosity based on volume
@@ -339,94 +156,184 @@ class LintingAgent(BaseAgent):
         try:
             # Get the file content
             try:
-                from pathlib import Path as _Path
-                with _Path(file_path).open(encoding="utf-8") as f:
+                with Path(file_path).open(encoding="utf-8") as f:
                     file_content = f.read()
             except UnicodeDecodeError as e:
                 return [
                     CodeIssue(
                         file_path=file_path,
                         line_number=0,
-                        column=0,
-                        message=f"Failed to decode file: {e!s}. File may be binary or use a different encoding.",
-                        severity=IssueSeverity.HIGH,
-                        rule_id="encoding-error",
-                        category="error",
-                        fix=None,
+                        message=f"Unicode decode error: {e}",
+                        severity=IssueSeverity.ERROR,
                     )
                 ]
 
-            # Fix issues using the linting fixer
-            try:
-                fixed_content, issues = await self._linting_fixer.fix_code(
-                    file_path=file_path, file_content=file_content, verbose=self._verbose
-                )
-            except Exception as e:
+            # Process the file with the linting fixer
+            result = await self._linting_fixer.fix_file(file_path, file_content)
+
+            if result.success:
+                return result.fixed_issues
+            else:
                 return [
                     CodeIssue(
                         file_path=file_path,
                         line_number=0,
-                        column=0,
-                        message=f"Linting failed: {e!s}",
-                        severity=IssueSeverity.HIGH,
-                        rule_id="linting-error",
-                        category="error",
-                        fix=None,
+                        message=f"Linting failed: {result.error_message}",
+                        severity=IssueSeverity.ERROR,
                     )
                 ]
 
-            # Write the fixed content back to the file if it changed
-            if fixed_content != file_content:
-                try:
-                    from pathlib import Path as _Path
-                    with _Path(file_path).open("w", encoding="utf-8") as f:
-                        f.write(fixed_content)
-
-                    # Use logging instead of print
-                    if self._verbose:
-                        import logging as _logging
-                        _logging.getLogger(__name__).info(
-                            "Fixed %d issues in %s", len(issues), file_path
-                        )
-                except Exception as e:
-                    # If we can't write the file, log it and continue
-                    issues.append(
-                        CodeIssue(
-                            file_path=file_path,
-                            line_number=0,
-                            column=0,
-                            message=f"Failed to write fixes to file: {e!s}",
-                            severity=IssueSeverity.HIGH,
-                            rule_id="write-error",
-                            category="error",
-                            fix=None,
-                        )
-                    )
-
-            return issues
-
         except FileNotFoundError:
-            raise  # Re-raise file not found errors
-
-        except PermissionError:
-            raise  # Re-raise permission errors
-
-        except Exception as e:
-            # For any other unexpected errors, return an error issue
-            if self._verbose:
-                import logging as _logging
-                _logging.getLogger(__name__).exception(
-                    "Unexpected error fixing issues in %s: %s", file_path, e
-                )
             return [
                 CodeIssue(
                     file_path=file_path,
                     line_number=0,
-                    column=0,
-                    message=f"Unexpected error: {e!s}",
-                    severity=IssueSeverity.HIGH,
-                    rule_id="unexpected-error",
-                    category="error",
-                    fix=None,
+                    message="File not found",
+                    severity=IssueSeverity.ERROR,
                 )
             ]
+        except PermissionError:
+            return [
+                CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    message="Permission denied",
+                    severity=IssueSeverity.ERROR,
+                )
+            ]
+        except Exception as e:
+            logging.error(f"Unexpected error fixing code issues in {file_path}: {e}")
+            return [
+                CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    message=f"Unexpected error: {e}",
+                    severity=IssueSeverity.ERROR,
+                )
+            ]
+
+    async def analyze_code_quality(self, file_path: str) -> list[CodeIssue]:
+        """Analyze code quality in the specified file.
+
+        Args:
+            file_path: Path to the file to analyze
+
+        Returns:
+            List[CodeIssue]: List of quality issues found
+        """
+        try:
+            # Get the file content
+            try:
+                with Path(file_path).open(encoding="utf-8") as f:
+                    file_content = f.read()
+            except UnicodeDecodeError as e:
+                return [
+                    CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        message=f"Unicode decode error: {e}",
+                        severity=IssueSeverity.ERROR,
+                    )
+                ]
+
+            # Process the file with the linting fixer for analysis only
+            result = await self._linting_fixer.analyze_file(file_path, file_content)
+
+            if result.success:
+                return result.issues
+            else:
+                return [
+                    CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        message=f"Analysis failed: {result.error_message}",
+                        severity=IssueSeverity.ERROR,
+                    )
+                ]
+
+        except Exception as e:
+            logging.error(f"Unexpected error analyzing code quality in {file_path}: {e}")
+            return [
+                CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    message=f"Unexpected error: {e}",
+                    severity=IssueSeverity.ERROR,
+                )
+            ]
+
+
+class QualityAgent(BaseAgent):
+    """Agent responsible for comprehensive code quality analysis."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize the quality agent."""
+        super().__init__(
+            role="Senior Code Quality Engineer",
+            goal="Analyze and improve overall code quality and maintainability",
+            backstory="""You are an expert in code quality metrics, maintainability analysis,
+            and best practices for writing clean, maintainable code. You understand
+            the importance of code quality for long-term project success and can
+            identify areas for improvement across the codebase.
+
+            Your analysis depth and thoroughness are adjusted based on the current volume level.""",
+            **kwargs,
+        )
+
+        # Initialize quality engine
+        quality_config = {}
+        if self.volume_config.config:
+            quality_config.update(
+                {k: v for k, v in self.volume_config.config.items() if k.startswith("quality_")}
+            )
+
+        self._quality_engine = QualityEngine()
+
+    @property
+    def quality_engine(self) -> QualityEngine:
+        """Get the quality engine instance."""
+        return self._quality_engine
+
+    async def analyze_quality(self, repo_path: str) -> Any:
+        """Analyze code quality across the repository."""
+        try:
+            inputs = QualityInputs(
+                repository_path=repo_path,
+                mode=self.volume_config.quality_mode,
+                **self.volume_config.config,
+            )
+
+            result = await self._quality_engine.execute(inputs)
+            return result
+
+        except Exception as e:
+            logging.error(f"Error analyzing quality: {e}")
+            return None
+
+
+class AutoPRCrew:
+    """Main crew for AutoPR operations."""
+
+    def __init__(self, volume: int = 500, **kwargs: Any) -> None:
+        """Initialize the AutoPR crew."""
+        self.volume = volume
+        self.linting_agent = LintingAgent(volume=volume, **kwargs)
+        self.quality_agent = QualityAgent(volume=volume, **kwargs)
+
+    async def analyze_repository(self, repo_path: str) -> dict[str, Any]:
+        """Analyze the repository for code quality issues."""
+        results = {}
+
+        # Platform analysis
+        platform_result = await self.linting_agent.analyze_platform(repo_path)
+        results["platform"] = platform_result
+
+        # Quality analysis
+        quality_result = await self.quality_agent.analyze_quality(repo_path)
+        results["quality"] = quality_result
+
+        return results
+
+    async def fix_issues(self, file_path: str) -> list[CodeIssue]:
+        """Fix issues in a specific file."""
+        return await self.linting_agent.fix_code_issues(file_path)

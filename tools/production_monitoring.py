@@ -1,7 +1,7 @@
 # production_monitoring.py
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
 import aiohttp
@@ -57,7 +57,7 @@ class ProductionMonitor:
                 "total_tokens": total_tokens,
                 "response_time": response_time,
                 "cost": calculated_cost,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
         except Exception:
@@ -90,7 +90,7 @@ class ProductionMonitor:
         """Generate usage report for the specified period."""
         # This would typically query a database
         # For now, return mock data
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=days)
 
         return {
@@ -113,7 +113,8 @@ async def main():
     health = await monitor.check_model_health()
     logger.info("Model Health Status:")
     for model, status in health.items():
-        logger.info("  %s: %s", model, "✅ Healthy" if status else "❌ Unhealthy")
+        status_text = "✅ Healthy" if status else "❌ Unhealthy"
+        logger.info("  %s: %s", model, status_text)
 
     # Generate usage report
     report = await monitor.generate_usage_report()

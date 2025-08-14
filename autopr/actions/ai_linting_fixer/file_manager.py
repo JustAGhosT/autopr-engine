@@ -110,10 +110,11 @@ class FileManager:
         try:
             with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
-            return True, content
         except Exception as e:
             logger.exception(f"Failed to read file {file_path}: {e}")
             return False, ""
+        else:
+            return True, content
 
     def read_file(self, file_path: str) -> str | None:
         """Read a file and return its content."""
@@ -144,6 +145,10 @@ class FileManager:
                 return {"exists": False}
 
             stat = file_path_obj.stat()
+        except Exception as e:
+            logger.debug(f"Failed to get file info for {file_path}: {e}")
+            return {"exists": False, "error": str(e)}
+        else:
             return {
                 "exists": True,
                 "size_bytes": stat.st_size,
@@ -157,9 +162,6 @@ class FileManager:
                 "stem": file_path_obj.stem,
                 "parent": str(file_path_obj.parent),
             }
-        except Exception as e:
-            logger.debug(f"Failed to get file info for {file_path}: {e}")
-            return {"exists": False, "error": str(e)}
 
     def list_backups(self, file_path: str | None = None) -> list:
         """List available backups, optionally filtered by original file."""
@@ -192,11 +194,11 @@ class FileManager:
 
             # Sort by modification time (newest first)
             backups.sort(key=operator.itemgetter("modified_time"), reverse=True)
-            return backups
-
         except Exception as e:
             logger.exception(f"Failed to list backups: {e}")
             return []
+        else:
+            return backups
 
     def cleanup_old_backups(self, max_backups: int = 10, older_than_days: int | None = None) -> int:
         """Clean up old backup files."""
@@ -245,7 +247,7 @@ class FileManager:
             # Check for empty content
             if not content.strip():
                 warnings_list = validation_result["warnings"]
-                assert isinstance(warnings_list, list)
+                self._validate_warnings_list(warnings_list)
                 warnings_list.append("File content is empty")
 
             # Check for encoding issues
@@ -253,7 +255,7 @@ class FileManager:
                 content.encode("utf-8")
             except UnicodeEncodeError:
                 issues_list = validation_result["issues"]
-                assert isinstance(issues_list, list)
+                self._validate_issues_list(issues_list)
                 issues_list.append("Content contains invalid UTF-8 characters")
                 validation_result["valid"] = False
 
@@ -262,25 +264,25 @@ class FileManager:
             for i, line in enumerate(lines, 1):
                 if len(line) > 1000:  # Very long lines might indicate issues
                     warnings_list = validation_result["warnings"]
-                    assert isinstance(warnings_list, list)
+                    self._validate_warnings_list(warnings_list)
                     warnings_list.append(f"Line {i} is very long ({len(line)} characters)")
 
             # Check for mixed line endings
             if "\r\n" in content and "\n" in content:
                 warnings_list = validation_result["warnings"]
-                assert isinstance(warnings_list, list)
+                self._validate_warnings_list(warnings_list)
                 warnings_list.append("Mixed line endings detected")
 
             # Check for trailing whitespace
             for i, line in enumerate(lines, 1):
                 if line.rstrip() != line:
                     warnings_list = validation_result["warnings"]
-                    assert isinstance(warnings_list, list)
+                    self._validate_warnings_list(warnings_list)
                     warnings_list.append(f"Line {i} has trailing whitespace")
 
         except Exception as e:
             issues_list = validation_result["issues"]
-            assert isinstance(issues_list, list)
+            self._validate_issues_list(issues_list)
             issues_list.append(f"Validation error: {e}")
             validation_result["valid"] = False
 
@@ -324,3 +326,43 @@ class FileManager:
         except Exception as e:
             logger.exception(f"Failed to delete {file_path}: {e}")
             return False
+
+    def _validate_warnings_list(self, warnings_list: list) -> None:
+        """Validate that warnings_list is a list."""
+        if not isinstance(warnings_list, list):
+            raise TypeError(f"Expected list for warnings_list, got {type(warnings_list).__name__}")
+
+    def _validate_issues_list(self, issues_list: list) -> None:
+        """Validate that issues_list is a list."""
+        if not isinstance(issues_list, list):
+            raise TypeError(f"Expected list for issues_list, got {type(issues_list).__name__}")
+
+    def _validate_file_info(self, file_info: dict) -> None:
+        """Validate file_info structure."""
+        if not isinstance(file_info, dict):
+            raise TypeError(f"Expected dict for file_info, got {type(file_info).__name__}")
+
+        if "warnings" not in file_info:
+            raise ValueError("file_info must contain 'warnings' key")
+
+        if "issues" not in file_info:
+            raise ValueError("file_info must contain 'issues' key")
+
+        self._validate_warnings_list(file_info["warnings"])
+        self._validate_issues_list(file_info["issues"])
+
+    def _validate_file_info_list(self, file_info_list: list) -> None:
+        """Validate that file_info_list is a list of valid file_info dicts."""
+        if not isinstance(file_info_list, list):
+            raise TypeError(f"Expected list for file_info_list, got {type(file_info_list).__name__}")
+
+        for file_info in file_info_list:
+            self._validate_file_info(file_info)
+
+    def _validate_file_info_dict(self, file_info_dict: dict) -> None:
+        """Validate that file_info_dict is a dict of valid file_info dicts."""
+        if not isinstance(file_info_dict, dict):
+            raise TypeError(f"Expected dict for file_info_dict, got {type(file_info_dict).__name__}")
+
+        for file_info in file_info_dict.values():
+            self._validate_file_info(file_info)

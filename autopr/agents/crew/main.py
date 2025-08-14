@@ -143,15 +143,15 @@ class AutoPRCrew:
         except Exception:  # pragma: no cover
 
             class _CodeQualityAgent:  # type: ignore
-                def __init__(self, **_kw):
+                def __init__(self, **_kwargs):
                     pass
 
             class _PlatformAnalysisAgent:  # type: ignore
-                def __init__(self, **_kw):
+                def __init__(self, **_kwargs):
                     pass
 
             class _LintingAgent:  # type: ignore
-                def __init__(self, **_kw):
+                def __init__(self, **_kwargs):
                     pass
 
             return _CodeQualityAgent, _LintingAgent, _PlatformAnalysisAgent
@@ -273,7 +273,7 @@ class AutoPRCrew:
         return task
 
     # Lightweight helpers expected by tests
-    def _create_quality_inputs(self, volume: int):
+    def _create_quality_inputs(self, _volume: int):
         class _QI:
             def __init__(self, mode):
                 self.mode = mode
@@ -282,12 +282,12 @@ class AutoPRCrew:
             # Integration tests expect 900 -> COMPREHENSIVE (not AI_ENHANCED)
             from autopr.enums import QualityMode
 
-            if volume <= 0:
+            if _volume <= 0:
                 # Integration tests expect 0 -> FAST, not ULTRA_FAST
                 mode = QualityMode.FAST
-            elif volume < 400:
+            elif _volume < 400:
                 mode = QualityMode.FAST
-            elif volume < 700:
+            elif _volume < 700:
                 mode = QualityMode.SMART
             else:
                 mode = QualityMode.COMPREHENSIVE
