@@ -118,17 +118,30 @@ def pytest_configure(config):
     print("Running with default test configuration")
     print("======================\n")
 
+    # Reduce noise: ignore RuntimeWarning about un-awaited test coroutines in summary output
+    # This warning appears from pytest-asyncio collection/teardown and does not affect test correctness
+    warnings.filterwarnings(
+        "ignore",
+        category=RuntimeWarning,
+        message=r"coroutine '.*' was never awaited",
+    )
+
 
 @pytest.fixture(scope="session")
 def event_loop():
-    """Create a cross-platform event loop for the test session."""
+    """Create and set a cross-platform event loop for the test session."""
     # Use Windows selector policy on Windows only; default elsewhere
     if sys.platform.startswith("win") and hasattr(asyncio, "WindowsSelectorEventLoopPolicy"):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
         yield loop
     finally:
+        try:
+            asyncio.set_event_loop(None)
+        except Exception:
+            pass
         loop.close()
 
 

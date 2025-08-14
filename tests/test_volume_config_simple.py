@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 print("=== Starting test_volume_config_simple.py ===")
 print(f"Python path: {sys.path}")
@@ -22,12 +22,6 @@ try:
     from autopr.agents.base.volume_config import VolumeConfig
 
     print("Successfully imported VolumeConfig")
-    from autopr.utils.volume_utils import volume_to_quality_mode
-
-    print("Successfully imported volume_to_quality_mode")
-    from autopr.enums import QualityMode
-
-    print("Successfully imported QualityMode")
 except ImportError as e:
     print(f"Import error: {e}")
     raise
@@ -73,7 +67,12 @@ def test_volume_config_initialization(
         return
 
     # Should pass validation
-    config = VolumeConfig(volume=volume, config=config_dict)
+    if test_name == "invalid string":
+        # Expect a specific conversion warning and capture it
+        with pytest.warns(UserWarning, match="Could not convert value 'invalid' to boolean, defaulting to False"):
+            config = VolumeConfig(volume=volume, config=config_dict)
+    else:
+        config = VolumeConfig(volume=volume, config=config_dict)
     assert config.volume == volume
     assert config.config.get("enable_ai_agents") is expected_ai_agents
     print(f"✅ Config: {config.config}")

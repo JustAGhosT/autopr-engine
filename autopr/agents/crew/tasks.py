@@ -49,10 +49,16 @@ class _SimpleTask:
                     return await result
                 return result
 
-            # 3) fallback to analyze()
+            # 3) fallback to analyze() / analyze_code_quality()
             analyze_attr = getattr(agent, "analyze", None)
             if callable(analyze_attr):
                 result = analyze_attr()
+                if _asyncio.iscoroutine(result):
+                    return await result
+                return result
+            analyze_cq = getattr(agent, "analyze_code_quality", None)
+            if callable(analyze_cq):
+                result = analyze_cq()
                 if _asyncio.iscoroutine(result):
                     return await result
                 return result

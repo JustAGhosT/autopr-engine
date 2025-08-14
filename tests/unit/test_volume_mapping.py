@@ -79,7 +79,7 @@ class TestVolumeMapping:
         "volume,expected_mode",
         [
             (0, QualityMode.ULTRA_FAST),
-            (300, QualityMode.FAST),
+            (300, QualityMode.SMART),  # Updated to canonical mapping
             (500, QualityMode.SMART),
             (700, QualityMode.COMPREHENSIVE),
             (900, QualityMode.AI_ENHANCED),

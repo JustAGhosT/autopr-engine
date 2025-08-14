@@ -101,7 +101,8 @@ def test_volume_mapping_import():
             print("✅ Found get_volume_level_name function")
             result = module.get_volume_level_name(500)
             print(f"✅ get_volume_level_name(500) = {result}")
-            return result
+            assert isinstance(result, str)
+            return
         print(f"❌ get_volume_level_name function not found in {module_path}")
         print(f"Available attributes: {[a for a in dir(module) if not a.startswith('_')]}")
         raise AttributeError(f"get_volume_level_name not found in {module_path}")

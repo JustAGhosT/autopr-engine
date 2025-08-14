@@ -158,14 +158,15 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         platform_info = self.agent._get_platform_info(PlatformType.IDE)
 
     def test_get_platform_info_unknown_platform(self):
-        """Test getting platform info for an unknown platform type."""
+        """Test getting platform info for an unknown platform value."""
+        # Ensure the manager returns None for unknown platforms
+        with patch("autopr.agents.platform_analysis_agent.PlatformConfigManager") as MockMgr:
+            instance = MockMgr.return_value
+            instance.get_platform.return_value = None
 
-        # Test with an unknown platform type
-        class UnknownPlatform(PlatformType):
-            UNKNOWN = "unknown_platform"
-
-        platform_info = self.agent._get_platform_info(UnknownPlatform.UNKNOWN)
-        self.assertIsNone(platform_info)
+            platform_info = self.agent._get_platform_info("unknown_platform")
+            self.assertIsNone(platform_info)
+            instance.get_platform.assert_called_once_with("unknown_platform")
 
     @patch("autopr.agents.platform_analysis_agent.PlatformDetector")
     @patch("autopr.agents.platform_analysis_agent.PlatformAnalysis")
