@@ -31,8 +31,8 @@ def test_import_crew():
 
 
 def test_import_volume_mapping():
-    """Test importing from volume_mapping.py."""
-    from autopr.actions.quality_engine.volume_mapping import (
+    """Test importing from volume_utils.py."""
+    from autopr.utils.volume_utils import (
         get_volume_config,
         volume_to_quality_mode,
     )

@@ -72,10 +72,15 @@ def get_volume_config(volume: int) -> dict[str, Any]:
     Returns:
         Dictionary with 'mode' and configuration settings that can be used to update QualityInputs
 
-    Raises:
-        ValueError: If volume is outside 0-1000 range or not an integer
+    Note:
+        Negative volumes are clamped to 0, volumes above 1000 are clamped to 1000
     """
-    quality_mode, config = volume_to_quality_mode(volume)
+    # Clamp volume to valid range (legacy behavior)
+    MIN_VOLUME = 0
+    MAX_VOLUME = 1000
+    clamped_volume = max(MIN_VOLUME, min(MAX_VOLUME, volume))
+    
+    quality_mode, config = volume_to_quality_mode(clamped_volume)
     return {"mode": quality_mode, **config}
 
 
@@ -99,8 +104,10 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
         raise ValueError(msg)
 
     # Base configuration that applies to all modes
+    # Use legacy max_fixes calculation: volume // 20 (legacy behavior)
+    legacy_max_fixes = 0 if volume == 0 else max(1, volume // 20)
     base_config = {
-        "max_fixes": min(MAX_FIXES, max(MIN_FIXES, volume // 10)),
+        "max_fixes": min(MAX_FIXES, legacy_max_fixes),
         "max_issues": min(100, max(MIN_ISSUES, volume // 5)),
         "enable_ai_agents": volume >= AI_AGENTS_THRESHOLD,
     }

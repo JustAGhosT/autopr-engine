@@ -14,7 +14,7 @@ from .models import QualityInputs, QualityMode, QualityOutputs
 from .platform_detector import PlatformDetector
 from .tool_runner import determine_smart_tools, run_tool
 from .tools.registry import ToolRegistry
-from .volume_mapping import get_volume_level_name
+from autopr.utils.volume_utils import get_volume_level_name
 
 logger = structlog.get_logger(__name__)
 

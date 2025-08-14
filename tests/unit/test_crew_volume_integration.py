@@ -42,7 +42,7 @@ sys.modules["autopr.agents.platform_analysis_agent"] = Mock()
 sys.modules["autopr.agents.linting_agent"] = Mock()
 
 # Now import the rest of the modules
-from autopr.actions.quality_engine.volume_mapping import (  # noqa: E402
+from autopr.utils.volume_utils import (  # noqa: E402
     QualityMode,
     get_volume_config,
 )
