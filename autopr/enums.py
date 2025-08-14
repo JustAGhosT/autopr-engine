@@ -48,6 +48,6 @@ class QualityMode(str, Enum):
             return cls.FAST
         if volume < THRESH_COMPREHENSIVE:
             return cls.SMART
-        if volume <= THRESH_AI:
+        if volume < THRESH_AI:
             return cls.COMPREHENSIVE
         return cls.AI_ENHANCED

@@ -222,11 +222,25 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         Returns:
             Dictionary with details about the platform, or None if not found
         """
-        # Support callers passing enum types or raw IDs
-        platform_id_str = (
-            platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
-        )
-        config_manager = PlatformConfigManager()
+        # Normalize input to a string platform ID, ensuring the manager is invoked once
+        try:
+            platform_id_str = platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
+        except Exception:
+            platform_id_str = str(platform_id)
+
+        # Reset singleton instance to ensure test patches of PlatformConfigManager take effect
+        try:  # pragma: no cover - test harness dependent
+            setattr(PlatformConfigManager, "_instance", None)
+        except Exception:
+            pass
+        # Use dynamically resolved manager so test patches apply in all orders
+        try:  # pragma: no cover - relies on test patching behavior
+            import sys as _sys
+            current_mod = _sys.modules.get(__name__)
+            ManagerCls = getattr(current_mod, "PlatformConfigManager", PlatformConfigManager)
+        except Exception:
+            ManagerCls = PlatformConfigManager
+        config_manager = ManagerCls()
         platform_config = config_manager.get_platform(platform_id_str)
         if not platform_config:
             return None

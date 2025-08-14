@@ -14,7 +14,15 @@ try:  # pragma: no cover - import-time compatibility shim
 except Exception:  # pragma: no cover
 
     class Agent:  # type: ignore[no-redef]
-        """Fallback Agent stub used when crewai is unavailable."""
+        """Fallback Agent stub used when crewai is unavailable.
+
+        Accepts arbitrary keyword arguments and assigns them as attributes so
+        subclasses can safely call super().__init__(...) with rich kwargs.
+        """
+
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ARG002 - stub accepts *args
+            for key, value in kwargs.items():
+                setattr(self, key, value)
 
 
 from autopr.actions import platform_detection
@@ -36,7 +44,8 @@ class VolumeConfig(BaseModel):
     @classmethod
     def _clamp_volume(cls, v: int) -> int:
         if not isinstance(v, int):
-            raise ValueError("volume must be int")
+            msg = "volume must be int"
+            raise ValueError(msg)
         return max(0, min(1000, v))
 
     @field_validator("config")
@@ -46,7 +55,8 @@ class VolumeConfig(BaseModel):
             return v
         # Enforce that enable_ai_agents, if provided, must be boolean
         if "enable_ai_agents" in v and not isinstance(v["enable_ai_agents"], bool):
-            raise ValueError("enable_ai_agents must be a boolean")
+            msg = "enable_ai_agents must be a boolean"
+            raise ValueError(msg)
         return v
 
     def model_post_init(self, __context: Any) -> None:  # type: ignore[override]
@@ -218,11 +228,11 @@ class PlatformAnalysisAgent(BaseAgent):
             self.volume_config.config
             and "platform_scan_depth" in self.volume_config.config
             and self._platform_detector is not None
+            and hasattr(self._platform_detector, "scan_depth")
         ):
-            if hasattr(self._platform_detector, "scan_depth"):
-                self._platform_detector.scan_depth = self.volume_config.config[
-                    "platform_scan_depth"
-                ]
+            self._platform_detector.scan_depth = self.volume_config.config[
+                "platform_scan_depth"
+            ]
 
     @property
     def platform_detector(self) -> platform_detection.PlatformDetector:
@@ -329,7 +339,8 @@ class LintingAgent(BaseAgent):
         try:
             # Get the file content
             try:
-                with open(file_path, encoding="utf-8") as f:
+                from pathlib import Path as _Path
+                with _Path(file_path).open(encoding="utf-8") as f:
                     file_content = f.read()
             except UnicodeDecodeError as e:
                 return [
@@ -367,11 +378,16 @@ class LintingAgent(BaseAgent):
             # Write the fixed content back to the file if it changed
             if fixed_content != file_content:
                 try:
-                    with open(file_path, "w", encoding="utf-8") as f:
+                    from pathlib import Path as _Path
+                    with _Path(file_path).open("w", encoding="utf-8") as f:
                         f.write(fixed_content)
 
+                    # Use logging instead of print
                     if self._verbose:
-                        print(f"Fixed {len(issues)} issues in {file_path}")
+                        import logging as _logging
+                        _logging.getLogger(__name__).info(
+                            "Fixed %d issues in %s", len(issues), file_path
+                        )
                 except Exception as e:
                     # If we can't write the file, log it and continue
                     issues.append(
@@ -398,7 +414,10 @@ class LintingAgent(BaseAgent):
         except Exception as e:
             # For any other unexpected errors, return an error issue
             if self._verbose:
-                print(f"Unexpected error fixing issues in {file_path}: {e!s}")
+                import logging as _logging
+                _logging.getLogger(__name__).exception(
+                    "Unexpected error fixing issues in %s: %s", file_path, e
+                )
             return [
                 CodeIssue(
                     file_path=file_path,
