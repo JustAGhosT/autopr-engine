@@ -27,6 +27,7 @@ def main() -> None:
     parser.add_argument("--ai-provider", help="AI provider to use for AI-enhanced mode")
     parser.add_argument("--ai-model", help="AI model to use for AI-enhanced mode")
     parser.add_argument("--skip-windows-check", action="store_true", help="Skip Windows compatibility warnings and checks")
+    parser.add_argument("--continue-on-errors", action="store_true", help="Continue execution even if some tools fail or are not available")
 
     args = parser.parse_args()
 
@@ -57,8 +58,14 @@ def main() -> None:
     try:
         result = asyncio.run(engine.run(inputs))
         print(json.dumps(result.model_dump(), indent=2))
-        # Exit with success code if no issues, otherwise error
-        sys.exit(0 if result.success else 1)
+
+        # Determine exit code based on arguments and results
+        if args.continue_on_errors:
+            # Always exit with success if continue-on-errors is specified
+            sys.exit(0)
+        else:
+            # Exit with success code if no issues, otherwise error
+            sys.exit(0 if result.success else 1)
     except KeyboardInterrupt:
         print("Operation cancelled by user.")
         sys.exit(130)

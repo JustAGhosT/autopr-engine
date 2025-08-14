@@ -79,7 +79,7 @@ def get_volume_config(volume: int) -> dict[str, Any]:
     MIN_VOLUME = 0
     MAX_VOLUME = 1000
     clamped_volume = max(MIN_VOLUME, min(MAX_VOLUME, volume))
-    
+
     quality_mode, config = volume_to_quality_mode(clamped_volume)
     return {"mode": quality_mode, **config}
 

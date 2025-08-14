@@ -23,6 +23,7 @@ from autopr.quality.template_metrics import (
     get_quality_analyzer,
     get_quality_scorer,
 )
+from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue, ValidationSeverity as QMValidationSeverity
 
 from .report_generators import (
     ReportGeneratorFactory,
@@ -31,13 +32,46 @@ from .report_generators import (
     save_report,
 )
 from .template_validators import (
-    ValidationIssue,
-    ValidationSeverity,
+    ValidationIssue as LocalValidationIssue,
+    ValidationSeverity as LocalValidationSeverity,
     get_validator_registry,
 )
 
 # Import modular components
 from .validation_rules import get_validation_rules
+
+
+def convert_validation_issue(local_issue: LocalValidationIssue, template_path: str) -> QMValidationIssue:
+    """Convert a local ValidationIssue to a canonical QualityMetrics ValidationIssue."""
+    # Convert severity enum
+    severity_map = {
+        LocalValidationSeverity.ERROR: QMValidationSeverity.ERROR,
+        LocalValidationSeverity.WARNING: QMValidationSeverity.WARNING,
+        LocalValidationSeverity.INFO: QMValidationSeverity.INFO,
+    }
+
+    # Extract line number from location if possible
+    line = None
+    if ":" in local_issue.location:
+        try:
+            line = int(local_issue.location.split(":")[-1])
+        except (ValueError, IndexError):
+            pass
+
+    # Create metadata with additional information
+    metadata = {
+        "file_path": local_issue.location,
+        "suggestion": local_issue.suggestion,
+        "rule_id": local_issue.rule_id,
+    }
+
+    return QMValidationIssue(
+        category=local_issue.category,
+        severity=severity_map[local_issue.severity],
+        message=local_issue.message,
+        line=line,
+        metadata=metadata,
+    )
 
 
 class TemplateValidator:
@@ -51,7 +85,7 @@ class TemplateValidator:
 
     def validate_template(self, template_file: Path) -> QualityMetrics:
         """Validate a single template file using modular validation."""
-        import yaml
+        import yaml  # type: ignore[import-untyped]
 
         try:
             # Load template data
@@ -61,11 +95,14 @@ class TemplateValidator:
             if template_data is None:
                 return QualityMetrics(
                     issues=[
-                        ValidationIssue(
-                            ValidationSeverity.ERROR,
-                            "parsing",
-                            "Template file is empty or invalid",
-                            str(template_file),
+                        convert_validation_issue(
+                            LocalValidationIssue(
+                                LocalValidationSeverity.ERROR,
+                                "parsing",
+                                "Template file is empty or invalid",
+                                str(template_file),
+                            ),
+                            str(template_file)
                         )
                     ],
                     template_path=str(template_file),
@@ -74,11 +111,14 @@ class TemplateValidator:
         except Exception as e:
             return QualityMetrics(
                 issues=[
-                    ValidationIssue(
-                        ValidationSeverity.ERROR,
-                        "parsing",
-                        f"Failed to parse template: {e}",
-                        str(template_file),
+                    convert_validation_issue(
+                        LocalValidationIssue(
+                            LocalValidationSeverity.ERROR,
+                            "parsing",
+                            f"Failed to parse template: {e}",
+                            str(template_file),
+                        ),
+                        str(template_file)
                     )
                 ],
                 template_path=str(template_file),
@@ -93,10 +133,12 @@ class TemplateValidator:
                 continue
 
             total_checks += 1
-            issues = self.validator_registry.run_validation(
+            local_issues = self.validator_registry.run_validation(
                 rule.check_function, template_data, template_file, rule
             )
-            all_issues.extend(issues)
+            # Convert local issues to canonical issues
+            canonical_issues = [convert_validation_issue(issue, str(template_file)) for issue in local_issues]
+            all_issues.extend(canonical_issues)
 
         # Calculate quality metrics using modular scorer
         return self.quality_scorer.calculate_metrics(all_issues, total_checks, str(template_file))
@@ -113,11 +155,14 @@ class TemplateValidator:
                 # Create error metrics for failed validation
                 error_metrics = QualityMetrics(
                     issues=[
-                        ValidationIssue(
-                            ValidationSeverity.ERROR,
-                            "system",
-                            f"Validation failed: {e}",
-                            str(template_file),
+                        convert_validation_issue(
+                            LocalValidationIssue(
+                                LocalValidationSeverity.ERROR,
+                                "system",
+                                f"Validation failed: {e}",
+                                str(template_file),
+                            ),
+                            str(template_file)
                         )
                     ],
                     template_path=str(template_file),
