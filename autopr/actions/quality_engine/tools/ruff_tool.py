@@ -18,6 +18,14 @@ class RuffTool(Tool):
     def description(self) -> str:
         return "A Python linter."
 
+    def is_available(self) -> bool:
+        """Check if ruff is available."""
+        return self.check_command_availability("ruff")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "ruff"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run ruff on a list of files.

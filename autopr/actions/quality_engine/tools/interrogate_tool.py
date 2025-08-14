@@ -24,6 +24,14 @@ class InterrogateTool(Tool):
     def description(self) -> str:
         return "A tool for checking Python docstring coverage."
 
+    def is_available(self) -> bool:
+        """Check if interrogate is available."""
+        return self.check_command_availability("interrogate")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "interrogate"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Interrogate on a list of files.

@@ -132,7 +132,22 @@ class PerformanceAnalyzerTool(Tool):
         """Run static performance analysis on files."""
         issues = []
         
-        for file in files:
+        # Filter out directories and only process actual files
+        actual_files = []
+        for f in files:
+            # Skip directories and problematic paths
+            if f in ['.', '..', '/', '\\'] or f.endswith(('.', '/', '\\')):
+                continue
+            try:
+                # Check if it's actually a file
+                import os
+                if os.path.isfile(f):
+                    actual_files.append(f)
+            except (OSError, PermissionError):
+                # Skip files we can't access
+                continue
+        
+        for file in actual_files:
             try:
                 with open(file) as f:
                     content = f.read()
@@ -146,8 +161,10 @@ class PerformanceAnalyzerTool(Tool):
                 elif file.endswith((".js", ".ts", ".jsx", ".tsx")):
                     js_issues = self._analyze_js_performance(file, content)
                     issues.extend(js_issues)
-            except Exception as e:
+            except (OSError, PermissionError, UnicodeDecodeError) as e:
+                # Skip files we can't read
                 print(f"Error analyzing {file} for performance: {e}")
+                continue
 
         return issues
 

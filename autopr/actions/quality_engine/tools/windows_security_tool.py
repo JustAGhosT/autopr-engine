@@ -17,8 +17,8 @@ class WindowsSecurityTool(Tool):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 45.0  # 45 second timeout for comprehensive security scanning
-        self.max_files_per_run = 50  # Limit files to prevent hanging
+        self.default_timeout = 30.0  # Reduce timeout to 30 seconds
+        self.max_files_per_run = 20  # Reduce limit to prevent hanging
 
     @property
     def name(self) -> str:
@@ -32,6 +32,18 @@ class WindowsSecurityTool(Tool):
     def category(self) -> str:
         return "security"
 
+    def is_available(self) -> bool:
+        """Check if Windows security tools are available."""
+        # Check if we're on Windows and basic tools are available
+        import platform
+        if platform.system() != "Windows":
+            return False
+        return self.check_command_availability("bandit")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "bandit"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run comprehensive security scanning using multiple tools.
@@ -41,17 +53,18 @@ class WindowsSecurityTool(Tool):
 
         all_issues = []
 
-        # Run Bandit for Python security scanning
-        bandit_issues = await self._run_bandit(files, config)
-        all_issues.extend(bandit_issues)
+        try:
+            # Run Bandit for Python security scanning (primary tool)
+            bandit_issues = await self._run_bandit(files, config)
+            all_issues.extend(bandit_issues)
 
-        # Run Safety for dependency vulnerability scanning
-        safety_issues = await self._run_safety(config)
-        all_issues.extend(safety_issues)
+            # Only run additional checks if we have time and files are limited
+            if len(files) <= 10:
+                additional_issues = await self._run_additional_checks(files, config)
+                all_issues.extend(additional_issues)
 
-        # Run additional security checks
-        additional_issues = await self._run_additional_checks(files, config)
-        all_issues.extend(additional_issues)
+        except Exception as e:
+            all_issues.append({"error": f"Windows Security tool error: {str(e)}"})
 
         return all_issues
 

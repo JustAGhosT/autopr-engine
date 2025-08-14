@@ -22,6 +22,14 @@ class BanditTool(Tool):
     def description(self) -> str:
         return "A security linter for Python."
 
+    def is_available(self) -> bool:
+        """Check if bandit is available."""
+        return self.check_command_availability("bandit")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "bandit"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run bandit on a list of files.

@@ -18,6 +18,14 @@ class RadonTool(Tool):
     def description(self) -> str:
         return "A tool for analyzing Python code complexity."
 
+    def is_available(self) -> bool:
+        """Check if radon is available."""
+        return self.check_command_availability("radon")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "radon"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Radon's cyclomatic complexity check on a list of files.

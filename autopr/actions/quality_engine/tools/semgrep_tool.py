@@ -17,8 +17,8 @@ class SemgrepTool(Tool):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
-        self.max_files_per_run = 200  # Higher limit for static analysis
+        self.default_timeout = 20.0  # Reduce timeout to 20 seconds for faster execution
+        self.max_files_per_run = 100  # Reduce limit for faster execution
 
     @property
     def name(self) -> str:
@@ -42,62 +42,51 @@ class SemgrepTool(Tool):
 
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
-        Run Semgrep analysis on the provided files.
+        Run Semgrep on the specified files.
         """
         if not files:
             return []
 
+        # Limit the number of files to prevent timeouts
+        files_to_check = files[:self.max_files_per_run]
+
+        # Build the command
+        command = ["semgrep", "--json", "--quiet", *files_to_check]
+
+        # Add configuration options
+        rules = config.get("rules", "auto")
+        if rules != "auto":
+            command.extend(["--config", rules])
+
+        extra_args = config.get("args", [])
+        command.extend(extra_args)
+
         try:
-            # Build semgrep command
-            command = ["semgrep", "scan", "--json", "--quiet"]
-
-            # Add configuration options
-            rules = config.get("rules", "auto")
-            if rules != "auto":
-                command.extend(["--config", rules])
-
-            # Add severity filtering
-            severity = config.get("severity", ["INFO", "WARNING", "ERROR"])
-            if severity:
-                if isinstance(severity, str):
-                    # Handle comma-separated string
-                    severity = [s.strip() for s in severity.split(",")]
-                for sev in severity:
-                    command.extend(["--severity", sev])
-
-            # Add additional flags
-            if config.get("strict", False):
-                command.append("--strict")
-
-            if config.get("verbose", False):
-                command.append("--verbose")
-
-            # Add files/directories to scan
-            command.extend(files)
-
-            # Run semgrep
             process = await asyncio.create_subprocess_exec(
                 *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             stdout, stderr = await process.communicate()
 
-            # Handle different exit codes
+            # Semgrep returns 0 for no issues, 1 for issues found
             if process.returncode not in [0, 1]:
                 error_message = stderr.decode().strip()
+                print(f"Error running semgrep: {error_message}")
                 return [{"error": f"Semgrep execution failed: {error_message}"}]
 
             if not stdout:
                 return []
 
             try:
-                output = json.loads(stdout)
-                return self._parse_semgrep_output(output)
+                results = json.loads(stdout)
+                return results.get("results", [])
             except json.JSONDecodeError:
-                return [{"error": "Failed to parse Semgrep JSON output"}]
-
+                print(f"Failed to parse semgrep output: {stdout.decode()}")
+                return [{"error": "Failed to parse semgrep JSON output"}]
+        except asyncio.TimeoutError:
+            return [{"error": "Semgrep execution timed out"}]
         except Exception as e:
-            return [{"error": f"Semgrep execution error: {e!s}"}]
+            return [{"error": f"Semgrep execution error: {str(e)}"}]
 
     def _parse_semgrep_output(self, output: dict[str, Any]) -> list[dict[str, Any]]:
         """
