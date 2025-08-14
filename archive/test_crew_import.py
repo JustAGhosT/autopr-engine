@@ -8,16 +8,12 @@ project_root = str(Path(__file__).parent.absolute())
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-print("Python path:")
-for p in sys.path:
-    print(f"  {p}")
+for _p in sys.path:
+    pass
 
-print("\nAttempting to import AutoPRCrew...")
 try:
     from autopr.agents.crew import AutoPRCrew
 
-    print("✅ Successfully imported AutoPRCrew")
-    print(f"AutoPRCrew class: {AutoPRCrew}")
 
     # Create a mock LLM provider manager
     class MockLLMProviderManager:
@@ -39,11 +35,8 @@ try:
 
     try:
         # Try to create an instance of AutoPRCrew
-        print("\nCreating AutoPRCrew instance...")
         crew = AutoPRCrew()
-        print(f"✅ Successfully created AutoPRCrew instance: {crew}")
-    except Exception as e:
-        print(f"❌ Failed to create AutoPRCrew instance: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
@@ -51,10 +44,8 @@ try:
         # Restore the original function
         crew_module.get_llm_provider_manager = original_get_llm
 
-except Exception as e:
-    print(f"❌ Failed to import AutoPRCrew: {e}")
+except Exception:
     import traceback
 
     traceback.print_exc()
 
-print("\nScript completed.")

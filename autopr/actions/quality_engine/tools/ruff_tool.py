@@ -44,9 +44,8 @@ class RuffTool(Tool):
 
         stdout, stderr = await process.communicate()
 
-        if process.returncode != 0 and process.returncode != 1:
+        if process.returncode not in {0, 1}:
             error_message = stderr.decode().strip()
-            print(f"Error running ruff: {error_message}")
             return [{"error": f"Ruff execution failed: {error_message}"}]
 
         if not stdout:
@@ -56,5 +55,4 @@ class RuffTool(Tool):
             issues = json.loads(stdout)
             return list(issues) if isinstance(issues, list) else [issues]
         except json.JSONDecodeError:
-            print(f"Failed to parse ruff output: {stdout.decode()}")
             return [{"error": "Failed to parse ruff JSON output"}]

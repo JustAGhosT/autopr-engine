@@ -10,8 +10,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any
 
-from ..content_analyzer import TemplateAnalysis
-from ..template_loader import TemplateLoader
+from discovery.content_analyzer import TemplateAnalysis
+from discovery.template_loader import TemplateLoader
+
 from .config import DocumentationConfig
 
 

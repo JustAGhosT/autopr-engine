@@ -10,24 +10,18 @@ if project_root not in sys.path:
 
 try:
     # Try importing AutoPRCrew
-    from autopr.agents.crew import AutoPRCrew
+    pass
 
-    print("✅ Successfully imported AutoPRCrew")
-    print(f"AutoPRCrew class: {AutoPRCrew}")
-except Exception as e:
-    print(f"❌ Failed to import AutoPRCrew: {e}")
+except Exception:
     import traceback
 
     traceback.print_exc()
 
 try:
     # Try importing volume mapping
-    from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+    pass
 
-    print("\n✅ Successfully imported get_volume_level_name")
-    print(f"get_volume_level_name(500): {get_volume_level_name(500)}")
-except Exception as e:
-    print(f"\n❌ Failed to import get_volume_level_name: {e}")
+except Exception:
     import traceback
 
     traceback.print_exc()

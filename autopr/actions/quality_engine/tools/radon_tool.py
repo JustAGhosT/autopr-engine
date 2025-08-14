@@ -50,7 +50,6 @@ class RadonTool(Tool):
 
         if process.returncode != 0:
             error_message = stderr.decode().strip()
-            print(f"Error running radon: {error_message}")
             return [{"error": f"Radon execution failed: {error_message}"}]
 
         if not stdout:
@@ -61,7 +60,6 @@ class RadonTool(Tool):
             output = json.loads(stdout)
             return self._format_output(output, max_complexity)
         except json.JSONDecodeError:
-            print(f"Failed to parse radon output: {stdout.decode()}")
             return [{"error": "Failed to parse radon JSON output"}]
 
     def _format_output(

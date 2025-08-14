@@ -145,7 +145,8 @@ class TestToolExecution:
         tool = SemgrepTool()
 
         async def failing_run(files, config):
-            raise Exception("Test error")
+            msg = "Test error"
+            raise Exception(msg)
 
         with patch.object(tool, "run", side_effect=failing_run):
             result = await tool.run_with_timeout(["test.py"], {})

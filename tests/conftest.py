@@ -19,6 +19,8 @@ try:  # Python 3.11+
 except ModuleNotFoundError:  # Fallback for older interpreters
     import tomli as toml  # type: ignore[import-not-found]
 
+import contextlib
+
 from aiohttp import ClientSession
 
 # Import volume utilities (placeholder for future use)
@@ -49,7 +51,7 @@ def get_warning_filters(volume: int) -> list[str]:
     volume_warnings = config.get("tool", {}).get("pytest", {}).get("volume_warnings", {})
 
     # Find the closest volume level that's less than or equal to the current volume
-    volume_levels = sorted(int(k) for k in volume_warnings.keys() if k.isdigit())
+    volume_levels = sorted(int(k) for k in volume_warnings if k.isdigit())
     selected_level = 0  # Default to most restrictive
 
     for level in volume_levels:
@@ -114,9 +116,6 @@ def pytest_configure(config):
     )
 
     # Print minimal test configuration
-    print("\n=== Test Configuration ===")
-    print("Running with default test configuration")
-    print("======================\n")
 
     # Reduce noise: ignore RuntimeWarning about un-awaited test coroutines in summary output
     # This warning appears from pytest-asyncio collection/teardown and does not affect test correctness
@@ -138,10 +137,8 @@ def event_loop():
     try:
         yield loop
     finally:
-        try:
+        with contextlib.suppress(Exception):
             asyncio.set_event_loop(None)
-        except Exception:
-            pass
         loop.close()
 
 

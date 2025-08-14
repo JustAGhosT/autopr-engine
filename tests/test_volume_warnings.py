@@ -8,10 +8,10 @@ from pytest import mark
 
 def generate_test_warnings():
     """Generate various types of warnings for testing."""
-    warnings.warn("This is a UserWarning", UserWarning)
-    warnings.warn("This is a DeprecationWarning", DeprecationWarning)
-    warnings.warn("This is a ResourceWarning", ResourceWarning)
-    warnings.warn("This is a PendingDeprecationWarning", PendingDeprecationWarning)
+    warnings.warn("This is a UserWarning", UserWarning, stacklevel=2)
+    warnings.warn("This is a DeprecationWarning", DeprecationWarning, stacklevel=2)
+    warnings.warn("This is a ResourceWarning", ResourceWarning, stacklevel=2)
+    warnings.warn("This is a PendingDeprecationWarning", PendingDeprecationWarning, stacklevel=2)
 
 
 @mark.volume(0)

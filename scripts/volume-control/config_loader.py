@@ -12,7 +12,7 @@ from typing import Any
 class VolumeConfigLoader:
     """Loads and applies tool configurations based on volume levels"""
 
-    def __init__(self, config_dir: str = None):
+    def __init__(self, config_dir: str | None = None):
         # Try multiple possible locations for config files
         possible_config_dirs = [
             Path(__file__).parent / "configs",  # Default location
@@ -34,21 +34,15 @@ class VolumeConfigLoader:
             if self.config_dir is None:
                 self.config_dir = possible_config_dirs[0]  # Default to first option
 
-        print(f"Using config directory: {self.config_dir}")
         self.tools = {}
         self.load_all_configs()
 
     def load_all_configs(self):
         """Load all tool configuration files"""
         if not self.config_dir.exists():
-            print(f"ERROR: Config directory {self.config_dir} not found")
-            print(f"Current working directory: {Path.cwd()}")
-            print(f"Directory contents: {list(Path(self.config_dir.parent).iterdir())}")
             return
 
-        print(f"Loading configs from: {self.config_dir}")
         config_files = list(self.config_dir.glob("*.json"))
-        print(f"Found {len(config_files)} config files: {[f.name for f in config_files]}")
 
         for config_file in config_files:
             try:
@@ -56,21 +50,15 @@ class VolumeConfigLoader:
                     config = json.load(f)
                     tool_name = config.get("tool", config_file.stem)
                     self.tools[tool_name] = config
-                    print(f"Loaded config for {tool_name} from {config_file}")
-                    print(
-                        f"  Activation levels: {list(config.get('activation_levels', {}).keys())}"
-                    )
-            except Exception as e:
-                print(f"ERROR loading {config_file}: {e!s}")
+            except Exception:
+                pass
 
-        print(f"Total tools loaded: {len(self.tools)}")
-        print(f"Tool names: {list(self.tools.keys())}")
 
     def get_settings_for_volume(self, volume: int) -> dict[str, Any]:
         """Get combined settings for all tools at the specified volume level"""
         combined_settings = {}
 
-        for tool_name, config in self.tools.items():
+        for tool_name in self.tools:
             tool_settings = self.get_tool_settings_for_volume(tool_name, volume)
             combined_settings.update(tool_settings)
 
@@ -86,7 +74,7 @@ class VolumeConfigLoader:
 
         # Find the highest activation level that is <= volume
         applicable_level = None
-        for level_str in activation_levels.keys():
+        for level_str in activation_levels:
             level = int(level_str)
             if level <= volume:
                 if applicable_level is None or level > applicable_level:
@@ -106,7 +94,7 @@ class VolumeConfigLoader:
             activation_levels = config.get("activation_levels", {})
 
             # Check if any level <= volume has enabled: true
-            for level_str in activation_levels.keys():
+            for level_str in activation_levels:
                 level = int(level_str)
                 if level <= volume:
                     level_config = activation_levels[level_str]
@@ -124,7 +112,7 @@ class VolumeConfigLoader:
             "tool_details": {},
         }
 
-        for tool_name in self.tools.keys():
+        for tool_name in self.tools:
             is_active = tool_name in summary["active_tools"]
             settings_count = len(self.get_tool_settings_for_volume(tool_name, volume))
 
@@ -145,14 +133,11 @@ def main():
     test_volumes = [0, 50, 200, 500, 1000]
 
     for volume in test_volumes:
-        print(f"\n=== VOLUME {volume} ===")
         summary = loader.get_activation_summary(volume)
 
-        print(f"Active tools: {', '.join(summary['active_tools'])}")
 
-        for tool, details in summary["tool_details"].items():
-            status = "ACTIVE" if details["active"] else "inactive"
-            print(f"  {tool}: {status} ({details['settings_applied']} settings)")
+        for details in summary["tool_details"].values():
+            "ACTIVE" if details["active"] else "inactive"
 
 
 if __name__ == "__main__":

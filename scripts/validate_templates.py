@@ -199,40 +199,28 @@ def main():
     project_root = os.getcwd()
     templates_dir = os.path.join(project_root, "templates")
 
-    print("📋 AutoPR Engine Template Validation")
-    print("=" * 50)
 
     # Find template files
     template_files = find_template_files(templates_dir)
 
-    print("Found template files:")
-    for file_type, files in template_files.items():
-        print(f"  {file_type.upper()}: {len(files)} files")
-    print()
+    for _file_type, _files in template_files.items():
+        pass
 
     # Validate templates
     results = validate_templates(template_files)
 
     # Generate and display report
     report = generate_template_report(results)
-    print(report)
 
     # Save report to file
     report_file = os.path.join(project_root, "template_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\n📄 Report saved to: {report_file}")
 
     # Return appropriate exit code
     if results["invalid_files"] or results["organization_issues"] or results["consistency_issues"]:
-        print(
-            f"\n⚠️  Found {len(results['invalid_files'])} invalid files, "
-            f"{len(results['organization_issues'])} organization issues, and "
-            f"{len(results['consistency_issues'])} consistency issues"
-        )
         return 1
-    print("\n✅ All templates are valid!")
     return 0
 
 

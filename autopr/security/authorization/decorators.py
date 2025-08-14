@@ -47,8 +47,9 @@ class AuthorizationDecorator:
             resource_id = kwargs.get(self.resource_id_param)
 
             if not user_id or not resource_id:
+                msg = f"Missing required authorization parameters: user_id={user_id}, {self.resource_id_param}={resource_id}"
                 raise ValueError(
-                    f"Missing required authorization parameters: user_id={user_id}, {self.resource_id_param}={resource_id}"
+                    msg
                 )
 
             # Create authorization context
@@ -68,9 +69,12 @@ class AuthorizationDecorator:
                 auth_manager = get_authorization_manager()
 
             if not auth_manager.authorize(context):
-                raise PermissionError(
+                msg = (
                     f"Access denied for user {user_id} performing {self.action.value} "
                     f"on {self.resource_type.value}:{resource_id}"
+                )
+                raise PermissionError(
+                    msg
                 )
 
             return func(*args, **kwargs)
@@ -109,9 +113,12 @@ def require_permission(
             resource_id = kwargs.get(resource_id_param)
 
             if not user_id or not resource_id:
-                raise ValueError(
+                msg = (
                     f"Missing required authorization parameters: user_id={user_id}, "
                     f"{resource_id_param}={resource_id}"
+                )
+                raise ValueError(
+                    msg
                 )
 
             # Create authorization context with proper parameters
@@ -132,9 +139,12 @@ def require_permission(
 
             # Check authorization
             if not auth_manager.authorize(context):
-                raise PermissionError(
+                msg = (
                     f"Access denied for user {user_id} performing {action.value} "
                     f"on {resource_type.value}:{resource_id}"
+                )
+                raise PermissionError(
+                    msg
                 )
 
             return func(*args, **kwargs)

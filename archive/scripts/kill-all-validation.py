@@ -8,8 +8,6 @@ from pathlib import Path
 
 
 def main():
-    print("🔪 KILLING ALL VALIDATION")
-    print("=" * 50)
 
     # Create the most aggressive VS Code settings possible
     aggressive_settings = {
@@ -49,7 +47,6 @@ def main():
         # Disable ALL problems
         "problems.decorations.enabled": False,
         "problems.showCurrentInStatus": False,
-        "problems.decorations.enabled": False,
         # Disable ALL YAML validation
         "yaml.validate": False,
         "yaml.schemas": {},
@@ -114,12 +111,6 @@ def main():
         "css.validate": False,
         "html.validate.scripts": False,
         "html.validate.styles": False,
-        # Force disable all language servers
-        "python.analysis.diagnosticMode": "off",
-        "python.analysis.typeCheckingMode": "off",
-        "python.analysis.autoImportCompletions": False,
-        "python.analysis.useLibraryCodeForTypes": False,
-        "python.analysis.autoSearchPaths": False,
         # Disable ALL hover and completion
         "editor.hover.enabled": False,
         "editor.quickSuggestions": {"other": False, "comments": False, "strings": False},
@@ -162,26 +153,8 @@ def main():
     with open(settings_file, "w") as f:
         json.dump(aggressive_settings, f, indent=2)
 
-    print("✅ Applied NUCLEAR VS Code settings")
-    print("✅ Disabled ALL validation")
-    print("✅ Disabled ALL linting")
-    print("✅ Disabled ALL formatting")
-    print("✅ Disabled ALL analysis")
-    print("✅ Disabled ALL problems")
-    print("✅ Disabled ALL extensions")
 
-    print("\n🔄 REFRESH REQUIRED:")
-    print("1. Close your IDE completely")
-    print("2. Wait 5 seconds")
-    print("3. Reopen your IDE")
-    print("4. Open this workspace")
-    print("5. Check Problems panel - should be EMPTY")
 
-    print("\n📊 EXPECTED RESULT:")
-    print("- ZERO errors in Problems panel")
-    print("- ZERO squiggles in code")
-    print("- ZERO validation warnings")
-    print("- Clean, distraction-free coding experience")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,6 @@ Tool for all code quality checks and AI-powered fixes
 import asyncio
 from dataclasses import dataclass
 from enum import Enum
-import json
 import sys
 from typing import Any
 
@@ -51,6 +50,7 @@ class CodeLinter:
             return await self._comprehensive_mode(files)
         if mode == LintMode.AI_ONLY:
             return await self._ai_only_mode(files)
+        return None
 
     async def _smart_mode(self, files: list[str] | None) -> dict[str, Any]:
         """Smart mode: adapts based on commit size and file types"""
@@ -146,5 +146,4 @@ if __name__ == "__main__":
     linter = CodeLinter()
     result = asyncio.run(linter.run(LintMode(args.mode), args.files))
 
-    print(json.dumps(result, indent=2))
     sys.exit(0 if result["success"] else 1)

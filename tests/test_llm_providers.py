@@ -23,7 +23,7 @@ def test_imports() -> None:
 
         assert True
     except ImportError:
-        assert False
+        raise AssertionError
 
 
 def test_manager_creation() -> None:
@@ -39,7 +39,7 @@ def test_manager_creation() -> None:
 
         assert True
     except Exception:
-        assert False
+        raise AssertionError
 
 
 def test_provider_availability() -> None:
@@ -57,7 +57,7 @@ def test_provider_availability() -> None:
 
         assert True
     except Exception:
-        assert False
+        raise AssertionError
 
 
 def test_backward_compatibility() -> None:
@@ -68,7 +68,7 @@ def test_backward_compatibility() -> None:
 
         assert True
     except ImportError:
-        assert False
+        raise AssertionError
 
 
 def test_configuration() -> None:
@@ -93,7 +93,7 @@ def test_configuration() -> None:
 
         assert True
     except Exception:
-        assert False
+        raise AssertionError
 
 
 def test_error_handling() -> None:
@@ -109,7 +109,7 @@ def test_error_handling() -> None:
         if invalid_provider is None:
             pass
         else:
-            assert False
+            raise AssertionError
 
         # Test empty messages
         try:
@@ -123,7 +123,7 @@ def test_error_handling() -> None:
 
         assert True
     except Exception:
-        assert False
+        raise AssertionError
 
 
 def test_message_formatting() -> None:
@@ -136,7 +136,7 @@ def test_message_formatting() -> None:
 
         assert True
     except Exception:
-        assert False
+        raise AssertionError
 
 
 def test_api_calls() -> None:
@@ -169,7 +169,7 @@ def test_api_calls() -> None:
         else:
             assert True  # No API keys; acceptable to pass
     except Exception:
-        assert False
+        raise AssertionError
 
 
 async def main() -> int:

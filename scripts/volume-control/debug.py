@@ -14,21 +14,16 @@ from config_loader import VolumeConfigLoader
 
 
 def main():
-    print("VOLUME SETTINGS DEBUG")
-    print("=" * 50)
 
     loader = VolumeConfigLoader()
 
     volumes_to_test = [0, 50]
 
     for volume in volumes_to_test:
-        print(f"\n=== VOLUME {volume} SETTINGS ===")
 
         settings = loader.get_settings_for_volume(volume)
-        active_tools = loader.get_active_tools(volume)
+        loader.get_active_tools(volume)
 
-        print(f"Active tools: {', '.join(active_tools) if active_tools else 'None'}")
-        print(f"Total settings: {len(settings)}")
 
         # Show important settings
         important_settings = [
@@ -40,12 +35,10 @@ def main():
         ]
 
         for setting in important_settings:
-            value = settings.get(setting, "NOT SET")
-            print(f"  {setting}: {value}")
+            settings.get(setting, "NOT SET")
 
-        print("\nAll settings:")
-        for key, value in sorted(settings.items()):
-            print(f"  {key}: {value}")
+        for _key, _value in sorted(settings.items()):
+            pass
 
 
 if __name__ == "__main__":

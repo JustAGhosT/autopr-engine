@@ -146,10 +146,10 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
                 report = await crew.analyze_repository(tmpdir)
 
                 # Verify results
-                self.assertIsInstance(report, CodeAnalysisReport)
-                self.assertEqual(report.platform_analysis.platform, "Python")
-                self.assertGreaterEqual(len(report.issues), 1)
-                self.assertIn("maintainability_index", report.metrics)
+                assert isinstance(report, CodeAnalysisReport)
+                assert report.platform_analysis.platform == "Python"
+                assert len(report.issues) >= 1
+                assert "maintainability_index" in report.metrics
 
                 # Verify task creation
                 mock_create_cq_task.assert_called_once_with(Path(tmpdir))

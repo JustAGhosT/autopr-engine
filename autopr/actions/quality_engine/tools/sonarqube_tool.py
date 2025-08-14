@@ -90,4 +90,4 @@ class SonarQubeTool(Tool):
             ]
 
         except Exception as e:
-            return [{"error": f"SonarQube execution error: {str(e)}"}]
+            return [{"error": f"SonarQube execution error: {e!s}"}]

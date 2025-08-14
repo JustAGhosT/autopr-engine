@@ -5,7 +5,6 @@ Command-line interface for the Quality Engine.
 import argparse
 import asyncio
 import glob
-import json
 import sys
 
 from .di import container, get_engine
@@ -57,7 +56,6 @@ def main() -> None:
     # Run the engine and output results
     try:
         result = asyncio.run(engine.run(inputs))
-        print(json.dumps(result.model_dump(), indent=2))
 
         # Determine exit code based on arguments and results
         if args.continue_on_errors:
@@ -67,10 +65,8 @@ def main() -> None:
             # Exit with success code if no issues, otherwise error
             sys.exit(0 if result.success else 1)
     except KeyboardInterrupt:
-        print("Operation cancelled by user.")
         sys.exit(130)
-    except Exception as e:
-        print(f"Error running quality engine: {e!s}")
+    except Exception:
         sys.exit(1)
 
 

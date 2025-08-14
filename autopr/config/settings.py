@@ -73,7 +73,8 @@ class GitHubConfig(BaseModel):
     @classmethod
     def validate_timeout(cls, v: int) -> int:
         if v <= 0:
-            raise ValueError("timeout must be positive")
+            msg = "timeout must be positive"
+            raise ValueError(msg)
         return v
 
     @field_validator("token")
@@ -86,7 +87,8 @@ class GitHubConfig(BaseModel):
         except Exception:
             token_value = str(v)
         if not token_value or not token_value.startswith(("ghp_", "github_pat_")):
-            raise ValueError("Invalid GitHub token format")
+            msg = "Invalid GitHub token format"
+            raise ValueError(msg)
         return v
 
 

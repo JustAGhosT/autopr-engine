@@ -176,39 +176,28 @@ def main():
     project_root = os.getcwd()
     configs_dir = os.path.join(project_root, "configs")
 
-    print("🔧 AutoPR Engine Configuration Validation")
-    print("=" * 50)
 
     # Find configuration files
     config_files = find_config_files(configs_dir)
 
-    print("Found configuration files:")
-    for file_type, files in config_files.items():
-        print(f"  {file_type.upper()}: {len(files)} files")
-    print()
+    for _file_type, _files in config_files.items():
+        pass
 
     # Validate configurations
     results = validate_configurations(config_files)
 
     # Generate and display report
     report = generate_config_report(results)
-    print(report)
 
     # Save report to file
     report_file = os.path.join(project_root, "config_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\n📄 Report saved to: {report_file}")
 
     # Return appropriate exit code
     if results["invalid_files"] or results["duplicates"] or results["issues"]:
-        print(
-            f"\n⚠️  Found {len(results['invalid_files'])} invalid files, "
-            f"{len(results['duplicates'])} duplicates, and {len(results['issues'])} issues"
-        )
         return 1
-    print("\n✅ All configurations are valid!")
     return 0
 
 

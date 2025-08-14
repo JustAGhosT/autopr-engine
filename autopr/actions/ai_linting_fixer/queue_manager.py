@@ -149,7 +149,8 @@ class IssueQueueManager:
                 "error_message = ?",
             }
             if not set(update_fields).issubset(allowed_set):
-                raise ValueError("Invalid update fields detected")
+                msg = "Invalid update fields detected"
+                raise ValueError(msg)
             if update_fields:
                 update_query = (
                     "UPDATE linting_issues_queue SET "  # nosec B608

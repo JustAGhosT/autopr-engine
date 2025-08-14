@@ -15,12 +15,14 @@ This worker is safe to run at low volumes to continuously reduce trivial issues.
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable
 import os
 from pathlib import Path
 import subprocess
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def _run(cmd: list[str]) -> tuple[int, str, str]:
@@ -99,11 +101,10 @@ def main() -> int:
 
     issues = queue.get_next_issues(limit=batch, worker_id=worker_id, filter_types=allowed or None)
     if not issues:
-        print("No queued issues to process.")
         return 0
 
     grouped = _group_issues_by_file_and_code(issues)
-    total = len(issues)
+    len(issues)
     fixed = 0
     failed = 0
     skipped = 0
@@ -159,12 +160,6 @@ def main() -> int:
             fixed += 1 if success else 0
             failed += 0 if success else 1
 
-    print("Background fixer summary:")
-    print(f"  Volume: {vol}")
-    print(f"  Issues processed: {total}")
-    print(f"  Fixed: {fixed}")
-    print(f"  Skipped: {skipped}")
-    print(f"  Failed: {failed}")
 
     # Non-zero exit if failures occurred
     return 0 if failed == 0 else 1

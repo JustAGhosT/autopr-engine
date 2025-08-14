@@ -254,7 +254,6 @@ class YAMLLinter:
         """Check for key ordering issues."""
         # This is a simplified implementation
         # In practice, you'd want to parse the YAML structure and check ordering
-        pass
 
     def fix_files(self, dry_run: bool = False) -> int:
         """Apply all fixes to files with issues."""

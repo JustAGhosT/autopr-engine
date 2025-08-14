@@ -1,9 +1,6 @@
-import operator
-import os
 from pathlib import Path
 import re
 import sys
-from typing import List
 
 # Configuration
 MAX_LINE_LENGTH = 120
@@ -34,17 +31,17 @@ class MarkdownLinter:
             return
 
         lines = content.splitlines()
-        
+
         # Check for common issues
         for i, line in enumerate(lines, 1):
             # Check line length
             if len(line) > 120:
                 self.issues.append(f"{file_path}:{i}: Line too long ({len(line)} characters)")
-            
+
             # Check for trailing whitespace
             if line.rstrip() != line:
                 self.issues.append(f"{file_path}:{i}: Trailing whitespace")
-            
+
             # Check for tabs
             if "\t" in line:
                 self.issues.append(f"{file_path}:{i}: Use spaces instead of tabs")
@@ -57,22 +54,19 @@ class MarkdownLinter:
     def report_issues(self) -> int:
         """Report all issues and return count."""
         if self.issues:
-            for issue in self.issues:
-                print(issue)
+            for _issue in self.issues:
+                pass
             return len(self.issues)
         return 0
 
 
 def main():
     """Main function."""
-    if len(sys.argv) > 1:
-        root_dir = Path(sys.argv[1])
-    else:
-        root_dir = Path.cwd()
+    root_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
 
     linter = MarkdownLinter(root_dir)
     linter.check_directory()
-    
+
     issue_count = linter.report_issues()
     sys.exit(issue_count)
 

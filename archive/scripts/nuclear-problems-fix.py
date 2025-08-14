@@ -68,7 +68,6 @@ def update_vscode_settings():
     with open(settings_file, "w") as f:
         json.dump(settings, f, indent=2)
 
-    print("Applied nuclear VS Code settings")
 
 
 def create_ignore_files():
@@ -82,26 +81,14 @@ def create_ignore_files():
     gh_ignore = Path(".github-actions-ignore")
     gh_ignore.write_text(".github/workflows/*.yml\n.github/workflows/*.yaml\n")
 
-    print("Created ignore files")
 
 
 def main():
-    print("NUCLEAR PROBLEMS FIX")
-    print("====================")
 
     update_vscode_settings()
     create_ignore_files()
 
-    print("\nNext Steps:")
-    print("1. Close your IDE completely")
-    print("2. Wait 5 seconds")
-    print("3. Reopen your IDE")
-    print("4. Check Problems panel - should be EMPTY")
 
-    print("\nIf problems persist:")
-    print("- Press Ctrl+Shift+P")
-    print("- Type 'Developer: Reload Window'")
-    print("- Or restart your computer")
 
 
 if __name__ == "__main__":

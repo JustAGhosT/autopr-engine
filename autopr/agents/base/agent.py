@@ -7,7 +7,7 @@ volume-based configuration.
 """
 
 import logging
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 # Optional dependency: provide a lightweight fallback when crewai is unavailable
 try:  # pragma: no cover - runtime optional import
@@ -35,7 +35,7 @@ InputT = TypeVar("InputT")
 OutputT = TypeVar("OutputT")
 
 
-class BaseAgent(Generic[InputT, OutputT]):
+class BaseAgent[InputT, OutputT]:
     """Base class for all AutoPR agents.
 
     This class provides common functionality for all agents, including:
@@ -168,10 +168,10 @@ class BaseAgent(Generic[InputT, OutputT]):
             # Preserve the original exception type and attributes
             if not str(e):
                 # If the original exception has no message, use our custom one
-                e.args = (f"Error in {self.name}",) + e.args[1:]
+                e.args = (f"Error in {self.name}", *e.args[1:])
             elif not any(self.name in str(arg) for arg in e.args if isinstance(arg, str)):
                 # If the error message doesn't already contain the agent name, prepend it
-                e.args = (f"Error in {self.name}: {e!s}",) + e.args[1:]
+                e.args = (f"Error in {self.name}: {e!s}", *e.args[1:])
 
             # Re-raise the original exception with preserved type and attributes
             raise
@@ -190,4 +190,5 @@ class BaseAgent(Generic[InputT, OutputT]):
         Raises:
             NotImplementedError: If the method is not implemented by a subclass
         """
-        raise NotImplementedError("Subclasses must implement _execute method")
+        msg = "Subclasses must implement _execute method"
+        raise NotImplementedError(msg)

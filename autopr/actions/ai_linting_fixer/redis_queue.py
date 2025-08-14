@@ -12,10 +12,10 @@ from enum import Enum
 import json
 import logging
 import os
+from pathlib import Path
 import time
 from typing import Any, TypedDict
 import uuid
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +186,8 @@ class RedisQueueManager:
     def _validate_redis_client(self) -> None:
         """Validate that Redis client is available."""
         if self.redis_client is None:
-            raise RuntimeError("Redis client is not initialized")
+            msg = "Redis client is not initialized"
+            raise RuntimeError(msg)
 
     def enqueue_issue(self, issue: QueuedIssue) -> bool:
         """Add an issue to the pending queue."""
@@ -205,7 +206,7 @@ class RedisQueueManager:
             self.redis_client.lpush(self.issue_queue_key, json.dumps(issue_data))
             return True
         except Exception as e:
-            logger.error(f"Failed to enqueue issue: {e}")
+            logger.exception(f"Failed to enqueue issue: {e}")
             return False
 
     def dequeue_issue(self) -> QueuedIssue | None:
@@ -226,7 +227,7 @@ class RedisQueueManager:
                 )
             return None
         except Exception as e:
-            logger.error(f"Failed to dequeue issue: {e}")
+            logger.exception(f"Failed to dequeue issue: {e}")
             return None
 
     def get_queue_length(self) -> int:
@@ -235,7 +236,7 @@ class RedisQueueManager:
             self._validate_redis_client()
             return self.redis_client.llen(self.issue_queue_key)
         except Exception as e:
-            logger.error(f"Failed to get queue length: {e}")
+            logger.exception(f"Failed to get queue length: {e}")
             return 0
 
     def clear_queue(self) -> bool:
@@ -245,7 +246,7 @@ class RedisQueueManager:
             self.redis_client.delete(self.issue_queue_key)
             return True
         except Exception as e:
-            logger.error(f"Failed to clear queue: {e}")
+            logger.exception(f"Failed to clear queue: {e}")
             return False
 
     def get_queue_stats(self) -> dict:
@@ -259,7 +260,7 @@ class RedisQueueManager:
                 "status": "active" if length > 0 else "empty"
             }
         except Exception as e:
-            logger.error(f"Failed to get queue stats: {e}")
+            logger.exception(f"Failed to get queue stats: {e}")
             return {
                 "queue_length": 0,
                 "queue_name": self.issue_queue_key,
@@ -285,7 +286,7 @@ class RedisQueueManager:
                 ))
             return issues
         except Exception as e:
-            logger.error(f"Failed to peek queue: {e}")
+            logger.exception(f"Failed to peek queue: {e}")
             return []
 
     def remove_issue(self, issue_id: str) -> bool:
@@ -297,7 +298,7 @@ class RedisQueueManager:
             logger.warning("Remove issue by ID not implemented - would need queue scanning")
             return False
         except Exception as e:
-            logger.error(f"Failed to remove issue: {e}")
+            logger.exception(f"Failed to remove issue: {e}")
             return False
 
     def get_processing_status(self) -> dict:
@@ -306,14 +307,14 @@ class RedisQueueManager:
             self._validate_redis_client()
             queue_length = self.redis_client.llen(self.issue_queue_key)
             processing_count = self.redis_client.get(self.processing_count_key) or 0
-            
+
             return {
                 "queue_length": queue_length,
                 "processing_count": int(processing_count),
                 "status": "processing" if int(processing_count) > 0 else "idle"
             }
         except Exception as e:
-            logger.error(f"Failed to get processing status: {e}")
+            logger.exception(f"Failed to get processing status: {e}")
             return {
                 "queue_length": 0,
                 "processing_count": 0,
@@ -327,7 +328,7 @@ class RedisQueueManager:
             self.redis_client.incr(self.processing_count_key)
             return True
         except Exception as e:
-            logger.error(f"Failed to increment processing count: {e}")
+            logger.exception(f"Failed to increment processing count: {e}")
             return False
 
     def decrement_processing_count(self) -> bool:
@@ -337,7 +338,7 @@ class RedisQueueManager:
             self.redis_client.decr(self.processing_count_key)
             return True
         except Exception as e:
-            logger.error(f"Failed to decrement processing count: {e}")
+            logger.exception(f"Failed to decrement processing count: {e}")
             return False
 
     def reset_processing_count(self) -> bool:
@@ -347,7 +348,7 @@ class RedisQueueManager:
             self.redis_client.set(self.processing_count_key, 0)
             return True
         except Exception as e:
-            logger.error(f"Failed to reset processing count: {e}")
+            logger.exception(f"Failed to reset processing count: {e}")
             return False
 
     def get_health_status(self) -> dict:
@@ -361,7 +362,7 @@ class RedisQueueManager:
                 "queue_accessible": True
             }
         except Exception as e:
-            logger.error(f"Redis health check failed: {e}")
+            logger.exception(f"Redis health check failed: {e}")
             return {
                 "status": "unhealthy",
                 "connection": "error",
@@ -642,16 +643,10 @@ class RedisConfig:
 
         redis_url_env = os.getenv("REDIS_URL")
         redis_url: str
-        if redis_url_env is None:
-            redis_url = "redis://localhost:6379/0"
-        else:
-            redis_url = redis_url_env
+        redis_url = "redis://localhost:6379/0" if redis_url_env is None else redis_url_env
         queue_prefix_env = os.getenv("AI_LINTING_QUEUE_PREFIX")
         queue_prefix: str
-        if queue_prefix_env is None:
-            queue_prefix = "ai_linting"
-        else:
-            queue_prefix = queue_prefix_env
+        queue_prefix = "ai_linting" if queue_prefix_env is None else queue_prefix_env
         config: RedisConfig.RedisEnvConfig = {}
         config["redis_url"] = redis_url
         config["queue_prefix"] = queue_prefix

@@ -92,7 +92,7 @@ class EnterpriseAuthManager:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired"
             )
         except jwt.PyJWTError as e:
-            logger.error("JWT validation error", error=str(e))
+            logger.exception("JWT validation error", error=str(e))
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
             )

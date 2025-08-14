@@ -115,8 +115,9 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
 
         # Initialize the AI linting fixer (constructor manages its own LLM manager)
         if _create_ai_linting_fixer is None:
+            msg = "AILintingFixer factory is not available. Ensure optional AI components are installed."
             raise ImportError(
-                "AILintingFixer factory is not available. Ensure optional AI components are installed."
+                msg
             )
         self.linting_fixer = _create_ai_linting_fixer()
 

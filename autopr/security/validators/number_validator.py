@@ -9,12 +9,11 @@ class NumberValidator:
         result = ValidationResult(is_valid=True)
 
         # Range validation
-        if isinstance(value, int):
-            if value < -(2**31) or value > 2**31 - 1:
-                result.errors.append(f"Integer out of safe range for key '{key}': {value}")
-                result.severity = ValidationSeverity.MEDIUM
-                result.is_valid = False
-                return result
+        if isinstance(value, int) and (value < -(2**31) or value > 2**31 - 1):
+            result.errors.append(f"Integer out of safe range for key '{key}': {value}")
+            result.severity = ValidationSeverity.MEDIUM
+            result.is_valid = False
+            return result
 
         if isinstance(value, float):
             FLOAT_ABS_MAX = 1e308

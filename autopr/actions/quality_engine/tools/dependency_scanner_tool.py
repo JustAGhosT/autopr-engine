@@ -46,8 +46,7 @@ class DependencyScannerTool(Tool):
                 stdout, _ = await process.communicate()
                 req_files = stdout.decode().strip().split("\n")
                 req_files = [f for f in req_files if f]  # Filter out empty lines
-            except Exception as e:
-                print(f"Error finding requirements files: {e}")
+            except Exception:
                 req_files = []
 
         issues = []
@@ -70,7 +69,6 @@ class DependencyScannerTool(Tool):
                         if "safety: command not found" in error:
                             summary_lines.append("Safety is not installed. Run: pip install safety")
                             continue
-                        print(f"Error running safety: {error}")
 
                     # Parse safety output
                     if stdout:
@@ -92,10 +90,10 @@ class DependencyScannerTool(Tool):
                                     }
                                     issues.append(issue)
                         except json.JSONDecodeError:
-                            print(f"Failed to parse safety output: {stdout.decode()}")
+                            pass
 
-                except Exception as e:
-                    print(f"Exception running safety: {e}")
+                except Exception:
+                    pass
         else:
             summary_lines.append("No requirements files found to scan.")
 

@@ -12,30 +12,21 @@ if project_root not in sys.path:
 # Set environment variable to control logging
 os.environ["AUTOPR_LOG_LEVEL"] = "DEBUG"
 
-print("Python path:")
-for p in sys.path:
-    print(f"  {p}")
+for _p in sys.path:
+    pass
 
 try:
-    print("\nAttempting to import from autopr.agents.crew...")
-    from autopr.agents.crew import AutoPRCrew
+    pass
 
-    print("✅ Successfully imported AutoPRCrew")
-    print(f"AutoPRCrew class: {AutoPRCrew}")
-except Exception as e:
-    print(f"❌ Failed to import AutoPRCrew: {e}")
+except Exception:
     import traceback
 
     traceback.print_exc()
 
 try:
-    print("\nAttempting to import volume mapping...")
-    from autopr.actions.quality_engine.volume_mapping import get_volume_level_name
+    pass
 
-    print("✅ Successfully imported get_volume_level_name")
-    print(f"get_volume_level_name(500): {get_volume_level_name(500)}")
-except Exception as e:
-    print(f"❌ Failed to import get_volume_level_name: {e}")
+except Exception:
     import traceback
 
     traceback.print_exc()

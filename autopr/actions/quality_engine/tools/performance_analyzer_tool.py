@@ -69,8 +69,8 @@ class PerformanceAnalyzerTool(Tool):
                 for py_file in python_files[:5]:  # Limit to 5 files for quicker profiling
                     scalene_issues = await self._analyze_file_with_scalene(py_file)
                     issues.extend(scalene_issues)
-        except Exception as e:
-            print(f"Error running Python performance analysis: {e}")
+        except Exception:
+            pass
 
         return issues
 
@@ -121,10 +121,10 @@ class PerformanceAnalyzerTool(Tool):
 
                     # Clean up the temp file
                     os.remove(out_file)
-                except Exception as e:
-                    print(f"Error processing Scalene output: {e}")
-        except Exception as e:
-            print(f"Error analyzing {py_file} with Scalene: {e}")
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
         return issues
 
@@ -161,9 +161,8 @@ class PerformanceAnalyzerTool(Tool):
                 elif file.endswith((".js", ".ts", ".jsx", ".tsx")):
                     js_issues = self._analyze_js_performance(file, content)
                     issues.extend(js_issues)
-            except (OSError, PermissionError, UnicodeDecodeError) as e:
+            except (OSError, PermissionError, UnicodeDecodeError):
                 # Skip files we can't read
-                print(f"Error analyzing {file} for performance: {e}")
                 continue
 
         return issues

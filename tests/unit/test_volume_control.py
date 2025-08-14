@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Unit tests for volume control system"""
 
-import pytest
-from pathlib import Path
 import json
-import tempfile
+from pathlib import Path
 import shutil
+import tempfile
 
-from scripts.volume_control.volume_knob import VolumeKnob, VolumeController
+import pytest
+
+from scripts.volume_control.volume_knob import VolumeController, VolumeKnob
 
 
 class TestVolumeKnob:

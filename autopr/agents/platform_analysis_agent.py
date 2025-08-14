@@ -330,7 +330,7 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
         config_manager = PlatformConfigManager()
         all_platforms = config_manager.get_all_platforms()
         results: list[dict] = []
-        for platform_id in all_platforms.keys():
+        for platform_id in all_platforms:
             info = self._get_platform_info(platform_id)
             if info is not None:
                 results.append(info)

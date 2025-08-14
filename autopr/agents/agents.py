@@ -1,6 +1,7 @@
 """AutoPR Agents for code analysis and quality management."""
 
 import asyncio
+import contextlib
 import inspect
 import logging
 from pathlib import Path
@@ -9,16 +10,15 @@ from typing import Any
 from pydantic import BaseModel, field_validator
 
 from autopr.actions import platform_detection
-from autopr.actions.quality_engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityInputs
-from autopr.agents.models import CodeIssue, IssueSeverity
-from autopr.utils.volume_utils import QualityMode, get_volume_level_name
-
-# Import for backward compatibility
-from autopr.utils.volume_utils import volume_to_quality_mode
 
 # Import for local use in methods
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
+from autopr.actions.quality_engine import QualityEngine
+from autopr.actions.quality_engine.models import QualityInputs
+from autopr.agents.models import CodeIssue, IssueSeverity
+
+# Import for backward compatibility
+from autopr.utils.volume_utils import QualityMode, get_volume_level_name, volume_to_quality_mode
 
 
 class VolumeConfig(BaseModel):
@@ -33,7 +33,8 @@ class VolumeConfig(BaseModel):
     def validate_volume(cls, v: int) -> int:
         """Validate volume is between 0 and 1000."""
         if not 0 <= v <= 1000:
-            raise ValueError("Volume must be between 0 and 1000")
+            msg = "Volume must be between 0 and 1000"
+            raise ValueError(msg)
         return v
 
     @field_validator("quality_mode")
@@ -41,7 +42,8 @@ class VolumeConfig(BaseModel):
     def validate_quality_mode(cls, v: QualityMode) -> QualityMode:
         """Validate quality mode is valid."""
         if not isinstance(v, QualityMode):
-            raise ValueError("Quality mode must be a valid QualityMode enum")
+            msg = "Quality mode must be a valid QualityMode enum"
+            raise ValueError(msg)
         return v
 
     def apply_volume_settings(self, volume: int) -> None:
@@ -67,10 +69,8 @@ class BaseAgent:
     def platform_detector(self) -> Any:
         """Get the platform detector instance."""
         if self._platform_detector is None:
-            try:
+            with contextlib.suppress(Exception):
                 self._platform_detector = platform_detection.PlatformDetector()
-            except Exception:
-                pass
         return self._platform_detector
 
     async def analyze_platform(self, repo_path: str) -> Any:
@@ -173,15 +173,14 @@ class LintingAgent(BaseAgent):
 
             if result.success:
                 return result.fixed_issues
-            else:
-                return [
-                    CodeIssue(
-                        file_path=file_path,
-                        line_number=0,
-                        message=f"Linting failed: {result.error_message}",
-                        severity=IssueSeverity.ERROR,
-                    )
-                ]
+            return [
+                CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    message=f"Linting failed: {result.error_message}",
+                    severity=IssueSeverity.ERROR,
+                )
+            ]
 
         except FileNotFoundError:
             return [
@@ -202,7 +201,7 @@ class LintingAgent(BaseAgent):
                 )
             ]
         except Exception as e:
-            logging.error(f"Unexpected error fixing code issues in {file_path}: {e}")
+            logging.exception(f"Unexpected error fixing code issues in {file_path}: {e}")
             return [
                 CodeIssue(
                     file_path=file_path,
@@ -241,18 +240,17 @@ class LintingAgent(BaseAgent):
 
             if result.success:
                 return result.issues
-            else:
-                return [
-                    CodeIssue(
-                        file_path=file_path,
-                        line_number=0,
-                        message=f"Analysis failed: {result.error_message}",
-                        severity=IssueSeverity.ERROR,
-                    )
-                ]
+            return [
+                CodeIssue(
+                    file_path=file_path,
+                    line_number=0,
+                    message=f"Analysis failed: {result.error_message}",
+                    severity=IssueSeverity.ERROR,
+                )
+            ]
 
         except Exception as e:
-            logging.error(f"Unexpected error analyzing code quality in {file_path}: {e}")
+            logging.exception(f"Unexpected error analyzing code quality in {file_path}: {e}")
             return [
                 CodeIssue(
                     file_path=file_path,
@@ -303,11 +301,10 @@ class QualityAgent(BaseAgent):
                 **self.volume_config.config,
             )
 
-            result = await self._quality_engine.execute(inputs)
-            return result
+            return await self._quality_engine.execute(inputs)
 
         except Exception as e:
-            logging.error(f"Error analyzing quality: {e}")
+            logging.exception(f"Error analyzing quality: {e}")
             return None
 
 

@@ -30,7 +30,6 @@ def main() -> None:
 
     # Validate volume range
     if not 0 <= args.volume <= 1000:
-        print(f"Error: Volume must be between 0 and 1000, got {args.volume}", file=sys.stderr)
         sys.exit(1)
 
     try:
@@ -40,20 +39,14 @@ def main() -> None:
         active_tools = loader.get_active_tools(args.volume)
 
         if not active_tools:
-            print(f"No active tools found at volume {args.volume}.")
+            pass
         else:
-            print(f"Active tools at volume {args.volume}:")
-            for tool in active_tools:
-                print(f"  - {tool}")
+            for _tool in active_tools:
+                pass
 
-    except ImportError as e:
-        print(f"Error: Could not import required module: {e}", file=sys.stderr)
-        print(
-            "Please ensure the volume-control scripts are in the correct location.", file=sys.stderr
-        )
+    except ImportError:
         sys.exit(1)
-    except Exception as e:
-        print(f"Error checking active tools: {e}", file=sys.stderr)
+    except Exception:
         sys.exit(1)
 
 

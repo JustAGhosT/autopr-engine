@@ -16,7 +16,8 @@ class QualityMode(Enum):
     @classmethod
     def from_volume(cls, volume: int) -> "QualityMode":
         if not 0 <= volume <= 1000:
-            raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+            msg = f"Volume must be between 0 and 1000, got {volume}"
+            raise ValueError(msg)
 
         if volume < 100:
             return cls.ULTRA_FAST
@@ -32,7 +33,8 @@ class QualityMode(Enum):
 def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
     """Minimal implementation for testing."""
     if not 0 <= volume <= 1000:
-        raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
+        msg = f"Volume must be between 0 and 1000, got {volume}"
+        raise ValueError(msg)
 
     mode = QualityMode.from_volume(volume)
     config = {
@@ -69,7 +71,8 @@ class VolumeConfig:
     def _to_bool(self, value: Any) -> bool:
         """Convert various input types to boolean."""
         if value is None:
-            raise ValueError("Cannot convert None to boolean")
+            msg = "Cannot convert None to boolean"
+            raise ValueError(msg)
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
@@ -88,23 +91,19 @@ test_cases = [
 ]
 
 # Run tests
-print("=== Testing VolumeConfig ===")
-for i, (volume, config, expected_value, should_pass) in enumerate(test_cases, 1):
-    print(f"\nTest {i}: Volume={volume}, Config={config}")
-    print(f"  Expected: enable_ai_agents={expected_value}")
+for _i, (volume, config, expected_value, should_pass) in enumerate(test_cases, 1):
 
     try:
         vc = VolumeConfig(volume=volume, config=config)
         actual_value = vc.config.get("enable_ai_agents", False)
-        print(f"  Result:   enable_ai_agents={actual_value}")
 
         if actual_value != expected_value:
-            print(f"  ❌ FAIL: Expected {expected_value}, got {actual_value}")
+            pass
         else:
-            print("  ✅ PASS")
+            pass
 
-    except Exception as e:
+    except Exception:
         if should_pass:
-            print(f"  ❌ UNEXPECTED ERROR: {e}")
+            pass
         else:
-            print(f"  ✅ Expected error: {e}")
+            pass

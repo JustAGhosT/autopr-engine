@@ -16,7 +16,7 @@ warnings.warn(
 )
 
 # Re-export models from the models module
-from ..models import (
+from autopr.models import (
     CodeAnalysisReport,
     CodeIssue,
     IssueSeverity,
@@ -38,21 +38,21 @@ from .platform_analysis_agent import (
 __all__ = [
     # Base classes
     "BaseAgent",
-    "VolumeConfig",
-    # Models
-    "IssueSeverity",
-    "CodeIssue",
-    "PlatformComponent",
-    "PlatformAnalysis",
     "CodeAnalysisReport",
+    "CodeIssue",
     # Agents
     "CodeQualityAgent",
     "CodeQualityInputs",
     "CodeQualityOutputs",
-    "PlatformAnalysisAgent",
-    "PlatformAnalysisInputs",
-    "PlatformAnalysisOutputs",
+    # Models
+    "IssueSeverity",
     "LintingAgent",
     "LintingInputs",
     "LintingOutputs",
+    "PlatformAnalysis",
+    "PlatformAnalysisAgent",
+    "PlatformAnalysisInputs",
+    "PlatformAnalysisOutputs",
+    "PlatformComponent",
+    "VolumeConfig",
 ]

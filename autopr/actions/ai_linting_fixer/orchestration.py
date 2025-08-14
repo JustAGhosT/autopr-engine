@@ -102,9 +102,8 @@ def _execute_standalone(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
         fixer = AILintingFixer()
 
         # Run the AI linting fixer
-        result = fixer.run(inputs)
+        return fixer.run(inputs)
 
-        return result
 
     except Exception as e:
         logger.exception(f"Standalone execution failed: {e}")

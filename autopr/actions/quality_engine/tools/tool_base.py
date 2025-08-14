@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import asyncio
 import shutil
 import time
-from typing import Any, Generic, TypedDict, TypeVar
+from typing import Any, TypedDict, TypeVar
 
 import structlog
 
@@ -28,7 +28,7 @@ class ToolExecutionResult(TypedDict):
     output_summary: str
 
 
-class Tool(ABC, Generic[TConfig, TIssue]):
+class Tool[TConfig: Any, TIssue](ABC):
     """Abstract base class for quality tools with enhanced error handling and timeouts."""
 
     def __init__(self) -> None:
@@ -68,7 +68,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
     def is_available(self) -> bool:
         """
         Check if this tool is available and executable.
-        
+
         Returns:
             True if the tool is available, False otherwise
         """
@@ -78,7 +78,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
     def get_required_command(self) -> str | None:
         """
         Get the command that this tool requires to be available.
-        
+
         Returns:
             The command name or None if no external command is required
         """
@@ -87,10 +87,10 @@ class Tool(ABC, Generic[TConfig, TIssue]):
     def check_command_availability(self, command: str) -> bool:
         """
         Check if a command is available in the system PATH.
-        
+
         Args:
             command: The command to check
-            
+
         Returns:
             True if the command is available, False otherwise
         """
@@ -158,7 +158,7 @@ class Tool(ABC, Generic[TConfig, TIssue]):
         except Exception as e:
             error_message = f"{self.get_display_name()} execution failed: {e!s}"
             success = False
-            logger.error(f"Tool {self.name} failed", error=str(e))
+            logger.exception(f"Tool {self.name} failed", error=str(e))
 
         execution_time = time.time() - start_time
 

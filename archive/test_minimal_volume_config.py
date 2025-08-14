@@ -80,7 +80,7 @@ try:
             logger.info(f"✅ {desc}: {result} (type: {type(result).__name__})")
 
         except Exception as e:
-            logger.error(f"❌ Failed with {desc}: {e}\n{traceback.format_exc()}")
+            logger.exception(f"❌ Failed with {desc}: {e}\n{traceback.format_exc()}")
 
     logger.info("\n✅ All tests completed successfully!")
 

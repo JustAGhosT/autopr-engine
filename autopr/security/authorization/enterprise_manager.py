@@ -154,12 +154,9 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
             if self._check_user_resource_permissions(context):
                 return True
 
-            if self._check_explicit_permissions(context):
-                return True
-
-            return False
+            return bool(self._check_explicit_permissions(context))
         except Exception as e:
-            logger.error("Authorization check failed", error=str(e))
+            logger.exception("Authorization check failed", error=str(e))
             return False
 
     def grant_resource_permission(
@@ -202,7 +199,7 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
             )
             return True
         except Exception as e:
-            logger.error(
+            logger.exception(
                 "Failed to grant permissions",
                 error=str(e),
                 user_id=user_id,
@@ -241,7 +238,7 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
 
             return True
         except Exception as e:
-            logger.error(
+            logger.exception(
                 "Failed to revoke permissions",
                 error=str(e),
                 user_id=user_id,
@@ -292,7 +289,4 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
     def _check_explicit_permissions(self, context: AuthorizationContext) -> bool:
         """Check for explicit permissions granted for specific actions"""
         # Check the explicit_permissions attribute in the context
-        if context.explicit_permissions and context.action in context.explicit_permissions:
-            return True
-
-        return False
+        return bool(context.explicit_permissions and context.action in context.explicit_permissions)

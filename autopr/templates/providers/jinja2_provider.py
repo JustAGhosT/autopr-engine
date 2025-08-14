@@ -9,7 +9,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
-from ..base import TemplateMetadata, TemplateProvider
+from autopr.templates.base import TemplateMetadata, TemplateProvider
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ import unittest
 
 class TestMinimal(unittest.TestCase):
     def test_minimal(self):
-        self.assertTrue(True)
+        assert True
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ class TestVolumeMapping:
     """Test suite for volume mapping functionality."""
 
     @pytest.mark.parametrize(
-        "volume,expected_mode,expected_config_keys",
+        ("volume", "expected_mode", "expected_config_keys"),
         [
             # Test minimum volume (0)
             (0, QualityMode.ULTRA_FAST, {"enable_ai_agents", "max_fixes", "max_issues"}),
@@ -50,7 +50,7 @@ class TestVolumeMapping:
             assert config["max_issues"] > 0
 
     @pytest.mark.parametrize(
-        "volume,expected_name",
+        ("volume", "expected_name"),
         [
             (0, "Silent"),
             (100, "Quiet"),
@@ -76,7 +76,7 @@ class TestVolumeMapping:
             volume_to_quality_mode(1001)
 
     @pytest.mark.parametrize(
-        "volume,expected_mode",
+        ("volume", "expected_mode"),
         [
             (0, QualityMode.ULTRA_FAST),
             (300, QualityMode.SMART),  # Updated to canonical mapping

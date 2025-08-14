@@ -71,7 +71,6 @@ class SemgrepTool(Tool):
             # Semgrep returns 0 for no issues, 1 for issues found
             if process.returncode not in [0, 1]:
                 error_message = stderr.decode().strip()
-                print(f"Error running semgrep: {error_message}")
                 return [{"error": f"Semgrep execution failed: {error_message}"}]
 
             if not stdout:
@@ -81,7 +80,6 @@ class SemgrepTool(Tool):
                 results = json.loads(stdout)
                 return results.get("results", [])
             except json.JSONDecodeError:
-                print(f"Failed to parse semgrep output: {stdout.decode()}")
                 return [{"error": "Failed to parse semgrep JSON output"}]
         except TimeoutError:
             return [{"error": "Semgrep execution timed out"}]

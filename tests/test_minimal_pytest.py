@@ -6,9 +6,8 @@ import sys
 
 def test_import_paths():
     """Test that the Python path is set up correctly."""
-    print("\nPython path in pytest:")
-    for p in sys.path:
-        print(f"  {p}")
+    for _p in sys.path:
+        pass
 
     # Check if project root is in path
     project_root = str(Path(__file__).parent.parent.absolute())
@@ -21,9 +20,7 @@ def test_import_crew():
         from autopr.agents.crew import AutoPRCrew
 
         assert AutoPRCrew is not None
-        print("✅ Successfully imported AutoPRCrew in pytest")
-    except Exception as e:
-        print(f"❌ Failed to import AutoPRCrew in pytest: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()
@@ -36,9 +33,7 @@ def test_import_volume_mapping():
         from autopr.utils.volume_utils import get_volume_level_name
 
         assert get_volume_level_name(500) == "Balanced"
-        print("✅ Successfully imported get_volume_level_name in pytest")
-    except Exception as e:
-        print(f"❌ Failed to import get_volume_level_name in pytest: {e}")
+    except Exception:
         import traceback
 
         traceback.print_exc()

@@ -75,7 +75,7 @@ class ZeroTrustSecurityManager:
             return True
 
         except Exception as e:
-            self.audit_logger.error(
+            self.audit_logger.exception(
                 "Security validation error",
                 error=str(e),
                 user_id=context.user_id,

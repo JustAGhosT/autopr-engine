@@ -30,7 +30,7 @@ class TemplateManager:
         """Auto-discover templates based on project structure"""
         discovered = []
 
-        for template_name, template_info in self.templates_cache.items():
+        for template_info in self.templates_cache.values():
             confidence = self._calculate_confidence(project_path, template_info)
             if confidence >= self.config["templates"]["confidence_threshold"]:
                 template_info.confidence = confidence

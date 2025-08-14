@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar, get_args
+from typing import Any, TypeVar, get_args
 
 # Change the bound to Any to allow TypedDict
 TConfig = TypeVar("TConfig", bound=Any)
 TIssue = TypeVar("TIssue")
 
 
-class Tool(ABC, Generic[TConfig, TIssue]):
+class Tool[TConfig: Any, TIssue](ABC):
     """Abstract base class for quality tools."""
 
     @property

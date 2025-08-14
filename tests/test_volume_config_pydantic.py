@@ -27,7 +27,7 @@ try:
 
     logger.debug("Successfully imported VolumeConfig")
 except ImportError as e:
-    logger.error(f"Failed to import VolumeConfig: {e}")
+    logger.exception(f"Failed to import VolumeConfig: {e}")
     raise
 
 

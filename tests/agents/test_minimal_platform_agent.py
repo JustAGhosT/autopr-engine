@@ -21,7 +21,7 @@ class TestMinimalPlatformAnalysisAgent(unittest.TestCase):
         result = self.agent._get_platform_info(PlatformType.UNKNOWN)
 
         # Verify
-        self.assertIsNone(result)
+        assert result is None
         mock_manager.get_platform.assert_called_once_with(PlatformType.UNKNOWN.value)
 
 

@@ -54,9 +54,8 @@ async def run_quality_analysis(files: list[str]) -> None:
     )
 
     # Summarize results
-    print("\nLinting summary:")
-    for tool_name, results in all_results.items():
-        print(f"{tool_name}: {len(results)} issues")
+    for _tool_name, _results in all_results.items():
+        pass
 
 
 if __name__ == "__main__":

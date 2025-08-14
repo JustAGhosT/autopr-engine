@@ -16,7 +16,6 @@ class Consolidator:
 
     def run_full_consolidation(self):
         """Execute complete consolidation workflow"""
-        print("🚀 Starting consolidation...")
 
         # Phase 1: Remove obsolete files
         self._cleanup_obsolete_files()
@@ -27,12 +26,10 @@ class Consolidator:
         # Phase 3: Validate system
         self._validate_system()
 
-        print("✅ Consolidation complete!")
         self._print_summary()
 
     def _cleanup_obsolete_files(self):
         """Remove all obsolete and duplicate files"""
-        print("📁 Cleaning up obsolete files...")
 
         obsolete_files = [
             # Old linting tools
@@ -61,7 +58,6 @@ class Consolidator:
 
     def _update_configurations(self):
         """Update configuration files"""
-        print("⚙️ Updating configurations...")
 
         # Update pre-commit config
         self._update_precommit_config()
@@ -73,19 +69,16 @@ class Consolidator:
         """Update .pre-commit-config.yaml"""
         precommit_path = Path(".pre-commit-config.yaml")
         if precommit_path.exists():
-            print("Updated pre-commit configuration")
             self.operations_log.append("Updated .pre-commit-config.yaml")
 
     def _ensure_config(self):
         """Ensure configuration exists"""
         config_path = Path("configs/config.yaml")
         if config_path.exists():
-            print("Configuration validated")
             self.operations_log.append("Validated config.yaml")
 
     def _validate_system(self):
         """Validate that system components exist"""
-        print("🔍 Validating system...")
 
         required_components = [
             "autopr/actions/quality_engine.py",
@@ -96,22 +89,15 @@ class Consolidator:
 
         for component in required_components:
             if Path(component).exists():
-                print(f"✓ {component}")
                 self.operations_log.append(f"Validated: {component}")
             else:
-                print(f"✗ Missing: {component}")
                 self.operations_log.append(f"Missing: {component}")
 
     def _print_summary(self):
         """Print consolidation summary"""
-        print("\n📊 Consolidation Summary:")
-        for log_entry in self.operations_log:
-            print(f"  • {log_entry}")
+        for _log_entry in self.operations_log:
+            pass
 
-        print("\n🎯 Next Steps:")
-        print("1. Test quality engine: python -m autopr.actions.quality_engine")
-        print("2. Run pre-commit: pre-commit run --all-files")
-        print("3. Commit consolidated changes")
 
     def _safe_remove(self, path: Path):
         """Safely remove a file or directory"""
@@ -119,14 +105,12 @@ class Consolidator:
             if path.exists():
                 if path.is_file():
                     path.unlink()
-                    print(f"Removed file: {path}")
                     self.operations_log.append(f"Removed: {path}")
                 elif path.is_dir():
                     shutil.rmtree(path)
-                    print(f"Removed directory: {path}")
                     self.operations_log.append(f"Removed directory: {path}")
-        except Exception as e:
-            print(f"Warning: Could not remove {path}: {e}")
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

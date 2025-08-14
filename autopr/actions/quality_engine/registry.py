@@ -38,5 +38,6 @@ class HandlerRegistry:
         """
         handler = self._handlers.get(result_type)
         if not handler:
-            raise ValueError(f"No handler registered for {result_type.__name__}.")
+            msg = f"No handler registered for {result_type.__name__}."
+            raise ValueError(msg)
         handler(results)

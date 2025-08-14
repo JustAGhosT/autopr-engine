@@ -7,9 +7,9 @@ from typing import Any
 
 import structlog
 
+from autopr.actions.base.action import Action
 from autopr.utils.volume_utils import get_volume_level_name
 
-from ..base.action import Action
 from .config import load_config
 from .handler_registry import HandlerRegistry
 from .models import QualityInputs, QualityMode, QualityOutputs
@@ -90,28 +90,15 @@ class QualityEngine(Action):
             recommendations=recommendations,
         )
 
-        print("\n" + "=" * 60)
-        print("WINDOWS DETECTED - QUALITY ENGINE ADAPTATIONS")
-        print("=" * 60)
-        print(f"Platform: {platform_info['platform']}")
-        print(f"Architecture: {platform_info['architecture']}")
-        print(f"Python: {platform_info['python_version'].split()[0]}")
-        print()
 
         if limitations:
-            print("LIMITATIONS:")
-            for limitation in limitations:
-                print(f"  • {limitation}")
-            print()
+            for _limitation in limitations:
+                pass
 
         if recommendations:
-            print("RECOMMENDATIONS:")
-            for rec in recommendations:
-                print(f"  • {rec}")
-            print()
+            for _rec in recommendations:
+                pass
 
-        print("The quality engine will automatically adapt tools for Windows compatibility.")
-        print("=" * 60 + "\n")
 
     def _filter_tools_for_platform(self) -> dict[str, Any]:
         """Filter tools based on platform compatibility."""
@@ -212,7 +199,8 @@ class QualityEngine(Action):
             ValueError: If volume is not an integer
         """
         if not isinstance(volume, int):
-            raise ValueError(f"Volume must be an integer, got {type(volume).__name__}")
+            msg = f"Volume must be an integer, got {type(volume).__name__}"
+            raise ValueError(msg)
         return max(0, min(1000, volume))  # Clamp to 0-1000 range
 
     async def execute(
@@ -293,7 +281,7 @@ class QualityEngine(Action):
                 "Comprehensive mode activated",
                 tools=tools_to_run,
                 file_count=len(files_to_check),
-                file_types=list(set([os.path.splitext(f)[1] for f in files_to_check if "." in f])),
+                file_types=list({os.path.splitext(f)[1] for f in files_to_check if "." in f}),
             )
         else:
             logger.info(

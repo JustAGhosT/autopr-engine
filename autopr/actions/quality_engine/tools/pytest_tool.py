@@ -54,7 +54,6 @@ class PyTestTool(Tool):
                 return []
             if process.returncode not in [0, 1]:
                 error_message = stderr.decode().strip()
-                print(f"Error running pytest: {error_message}")
                 return [{"error": f"PyTest execution failed: {error_message}"}]
 
             # For now, just check if tests passed or failed

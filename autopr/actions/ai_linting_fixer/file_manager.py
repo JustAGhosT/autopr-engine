@@ -330,23 +330,28 @@ class FileManager:
     def _validate_warnings_list(self, warnings_list: list) -> None:
         """Validate that warnings_list is a list."""
         if not isinstance(warnings_list, list):
-            raise TypeError(f"Expected list for warnings_list, got {type(warnings_list).__name__}")
+            msg = f"Expected list for warnings_list, got {type(warnings_list).__name__}"
+            raise TypeError(msg)
 
     def _validate_issues_list(self, issues_list: list) -> None:
         """Validate that issues_list is a list."""
         if not isinstance(issues_list, list):
-            raise TypeError(f"Expected list for issues_list, got {type(issues_list).__name__}")
+            msg = f"Expected list for issues_list, got {type(issues_list).__name__}"
+            raise TypeError(msg)
 
     def _validate_file_info(self, file_info: dict) -> None:
         """Validate file_info structure."""
         if not isinstance(file_info, dict):
-            raise TypeError(f"Expected dict for file_info, got {type(file_info).__name__}")
+            msg = f"Expected dict for file_info, got {type(file_info).__name__}"
+            raise TypeError(msg)
 
         if "warnings" not in file_info:
-            raise ValueError("file_info must contain 'warnings' key")
+            msg = "file_info must contain 'warnings' key"
+            raise ValueError(msg)
 
         if "issues" not in file_info:
-            raise ValueError("file_info must contain 'issues' key")
+            msg = "file_info must contain 'issues' key"
+            raise ValueError(msg)
 
         self._validate_warnings_list(file_info["warnings"])
         self._validate_issues_list(file_info["issues"])
@@ -354,7 +359,8 @@ class FileManager:
     def _validate_file_info_list(self, file_info_list: list) -> None:
         """Validate that file_info_list is a list of valid file_info dicts."""
         if not isinstance(file_info_list, list):
-            raise TypeError(f"Expected list for file_info_list, got {type(file_info_list).__name__}")
+            msg = f"Expected list for file_info_list, got {type(file_info_list).__name__}"
+            raise TypeError(msg)
 
         for file_info in file_info_list:
             self._validate_file_info(file_info)
@@ -362,7 +368,8 @@ class FileManager:
     def _validate_file_info_dict(self, file_info_dict: dict) -> None:
         """Validate that file_info_dict is a dict of valid file_info dicts."""
         if not isinstance(file_info_dict, dict):
-            raise TypeError(f"Expected dict for file_info_dict, got {type(file_info_dict).__name__}")
+            msg = f"Expected dict for file_info_dict, got {type(file_info_dict).__name__}"
+            raise TypeError(msg)
 
         for file_info in file_info_dict.values():
             self._validate_file_info(file_info)

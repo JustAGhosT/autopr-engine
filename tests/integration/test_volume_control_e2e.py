@@ -55,7 +55,7 @@ class TestVolumeControlE2E:
             yield temp_dir
 
     @pytest.mark.parametrize(
-        "volume,expected_mode,expected_level",
+        ("volume", "expected_mode", "expected_level"),
         [
             (0, QualityMode.FAST, "Silent"),
             (100, QualityMode.FAST, "Quiet"),
@@ -111,10 +111,10 @@ class TestVolumeControlE2E:
                 )
 
         # Run analysis with low volume
-        report_low = crew_low.analyze_repository(test_repo)
+        crew_low.analyze_repository(test_repo)
 
         # Run analysis with high volume
-        report_high = crew_high.analyze_repository(test_repo)
+        crew_high.analyze_repository(test_repo)
 
         # Assert that high volume results in more thorough analysis
         # This is verified by checking the analyze_code calls for volume context

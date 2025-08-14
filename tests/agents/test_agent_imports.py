@@ -7,7 +7,7 @@ class TestAgentImports(unittest.TestCase):
         try:
             from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
 
-            self.assertTrue(True, "Successfully imported PlatformAnalysisAgent")
+            assert True, "Successfully imported PlatformAnalysisAgent"
         except ImportError as e:
             self.fail(f"Failed to import PlatformAnalysisAgent: {e}")
 
@@ -16,7 +16,7 @@ class TestAgentImports(unittest.TestCase):
         try:
             from autopr.actions.platform_detection.schema import PlatformType
 
-            self.assertTrue(True, "Successfully imported PlatformType")
+            assert True, "Successfully imported PlatformType"
         except ImportError as e:
             self.fail(f"Failed to import PlatformType: {e}")
 

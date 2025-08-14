@@ -135,7 +135,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         except Exception as e:
             # Log the error and return a default response
             if self.verbose:
-                print(f"Error in CodeQualityAgent: {e!s}")
+                pass
 
             return CodeQualityOutputs(
                 issues=[{"message": f"Error analyzing code: {e!s}", "severity": "error"}],
@@ -221,7 +221,8 @@ Format your response as a JSON object with the following structure:
 
             # Validate the response structure
             if not isinstance(result, dict):
-                raise ValueError("Response is not a JSON object")
+                msg = "Response is not a JSON object"
+                raise ValueError(msg)
 
             # Ensure required fields exist
             if "issues" not in result:

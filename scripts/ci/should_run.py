@@ -81,19 +81,16 @@ def main(argv: list[str]) -> int:
     min_vol = max(0, min(1000, int(args.min_volume)))
     current = detect_volume(args.context)
 
-    if args.verbose:
-        print(f"Min volume required: {min_vol}")
-        print(f"Detected volume:     {current}")
-        if args.context:
-            print(f"Context:             {args.context}")
+    if args.verbose and args.context:
+        pass
 
     if current >= min_vol:
         if args.verbose:
-            print("Decision: RUN (exit 0)")
+            pass
         return 0
 
     if args.verbose:
-        print("Decision: SKIP (exit 78)")
+        pass
     # 78 is conventionally used as a neutral/skip code in some CIs; safe non-zero skip
     return 78
 

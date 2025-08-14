@@ -8,8 +8,6 @@ from pathlib import Path
 
 
 def main():
-    print("🔪 DISABLING GITHUB ACTIONS EXTENSION")
-    print("=" * 40)
 
     # Read current settings
     vscode_dir = Path(".vscode")
@@ -53,16 +51,7 @@ def main():
     with open(settings_file, "w") as f:
         json.dump(current_settings, f, indent=2)
 
-    print("✅ Disabled GitHub Actions extension")
-    print("✅ Disabled YAML validation")
-    print("✅ Disabled problems display")
-    print("✅ Disabled hover and completion")
 
-    print("\n🔄 REFRESH REQUIRED:")
-    print("1. Close your IDE completely")
-    print("2. Wait 5 seconds")
-    print("3. Reopen your IDE")
-    print("4. Check Problems panel - should be EMPTY")
 
 
 if __name__ == "__main__":

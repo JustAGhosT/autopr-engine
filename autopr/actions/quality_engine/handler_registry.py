@@ -104,7 +104,8 @@ class HandlerRegistry:
             KeyError: If no handler is registered for the result type
         """
         if result_type not in self._handlers:
-            raise KeyError(f"No handler registered for result type {result_type.__name__}")
+            msg = f"No handler registered for result type {result_type.__name__}"
+            raise KeyError(msg)
         return self._handlers[result_type]
 
     def get_handler_for_tool(self, tool_class: type) -> Handler:
@@ -121,7 +122,8 @@ class HandlerRegistry:
             KeyError: If no handler is registered for the tool class
         """
         if tool_class not in self._tool_handlers:
-            raise KeyError(f"No handler registered for tool class {tool_class.__name__}")
+            msg = f"No handler registered for tool class {tool_class.__name__}"
+            raise KeyError(msg)
         return self._tool_handlers[tool_class]
 
     def handle_results(self, results: list[TResult], result_type: type[TResult]) -> None:
@@ -143,7 +145,7 @@ class HandlerRegistry:
 # These will be replaced by using the DI container in the real application
 
 
-def register_for_result(
+def register_for_result[TResult](
     result_type: type[TResult],
 ) -> Callable[[type[Handler[TResult]]], type[Handler[TResult]]]:
     """Placeholder for the DI-based decorator."""

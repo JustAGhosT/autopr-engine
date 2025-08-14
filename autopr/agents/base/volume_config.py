@@ -49,7 +49,8 @@ class VolumeConfig:
         try:
             self.volume = max(0, min(1000, int(self.volume)))
         except (TypeError, ValueError) as e:
-            raise ValueError(f"Volume must be an integer between 0-1000, got {self.volume}") from e
+            msg = f"Volume must be an integer between 0-1000, got {self.volume}"
+            raise ValueError(msg) from e
 
         # Store user-provided config to preserve it
         user_config = self.config.copy() if self.config else {}
@@ -60,8 +61,9 @@ class VolumeConfig:
                 # Get the default mode and config based on volume
                 mode, default_config = volume_to_quality_mode(self.volume)
             except Exception as e:
+                msg = f"Failed to get default mode and config for volume {self.volume}"
                 raise ValueError(
-                    f"Failed to get default mode and config for volume {self.volume}"
+                    msg
                 ) from e
 
             # Initialize with default values
@@ -83,7 +85,8 @@ class VolumeConfig:
 
                 # Raise ValueError for None values in boolean fields
                 if value is None:
-                    raise ValueError(f"Boolean field '{key}' cannot be None")
+                    msg = f"Boolean field '{key}' cannot be None"
+                    raise ValueError(msg)
 
                 # Convert to bool based on type
                 if isinstance(value, str):
@@ -120,7 +123,8 @@ class VolumeConfig:
             ValueError: If the value is None or an empty string (when strict=True)
         """
         if value is None:
-            raise ValueError("Cannot convert None to boolean")
+            msg = "Cannot convert None to boolean"
+            raise ValueError(msg)
 
         if isinstance(value, bool):
             return value

@@ -1,8 +1,8 @@
 # production_monitoring.py
 import asyncio
+from datetime import UTC, datetime, timedelta
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any
 
 import aiohttp
 
@@ -27,7 +27,7 @@ class ProductionMonitor:
         completion_tokens: int,
         response_time: float,
         cost: float,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Monitor a single request."""
         try:
             # Calculate cost based on model pricing
@@ -57,14 +57,14 @@ class ProductionMonitor:
                 "total_tokens": total_tokens,
                 "response_time": response_time,
                 "cost": calculated_cost,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
         except Exception:
-            self.logger.error("Error monitoring request")
+            self.logger.exception("Error monitoring request")
             return {}
 
-    async def check_model_health(self) -> Dict[str, bool]:
+    async def check_model_health(self) -> dict[str, bool]:
         """Check health of all models."""
         models = ["gpt-4", "gpt-3.5-turbo", "claude-3", "gemini-pro"]
         health_status = {}
@@ -72,13 +72,12 @@ class ProductionMonitor:
         for model_name in models:
             try:
                 # Simple health check - adjust based on actual API
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        f"{self.base_url}/models",
-                        headers={"Authorization": f"Bearer {self.api_key}"},
-                        timeout=aiohttp.ClientTimeout(total=10),
-                    ) as response:
-                        health_status[model_name] = response.status == 200
+                async with aiohttp.ClientSession() as session, session.get(
+                    f"{self.base_url}/models",
+                    headers={"Authorization": f"Bearer {self.api_key}"},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as response:
+                    health_status[model_name] = response.status == 200
 
             except Exception:
                 health_status[model_name] = False
@@ -86,11 +85,11 @@ class ProductionMonitor:
 
         return health_status
 
-    async def generate_usage_report(self, days: int = 7) -> Dict[str, Any]:
+    async def generate_usage_report(self, days: int = 7) -> dict[str, Any]:
         """Generate usage report for the specified period."""
         # This would typically query a database
         # For now, return mock data
-        end_date = datetime.now(timezone.utc)
+        end_date = datetime.now(UTC)
         start_date = end_date - timedelta(days=days)
 
         return {

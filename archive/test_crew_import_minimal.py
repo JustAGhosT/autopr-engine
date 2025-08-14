@@ -10,17 +10,12 @@ if project_root not in sys.path:
 
 # Now try to import and instantiate AutoPRCrew
 try:
-    print("Attempting to import AutoPRCrew...")
     from autopr.agents.crew import AutoPRCrew
 
-    print("✅ Successfully imported AutoPRCrew")
 
-    print("\nAttempting to instantiate AutoPRCrew...")
     crew = AutoPRCrew()
-    print("✅ Successfully instantiated AutoPRCrew")
 
-except Exception as e:
-    print(f"\n❌ Error: {e}", file=sys.stderr)
+except Exception:
     import traceback
 
     traceback.print_exc()

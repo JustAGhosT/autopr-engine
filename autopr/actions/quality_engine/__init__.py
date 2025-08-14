@@ -19,8 +19,9 @@ except Exception:  # pragma: no cover
     container = None  # type: ignore[assignment]
 
     def get_engine() -> QualityEngine:  # type: ignore[misc]
+        msg = "QualityEngine DI container is unavailable. Optional dependencies may be missing (e.g., toml/yaml)."
         raise RuntimeError(
-            "QualityEngine DI container is unavailable. Optional dependencies may be missing (e.g., toml/yaml)."
+            msg
         )
 
 

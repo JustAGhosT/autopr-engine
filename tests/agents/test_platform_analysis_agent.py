@@ -61,7 +61,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         result = self.agent._get_platform_info(PlatformType.UNKNOWN)
 
         # Verify
-        self.assertIsNone(result)
+        assert result is None
         mock_manager.get_platform.assert_called_once_with(PlatformType.UNKNOWN.value)
 
     @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
@@ -111,51 +111,44 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         result = self.agent._get_platform_info(PlatformType.REACT)
 
         # Verify basic structure
-        self.assertIsNotNone(result)
-        self.assertEqual(result["id"], "test_platform")
-        self.assertEqual(result["name"], "Test Platform")
-        self.assertEqual(result["display_name"], "Test Platform Display")
-        self.assertEqual(result["description"], "A test platform")
-        self.assertEqual(result["type"], "framework")
-        self.assertEqual(result["category"], "web")
-        self.assertEqual(result["subcategory"], "Frontend")
-        self.assertEqual(result["tags"], ["test", "frontend"])
-        self.assertEqual(result["status"], "active")
-        self.assertEqual(result["documentation_url"], "https://example.com")
-        self.assertTrue(result["is_active"])
-        self.assertFalse(result["is_beta"])
-        self.assertFalse(result["is_deprecated"])
-        self.assertEqual(result["version"], "1.0.0")
-        self.assertEqual(result["last_updated"], "2025-01-01T00:00:00Z")
-        self.assertEqual(result["supported_languages"], ["TypeScript", "JavaScript"])
-        self.assertEqual(result["supported_frameworks"], ["React", "Next.js"])
-        self.assertEqual(result["integrations"], ["Vercel", "Netlify"])
+        assert result is not None
+        assert result["id"] == "test_platform"
+        assert result["name"] == "Test Platform"
+        assert result["display_name"] == "Test Platform Display"
+        assert result["description"] == "A test platform"
+        assert result["type"] == "framework"
+        assert result["category"] == "web"
+        assert result["subcategory"] == "Frontend"
+        assert result["tags"] == ["test", "frontend"]
+        assert result["status"] == "active"
+        assert result["documentation_url"] == "https://example.com"
+        assert result["is_active"]
+        assert not result["is_beta"]
+        assert not result["is_deprecated"]
+        assert result["version"] == "1.0.0"
+        assert result["last_updated"] == "2025-01-01T00:00:00Z"
+        assert result["supported_languages"] == ["TypeScript", "JavaScript"]
+        assert result["supported_frameworks"] == ["React", "Next.js"]
+        assert result["integrations"] == ["Vercel", "Netlify"]
 
         # Verify detection rules
-        self.assertIn("detection_rules", result)
-        self.assertEqual(result["detection_rules"]["files"], ["package.json"])
-        self.assertEqual(result["detection_rules"]["dependencies"], ["test-package"])
-        self.assertEqual(result["detection_rules"]["folder_patterns"], ["test/*"])
-        self.assertEqual(result["detection_rules"]["commit_patterns"], ["test:.*"])
-        self.assertEqual(result["detection_rules"]["content_patterns"], [r"test-pattern"])
-        self.assertEqual(result["detection_rules"]["package_scripts"], ["test"])
+        assert "detection_rules" in result
+        assert result["detection_rules"]["files"] == ["package.json"]
+        assert result["detection_rules"]["dependencies"] == ["test-package"]
+        assert result["detection_rules"]["folder_patterns"] == ["test/*"]
+        assert result["detection_rules"]["commit_patterns"] == ["test:.*"]
+        assert result["detection_rules"]["content_patterns"] == [r"test-pattern"]
+        assert result["detection_rules"]["package_scripts"] == ["test"]
 
         # Verify project config
-        self.assertIn("project_config", result)
-        self.assertEqual(
-            result["project_config"],
-            {
-                "build_command": "npm run build",
-                "start_command": "npm start",
-                "output_directory": "dist",
-            },
-        )
+        assert "project_config" in result
+        assert result["project_config"] == {"build_command": "npm run build", "start_command": "npm start", "output_directory": "dist"}
 
         # Verify the config manager was called correctly
         mock_manager.get_platform.assert_called_once_with(PlatformType.REACT.value)
 
         # Test with a known platform type
-        platform_info = self.agent._get_platform_info(PlatformType.IDE)
+        self.agent._get_platform_info(PlatformType.IDE)
 
     def test_get_platform_info_unknown_platform(self):
         """Test getting platform info for an unknown platform value."""
@@ -165,7 +158,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
             instance.get_platform.return_value = None
 
             platform_info = self.agent._get_platform_info("unknown_platform")
-            self.assertIsNone(platform_info)
+            assert platform_info is None
             instance.get_platform.assert_called_once_with("unknown_platform")
 
     @patch("autopr.agents.platform_analysis_agent.PlatformDetector")
@@ -194,20 +187,20 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         result = await self.agent.analyze_platforms(inputs)
 
         # Verify the result
-        self.assertIsNotNone(result)
-        self.assertEqual(len(result.platforms), 2)
-        self.assertEqual(result.platforms[0][0], PlatformType.REACT.value)
-        self.assertEqual(result.platforms[0][1], 0.9)
-        self.assertEqual(result.platforms[1][0], PlatformType.NEXT_JS.value)
-        self.assertEqual(result.platforms[1][1], 0.8)
-        self.assertIn("npm", result.tools)
-        self.assertIn("yarn", result.tools)
-        self.assertIn("React", result.frameworks)
-        self.assertIn("Next.js", result.frameworks)
-        self.assertIn("TypeScript", result.languages)
-        self.assertIn("JavaScript", result.languages)
-        self.assertIn("package.json", result.config_files)
-        self.assertIn("next.config.js", result.config_files)
+        assert result is not None
+        assert len(result.platforms) == 2
+        assert result.platforms[0][0] == PlatformType.REACT.value
+        assert result.platforms[0][1] == 0.9
+        assert result.platforms[1][0] == PlatformType.NEXT_JS.value
+        assert result.platforms[1][1] == 0.8
+        assert "npm" in result.tools
+        assert "yarn" in result.tools
+        assert "React" in result.frameworks
+        assert "Next.js" in result.frameworks
+        assert "TypeScript" in result.languages
+        assert "JavaScript" in result.languages
+        assert "package.json" in result.config_files
+        assert "next.config.js" in result.config_files
 
         # Verify the detector was called with the correct arguments
         mock_detector_instance.analyze.assert_called_once_with(

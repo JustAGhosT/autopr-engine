@@ -14,6 +14,7 @@ Features:
 - Backward compatibility maintained
 """
 
+import contextlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -60,10 +61,8 @@ def convert_validation_issue(local_issue: LocalValidationIssue, template_path: s
     # Extract line number from location if possible
     line = None
     if ":" in local_issue.location:
-        try:
+        with contextlib.suppress(ValueError, IndexError):
             line = int(local_issue.location.split(":")[-1])
-        except (ValueError, IndexError):
-            pass
 
     # Create metadata with additional information
     metadata = {

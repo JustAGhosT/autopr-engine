@@ -24,7 +24,7 @@ class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):
         result = await self.agent.analyze_platform(repo_path)
 
         # Verify
-        self.assertEqual(result, mock_analysis)
+        assert result == mock_analysis
         mock_detector_instance.analyze.assert_called_once_with(repo_path)
 
     @patch("autopr.actions.platform_detection.PlatformDetector")
@@ -38,11 +38,11 @@ class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):
         result = self.agent.platform_detector
 
         # Verify
-        self.assertEqual(result, mock_detector_instance)
+        assert result == mock_detector_instance
         mock_detector.assert_called_once()
 
         # Test that subsequent calls return the same instance
-        self.assertIs(self.agent.platform_detector, mock_detector_instance)
+        assert self.agent.platform_detector is mock_detector_instance
 
 
 if __name__ == "__main__":

@@ -16,11 +16,9 @@ def disable_problematic_files():
 
     if workflow_file.exists() and not backup_file.exists():
         shutil.move(str(workflow_file), str(backup_file))
-        print(f"Renamed {workflow_file} to {backup_file}")
 
     # Create an empty placeholder
     workflow_file.write_text("# Workflow disabled at Volume 0\n")
-    print(f"Created empty placeholder {workflow_file}")
 
 
 def create_volume_0_marker():
@@ -28,24 +26,14 @@ def create_volume_0_marker():
 
     marker_file = Path(".volume-0-active")
     marker_file.write_text("Volume 0 active - all validation disabled\n")
-    print(f"Created {marker_file}")
 
 
 def main():
-    print("SUPER NUCLEAR FIX - Volume 0 Mode")
-    print("=================================")
 
     disable_problematic_files()
     create_volume_0_marker()
 
-    print("\nVolume 0 activated!")
-    print("- GitHub workflow file temporarily disabled")
-    print("- All IDE validation should now be silent")
-    print("\nTo restore files later:")
-    print("  mv .github/workflows/ci.yml.DISABLED .github/workflows/ci.yml")
-    print("  rm .volume-0-active")
 
-    print("\nNow restart your IDE for complete silence!")
 
 
 if __name__ == "__main__":

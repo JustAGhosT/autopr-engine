@@ -77,7 +77,7 @@ def enrich_quality_metrics_issues(metrics: Any) -> Any:
     if hasattr(metrics, "issues") and hasattr(metrics, "template_path"):
         enriched_issues = enrich_validation_issues(metrics.issues, metrics.template_path)
         # Create a new object with enriched issues
-        enriched_metrics = type(metrics)(
+        return type(metrics)(
             overall_score=metrics.overall_score,
             category_scores=metrics.category_scores,
             issues=enriched_issues,
@@ -89,5 +89,4 @@ def enrich_quality_metrics_issues(metrics: Any) -> Any:
             template_path=metrics.template_path,
             analysis_timestamp=metrics.analysis_timestamp,
         )
-        return enriched_metrics
     return metrics

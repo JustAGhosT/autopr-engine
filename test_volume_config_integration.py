@@ -8,33 +8,25 @@ project_root = str(Path(__file__).parent.absolute())
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-print("Testing VolumeConfig and QualityMode integration...")
 
 # Import the modules we need to test
 try:
     from autopr.agents.base.volume_config import VolumeConfig
     from autopr.enums import QualityMode
 
-    print("✅ Successfully imported VolumeConfig and QualityMode")
-except ImportError as e:
-    print(f"❌ Error importing modules: {e}")
+except ImportError:
     raise
 
 
 def test_volume_config():
     """Test VolumeConfig initialization and quality mode mapping."""
-    print("\nTesting VolumeConfig...")
 
     # Test default initialization
     config = VolumeConfig()
-    print(f"✅ Default volume: {config.volume}")
-    print(f"✅ Default quality mode: {config.quality_mode}")
-    print(f"✅ Default config: {config.config}")
 
     # Test volume clamping
     config = VolumeConfig(volume=1500)  # Should clamp to 1000
     assert config.volume == 1000, f"Expected volume 1000, got {config.volume}"
-    print("✅ Volume clamping works")
 
     # Test quality mode mapping
     test_cases = [
@@ -52,7 +44,6 @@ def test_volume_config():
         assert (
             config.quality_mode == expected_mode
         ), f"Expected {expected_mode} for volume {volume}, got {config.quality_mode}"
-    print("✅ Volume to quality mode mapping works")
 
     # Test boolean conversion in config
     config = VolumeConfig(
@@ -69,9 +60,7 @@ def test_volume_config():
     assert config.config["allow_updates"] is True
     assert config.config["is_verified"] is True
     assert config.config["has_issues"] is False
-    print("✅ Boolean conversion in config works")
 
-    print("✅ All VolumeConfig tests passed!")
 
 
 if __name__ == "__main__":

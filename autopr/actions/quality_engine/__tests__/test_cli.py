@@ -2,6 +2,7 @@
 Tests for quality engine CLI functionality.
 """
 
+import contextlib
 from io import StringIO
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -63,7 +64,7 @@ class TestCLI:
         # Test CLI with arguments
         test_args = ["--files", "test.py", "--mode", "fast", "--skip-windows-check"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("sys.stdout", new=StringIO()) as mock_stdout:
                 result = main()
 
@@ -93,7 +94,7 @@ class TestCLI:
         # Test CLI with Windows confirmation
         test_args = ["--files", "test.py", "--mode", "fast"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("builtins.input", return_value="y"):
                 with patch("sys.stdout", new=StringIO()) as mock_stdout:
                     result = main()
@@ -114,7 +115,7 @@ class TestCLI:
         # Test CLI with Windows confirmation (no)
         test_args = ["--files", "test.py", "--mode", "fast"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("builtins.input", return_value="n"):
                 with patch("sys.stdout", new=StringIO()) as mock_stdout:
                     result = main()
@@ -145,7 +146,7 @@ class TestCLI:
         # Test CLI with skip-windows-check
         test_args = ["--files", "test.py", "--mode", "fast", "--skip-windows-check"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("sys.stdout", new=StringIO()) as mock_stdout:
                 result = main()
 
@@ -164,7 +165,7 @@ class TestCLI:
         """Test CLI with invalid mode."""
         test_args = ["--files", "test.py", "--mode", "invalid_mode"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("builtins.input", return_value="y"):  # Mock input to avoid stdin capture
                 with patch("sys.stderr", new=StringIO()) as mock_stderr:
                     try:
@@ -192,7 +193,7 @@ class TestCLI:
 
         test_args = ["--files", "test.py", "--mode", "fast"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("sys.stderr", new=StringIO()) as mock_stderr:
                 result = main()
 
@@ -204,12 +205,10 @@ class TestCLI:
         """Test CLI help output."""
         test_args = ["--help"]
 
-        with patch("sys.argv", ["cli.py"] + test_args):
+        with patch("sys.argv", ["cli.py", *test_args]):
             with patch("sys.stdout", new=StringIO()) as mock_stdout:
-                try:
+                with contextlib.suppress(SystemExit):
                     main()
-                except SystemExit:
-                    pass
 
                 output = mock_stdout.getvalue()
                 assert "usage" in output.lower()
@@ -241,8 +240,8 @@ class TestCLI:
         for mode in modes:
             test_args = ["--files", "test.py", "--mode", mode, "--skip-windows-check"]
 
-            with patch("sys.argv", ["cli.py"] + test_args):
-                with patch("sys.stdout", new=StringIO()) as mock_stdout:
+            with patch("sys.argv", ["cli.py", *test_args]):
+                with patch("sys.stdout", new=StringIO()):
                     result = main()
 
                     assert result == 0
