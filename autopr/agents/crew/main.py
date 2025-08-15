@@ -121,7 +121,7 @@ class AutoPRCrew:
     def _create_platform_analysis_task(self, repo_path: Path, _context: dict[str, Any]) -> Any:
         """Create platform analysis task."""
         agent = self.platform_agent
-        
+
         # Use the agent's detector directly
         detector = agent.detector
         analyze = detector.analyze
@@ -134,11 +134,11 @@ class AutoPRCrew:
         agent = self.code_quality_agent
         agent.role = "Senior Code Quality Engineer"
         agent.goal = "Analyze code quality, maintainability, and technical debt with configurable depth"
-        
+
         # Determine analysis depth based on volume
         current_volume = context.get("volume", self.volume)
         volume_level = get_volume_level_name(current_volume)
-        
+
         agent.backstory = f"""You are an expert in code quality analysis, software metrics, and technical debt assessment.
         You provide actionable insights to improve code maintainability and reduce technical debt.
         Volume level {current_volume} ({volume_level})."""

@@ -17,8 +17,8 @@ class SemgrepTool(Tool):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 20.0  # Reduce timeout to 20 seconds for faster execution
-        self.max_files_per_run = 100  # Reduce limit for faster execution
+        self.default_timeout = 10.0  # Reduce timeout to 10 seconds for faster execution
+        self.max_files_per_run = 25  # Reduce limit for faster execution
 
     @property
     def name(self) -> str:

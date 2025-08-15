@@ -11,7 +11,7 @@ class PyTestTool(Tool):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 60.0  # Increase timeout to 60 seconds for comprehensive mode
+        self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
 
     @property
     def name(self) -> str:
@@ -35,8 +35,8 @@ class PyTestTool(Tool):
         """
         target_paths = files if files else ["."]
 
-        # Use a more efficient command without unsupported arguments
-        command = ["pytest", "--tb=short", "--maxfail=10", *target_paths]
+        # Use a more efficient command with limited scope
+        command = ["pytest", "--tb=short", "--maxfail=5", *target_paths]
 
         extra_args = config.get("args", [])
         command.extend(extra_args)

@@ -118,7 +118,7 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
                     "current_volume": volume or self.volume,
                     "quality_inputs": {"mode": "smart"},
                 }
-            
+
             with patch.object(crew.__class__, "analyze", mock_analyze):
                 # Execute test
                 report = crew.analyze_repository(tmpdir)

@@ -4,21 +4,21 @@ Models for the AutoPR Crew module.
 This module provides data models and utility functions for the crew orchestration system.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def build_platform_model(
-    summary_data: Dict[str, Any],
-    platform_analysis: Dict[str, Any],
-    last_platform_str: Optional[str] = None,
-    platforms: Optional[List[tuple[str, float]]] = None,
-    primary_platform: Optional[tuple[str, float]] = None,
-    tools: Optional[List[str]] = None,
-    frameworks: Optional[List[str]] = None,
-    languages: Optional[List[str]] = None,
-    config_files: Optional[List[str]] = None,
-    analysis: Optional[Any] = None,
-) -> Dict[str, Any]:
+    summary_data: dict[str, Any],
+    platform_analysis: dict[str, Any],
+    last_platform_str: str | None = None,
+    platforms: list[tuple[str, float]] | None = None,
+    primary_platform: tuple[str, float] | None = None,
+    tools: list[str] | None = None,
+    frameworks: list[str] | None = None,
+    languages: list[str] | None = None,
+    config_files: list[str] | None = None,
+    analysis: Any | None = None,
+) -> dict[str, Any]:
     """Build a platform model from analysis results."""
     # Use provided data or extract from platform_analysis
     if platforms is None and platform_analysis:
@@ -35,7 +35,7 @@ def build_platform_model(
         config_files = platform_analysis.get("config_files", [])
     if analysis is None and platform_analysis:
         analysis = platform_analysis.get("analysis")
-    
+
     return {
         "platforms": platforms or [],
         "primary_platform": primary_platform or ("unknown", 0.0),
@@ -50,11 +50,11 @@ def build_platform_model(
 
 
 def build_code_quality_model(
-    issues: List[Dict[str, Any]],
+    issues: list[dict[str, Any]],
     score: float,
-    metrics: Dict[str, Any],
-    suggestions: List[str],
-) -> Dict[str, Any]:
+    metrics: dict[str, Any],
+    suggestions: list[str],
+) -> dict[str, Any]:
     """Build a code quality model from analysis results."""
     return {
         "issues": issues,
@@ -64,7 +64,7 @@ def build_code_quality_model(
     }
 
 
-def build_linting_model(issues: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_linting_model(issues: list[dict[str, Any]]) -> dict[str, Any]:
     """Build a linting model from analysis results."""
     return {
         "issues": issues,

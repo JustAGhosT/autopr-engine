@@ -122,13 +122,13 @@ class QualityEngine(Action):
         """Get configuration for a specific tool."""
         if not self.config:
             return {"enabled": True, "config": {}}
-        
+
         # Handle Pydantic model
         if hasattr(self.config, "tools"):
             tools_config = getattr(self.config, "tools", {})
             if isinstance(tools_config, dict):
                 return tools_config.get(tool_name, {"enabled": True, "config": {}})
-        
+
         # Fallback to dictionary access
         try:
             return self.config.get("tools", {}).get(tool_name, {"enabled": True, "config": {}})
@@ -146,16 +146,16 @@ class QualityEngine(Action):
         """Run auto-fix process and return results."""
         try:
             logger.info("Starting auto-fix process", fix_types=inputs.fix_types, max_fixes=inputs.max_fixes)
-            
+
             # Import AI Linting Fixer
             from autopr.actions.ai_linting_fixer import AILintingFixer
             from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
-            
+
             # Prepare fixer inputs
             target_path = files_to_check[0] if files_to_check else "."
             if isinstance(target_path, str) and target_path == ".":
                 target_path = "."
-            
+
             fixer_inputs = AILintingFixerInputs(
                 target_path=target_path,
                 fix_types=inputs.fix_types or ["E501", "F401", "F841", "E722", "E302", "E305"],
@@ -167,28 +167,28 @@ class QualityEngine(Action):
                 use_specialized_agents=True,
                 create_backups=True,
             )
-            
+
             # Run the AI Linting Fixer
             with AILintingFixer() as fixer:
                 fix_result = fixer.run(fixer_inputs)
-            
+
             # Update results with fix information
             total_issues_fixed = fix_result.issues_fixed
             files_modified = fix_result.files_modified
             fix_summary = f"Fixed {fix_result.issues_fixed} issues across {len(fix_result.files_modified)} files"
-            
+
             logger.info(
                 "Auto-fix completed successfully",
                 issues_fixed=fix_result.issues_fixed,
                 files_modified=len(fix_result.files_modified),
                 success=fix_result.success,
             )
-            
+
             return True, total_issues_fixed, files_modified, fix_summary, None
-            
+
         except Exception as e:
             logger.exception("Auto-fix failed", error=str(e))
-            fix_errors = [f"Auto-fix failed: {str(e)}"]
+            fix_errors = [f"Auto-fix failed: {e!s}"]
             return False, 0, [], None, fix_errors
 
     def _determine_tools_for_mode(

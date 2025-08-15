@@ -77,8 +77,7 @@ def main() -> None:
             sys.exit(0 if result.success else 1)
     except KeyboardInterrupt:
         sys.exit(130)
-    except Exception as e:
-        print(f"❌ Error during execution: {e}")
+    except Exception:
         import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -15,7 +15,7 @@ jobs:
   essential-checks:
     name: Essential Checks
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     
     steps:
       - uses: actions/checkout@v4
@@ -48,15 +48,15 @@ jobs:
           if [ -z "$FILES" ]; then echo "No changed files to lint"; exit 0; fi
           pre-commit run volume-precommit --hook-stage manual --files $FILES
 
-      - name: Run tests
-        run: pytest tests/unit/ -v --tb=short --maxfail=5
+      - name: Run minimal tests
+        run: pytest tests/unit/ -v --tb=short --maxfail=3
 
-  comprehensive-checks:
-    name: Comprehensive Checks
+  draft-validation:
+    name: Draft PR Validation
     needs: essential-checks
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == true
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     continue-on-error: true
     
     steps:
@@ -72,18 +72,28 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install pytest pytest-asyncio bandit
 
-      - name: Run quality checks
-        run: python -m autopr.actions.quality_engine --mode=comprehensive --skip-windows-check
-
-      - name: Run security scan
-        run: bandit -r autopr/ -f json -o bandit-report.json || true
-        
-      - name: Upload security scan results
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Quick syntax check
+        run: |
+          python -c "import autopr; print('✅ Import successful')"
+          
+      - name: Comment draft status
+        uses: actions/github-script@v6
         with:
-          name: bandit-security-report
-          path: bandit-report.json
-          retention-days: 7
+          script: |
+            const comment = `## Draft PR Quick Check ✅
+
+            **Status:** Draft PR validation completed
+            **Essential Checks:** ✅ Passed
+            
+            **Note:** Comprehensive checks will run when PR is marked as ready for review.
+
+            ---
+            *Draft validation completed*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

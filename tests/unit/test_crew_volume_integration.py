@@ -297,7 +297,7 @@ class TestCrewVolumeIntegration:
         """Test that crew respects custom volume settings."""
         # Create a crew with custom volume and inject the LLM provider to prevent volume override
         crew = AutoPRCrew(
-            llm_model="gpt-4", 
+            llm_model="gpt-4",
             volume=800,  # High volume for thorough analysis
             llm_provider=mock_llm_provider_manager  # Inject to prevent volume override
         )
@@ -435,7 +435,7 @@ class TestCrewVolumeIntegration:
         )
         # Note: The actual implementation doesn't set auto_fix in task context
         # This test is checking the mock behavior, not the real implementation
-        if hasattr(task, 'context') and 'auto_fix' in task.context:
+        if hasattr(task, "context") and "auto_fix" in task.context:
             assert task.context["auto_fix"] == expected_autofix
         else:
             # Skip this assertion since the real implementation doesn't set auto_fix in task context
@@ -484,7 +484,7 @@ class TestCrewVolumeIntegration:
         # Instead, volume is passed in context during task creation
         # This test verifies that the crew has the correct volume setting
         assert crew.volume == 500  # Default volume from fixture
-        
+
         # Test that volume is used in quality inputs
         quality_inputs = crew._create_quality_inputs(test_volume)
         assert quality_inputs["mode"] == QualityMode.AI_ENHANCED  # 750 >= 700
@@ -545,7 +545,7 @@ class TestCrewVolumeIntegration:
         # The actual implementation doesn't use async task execution
         # Instead, it creates tasks and executes them synchronously
         # This test verifies that the crew can analyze with different volumes
-        
+
         # Mock the analyze method to return expected results
         def mock_analyze(self):
             return {
@@ -555,14 +555,14 @@ class TestCrewVolumeIntegration:
                 "current_volume": self.volume,
                 "quality_inputs": {"mode": "smart"},
             }
-        
+
         monkeypatch.setattr(crew.__class__, "analyze", mock_analyze)
 
         # Test with different volume levels
         for volume in [100, 500, 900]:
             crew.volume = volume
             result = crew.analyze()
-            
+
             # Verify the result structure
             assert isinstance(result, dict)
             assert "code_quality" in result

@@ -105,7 +105,7 @@ class TestVolumeControlE2E:
         """Test that volume affects the depth and thoroughness of analysis."""
         # Test with low volume (fast mode)
         crew_low = AutoPRCrew(
-            llm_model="gpt-4", 
+            llm_model="gpt-4",
             volume=100,
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
@@ -115,7 +115,7 @@ class TestVolumeControlE2E:
 
         # Test with high volume (comprehensive mode)
         crew_high = AutoPRCrew(
-            llm_model="gpt-4", 
+            llm_model="gpt-4",
             volume=900,
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
@@ -175,7 +175,7 @@ class TestVolumeControlE2E:
 
         # Test with low volume (should not auto-fix)
         crew_low = AutoPRCrew(
-            llm_model="gpt-4", 
+            llm_model="gpt-4",
             volume=100,
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
@@ -186,7 +186,7 @@ class TestVolumeControlE2E:
 
         # Test with high volume (should auto-fix)
         crew_high = AutoPRCrew(
-            llm_model="gpt-4", 
+            llm_model="gpt-4",
             volume=900,
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
@@ -203,7 +203,7 @@ class TestVolumeControlE2E:
         # Verify that the linting agent was called with the correct parameters
         # Note: The actual implementation may not call analyze_code if the task context is not properly set up
         # This test verifies that the crew can analyze with different volumes and auto_fix settings
-        
+
         # Check that the quality inputs were passed correctly
         assert report_low["quality_inputs"]["mode"] == QualityMode.FAST
         assert report_high["quality_inputs"]["mode"] == QualityMode.AI_ENHANCED

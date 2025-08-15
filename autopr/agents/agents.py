@@ -9,11 +9,10 @@ from typing import Any
 
 from pydantic import BaseModel, field_validator
 
-from autopr.actions.quality_engine.models import QualityMode
 from autopr.actions import platform_detection
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
 from autopr.actions.quality_engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityInputs
+from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 from autopr.agents.models import CodeIssue, IssueSeverity
 
 
@@ -49,18 +48,17 @@ class VolumeConfig(BaseModel):
         """Validate config and add defaults."""
         if v is None:
             v = {}
-        
+
         # Validate enable_ai_agents if present
-        if "enable_ai_agents" in v:
-            if not isinstance(v["enable_ai_agents"], bool):
-                msg = "enable_ai_agents must be a boolean"
-                raise ValueError(msg)
-        
+        if "enable_ai_agents" in v and not isinstance(v["enable_ai_agents"], bool):
+            msg = "enable_ai_agents must be a boolean"
+            raise ValueError(msg)
+
         # Add enable_ai_agents if not present
         if "enable_ai_agents" not in v:
             # We can't access self.volume here, so we'll set a default
             v["enable_ai_agents"] = True  # Default to True, will be updated in __init__
-        
+
         return v
 
     def model_post_init(self, __context: Any) -> None:
