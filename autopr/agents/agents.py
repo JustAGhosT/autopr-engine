@@ -9,16 +9,12 @@ from typing import Any
 
 from pydantic import BaseModel, field_validator
 
+from autopr.actions.quality_engine.models import QualityMode
 from autopr.actions import platform_detection
-
-# Import for local use in methods
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs
 from autopr.agents.models import CodeIssue, IssueSeverity
-
-# Import for backward compatibility
-from autopr.utils.volume_utils import QualityMode, get_volume_level_name, volume_to_quality_mode
 
 
 class VolumeConfig(BaseModel):
@@ -32,9 +28,10 @@ class VolumeConfig(BaseModel):
     @classmethod
     def validate_volume(cls, v: int) -> int:
         """Validate volume is between 0 and 1000."""
-        if not 0 <= v <= 1000:
-            msg = "Volume must be between 0 and 1000"
-            raise ValueError(msg)
+        if v < 0:
+            return 0
+        if v > 1000:
+            return 1000
         return v
 
     @field_validator("quality_mode")
@@ -46,11 +43,30 @@ class VolumeConfig(BaseModel):
             raise ValueError(msg)
         return v
 
-    def apply_volume_settings(self, volume: int) -> None:
-        """Apply volume settings to the configuration."""
-        self.volume = volume
-        self.quality_mode = volume_to_quality_mode(volume)
-        self.config = get_volume_level_name(volume)
+    @field_validator("config")
+    @classmethod
+    def validate_config(cls, v: dict[str, Any]) -> dict[str, Any]:
+        """Validate config and add defaults."""
+        if v is None:
+            v = {}
+        
+        # Validate enable_ai_agents if present
+        if "enable_ai_agents" in v:
+            if not isinstance(v["enable_ai_agents"], bool):
+                msg = "enable_ai_agents must be a boolean"
+                raise ValueError(msg)
+        
+        # Add enable_ai_agents if not present
+        if "enable_ai_agents" not in v:
+            # We can't access self.volume here, so we'll set a default
+            v["enable_ai_agents"] = True  # Default to True, will be updated in __init__
+        
+        return v
+
+    def model_post_init(self, __context: Any) -> None:
+        """Post-initialization to set enable_ai_agents based on volume."""
+        if "enable_ai_agents" not in self.config:
+            self.config["enable_ai_agents"] = self.volume >= 600
 
 
 class BaseAgent:

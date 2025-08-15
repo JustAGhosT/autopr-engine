@@ -10,8 +10,6 @@ This module provides agent-based orchestration for code quality analysis using C
 - `VolumeConfig`: Configuration for volume-based quality control
 
 ### Concrete Agents
-- `CodeQualityAgent`: Analyzes and improves code quality
-- `PlatformAnalysisAgent`: Detects platforms and technologies in a codebase
 - `LintingAgent`: Identifies and fixes code style and quality issues
 
 ### Crew Orchestration
@@ -24,9 +22,7 @@ import warnings
 
 from autopr.agents.agents import (
     BaseAgent,
-    CodeQualityAgent,
     LintingAgent,
-    PlatformAnalysisAgent,
     VolumeConfig,
 )
 
@@ -62,7 +58,6 @@ __all__ = [
     "CodeAnalysisReport",
     "CodeIssue",
     # Agents
-    "CodeQualityAgent",
     "CodeQualityInputs",
     "CodeQualityOutputs",
     # Models
@@ -71,7 +66,6 @@ __all__ = [
     "LintingInputs",
     "LintingOutputs",
     "PlatformAnalysis",
-    "PlatformAnalysisAgent",
     "PlatformAnalysisInputs",
     "PlatformAnalysisOutputs",
     "PlatformComponent",

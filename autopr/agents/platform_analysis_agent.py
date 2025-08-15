@@ -15,7 +15,7 @@ from autopr.actions.platform_detection.detector import (
     PlatformDetectorOutputs,
 )
 from autopr.actions.platform_detection.schema import PlatformType
-from autopr.agents.base import BaseAgent
+from autopr.agents.agents import BaseAgent
 
 # PlatformAnalysis is now imported from platform_detection.detector as PlatformDetectorOutputs
 
@@ -58,7 +58,7 @@ class PlatformAnalysisOutputs:
     analysis: PlatformDetectorOutputs
 
 
-class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOutputs]):
+class PlatformAnalysisAgent(BaseAgent):
     """Agent for analyzing codebases to detect platforms and technologies.
 
     This agent analyzes a codebase to detect the underlying platform, frameworks,
@@ -87,8 +87,8 @@ class PlatformAnalysisAgent(BaseAgent[PlatformAnalysisInputs, PlatformAnalysisOu
             **kwargs: Additional keyword arguments passed to the base class
         """
         super().__init__(
-            name="Platform Analyst",
-            role="Analyze codebases to detect platforms, frameworks, and technologies.",
+            role="Platform Analyst",
+            goal="Analyze codebases to detect platforms, frameworks, and technologies.",
             backstory=(
                 "You are an expert in software platforms and frameworks with a keen eye "
                 "for identifying technologies from code patterns, file structures, and "

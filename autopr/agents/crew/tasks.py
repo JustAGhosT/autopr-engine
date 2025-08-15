@@ -81,6 +81,16 @@ def _select_task_class(agent: Any):
             return _SimpleTask
     except Exception:
         pass
+    
+    # Use simple task for our custom agents that don't inherit from CrewAI Agent
+    try:
+        from autopr.agents.base import BaseAgent
+        from autopr.agents.agents import BaseAgent as AgentsBaseAgent
+        if isinstance(agent, (BaseAgent, AgentsBaseAgent)):
+            return _SimpleTask
+    except Exception:
+        pass
+    
     return _CrewTask
 
 

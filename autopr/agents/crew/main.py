@@ -9,11 +9,11 @@ import importlib as _importlib
 import inspect as _inspect
 import logging
 from pathlib import Path
-import sys as _sys
 from typing import Any
 
 from autopr.actions.quality_engine.models import QualityMode
 from autopr.config.settings import get_settings
+from autopr.utils.volume_utils import get_volume_level_name
 
 # Constants for volume thresholds
 VOLUME_HIGH = 700
@@ -33,6 +33,17 @@ MIN_PARAMS_FOR_BUILDER = 1
 EXPECTED_RESULTS_COUNT = 3
 
 logger = logging.getLogger(__name__)
+
+
+def get_llm_provider_manager():
+    """Get the LLM provider manager instance."""
+    try:
+        from autopr.ai.providers.manager import LLMProviderManager
+        from autopr.config.settings import get_settings
+        settings = get_settings()
+        return LLMProviderManager(config=settings)
+    except ImportError:
+        return None
 
 
 class AutoPRCrew:
@@ -62,22 +73,25 @@ class AutoPRCrew:
         if injected_cq:
             self.code_quality_agent = injected_cq
         else:
-            cqa = _importlib.import_module("autopr.agents.crew.agents").CodeQualityAgent
-            self.code_quality_agent = cqa(**agent_kwargs)
+            # Import from the correct location
+            from autopr.agents.code_quality_agent import CodeQualityAgent
+            self.code_quality_agent = CodeQualityAgent(**agent_kwargs)
 
         # Initialize platform analysis agent
         if injected_pa:
             self.platform_agent = injected_pa
         else:
-            paa = _importlib.import_module("autopr.agents.crew.agents").PlatformAnalysisAgent
-            self.platform_agent = paa(**agent_kwargs)
+            # Import from the correct location
+            from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+            self.platform_agent = PlatformAnalysisAgent(**agent_kwargs)
 
         # Initialize linting agent
         if injected_lint:
             self.linting_agent = injected_lint
         else:
-            la = _importlib.import_module("autopr.agents.crew.agents").LintingAgent
-            self.linting_agent = la(**agent_kwargs)
+            # Import from the correct location
+            from autopr.agents.linting_agent import LintingAgent
+            self.linting_agent = LintingAgent(**agent_kwargs)
 
         # Initialize LLM provider
         if injected_llm_provider:
@@ -98,15 +112,18 @@ class AutoPRCrew:
             self.volume = resolved
 
             # Import and initialize LLM provider
-            _crew_mod = _sys.modules.get("autopr.agents.crew")
-            if _crew_mod and hasattr(_crew_mod, "get_llm_provider"):
-                self.llm_provider = _crew_mod.get_llm_provider()
-            else:
+            try:
+                from autopr.ai.providers.manager import LLMProviderManager
+                self.llm_provider = LLMProviderManager(config=settings)
+            except ImportError:
                 self.llm_provider = None
 
     def _create_platform_analysis_task(self, repo_path: Path, _context: dict[str, Any]) -> Any:
         """Create platform analysis task."""
-        detector = self.platform_agent
+        agent = self.platform_agent
+        
+        # Use the agent's detector directly
+        detector = agent.detector
         analyze = detector.analyze
 
         # Execute platform analysis
@@ -117,11 +134,14 @@ class AutoPRCrew:
         agent = self.code_quality_agent
         agent.role = "Senior Code Quality Engineer"
         agent.goal = "Analyze code quality, maintainability, and technical debt with configurable depth"
-        agent.backstory = """You are an expert in code quality analysis, software metrics, and technical debt assessment.
-        You provide actionable insights to improve code maintainability and reduce technical debt."""
-
+        
         # Determine analysis depth based on volume
         current_volume = context.get("volume", self.volume)
+        volume_level = get_volume_level_name(current_volume)
+        
+        agent.backstory = f"""You are an expert in code quality analysis, software metrics, and technical debt assessment.
+        You provide actionable insights to improve code maintainability and reduce technical debt.
+        Volume level {current_volume} ({volume_level})."""
 
         # Create task
         tasks_mod = _importlib.import_module("autopr.agents.crew.tasks")
@@ -184,18 +204,13 @@ class AutoPRCrew:
 
     def analyze(self, repo_path: Path | str | None = None, volume: int | None = None, **kwargs) -> dict[str, Any]:
         """Analyze repository with specified volume."""
-        if repo_path is None:
-            repo_path = Path.cwd()
+        # Create coroutine and run it
+        coro = self.analyze_async(repo_path, volume, **kwargs)
+        return asyncio.run(coro)
 
-        if volume is not None:
-            self.volume = volume
-
-        try:
-            coro = self.analyze_async(repo_path=repo_path, volume=volume, **kwargs)
-            return asyncio.run(coro)
-        except Exception as e:
-            logger.exception("Analysis failed")
-            return {"error": str(e)}
+    def analyze_repository(self, repo_path: str, **kwargs) -> dict[str, Any]:
+        """Analyze repository - alias for analyze method for backward compatibility."""
+        return self.analyze(repo_path, **kwargs)
 
     def _normalize_result(self, result: Any) -> dict[str, Any]:
         """Normalize task result to dictionary format."""
@@ -348,6 +363,7 @@ class AutoPRCrew:
             last_platform_str=getattr(self, "_last_platform_str", None),
             create_quality_inputs=self._create_quality_inputs,
             summary=summary,
+            quality_inputs=self._create_quality_inputs(context["volume"]),
         )
 
     def _normalize_code_quality_result(self, result: Any) -> dict[str, Any]:
