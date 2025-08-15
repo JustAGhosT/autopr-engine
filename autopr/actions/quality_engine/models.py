@@ -57,16 +57,16 @@ class QualityInputs(pydantic.BaseModel):
         volume_config = get_volume_config(volume)
 
         # Apply volume-based settings
-        self.mode = volume_config.mode
-        self.max_fixes = volume_config.max_fixes
-        self.enable_ai_agents = volume_config.enable_ai_agents
+        self.mode = volume_config["mode"]
+        self.max_fixes = volume_config.get("max_fixes", 50)
+        self.enable_ai_agents = volume_config.get("enable_ai_agents", True)
 
         logger.info(
-            "Applied volume settings",
-            volume=volume,
-            mode=self.mode,
-            max_fixes=self.max_fixes,
-            enable_ai_agents=self.enable_ai_agents,
+            "Applied volume settings - volume=%d, mode=%s, max_fixes=%d, enable_ai_agents=%s",
+            volume,
+            self.mode,
+            self.max_fixes,
+            self.enable_ai_agents,
         )
 
 
