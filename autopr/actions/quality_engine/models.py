@@ -39,7 +39,7 @@ class QualityInputs(pydantic.BaseModel):
         le=1000,
         description="Volume level (0-1000) that automatically configures quality settings",
     )
-    
+
     # Auto-fix parameters
     auto_fix: bool = False
     fix_types: list[str] | None = None
@@ -92,7 +92,7 @@ class QualityOutputs(pydantic.BaseModel):
     summary: str
     ai_enhanced: bool
     ai_summary: str | None = None
-    
+
     # Auto-fix results
     auto_fix_applied: bool = False
     fix_summary: str | None = None
