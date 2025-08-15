@@ -3,12 +3,14 @@ Tool runner for quality engine - handles running tools and processing results
 """
 
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from .models import ToolResult
-from .tools.tool_base import ToolExecutionResult
+
+if TYPE_CHECKING:
+    from .tools.tool_base import ToolExecutionResult
 
 logger = structlog.get_logger(__name__)
 
@@ -64,11 +66,11 @@ async def run_tool(
             if isinstance(results, list):
                 issues = results
                 files_with_issues = list(
-                    set(
+                    {
                         issue.get("filename", "")
                         for issue in issues
                         if isinstance(issue, dict) and issue.get("filename")
-                    )
+                    }
                 )
             elif isinstance(results, dict):
                 issues = results.get("issues", [])
@@ -96,11 +98,11 @@ async def run_tool(
 
         # Extract files with issues for the result
         files_with_issues = list(
-            set(
+            {
                 issue.get("filename", "")
                 for issue in issues
                 if isinstance(issue, dict) and issue.get("filename")
-            )
+            }
         )
 
         return ToolResult(
@@ -115,7 +117,7 @@ async def run_tool(
         )
 
     except Exception as e:
-        logger.error("Error running tool", tool=tool_name, error=str(e))
+        logger.exception("Error running tool", tool=tool_name, error=str(e))
         return None
 
 

@@ -185,7 +185,7 @@ class Flake8Parser:
                 if issue:
                     issues.append(issue)
             except Exception as e:
-                logger.debug(f"Failed to parse flake8 line: {line} - {e}")
+                logger.debug("Failed to parse flake8 line: %s - %s", line, e)
                 continue
 
         return issues
@@ -236,24 +236,28 @@ class Flake8Parser:
             )
 
         except (ValueError, IndexError) as e:
-            logger.debug(f"Failed to parse flake8 line components: {line} - {e}")
+            logger.debug("Failed to parse flake8 line components: %s - %s", line, e)
             return None
 
     def _get_line_content(self, file_path: str, line_number: int) -> str:
         """Get the content of a specific line from a file."""
         try:
-            with open(file_path, encoding="utf-8") as f:
+            from pathlib import Path
+
+            with Path(file_path).open(encoding="utf-8") as f:
                 lines = f.readlines()
                 if 1 <= line_number <= len(lines):
                     return lines[line_number - 1].rstrip("\n\r")
         except Exception as e:
-            logger.debug(f"Failed to read line content from {file_path}:{line_number} - {e}")
+            logger.debug("Failed to read line content from %s:%s - %s", file_path, line_number, e)
         return ""
 
     def _extract_context(self, file_path: str, line_number: int) -> tuple[str | None, str | None]:
         """Extract function and class context for the given line."""
         try:
-            with open(file_path, encoding="utf-8") as f:
+            from pathlib import Path
+
+            with Path(file_path).open(encoding="utf-8") as f:
                 lines = f.readlines()
 
             function_name = None
@@ -268,7 +272,7 @@ class Flake8Parser:
                     try:
                         func_part = line.split("(")[0]
                         function_name = func_part.replace("def ", "").strip()
-                    except:
+                    except Exception:
                         pass
 
                 if line.startswith("class ") and class_name is None:
@@ -276,7 +280,7 @@ class Flake8Parser:
                     try:
                         class_part = line.split("(")[0].split(":")[0]
                         class_name = class_part.replace("class ", "").strip()
-                    except:
+                    except Exception:
                         pass
 
                 # Stop if we found both or reached the beginning
@@ -286,7 +290,7 @@ class Flake8Parser:
             return function_name, class_name
 
         except Exception as e:
-            logger.debug(f"Failed to extract context from {file_path}:{line_number} - {e}")
+            logger.debug("Failed to extract context from %s:%s - %s", file_path, line_number, e)
             return None, None
 
 
@@ -324,7 +328,7 @@ class IssueDetector:
         min_priority: int = 1,
     ) -> list[LintingIssue]:
         """Filter issues based on various criteria."""
-        filtered = issues
+        filtered: list[LintingIssue] = issues
 
         if categories:
             filtered = [issue for issue in filtered if issue.category in categories]
@@ -346,7 +350,7 @@ class IssueDetector:
 
     def group_issues_by_file(self, issues: list[LintingIssue]) -> dict[str, list[LintingIssue]]:
         """Group issues by file path."""
-        grouped = {}
+        grouped: dict[str, list[LintingIssue]] = {}
         for issue in issues:
             if issue.file_path not in grouped:
                 grouped[issue.file_path] = []
@@ -359,21 +363,21 @@ class IssueDetector:
             return {}
 
         # Count by category
-        category_counts = {}
+        category_counts: dict[str, int] = {}
         for category in IssueCategory:
             category_counts[category.value] = sum(
                 1 for issue in issues if issue.category == category
             )
 
         # Count by severity
-        severity_counts = {}
+        severity_counts: dict[str, int] = {}
         for severity in IssueSeverity:
             severity_counts[severity.value] = sum(
                 1 for issue in issues if issue.severity == severity
             )
 
         # Count by error code
-        error_code_counts = {}
+        error_code_counts: dict[str, int] = {}
         for issue in issues:
             error_code_counts[issue.error_code] = error_code_counts.get(issue.error_code, 0) + 1
 

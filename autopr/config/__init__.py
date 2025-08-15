@@ -26,7 +26,11 @@ from .settings import (
     reload_settings,
     set_settings,
 )
-from .validation import check_environment_variables, generate_config_report, validate_configuration
+from .validation import (
+    check_environment_variables,
+    generate_config_report,
+    validate_configuration,
+)
 
 
 @dataclass

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Quality Models Module
 ====================
@@ -11,9 +10,9 @@ utility functions.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 
-from ...templates.discovery.template_validators import ValidationIssue, ValidationSeverity
+from .validation_types import ValidationIssue, ValidationSeverity
 
 
 @dataclass
@@ -34,7 +33,7 @@ class QualityMetrics:
     def __post_init__(self) -> None:
         """Calculate derived metrics after initialization."""
         if self.analysis_timestamp is None:
-            self.analysis_timestamp = datetime.now()
+            self.analysis_timestamp = datetime.now(UTC)
 
         # Count issues by severity
         self.errors_count = sum(

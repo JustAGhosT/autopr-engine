@@ -30,7 +30,11 @@ from .qa_framework import QualityAssuranceFramework
 
 # Quality metrics have been moved to autopr.quality.template_metrics
 # Import them directly from there when needed
-from .report_generators import HTMLReportGenerator, JSONReportGenerator, MarkdownReportGenerator
+from .report_generators import (
+    HTMLReportGenerator,
+    JSONReportGenerator,
+    MarkdownReportGenerator,
+)
 from .report_generators import ReportGeneratorFactory as QAReportGeneratorFactory
 from .template_browser import TemplateBrowser, TemplateInfo
 from .template_loader import TemplateLoader

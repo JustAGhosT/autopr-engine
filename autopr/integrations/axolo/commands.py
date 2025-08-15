@@ -68,7 +68,9 @@ class AxoloCommandHandler:
 
         except Exception as e:
             try:
-                from slack_sdk.errors import SlackApiError  # type: ignore[import-not-found]
+                from slack_sdk.errors import (
+                    SlackApiError,  # type: ignore[import-not-found]
+                )
 
                 if isinstance(e, SlackApiError):
                     logger.exception(f"Slack API error: {e!s}")

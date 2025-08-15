@@ -5,9 +5,9 @@ This module provides specialized AI agents that are experts in fixing specific
 types of linting issues, with tailored prompts and strategies for each issue type.
 """
 
-import logging
 from abc import ABC, abstractmethod
 from enum import Enum
+import logging
 from typing import Any
 
 from pydantic import BaseModel
@@ -76,7 +76,7 @@ class SpecializedAgent(ABC):
         # Agent-specific confidence adjustments
         return min(0.95, base_confidence * self._get_agent_confidence_multiplier(issue_code))
 
-    def _get_agent_confidence_multiplier(self, issue_code: str) -> float:
+    def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
         """Get agent-specific confidence multiplier."""
         return 1.0  # Override in subclasses
 
@@ -149,7 +149,7 @@ CODE:
 
 Please fix ONLY the line length issues. Return the corrected code maintaining exact functionality."""
 
-    def _get_agent_confidence_multiplier(self, issue_code: str) -> float:
+    def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
         return 1.3  # High confidence for line length fixes
 
 
@@ -230,7 +230,7 @@ Check for usage in:
 
 Only remove imports you are absolutely certain are unused."""
 
-    def _get_agent_confidence_multiplier(self, issue_code: str) -> float:
+    def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
         return 1.4  # Very high confidence for import fixes
 
 
@@ -305,7 +305,7 @@ For each unused variable, choose the best strategy:
 
 Preserve all side effects and maintain code functionality."""
 
-    def _get_agent_confidence_multiplier(self, issue_code: str) -> float:
+    def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
         return 1.2  # Good confidence for variable fixes
 
 
@@ -508,7 +508,7 @@ CODE:
 
 Apply minimal fixes to resolve each issue while preserving exact functionality."""
 
-    def _get_agent_confidence_multiplier(self, issue_code: str) -> float:
+    def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
         return 0.8  # Conservative confidence for general fixes
 
 

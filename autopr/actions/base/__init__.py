@@ -10,4 +10,4 @@ from .action_outputs import ActionOutputs
 from .github_action import GitHubAction
 from .llm_action import LLMAction
 
-__all__ = ["ActionInputs", "ActionOutputs", "Action", "GitHubAction", "LLMAction"]
+__all__ = ["Action", "ActionInputs", "ActionOutputs", "GitHubAction", "LLMAction"]

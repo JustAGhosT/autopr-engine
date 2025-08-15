@@ -12,8 +12,5 @@ def handle_lint(results: list[LintIssue]):
     Args:
         results: The lint issues to process.
     """
-    print("Processing lint issues:")
-    for issue in results:
-        print(
-            f"[{issue['level'].upper()}] {issue['filename']}:{issue['line_number']} → {issue['message']}"
-        )
+    for _issue in results:
+        pass

@@ -188,30 +188,24 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-    print("🔧 AutoPR Engine Build System Validation")
-    print("=" * 50)
 
     # Find build files
     build_files = find_build_files(project_root)
 
-    print("Found build files:")
-    for file_type, files in build_files.items():
-        print(f"  {file_type.upper()}: {len(files)} files")
-    print("")
+    for _file_type, _files in build_files.items():
+        pass
 
     # Validate build system
     results = validate_build_system(build_files)
 
     # Generate and display report
     report = generate_build_report(results)
-    print(report)
 
     # Save report to file
     report_file = os.path.join(project_root, "build_system_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\n📄 Report saved to: {report_file}")
 
     # Return appropriate exit code
     if (
@@ -219,15 +213,8 @@ def main():
         or results["build_artifact_issues"]
         or results["package_management_issues"]
     ):
-        print(
-            f"\n⚠️  Found {len(results['invalid_files'])} invalid files, "
-            f"{len(results['build_artifact_issues'])} build artifact issues, and "
-            f"{len(results['package_management_issues'])} package management issues"
-        )
         return 1
-    else:
-        print("\n✅ Build system is properly configured!")
-        return 0
+    return 0
 
 
 if __name__ == "__main__":

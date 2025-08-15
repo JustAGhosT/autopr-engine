@@ -12,7 +12,10 @@ from typing import Any
 import warnings
 
 from autopr.actions.platform_detection.analysis import create_file_analyzer
-from autopr.actions.platform_detection.analysis.patterns import ContentPattern, FilePattern
+from autopr.actions.platform_detection.analysis.patterns import (
+    ContentPattern,
+    FilePattern,
+)
 
 
 class FileAnalyzer:

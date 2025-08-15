@@ -1,10 +1,15 @@
+import asyncio
+import logging
 import os
+from pathlib import Path
 import re
 from typing import Any
 
 import pydantic
 
 from autopr.actions.base.action import Action
+
+logger = logging.getLogger(__name__)
 
 
 class Inputs(pydantic.BaseModel):
@@ -37,35 +42,31 @@ class AnalyzeConsoleLogs(Action[Inputs, Outputs]):
                 if any(file.endswith(pattern) for pattern in inputs.exclude_files):
                     continue
 
-                filepath = os.path.join(root, file)
+                filepath = str(Path(root) / file)
 
                 try:
-                    with open(filepath, encoding="utf-8", errors="ignore") as f:
-                        for i, line in enumerate(f, 1):
-                            if log_pattern.search(line):
-                                found_logs.append(
-                                    {
-                                        "file": filepath,
-                                        "line": i,
-                                        "content": line.strip(),
-                                    }
-                                )
+                    # Use thread to avoid blocking in async context
+                    lines = await asyncio.to_thread(
+                        Path(filepath).read_text, encoding="utf-8", errors="ignore"
+                    )
+                    for i, line in enumerate(lines.splitlines(), 1):
+                        if log_pattern.search(line):
+                            found_logs.append(
+                                {"file": filepath, "line": i, "content": line.strip()}
+                            )
                 except Exception:
+                    logger.exception("Failed reading file: %s", filepath)
                     continue
 
         return Outputs(found_logs=found_logs)
 
 
 if __name__ == "__main__":
-    import asyncio
-
     from autopr.tests.utils import run_action_manually
 
     # Create a dummy file with a console.log for testing
-    with open("dummy_log_file.ts", "w", encoding="utf-8") as f:
-        f.write("console.log('hello');")
-    with open("dummy_log_file.test.ts", "w", encoding="utf-8") as f:
-        f.write("console.log('hello in test');")
+    Path("dummy_log_file.ts").write_text("console.log('hello');", encoding="utf-8")
+    Path("dummy_log_file.test.ts").write_text("console.log('hello in test');", encoding="utf-8")
     asyncio.run(
         run_action_manually(
             action=AnalyzeConsoleLogs,

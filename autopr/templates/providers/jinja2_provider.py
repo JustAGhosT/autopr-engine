@@ -8,9 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-import yaml
 
-from ..base import TemplateMetadata, TemplateProvider
+from autopr.templates.base import TemplateMetadata, TemplateProvider
 
 logger = logging.getLogger(__name__)
 
@@ -69,10 +68,12 @@ class Jinja2TemplateProvider(TemplateProvider):
             return None
 
         try:
-            with open(metadata_file, encoding="utf-8") as f:
+            import yaml  # type: ignore[import-not-found, import-untyped]
+
+            with metadata_file.open(encoding="utf-8") as f:
                 return yaml.safe_load(f)
-        except Exception as e:
-            logger.exception(f"Error loading metadata from {metadata_file}: {e}")
+        except Exception:
+            logger.exception("Error loading metadata from %s", metadata_file)
             return None
 
     def _load_all_templates(self):
@@ -82,7 +83,7 @@ class Jinja2TemplateProvider(TemplateProvider):
 
         for template_dir in self.template_dirs:
             if not template_dir.exists():
-                logger.warning(f"Template directory not found: {template_dir}")
+                logger.warning("Template directory not found: %s", template_dir)
                 continue
 
             for root, _, files in os.walk(template_dir):
@@ -131,8 +132,8 @@ class Jinja2TemplateProvider(TemplateProvider):
 
             return True
 
-        except Exception as e:
-            logger.exception(f"Error loading template {template_id}: {e}")
+        except Exception:
+            logger.exception("Error loading template %s", template_id)
             return False
 
     def get_template(self, template_id: str) -> TemplateMetadata | None:
@@ -187,8 +188,8 @@ class Jinja2TemplateProvider(TemplateProvider):
             template = self.env.get_template(str(rel_path))
             return template.render(**context)
 
-        except Exception as e:
-            logger.exception(f"Error rendering template {template_id}: {e}")
+        except Exception:
+            logger.exception("Error rendering template %s", template_id)
             raise
 
     def render_to_file(
@@ -205,5 +206,7 @@ class Jinja2TemplateProvider(TemplateProvider):
 
         rendered = self.render_template(template_id, context, variant)
 
-        with open(output_path, "w", encoding="utf-8") as f:
+        with output_path.open("w", encoding="utf-8") as f:
             f.write(rendered)
+        # Avoid unused kwargs warning
+        _ = kwargs

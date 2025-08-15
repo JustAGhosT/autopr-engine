@@ -116,4 +116,4 @@ class AuthorizationAuditLogger:
             with open(self.audit_log_file, "a") as f:
                 f.write(json.dumps(log_data) + "\n")
         except Exception as e:
-            self.logger.error("Failed to write to audit log file", error=str(e))
+            self.logger.exception("Failed to write to audit log file", error=str(e))

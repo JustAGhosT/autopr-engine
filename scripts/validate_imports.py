@@ -52,8 +52,8 @@ def extract_imports(file_path: str) -> list[tuple[str, int, str]]:
                     imports.append((module, line_num, line))
                     break
 
-    except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+    except Exception:
+        pass
 
     return imports
 
@@ -105,7 +105,7 @@ def check_import_validity(import_statement: str, file_path: str) -> bool:
         return True
 
     # Skip relative imports that might fail in validation context
-    if import_statement.startswith("from .") or import_statement.startswith("from .."):
+    if import_statement.startswith(("from .", "from ..")):
         return True
 
     # Skip local imports that are properly handled with try/except
@@ -225,10 +225,7 @@ def check_import_validity(import_statement: str, file_path: str) -> bool:
         return True
 
     # Check if it's a future import
-    if "from __future__ import" in import_statement:
-        return True
-
-    return False
+    return "from __future__ import" in import_statement
 
 
 def validate_imports(project_root: str) -> dict[str, list[tuple[str, int, str]]]:
@@ -236,7 +233,6 @@ def validate_imports(project_root: str) -> dict[str, list[tuple[str, int, str]]]
     python_files = find_python_files(project_root)
     broken_imports = {}
 
-    print(f"Scanning {len(python_files)} Python files...")
 
     for file_path in python_files:
         imports = extract_imports(file_path)
@@ -261,7 +257,7 @@ def generate_import_report(broken_imports: dict[str, list[tuple[str, int, str]]]
 
     for file_path, imports in broken_imports.items():
         report.append(f"📁 {file_path}:")
-        for module, line_num, line in imports:
+        for _module, line_num, line in imports:
             report.append(f"  Line {line_num}: {line}")
         report.append("")
 
@@ -272,29 +268,22 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-    print("🔍 AutoPR Engine Import Validation")
-    print("=" * 50)
 
     # Validate imports
     broken_imports = validate_imports(project_root)
 
     # Generate report
     report = generate_import_report(broken_imports)
-    print(report)
 
     # Save report to file
     report_file = os.path.join(project_root, "import_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\n📄 Report saved to: {report_file}")
 
     if broken_imports:
-        print(f"\n⚠️  Found {len(broken_imports)} files with broken imports")
         return 1
-    else:
-        print("\n✅ All imports are valid!")
-        return 0
+    return 0
 
 
 if __name__ == "__main__":

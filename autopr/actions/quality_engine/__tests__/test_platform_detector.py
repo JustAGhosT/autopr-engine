@@ -224,7 +224,6 @@ class TestPlatformDetector:
         windows_incompatible = {"codeql"}
 
         # These should be in the windows_careful set
-        windows_careful = {"windows_security"}
 
         # Verify categorization logic
         with patch("platform.system", return_value="Windows"):

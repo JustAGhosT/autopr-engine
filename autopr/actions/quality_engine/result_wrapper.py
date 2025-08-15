@@ -2,12 +2,12 @@
 Generic wrapper for tool results.
 """
 
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
 
-class ToolResult(Generic[T]):
+class ToolResult[T]:
     """
     A wrapper for tool results that includes metadata about the tool that produced them.
 
@@ -26,7 +26,7 @@ class ToolResult(Generic[T]):
         tool_name: str,
         issues: list[T],
         category: str = "general",
-        metadata: dict[str, Any] = None,
+        metadata: dict[str, Any] | None = None,
     ):
         """
         Initialize a new tool result.

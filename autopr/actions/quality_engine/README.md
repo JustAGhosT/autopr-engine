@@ -116,6 +116,15 @@ python -m autopr.actions.quality_engine --mode=comprehensive
 # AI-enhanced analysis (experimental)
 python -m autopr.actions.quality_engine --mode=ai_enhanced --ai-provider openai --ai-model gpt-4
 
+# Auto-fix mode - automatically fix issues using AI
+python -m autopr.actions.quality_engine --mode=comprehensive --auto-fix --ai-provider openai --ai-model gpt-4
+
+# Auto-fix with specific issue types
+python -m autopr.actions.quality_engine --auto-fix --fix-types E501 F401 F841 --max-fixes 25
+
+# Dry-run auto-fix (preview changes without applying)
+python -m autopr.actions.quality_engine --auto-fix --dry-run
+
 # Windows mode (with confirmation)
 python -m autopr.actions.quality_engine.cli --files <files> --mode comprehensive
 
@@ -191,8 +200,52 @@ Options:
   --verbose                                      Enable verbose output
   --ai-provider AI_PROVIDER                      AI provider to use for AI-enhanced mode
   --ai-model AI_MODEL                           AI model to use for AI-enhanced mode
+  --auto-fix                                     Automatically fix issues using AI
+  --fix-types [FIX_TYPES ...]                    Types of issues to fix (e.g., E501 F401 F841)
+  --max-fixes MAX_FIXES                          Maximum number of fixes to apply (default: 50)
+  --dry-run                                      Show what would be fixed without making changes
   -h, --help                                     Show help message
 ```
+
+### Auto-Fix Features
+
+The Quality Engine now includes **AI-powered auto-fix capabilities** that can automatically resolve common code quality issues:
+
+#### Supported Fix Types
+
+- **E501**: Line too long - Break long lines at natural points
+- **F401**: Unused imports - Remove unnecessary imports
+- **F841**: Unused variables - Remove or rename with underscore
+- **E722**: Bare except - Specify appropriate exception types
+- **E302**: Expected 2 blank lines - Fix import spacing
+- **E305**: Expected 2 blank lines after class - Fix class spacing
+
+#### Auto-Fix Examples
+
+```bash
+# Basic auto-fix with default settings
+python -m autopr.actions.quality_engine --auto-fix
+
+# Auto-fix with specific issue types
+python -m autopr.actions.quality_engine --auto-fix --fix-types E501 F401 F841
+
+# Limit the number of fixes applied
+python -m autopr.actions.quality_engine --auto-fix --max-fixes 25
+
+# Preview changes without applying them
+python -m autopr.actions.quality_engine --auto-fix --dry-run
+
+# Combine with comprehensive analysis
+python -m autopr.actions.quality_engine --mode=comprehensive --auto-fix
+```
+
+#### Safety Features
+
+- **Backup Creation**: Automatically creates backups before making changes
+- **Dry-Run Mode**: Preview changes without applying them
+- **Confidence Scoring**: Only applies fixes the AI is confident about
+- **Error Handling**: Graceful fallback if auto-fix fails
+- **Detailed Logging**: Comprehensive logs of all changes made
 
 ### Performance Characteristics
 
@@ -221,7 +274,8 @@ Options:
 
 ```python
 from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityInputs, QualityMode
+from autopr.actions.quality_engine.models import QualityInputs
+from autopr.utils.volume_utils import QualityMode
 
 # Create engine
 engine = QualityEngine()

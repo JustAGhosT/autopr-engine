@@ -7,6 +7,10 @@
 [![License: MIT](<https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)>
 [![GitHub Marketplace](<https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/autopr-engine)>
 
+[![CI](https://github.com/neuralliquid/autopr-engine/workflows/CI/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3ACI)
+[![Quality](https://github.com/neuralliquid/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
+[![PR Checks](https://github.com/neuralliquid/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3A%22PR+Checks%22)
+
 AutoPR Engine is a comprehensive AI-powered automation platform that transforms GitHub pull request
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
 
@@ -387,6 +391,45 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ### **Development Workflow**
 
+AutoPR Engine uses a **volume-aware, multi-stage workflow system** for automated quality checks:
+
+#### **Workflow Stages**
+
+1. **PR-Checks** (Ultra-fast validation)
+   - Runs immediately on PR creation/update
+   - Pre-commit hooks on changed files only
+   - Minimal tests for draft PRs
+   - 10-minute timeout for quick feedback
+
+2. **Quality Feedback** (Detailed PR feedback)
+   - Pre-commit hooks on all files
+   - Security scanning (Bandit + Safety)
+   - Detailed PR comments with reports
+   - Artifact uploads for security reports
+
+3. **CI** (Comprehensive checks)
+   - Volume-aware conditional execution
+   - Full test suite with coverage
+   - Type checking (MyPy)
+   - Linting (Ruff) with volume-based rules
+   - Security checks (volume ≥ 600)
+
+4. **Background Fixer** (Maintenance)
+   - Scheduled daily runs
+   - Automated code fixing
+   - Volume-aware fix aggressiveness
+
+#### **Volume System**
+
+The workflow system uses a volume-based approach (0-1000) to determine check intensity:
+
+- **0-199:** Tests only
+- **200-399:** Tests + relaxed linting
+- **400-599:** Tests + linting + type checking
+- **600+:** All checks including security
+
+#### **Contributing Steps**
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
@@ -395,6 +438,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 6. Commit your changes (`git commit -m 'Add amazing feature'`)
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
+
+**Note:** The workflow system will automatically run appropriate checks based on your PR and repository volume settings. See [Workflow Documentation](.github/workflows/README.md) for detailed information.
 
 ### **Code Standards**
 

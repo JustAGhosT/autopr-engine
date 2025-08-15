@@ -165,7 +165,7 @@ class SystemStatusDisplay:
         if self.config.is_quiet():
             return
 
-        self._print(self.formatter.header("🎯 AI Linting Fixer - System Status"))
+        self._print(self.formatter.header("AI Linting Fixer - System Status"))
 
         # Version and basic info
         version = status.get("version", "unknown")
@@ -634,4 +634,9 @@ def show_session_summary(
     display.results.show_results_summary(outputs)
     display.results.show_agent_performance(outputs.agent_stats)
     display.results.show_queue_statistics(outputs.queue_stats)
-    display.results.show_suggestions(outputs)
+    # show_suggestions expects a list[str] of suggestions to present
+    try:
+        suggestions: list[str] = list(getattr(outputs, "suggestions", []))  # type: ignore[arg-type]
+    except Exception:
+        suggestions = []
+    display.results.show_suggestions(suggestions)

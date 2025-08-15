@@ -48,7 +48,7 @@ class AICodeAnalyzer:
 
     def _get_system_prompt(self) -> str:
         """Generate the system prompt for code analysis."""
-        return """You are CodeQualityGPT, an expert code analysis assistant specialized in identifying improvements, optimizations, 
+        return """You are CodeQualityGPT, an expert code analysis assistant specialized in identifying improvements, optimizations,
 and potential issues in code. Your task is to analyze code snippets and provide detailed, actionable feedback.
 
 For each code snippet, provide the following:
@@ -168,7 +168,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 )
                 return result
             except Exception as e:
-                self.logger.error(
+                self.logger.exception(
                     "Failed to parse AI response", error=str(e), content=response.content
                 )
                 return {
@@ -178,7 +178,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 }
 
         except Exception as e:
-            self.logger.error("Error during AI code analysis", error=str(e), file_path=file_path)
+            self.logger.exception("Error during AI code analysis", error=str(e), file_path=file_path)
             return {"suggestions": [], "summary": f"AI analysis error: {e!s}", "priorities": []}
 
     async def analyze_files(
@@ -208,7 +208,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 )
                 tasks.append((file_path, task))
             except Exception as e:
-                self.logger.error(
+                self.logger.exception(
                     "Error reading file for AI analysis", file_path=file_path, error=str(e)
                 )
                 results[file_path] = {
@@ -222,7 +222,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
             try:
                 results[file_path] = await task
             except Exception as e:
-                self.logger.error("Error in AI analysis task", file_path=file_path, error=str(e))
+                self.logger.exception("Error in AI analysis task", file_path=file_path, error=str(e))
                 results[file_path] = {
                     "suggestions": [],
                     "summary": f"Error in analysis: {e!s}",

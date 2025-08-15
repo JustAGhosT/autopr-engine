@@ -4,7 +4,8 @@ Simplified tests for Quality Engine core functionality.
 
 import pytest
 
-from autopr.actions.quality_engine.models import QualityMode, QualityOutputs
+from autopr.actions.quality_engine.models import QualityOutputs
+from autopr.utils.volume_utils import QualityMode
 
 
 class TestQualityEngineSimple:
@@ -57,7 +58,7 @@ class TestQualityEngineSimple:
         assert inputs.enable_ai_agents is True
         assert inputs.verbose is True
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_engine_import(self):
         """Test that Quality Engine can be imported."""
         try:
@@ -68,7 +69,7 @@ class TestQualityEngineSimple:
         except ImportError as e:
             pytest.fail(f"Failed to import QualityEngine: {e}")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_tool_result_model(self):
         """Test ToolResult model creation."""
         from autopr.actions.quality_engine.models import ToolResult
@@ -89,7 +90,7 @@ class TestQualityEngineSimple:
 class TestQualityEngineIntegration:
     """Integration tests for Quality Engine."""
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_engine_initialization(self):
         """Test Quality Engine initialization."""
         try:
@@ -104,7 +105,7 @@ class TestQualityEngineIntegration:
         except Exception as e:
             pytest.fail(f"Failed to initialize QualityEngine: {e}")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_platform_detector(self):
         """Test platform detector functionality."""
         try:
@@ -120,7 +121,7 @@ class TestQualityEngineIntegration:
         except Exception as e:
             pytest.fail(f"Failed to test PlatformDetector: {e}")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_tool_registry(self):
         """Test tool registry functionality."""
         try:

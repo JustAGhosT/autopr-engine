@@ -22,6 +22,14 @@ class BanditTool(Tool):
     def description(self) -> str:
         return "A security linter for Python."
 
+    def is_available(self) -> bool:
+        """Check if bandit is available."""
+        return self.check_command_availability("bandit")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "bandit"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run bandit on a list of files.
@@ -43,7 +51,6 @@ class BanditTool(Tool):
         # Bandit exits 0 for no issues, 1 for issues found. Other codes are errors.
         if process.returncode not in [0, 1]:
             error_message = stderr.decode().strip()
-            print(f"Error running bandit: {error_message}")
             return [{"error": f"Bandit execution failed: {error_message}"}]
 
         if not stdout:
@@ -52,8 +59,6 @@ class BanditTool(Tool):
         try:
             # The JSON output contains a 'results' key.
             output = json.loads(stdout)
-            results = output.get("results", [])
-            return results
+            return output.get("results", [])
         except json.JSONDecodeError:
-            print(f"Failed to parse bandit output: {stdout.decode()}")
             return [{"error": "Failed to parse bandit JSON output"}]

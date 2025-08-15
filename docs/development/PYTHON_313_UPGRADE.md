@@ -9,7 +9,7 @@ including all necessary configuration changes, dependency updates, and compatibi
 
 ### 1. Python Version Requirements
 
-- **Minimum Python version**: Upgraded from `>=3.8` to `>=3.9`
+- **Minimum Python version**: Upgraded from `>=3.8` to `>=3.13`
 - **Target Python version**: Updated to Python 3.13.5
 - **Dropped support**: Python 3.8 is no longer supported
 
@@ -17,14 +17,14 @@ including all necessary configuration changes, dependency updates, and compatibi
 
 #### Pyproject.toml
 
-- Updated `requires-python = ">=3.9"`
+- Updated `requires-python = ">=3.13"`
 - Added Python 3.13 classifier
 - Updated Black target version to `py313`
 - Updated all core dependencies to Python 3.13 compatible versions
 
 #### Setup.py
 
-- Updated `python_requires=">=3.9"`
+- Updated `python_requires=">=3.13"`
 
 #### .pre-commit-config.yaml
 

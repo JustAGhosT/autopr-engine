@@ -18,6 +18,14 @@ class DependencyScannerTool(Tool):
     def description(self) -> str:
         return "Scans Python dependencies for known vulnerabilities using safety."
 
+    def is_available(self) -> bool:
+        """Check if safety command is available."""
+        return self.check_command_availability("safety")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "safety"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> dict[str, Any]:
         """
         Run safety check on project dependencies.
@@ -38,8 +46,7 @@ class DependencyScannerTool(Tool):
                 stdout, _ = await process.communicate()
                 req_files = stdout.decode().strip().split("\n")
                 req_files = [f for f in req_files if f]  # Filter out empty lines
-            except Exception as e:
-                print(f"Error finding requirements files: {e}")
+            except Exception:
                 req_files = []
 
         issues = []
@@ -62,8 +69,6 @@ class DependencyScannerTool(Tool):
                         if "safety: command not found" in error:
                             summary_lines.append("Safety is not installed. Run: pip install safety")
                             continue
-                        else:
-                            print(f"Error running safety: {error}")
 
                     # Parse safety output
                     if stdout:
@@ -85,10 +90,10 @@ class DependencyScannerTool(Tool):
                                     }
                                     issues.append(issue)
                         except json.JSONDecodeError:
-                            print(f"Failed to parse safety output: {stdout.decode()}")
+                            pass
 
-                except Exception as e:
-                    print(f"Exception running safety: {e}")
+                except Exception:
+                    pass
         else:
             summary_lines.append("No requirements files found to scan.")
 

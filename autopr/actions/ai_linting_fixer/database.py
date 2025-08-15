@@ -5,12 +5,15 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 import json
 import logging
 from pathlib import Path
 import sqlite3
 from typing import Any
+
+from .queue_manager import IssueQueueManager
+from .reporting import get_database_info as _get_db_info
 
 logger = logging.getLogger(__name__)
 
@@ -451,7 +454,7 @@ class AIInteractionDB:
     def cleanup_old_interactions(self, days_to_keep: int = 30):
         """Clean up old interactions to keep database size manageable."""
         with sqlite3.connect(self.db_path) as conn:
-            cutoff_date = datetime.now().isoformat()[:10]  # YYYY-MM-DD format
+            cutoff_date = datetime.now(UTC).isoformat()[:10]  # YYYY-MM-DD format
 
             # Delete old interactions (keeping last N days)
             conn.execute(
@@ -480,7 +483,7 @@ class AIInteractionDB:
         """Get information about the database file and tables."""
         db_path = Path(self.db_path)
 
-        info = {
+        info: dict[str, Any] = {
             "database_path": str(db_path.absolute()),
             "database_exists": db_path.exists(),
             "database_size_mb": 0.0,
@@ -488,299 +491,13 @@ class AIInteractionDB:
         }
 
         if db_path.exists():
-            info["database_size_mb"] = db_path.stat().st_size / (1024 * 1024)
-
-            with sqlite3.connect(self.db_path) as conn:
-                conn.row_factory = sqlite3.Row
-
-                # Get table counts
-                tables = ["ai_interactions", "performance_sessions"]
-                for table in tables:
-                    try:
-                        # Use parameterized query with table name validation
-                        if table in tables:  # Validate table name
-                            count = conn.execute(
-                                "SELECT COUNT(*) as count FROM " + table
-                            ).fetchone()["count"]
-                            info["table_counts"][table] = count
-                    except sqlite3.OperationalError:
-                        info["table_counts"][table] = 0
+            # Use reporting helper for details and size
+            info.update(_get_db_info(self.db_path))
 
         return info
 
 
-class IssueQueueManager:
-    """Manages the database-first linting issue processing queue."""
-
-    def __init__(self, db: AIInteractionDB):
-        self.db = db
-
-    def queue_issues(self, session_id: str, issues: list[dict[str, Any]]) -> int:
-        """Queue a batch of linting issues for processing."""
-        queued_count = 0
-
-        with sqlite3.connect(self.db.db_path) as conn:
-            for issue in issues:
-                try:
-                    conn.execute(
-                        """
-                        INSERT OR IGNORE INTO linting_issues_queue (
-                            created_timestamp, session_id, file_path, line_number, column_number,
-                            error_code, message, line_content, priority
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            datetime.now().isoformat(),
-                            session_id,
-                            issue["file_path"],
-                            issue["line_number"],
-                            issue["column_number"],
-                            issue["error_code"],
-                            issue["message"],
-                            issue.get("line_content", ""),
-                            issue.get("priority", 5),
-                        ),
-                    )
-                    queued_count += 1
-                except sqlite3.IntegrityError:
-                    # Issue already exists in queue
-                    logger.debug(
-                        f"Issue already queued: {issue['file_path']}:{issue['line_number']}"
-                    )
-
-            conn.commit()
-
-        logger.info(f"Queued {queued_count} new issues for session {session_id}")
-        return queued_count
-
-    def get_next_issues(
-        self, limit: int = 10, worker_id: str | None = None, filter_types: list[str] | None = None
-    ) -> list[dict[str, Any]]:
-        """Get the next batch of issues to process, ordered by priority."""
-        with sqlite3.connect(self.db.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-
-            # Build query with optional filters
-            where_conditions = ["status = 'pending'"]
-            params = []
-
-            if filter_types:
-                placeholders = ",".join("?" * len(filter_types))
-                where_conditions.append(f"error_code IN ({placeholders})")
-                params.extend(filter_types)
-
-            where_clause = " AND ".join(where_conditions)
-
-            query = f"""
-                SELECT * FROM linting_issues_queue
-                WHERE {where_clause}
-                ORDER BY priority DESC, created_timestamp ASC
-                LIMIT ?
-            """
-            params.append(limit)
-
-            cursor = conn.execute(query, params)
-            issues = [dict(row) for row in cursor.fetchall()]
-
-            # Mark issues as in_progress and assign worker
-            if issues and worker_id:
-                issue_ids = [issue["id"] for issue in issues]
-                placeholders = ",".join("?" * len(issue_ids))
-
-                conn.execute(
-                    f"""
-                    UPDATE linting_issues_queue
-                    SET status = 'in_progress',
-                        assigned_worker_id = ?,
-                        processing_started_at = ?
-                    WHERE id IN ({placeholders})
-                    """,
-                    [worker_id, datetime.now().isoformat(), *issue_ids],
-                )
-                conn.commit()
-
-            return issues
-
-    def update_issue_status(
-        self, issue_id: int, status: str, fix_result: dict[str, Any] | None = None
-    ):
-        """Update the status and results of a specific issue."""
-        with sqlite3.connect(self.db.db_path) as conn:
-            update_fields = ["status = ?"]
-            params = [status]
-
-            if status in {"completed", "failed"}:
-                update_fields.append("processing_completed_at = ?")
-                params.append(datetime.now().isoformat())
-
-            if fix_result:
-                if "fix_successful" in fix_result:
-                    update_fields.append("fix_successful = ?")
-                    params.append(fix_result["fix_successful"])
-
-                if "confidence_score" in fix_result:
-                    update_fields.append("confidence_score = ?")
-                    params.append(fix_result["confidence_score"])
-
-                if "ai_response" in fix_result:
-                    update_fields.append("ai_response = ?")
-                    params.append(fix_result["ai_response"])
-
-                if "error_message" in fix_result:
-                    update_fields.append("error_message = ?")
-                    params.append(fix_result["error_message"])
-
-            params.append(issue_id)
-
-            # Build update query safely
-            if update_fields:
-                update_query = (
-                    f"UPDATE linting_issues_queue SET {', '.join(update_fields)} WHERE id = ?"
-                )
-                conn.execute(update_query, params)
-            conn.commit()
-
-    def retry_failed_issue(self, issue_id: int) -> bool:
-        """Retry a failed issue if it hasn't exceeded max retries."""
-        with sqlite3.connect(self.db.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-
-            issue = conn.execute(
-                "SELECT retry_count, max_retries FROM linting_issues_queue WHERE id = ?",
-                (issue_id,),
-            ).fetchone()
-
-            if not issue:
-                return False
-
-            if issue["retry_count"] >= issue["max_retries"]:
-                # Mark as permanently failed
-                conn.execute(
-                    "UPDATE linting_issues_queue SET status = 'failed' WHERE id = ?",
-                    (issue_id,),
-                )
-                conn.commit()
-                return False
-
-            # Reset to pending with incremented retry count
-            conn.execute(
-                """
-                UPDATE linting_issues_queue
-                SET status = 'pending',
-                    retry_count = retry_count + 1,
-                    assigned_worker_id = NULL,
-                    processing_started_at = NULL
-                WHERE id = ?
-                """,
-                (issue_id,),
-            )
-            conn.commit()
-            return True
-
-    def get_queue_statistics(self, session_id: str | None = None) -> dict[str, Any]:
-        """Get statistics about the issue queue."""
-        with sqlite3.connect(self.db.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-
-            # Base query conditions
-            where_conditions = []
-            params = []
-
-            if session_id:
-                where_conditions.append("session_id = ?")
-                params.append(session_id)
-
-            where_clause = f"WHERE {' AND '.join(where_conditions)}" if where_conditions else ""
-
-            # Overall statistics
-            stats_query = f"""
-                SELECT
-                    COALESCE(COUNT(*), 0) as total_issues,
-                    COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending,
-                    COALESCE(SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END), 0) as in_progress,
-                    COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed,
-                    COALESCE(SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END), 0) as failed,
-                    COALESCE(SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END), 0) as skipped,
-                    COALESCE(SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END), 0) as successful_fixes,
-                    COALESCE(AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END), 0) as avg_confidence
-                FROM linting_issues_queue {where_clause}
-            """
-
-            overall_stats = dict(conn.execute(stats_query, params).fetchone())
-
-            # Issue type breakdown
-            type_stats_query = f"""
-                SELECT
-                    error_code,
-                    COALESCE(COUNT(*), 0) as count,
-                    COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed,
-                    COALESCE(SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END), 0) as successful,
-                    COALESCE(AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END), 0) as avg_confidence
-                FROM linting_issues_queue {where_clause}
-                GROUP BY error_code
-                ORDER BY count DESC
-            """
-
-            type_stats = [dict(row) for row in conn.execute(type_stats_query, params).fetchall()]
-
-            return {
-                "overall": overall_stats,
-                "by_type": type_stats,
-                "success_rate": (
-                    overall_stats["successful_fixes"] / overall_stats["completed"] * 100
-                    if overall_stats["completed"] and overall_stats["completed"] > 0
-                    else 0
-                ),
-            }
-
-    def cleanup_old_queue_items(self, days_to_keep: int = 7):
-        """Clean up old completed/failed queue items."""
-        with sqlite3.connect(self.db.db_path) as conn:
-            cutoff_date = datetime.now().isoformat()[:10]  # YYYY-MM-DD format
-
-            conn.execute(
-                """
-                DELETE FROM linting_issues_queue
-                WHERE status IN ('completed', 'failed', 'skipped')
-                AND DATE(created_timestamp) < DATE(?, ?)
-                """,
-                (cutoff_date, f"-{days_to_keep} days"),
-            )
-            conn.commit()
-
-    def reset_stale_issues(self, timeout_minutes: int = 30):
-        """Reset issues that have been in_progress for too long."""
-        with sqlite3.connect(self.db.db_path) as conn:
-            timeout_time = datetime.now().replace(microsecond=0)
-            timeout_time = timeout_time.replace(minute=timeout_time.minute - timeout_minutes)
-
-            conn.execute(
-                """
-                UPDATE linting_issues_queue
-                SET status = 'pending',
-                    assigned_worker_id = NULL,
-                    processing_started_at = NULL,
-                    retry_count = retry_count + 1
-                WHERE status = 'in_progress'
-                AND processing_started_at < ?
-                AND retry_count < max_retries
-                """,
-                (timeout_time.isoformat(),),
-            )
-
-            # Mark as failed if exceeded retries
-            conn.execute(
-                """
-                UPDATE linting_issues_queue
-                SET status = 'failed'
-                WHERE status = 'in_progress'
-                AND processing_started_at < ?
-                AND retry_count >= max_retries
-                """,
-                (timeout_time.isoformat(),),
-            )
-
-            conn.commit()
+# Use IssueQueueManager from queue_manager module
 
 
 class DatabaseManager:
@@ -793,7 +510,7 @@ class DatabaseManager:
     def export_to_json(self, filepath: str, include_sessions: bool = True):
         """Export database contents to JSON file."""
         export_data = {
-            "export_timestamp": datetime.now().isoformat(),
+            "export_timestamp": datetime.now(UTC).isoformat(),
             "database_info": self.db.get_database_info(),
             "interactions": self.db.get_all_interactions(),
         }
@@ -804,14 +521,14 @@ class DatabaseManager:
         # Include queue statistics
         export_data["queue_statistics"] = self.queue_manager.get_queue_statistics()
 
-        with open(filepath, "w", encoding="utf-8") as f:
+        with Path(filepath).open("w", encoding="utf-8") as f:
             json.dump(export_data, f, indent=2, ensure_ascii=False, default=str)
 
         logger.info(f"Database exported to {filepath}")
 
     def import_from_json(self, filepath: str):
         """Import interactions from JSON file (for data migration)."""
-        with open(filepath, encoding="utf-8") as f:
+        with Path(filepath).open(encoding="utf-8") as f:
             data = json.load(f)
 
         interactions = data.get("interactions", [])
@@ -821,7 +538,9 @@ class DatabaseManager:
                 self.db.log_interaction(interaction)
             except Exception as e:
                 logger.exception(
-                    f"Failed to import interaction {interaction.get('id', 'unknown')}: {e}"
+                    "Failed to import interaction %s: %s",
+                    interaction.get("id", "unknown"),
+                    e,
                 )
 
         logger.info(f"Imported {len(interactions)} interactions from {filepath}")
@@ -840,13 +559,13 @@ class DatabaseManager:
                 "success_rate": stats["success_rate"],
                 "queue_pending": queue_stats["overall"]["pending"],
                 "queue_in_progress": queue_stats["overall"]["in_progress"],
-                "last_check": datetime.now().isoformat(),
+                "last_check": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             return {
                 "status": "error",
                 "error": str(e),
-                "last_check": datetime.now().isoformat(),
+                "last_check": datetime.now(UTC).isoformat(),
             }
 
     def maintenance(self, cleanup_days: int = 30):

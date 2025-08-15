@@ -223,7 +223,10 @@ cache = RedisCache()
         health_dir.mkdir(parents=True, exist_ok=True)
 
         health_checks = '''"""Health Checks for AutoPR"""
-import psutil
+try:
+    import psutil  # type: ignore[import-not-found]
+except Exception:
+    psutil = None  # type: ignore[assignment]
 import time
 from typing import Dict, Any
 
@@ -235,8 +238,8 @@ class HealthChecker:
         return {
             "status": "healthy",
             "uptime_seconds": time.time() - self.start_time,
-            "cpu_usage": psutil.cpu_percent(),
-            "memory_usage": psutil.virtual_memory().percent
+            "cpu_usage": psutil.cpu_percent() if psutil else 0.0,
+            "memory_usage": psutil.virtual_memory().percent if psutil else 0.0
         }
 
     async def is_healthy(self) -> bool:

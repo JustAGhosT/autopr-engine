@@ -82,90 +82,7 @@ class ReportGenerator:
         """Generate HTML report for stakeholder viewing"""
         report_data = self.generate_detailed_report()
 
-        html_template = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoPR Implementation Report</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
-        .content { padding: 30px; }
-        .metric-card { background: #f8f9fa; border-radius: 6px; padding: 20px; margin: 10px 0; border-left: 4px solid #667eea; }
-        .progress-bar { background: #e9ecef; border-radius: 10px; height: 20px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { background: linear-gradient(90deg, #28a745, #20c997); height: 100%; transition: width 0.3s ease; }
-        .phase-section { margin: 30px 0; padding: 20px; border: 1px solid #dee2e6; border-radius: 6px; }
-        .task-list { list-style: none; padding: 0; }
-        .task-item { padding: 10px; margin: 5px 0; border-radius: 4px; }
-        .task-success { background: #d4edda; border-left: 4px solid #28a745; }
-        .task-error { background: #f8d7da; border-left: 4px solid #dc3545; }
-        .task-skipped { background: #fff3cd; border-left: 4px solid #ffc107; }
-        .recommendations { background: #e7f3ff; border-radius: 6px; padding: 20px; margin: 20px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
-        th { background: #f8f9fa; font-weight: 600; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>AutoPR Implementation Report</h1>
-            <p>Generated on {generated_at}</p>
-        </div>
-
-        <div class="content">
-            <div class="metric-card">
-                <h2>Executive Summary</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    <div>
-                        <h4>Overall Progress</h4>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {progress_percentage}%"></div>
-                        </div>
-                        <p>{progress_percentage:.1f}% Complete</p>
-                    </div>
-                    <div>
-                        <h4>Health Score</h4>
-                        <p style="font-size: 2em; color: {health_color};">{health_score}/100</p>
-                    </div>
-                    <div>
-                        <h4>Success Rate</h4>
-                        <p style="font-size: 2em; color: #28a745;">{success_rate:.1f}%</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="phase-section">
-                <h2>Phase Progress</h2>
-                {phase_content}
-            </div>
-
-            <div class="recommendations">
-                <h2>Key Recommendations</h2>
-                <ul>
-                {recommendations_list}
-                </ul>
-            </div>
-
-            <div class="metric-card">
-                <h2>Performance Metrics</h2>
-                <table>
-                    <tr><th>Metric</th><th>Value</th><th>Status</th></tr>
-                    <tr><td>Velocity (tasks/hour)</td><td>{velocity:.2f}</td><td>Good</td></tr>
-                    <tr><td>Quality Score</td><td>{quality_score:.1f}</td><td>Excellent</td></tr>
-                    <tr><td>Risk Level</td><td>{risk_level}</td><td>Low</td></tr>
-                </table>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-        """
-
-        # Format the HTML with report data
+        # Prepare data for rendering
         exec_summary = report_data["executive_summary"]
 
         # Generate phase content
@@ -193,26 +110,78 @@ class ReportGenerator:
         for rec in report_data["recommendations"]:
             recommendations_list += f"<li>{rec}</li>"
 
-        # Determine health color
+        # Determine health color via shared utility
+        from autopr.reporting.html_utils import health_color_from_score
         health_score = exec_summary["overall_health_score"]
-        if health_score >= 80:
-            health_color = "#28a745"
-        elif health_score >= 60:
-            health_color = "#ffc107"
-        else:
-            health_color = "#dc3545"
+        health_color = health_color_from_score(health_score)
 
-        formatted_html = html_template.format(
+        from autopr.reporting.html_page import PageHeader, build_basic_page
+        extra_css = """
+.metric-card { background: #f8f9fa; border-radius: 6px; padding: 20px; margin: 10px 0; border-left: 4px solid #667eea; }
+.progress-bar { background: #e9ecef; border-radius: 10px; height: 20px; overflow: hidden; margin: 10px 0; }
+.progress-fill { background: linear-gradient(90deg, #28a745, #20c997); height: 100%; transition: width 0.3s ease; }
+.phase-section { margin: 30px 0; padding: 20px; border: 1px solid #dee2e6; border-radius: 6px; }
+.task-list { list-style: none; padding: 0; }
+.task-item { padding: 10px; margin: 5px 0; border-radius: 4px; }
+.task-success { background: #d4edda; border-left: 4px solid #28a745; }
+.task-error { background: #f8d7da; border-left: 4px solid #dc3545; }
+.task-skipped { background: #fff3cd; border-left: 4px solid #ffc107; }
+.recommendations { background: #e7f3ff; border-radius: 6px; padding: 20px; margin: 20px 0; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+th { background: #f8f9fa; font-weight: 600; }
+"""
+
+        content_html = f"""
+            <div class=\"metric-card\">
+                <h2>Executive Summary</h2>
+                <div style=\"display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;\">
+                    <div>
+                        <h4>Overall Progress</h4>
+                        <div class=\"progress-bar\">
+                            <div class=\"progress-fill\" style=\"width: {exec_summary['progress_percentage']}%\"></div>
+                        </div>
+                        <p>{exec_summary['progress_percentage']:.1f}% Complete</p>
+                    </div>
+                    <div>
+                        <h4>Health Score</h4>
+                        <p style=\"font-size: 2em; color: {health_color};\">{health_score}/100</p>
+                    </div>
+                    <div>
+                        <h4>Success Rate</h4>
+                        <p style=\"font-size: 2em; color: #28a745;\">{exec_summary['success_rate']*100:.1f}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class=\"phase-section\">
+                <h2>Phase Progress</h2>
+                {phase_content}
+            </div>
+
+            <div class=\"recommendations\">
+                <h2>Key Recommendations</h2>
+                <ul>
+                {recommendations_list}
+                </ul>
+            </div>
+
+            <div class=\"metric-card\">
+                <h2>Performance Metrics</h2>
+                <table>
+                    <tr><th>Metric</th><th>Value</th><th>Status</th></tr>
+                    <tr><td>Velocity (tasks/hour)</td><td>{exec_summary['key_metrics']['velocity']:.2f}</td><td>Good</td></tr>
+                    <tr><td>Quality Score</td><td>{exec_summary['key_metrics']['quality_score']:.1f}</td><td>Excellent</td></tr>
+                    <tr><td>Risk Level</td><td>{exec_summary['key_metrics']['risk_level']}</td><td>Low</td></tr>
+                </table>
+            </div>
+        """
+
+        formatted_html = build_basic_page(
+            header=PageHeader(title="AutoPR Implementation Report"),
             generated_at=exec_summary["generated_at"],
-            progress_percentage=exec_summary["progress_percentage"],
-            health_score=health_score,
-            health_color=health_color,
-            success_rate=exec_summary["success_rate"] * 100,
-            phase_content=phase_content,
-            recommendations_list=recommendations_list,
-            velocity=exec_summary["key_metrics"]["velocity"],
-            quality_score=exec_summary["key_metrics"]["quality_score"],
-            risk_level=exec_summary["key_metrics"]["risk_level"],
+            content_html=content_html,
+            extra_css=extra_css,
         )
 
         # Save to file if path provided

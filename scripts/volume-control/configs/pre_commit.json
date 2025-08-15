@@ -1,0 +1,82 @@
+{
+  "0": {
+    "name": "OFF",
+    "description": "No commit checks - commits always succeed",
+    "enabled": false,
+    "hooks": {
+      "all_stages": "manual",
+      "description": "No commit checks - commits always succeed"
+    }
+  },
+  "100": {
+    "name": "QUIET",
+    "description": "Basic syntax only - minimal interference",
+    "enabled": true,
+    "hooks": {
+      "quality_engine": {
+        "stage": "pre-commit",
+        "args": ["--mode=ultra-fast", "--max-issues=5"]
+      },
+      "other_tools": "manual",
+      "description": "Only syntax check - max 5 issues"
+    }
+  },
+  "200": {
+    "name": "BALANCED",
+    "description": "Standard checks - good balance of speed and quality",
+    "enabled": true,
+    "hooks": {
+      "ruff": {
+        "stage": "pre-commit",
+        "args": ["--fix"]
+      },
+      "isort": {
+        "stage": "pre-commit",
+        "args": ["--check-only"]
+      },
+      "quality_engine": {
+        "stage": "pre-commit",
+        "args": ["--mode=standard", "--max-issues=20"]
+      },
+      "other_tools": "manual",
+      "description": "Standard checks with auto-formatting"
+    }
+  },
+  "1000": {
+    "name": "MAXIMUM",
+    "description": "Nuclear mode - everything enabled",
+    "enabled": true,
+    "hooks": {
+      "black": {
+        "stage": "pre-commit",
+        "args": ["--check"]
+      },
+      "isort": {
+        "stage": "pre-commit",
+        "args": ["--check-only"]
+      },
+      "ruff": {
+        "stage": "pre-commit",
+        "args": ["--fix", "--exit-non-zero-on-fix"]
+      },
+      "mypy": {
+        "stage": "pre-commit",
+        "args": ["--ignore-missing-imports"]
+      },
+      "bandit": {
+        "stage": "pre-commit",
+        "args": ["--exit-zero"]
+      },
+      "pydocstyle": {
+        "stage": "pre-commit",
+        "args": ["--exit-zero"]
+      },
+      "quality_engine": {
+        "stage": "pre-commit",
+        "args": ["--mode=comprehensive", "--max-issues=9999"]
+      },
+      "other_tools": "manual",
+      "description": "MAXIMUM - Nuclear - everything blocks"
+    }
+  }
+} 

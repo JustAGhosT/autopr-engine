@@ -3,7 +3,7 @@ Base classes for template providers.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -21,9 +21,9 @@ class TemplateMetadata:
     category: str
     platforms: list[str]
     variables: dict[str, Any]
-    variants: dict[str, dict[str, Any]] = None
+    variants: dict[str, dict[str, Any]] = field(default_factory=dict)
     documentation: str = ""
-    discovery: dict[str, Any] = None
+    discovery: dict[str, Any] = field(default_factory=dict)
 
 
 class TemplateProvider(ABC):

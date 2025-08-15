@@ -52,7 +52,7 @@ async def run_ai_analysis(
         return result
 
     except Exception as e:
-        logger.error("Error running AI analysis", error=str(e))
+        logger.exception("Error running AI analysis", error=str(e))
         return None
 
 
@@ -80,7 +80,7 @@ async def initialize_llm_manager() -> Any | None:
         return llm_manager
 
     except Exception as e:
-        logger.error("Failed to initialize LLM provider manager", error=str(e))
+        logger.exception("Failed to initialize LLM provider manager", error=str(e))
         return None
 
 

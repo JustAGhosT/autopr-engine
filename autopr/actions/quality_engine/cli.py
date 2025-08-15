@@ -12,21 +12,13 @@ from .platform_detector import PlatformDetector
 
 def ask_windows_confirmation() -> bool:
     """Ask user for confirmation to continue on Windows."""
-    print("\n" + "=" * 60)
-    print("WINDOWS DETECTED - QUALITY ENGINE")
-    print("=" * 60)
-    print("Some quality tools may have limitations on Windows.")
-    print("The engine will automatically adapt and use Windows-compatible alternatives.")
-    print()
 
     while True:
         response = input("Continue with Windows-adapted quality analysis? (y/n): ").lower().strip()
         if response in ["y", "yes"]:
             return True
-        elif response in ["n", "no"]:
+        if response in ["n", "no"]:
             return False
-        else:
-            print("Please enter 'y' or 'n'.")
 
 
 def main(args: list[str] | None = None) -> int:
@@ -76,7 +68,6 @@ def main(args: list[str] | None = None) -> int:
 
     if platform_detector.is_windows and not parsed_args.skip_windows_check:
         if not ask_windows_confirmation():
-            print("Quality analysis cancelled by user.")
             return 0
 
     # Create quality engine
@@ -98,27 +89,15 @@ def main(args: list[str] | None = None) -> int:
         result = asyncio.run(engine.run(inputs))
 
         # Print results
-        print("\n" + "=" * 60)
-        print("QUALITY ANALYSIS RESULTS")
-        print("=" * 60)
-        print(f"Success: {result.success}")
-        print(f"Total Issues Found: {result.total_issues_found}")
-        print(f"Files with Issues: {len(set().union(*result.files_by_tool.values()))}")
-        print()
 
         if result.issues_by_tool:
-            print("Issues by Tool:")
-            for tool, issues in result.issues_by_tool.items():
-                print(f"  {tool}: {len(issues)} issues")
-        print()
+            for _tool, _issues in result.issues_by_tool.items():
+                pass
 
-        print("Summary:")
-        print(result.summary)
 
         return 0 if result.success else 1
 
-    except Exception as e:
-        print(f"Error running quality analysis: {e}", file=sys.stderr)
+    except Exception:
         return 1
 
 

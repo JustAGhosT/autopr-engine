@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from ..base import TemplateMetadata, TemplateProvider
+from autopr.templates.base import TemplateMetadata, TemplateProvider
 
 logger = logging.getLogger(__name__)
 

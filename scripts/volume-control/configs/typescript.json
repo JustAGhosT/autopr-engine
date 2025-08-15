@@ -1,0 +1,61 @@
+{
+  "tool": "typescript",
+  "description": "TypeScript language support and validation",
+  "activation_levels": {
+    "0": {
+      "enabled": false,
+      "settings": {
+        "typescript.validate.enable": false,
+        "javascript.validate.enable": false,
+        "typescript.preferences.includePackageJsonAutoImports": "off",
+        "typescript.suggest.enabled": false
+      }
+    },
+    "150": {
+      "enabled": true,
+      "settings": {
+        "typescript.validate.enable": true,
+        "javascript.validate.enable": true,
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "typescript.suggest.enabled": true,
+        "typescript.preferences.noSemicolons": false
+      }
+    },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "typescript.validate.enable": true,
+        "javascript.validate.enable": true,
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "typescript.suggest.enabled": true,
+        "typescript.preferences.noSemicolons": false,
+        "typescript.format.enable": false,
+        "editor.formatOnSave": false
+      }
+    },
+    "500": {
+      "enabled": true,
+      "settings": {
+        "typescript.validate.enable": true,
+        "javascript.validate.enable": true,
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "typescript.suggest.enabled": true,
+        "typescript.preferences.noSemicolons": false,
+        "typescript.format.enable": true
+      }
+    },
+    "1000": {
+      "enabled": true,
+      "settings": {
+        "typescript.validate.enable": true,
+        "javascript.validate.enable": true,
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "typescript.suggest.enabled": true,
+        "typescript.preferences.noSemicolons": false,
+        "typescript.format.enable": true,
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "editor.formatOnSave": true
+      }
+    }
+  }
+}

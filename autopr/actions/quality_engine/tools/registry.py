@@ -45,7 +45,8 @@ class ToolRegistry:
             KeyError: If the tool is not registered
         """
         if name not in self._tools:
-            raise KeyError(f"Tool '{name}' is not registered.")
+            msg = f"Tool '{name}' is not registered."
+            raise KeyError(msg)
         return self._tools[name]
 
     def get_tool_class(self, name: str) -> type[Tool]:
@@ -62,7 +63,8 @@ class ToolRegistry:
             KeyError: If the tool is not registered
         """
         if name not in self._tool_classes:
-            raise KeyError(f"Tool class '{name}' is not registered.")
+            msg = f"Tool class '{name}' is not registered."
+            raise KeyError(msg)
         return self._tool_classes[name]
 
     def get_all_tools(self) -> list[Tool]:
@@ -118,7 +120,7 @@ class ToolRegistry:
 registry = ToolRegistry()
 
 
-def register_tool(tool_class: type[TTool]) -> type[TTool]:
+def register_tool[TTool: Tool](tool_class: type[TTool]) -> type[TTool]:
     """
     Decorator to register a tool with the registry.
 

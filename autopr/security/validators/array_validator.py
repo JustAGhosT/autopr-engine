@@ -1,15 +1,23 @@
-from ..validation_models import ValidationResult, ValidationSeverity
+from autopr.security.validation_models import ValidationResult, ValidationSeverity
 
 
 class ArrayValidator:
     """Array validation functionality."""
+
+    # Expected to be provided by composite validator
+    max_array_length: int = 1000
+
+    def _validate_value(self, key: str, value):  # type: ignore[override]
+        from autopr.security.validation_models import ValidationResult
+
+        return ValidationResult(is_valid=True, sanitized_data={"value": value})
 
     def _validate_array(self, key: str, value: list | tuple) -> ValidationResult:
         """Validate array input."""
         result = ValidationResult(is_valid=True)
 
         # Length validation
-        if len(value) > self.max_array_length:
+        if len(value) > self.max_array_length:  # type: ignore[attr-defined]
             result.errors.append(
                 f"Array too long for key '{key}': {len(value)} > {self.max_array_length}"
             )
@@ -19,7 +27,7 @@ class ArrayValidator:
 
         sanitized_array = []
         for i, item in enumerate(value):
-            item_result = self._validate_value(f"{key}[{i}]", item)
+            item_result = self._validate_value(f"{key}[{i}]", item)  # type: ignore[attr-defined]
             if not item_result.is_valid:
                 result.errors.extend(item_result.errors)
                 result.warnings.extend(item_result.warnings)

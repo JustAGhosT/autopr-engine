@@ -32,10 +32,9 @@ class PermissionCache:
             if datetime.utcnow().timestamp() - timestamp < self.ttl_seconds:
                 logger.debug("Permission cache hit", cache_key=cache_key)
                 return result
-            else:
-                # Remove expired entry
-                del self.cache[cache_key]
-                logger.debug("Permission cache expired", cache_key=cache_key)
+            # Remove expired entry
+            del self.cache[cache_key]
+            logger.debug("Permission cache expired", cache_key=cache_key)
 
         return None
 
@@ -47,7 +46,7 @@ class PermissionCache:
 
     def invalidate_user(self, user_id: str):
         """Invalidate all cache entries for a user."""
-        keys_to_remove = [key for key in self.cache.keys() if key.startswith(f"{user_id}:")]
+        keys_to_remove = [key for key in self.cache if key.startswith(f"{user_id}:")]
         for key in keys_to_remove:
             del self.cache[key]
         logger.debug(
@@ -57,7 +56,7 @@ class PermissionCache:
     def invalidate_resource(self, resource_type: str, resource_id: str):
         """Invalidate all cache entries for a resource."""
         pattern = f":{resource_type}:{resource_id}:"
-        keys_to_remove = [key for key in self.cache.keys() if pattern in key]
+        keys_to_remove = [key for key in self.cache if pattern in key]
         for key in keys_to_remove:
             del self.cache[key]
         logger.debug(

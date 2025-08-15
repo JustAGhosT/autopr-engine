@@ -7,7 +7,9 @@ from typing import Any
 
 import structlog
 
-from ..base.action import Action
+from autopr.actions.base.action import Action
+from autopr.utils.volume_utils import get_volume_level_name
+
 from .config import load_config
 from .handler_registry import HandlerRegistry
 from .models import QualityInputs, QualityMode, QualityOutputs
@@ -29,6 +31,7 @@ class QualityEngine(Action):
         tool_registry: ToolRegistry | None = None,
         handler_registry: HandlerRegistry | None = None,
         config: Any | None = None,
+        skip_windows_check: bool = False,
     ):
         super().__init__(
             name="quality_engine",
@@ -51,9 +54,10 @@ class QualityEngine(Action):
 
         # Initialize platform detector
         self.platform_detector = PlatformDetector()
+        self.skip_windows_check = skip_windows_check
 
-        # Show Windows warning if needed
-        if self.platform_detector.should_show_windows_warning():
+        # Show Windows warning if needed (unless skipped)
+        if not self.skip_windows_check and self.platform_detector.should_show_windows_warning():
             self._show_windows_warning()
 
         # Filter tools based on platform compatibility
@@ -86,28 +90,12 @@ class QualityEngine(Action):
             recommendations=recommendations,
         )
 
-        print("\n" + "=" * 60)
-        print("WINDOWS DETECTED - QUALITY ENGINE ADAPTATIONS")
-        print("=" * 60)
-        print(f"Platform: {platform_info['platform']}")
-        print(f"Architecture: {platform_info['architecture']}")
-        print(f"Python: {platform_info['python_version'].split()[0]}")
-        print()
-
         if limitations:
-            print("LIMITATIONS:")
-            for limitation in limitations:
-                print(f"  • {limitation}")
-            print()
-
+            for _limitation in limitations:
+                pass
         if recommendations:
-            print("RECOMMENDATIONS:")
-            for rec in recommendations:
-                print(f"  • {rec}")
-            print()
-
-        print("The quality engine will automatically adapt tools for Windows compatibility.")
-        print("=" * 60 + "\n")
+            for _rec in recommendations:
+                pass
 
     def _filter_tools_for_platform(self) -> dict[str, Any]:
         """Filter tools based on platform compatibility."""
@@ -121,62 +109,188 @@ class QualityEngine(Action):
 
         return filtered_tools
 
-    def _apply_tool_substitutions(self):
-        """Apply tool substitutions for Windows-incompatible tools."""
-        substitutions = self.platform_detector.get_tool_substitutions()
+    def _apply_tool_substitutions(self) -> None:
+        """Apply platform-specific tool substitutions."""
+        if self.platform_detector.is_windows:
+            # Substitute CodeQL with Semgrep on Windows
+            if "codeql" in self.tools and "semgrep" in self.tools:
+                logger.info("Substituting CodeQL with Semgrep for Windows compatibility")
+                # Remove CodeQL and keep Semgrep
+                self.tools.pop("codeql", None)
 
-        for old_tool, new_tool in substitutions.items():
-            if old_tool in self.tools and new_tool in self.tools:
-                logger.info(
-                    f"Substituting {old_tool} with {new_tool} for Windows compatibility",
-                    old_tool=old_tool,
-                    new_tool=new_tool,
-                )
-                # Replace the old tool with the new one
-                self.tools[new_tool] = self.tools.pop(old_tool)
-
-    def _determine_tools_for_mode(self, mode: QualityMode, files: list[str]) -> list[str]:
-        """Determine which tools to run based on mode and files."""
-        if mode == QualityMode.SMART:
-            return determine_smart_tools(files)
-        elif mode == QualityMode.FAST:
-            return ["ruff", "bandit"]  # Fast mode with essential tools
-        elif mode == QualityMode.COMPREHENSIVE:
-            return list(self.tools.keys())  # All available tools
-        else:
-            return list(self.tools.keys())
-
-    def _get_tool_config(self, tool_name: str) -> Any:
+    def _get_tool_config(self, tool_name: str) -> dict[str, Any]:
         """Get configuration for a specific tool."""
         if not self.config:
             return {"enabled": True, "config": {}}
 
-        tool_config = getattr(self.config, "tools", {})
-        tool_settings = tool_config.get(tool_name, {})
+        # Handle Pydantic model
+        if hasattr(self.config, "tools"):
+            tools_config = getattr(self.config, "tools", {})
+            if isinstance(tools_config, dict):
+                return tools_config.get(tool_name, {"enabled": True, "config": {}})
 
-        # Handle different config formats
-        if isinstance(tool_settings, dict):
-            if "enabled" in tool_settings:
-                return tool_settings
-            else:
-                return {"enabled": True, "config": tool_settings}
-        else:
+        # Fallback to dictionary access
+        try:
+            return self.config.get("tools", {}).get(tool_name, {"enabled": True, "config": {}})
+        except (AttributeError, TypeError):
             return {"enabled": True, "config": {}}
 
-    async def execute(self, inputs: QualityInputs, context: dict[str, Any]) -> QualityOutputs:
-        """Execute the quality engine with the given inputs"""
-        logger.info("Executing Quality Engine", mode=inputs.mode)
+    def _validate_volume(self, volume: int) -> int:
+        """Validate and clamp volume to valid range."""
+        if not isinstance(volume, int):
+            msg = f"Volume must be an integer, got {type(volume).__name__}"
+            raise ValueError(msg)
+        return max(0, min(1000, volume))  # Clamp to 0-1000 range
+
+    async def _run_auto_fix(self, inputs: QualityInputs, files_to_check: list[str]) -> tuple[bool, int, list[str], str | None, list[str] | None]:
+        """Run auto-fix process and return results."""
+        try:
+            logger.info("Starting auto-fix process", fix_types=inputs.fix_types, max_fixes=inputs.max_fixes)
+
+            # Import AI Linting Fixer
+            from autopr.actions.ai_linting_fixer import AILintingFixer
+            from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
+
+            # Prepare fixer inputs
+            target_path = files_to_check[0] if files_to_check else "."
+            if isinstance(target_path, str) and target_path == ".":
+                target_path = "."
+
+            fixer_inputs = AILintingFixerInputs(
+                target_path=target_path,
+                fix_types=inputs.fix_types or ["E501", "F401", "F841", "E722", "E302", "E305"],
+                max_fixes_per_run=inputs.max_fixes,
+                provider=inputs.ai_provider,
+                model=inputs.ai_model,
+                dry_run=inputs.dry_run,
+                max_workers=2,  # Conservative for quality engine integration
+                use_specialized_agents=True,
+                create_backups=True,
+            )
+
+            # Run the AI Linting Fixer
+            with AILintingFixer() as fixer:
+                fix_result = fixer.run(fixer_inputs)
+
+            # Update results with fix information
+            total_issues_fixed = fix_result.issues_fixed
+            files_modified = fix_result.files_modified
+            fix_summary = f"Fixed {fix_result.issues_fixed} issues across {len(fix_result.files_modified)} files"
+
+            logger.info(
+                "Auto-fix completed successfully",
+                issues_fixed=fix_result.issues_fixed,
+                files_modified=len(fix_result.files_modified),
+                success=fix_result.success,
+            )
+
+            return True, total_issues_fixed, files_modified, fix_summary, None
+
+        except Exception as e:
+            logger.exception("Auto-fix failed", error=str(e))
+            fix_errors = [f"Auto-fix failed: {e!s}"]
+            return False, 0, [], None, fix_errors
+
+    def _determine_tools_for_mode(
+        self, mode: QualityMode, files: list[str], volume: int = 500
+    ) -> list[str]:
+        """Determine which tools to run based on mode, files, and volume level.
+
+        Args:
+            mode: Quality mode to use
+            files: List of files to analyze
+            volume: Volume level from 0-1000 that influences tool selection and configuration
+
+        Returns:
+            List of tool names to run
+        """
+        if mode == QualityMode.SMART:
+            tools = determine_smart_tools(files)
+        elif mode == QualityMode.ULTRA_FAST:
+            tools = ["ruff"]  # Ultra fast mode with only essential linting
+        elif mode == QualityMode.FAST:
+            tools = ["ruff", "bandit"]  # Fast mode with essential tools
+        elif mode == QualityMode.COMPREHENSIVE:
+            tools = list(self.tools.keys())  # All available tools
+        else:  # AI_ENHANCED or other modes
+            tools = list(self.tools.keys())
+
+        # Filter tools to only include those that are actually available
+        available_tools = []
+        for tool_name in tools:
+            if tool_name in self.tools:
+                tool_instance = self.tools[tool_name]
+                if hasattr(tool_instance, "is_available") and tool_instance.is_available():
+                    available_tools.append(tool_name)
+                else:
+                    logger.warning(f"Tool {tool_name} is not available, skipping", tool=tool_name)
+
+        # Adjust tools based on volume level
+        if volume < 100:  # Very quiet - minimal tools
+            available_tools = [t for t in available_tools if t in {"ruff"}]
+        elif volume < 300:  # Quiet - lightweight tools only
+            available_tools = [t for t in available_tools if t in {"ruff", "bandit", "black"}]
+        elif volume < 700:  # Moderate - standard tools
+            available_tools = [t for t in available_tools if t not in {"pylint", "mypy"}]
+        # At higher volumes, use all tools determined by the quality mode
+
+        return available_tools
+
+    async def execute(
+        self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None
+    ) -> QualityOutputs:
+        """Execute the quality engine with the given inputs and volume level.
+
+        Args:
+            inputs: Quality engine input parameters
+            context: Context dictionary for the execution
+            volume: Volume level from 0-1000 that influences quality strictness.
+                   If None, uses inputs.volume if set, otherwise defaults to 500.
+
+        Returns:
+            QualityOutputs with the results of the quality checks
+
+        Raises:
+            ValueError: If volume is not an integer or is outside the 0-1000 range
+        """
+        # Determine the volume to use, with proper precedence
+        if volume is None:
+            volume = getattr(inputs, "volume", None)
+            if volume is None:
+                volume = 500  # Default to 500 if not specified
+
+        # Validate volume is an integer and within range
+        volume = self._validate_volume(volume)
+
+        # Apply volume settings to inputs if volume was explicitly provided AND no explicit mode was set
+        # This prevents volume settings from overriding CLI mode arguments
+        if hasattr(inputs, "apply_volume_settings") and inputs.mode == QualityMode.SMART:
+            # Only apply volume settings if we're in the default SMART mode
+            # This means no explicit mode was provided via CLI
+            inputs.apply_volume_settings(volume)
+
+        # Get volume level name for logging
+        volume_level = get_volume_level_name(volume)  # Directly use the imported function
+
+        logger.info(
+            "Executing Quality Engine", mode=inputs.mode, volume=volume, volume_level=volume_level
+        )
 
         # Determine files to check
         files_to_check = inputs.files or ["."]
 
-        # Determine tools to run
-        tools_to_run = self._determine_tools_for_mode(inputs.mode, files_to_check)
+        # Determine tools to run based on mode and volume
+        tools_to_run = self._determine_tools_for_mode(inputs.mode, files_to_check, volume=volume)
 
-        # Filter tools based on what's actually available
-        available_tools = [tool for tool in tools_to_run if tool in self.tools]
+        # Log tool selection
+        logger.info(
+            "Tool selection completed",
+            mode=inputs.mode,
+            tools_selected=tools_to_run,
+            total_tools_available=len(self.tools),
+        )
 
-        if not available_tools:
+        if not tools_to_run:
             logger.warning("No tools available for the specified mode and files")
             return QualityOutputs(
                 success=True,
@@ -198,14 +312,20 @@ class QualityEngine(Action):
         if inputs.mode == QualityMode.COMPREHENSIVE:
             logger.info(
                 "Comprehensive mode activated",
-                tools=available_tools,
+                tools=tools_to_run,
                 file_count=len(files_to_check),
-                file_types=list(set([os.path.splitext(f)[1] for f in files_to_check if "." in f])),
+                file_types=list({os.path.splitext(f)[1] for f in files_to_check if "." in f}),
+            )
+        else:
+            logger.info(
+                f"{inputs.mode.value.title()} mode activated",
+                tools=tools_to_run,
+                file_count=len(files_to_check),
             )
 
         # Run tools in parallel for better performance
         tool_tasks = []
-        for tool_name in available_tools:
+        for tool_name in tools_to_run:
             tool_instance = self.tools.get(tool_name)
             if not tool_instance:
                 logger.warning("Tool not available", tool=tool_name)
@@ -213,12 +333,19 @@ class QualityEngine(Action):
 
             tool_config = self._get_tool_config(tool_name)
 
-            if tool_config.get("enabled", True):
+            # Handle both dict and Pydantic model
+            enabled = True
+            if isinstance(tool_config, dict):
+                enabled = tool_config.get("enabled", True)
+            elif hasattr(tool_config, "enabled"):
+                enabled = tool_config.enabled
+
+            if enabled:
                 task = run_tool(
                     tool_name=tool_name,
                     tool_instance=tool_instance,
                     files=files_to_check,
-                    tool_config=tool_config.get("config", {}),
+                    tool_config=tool_config.get("config", {}) if isinstance(tool_config, dict) else {},
                     handler_registry=self.handler_registry,
                 )
                 tool_tasks.append((tool_name, task))
@@ -256,6 +383,16 @@ class QualityEngine(Action):
                     results["ai_analysis"] = create_tool_result_from_ai_analysis(ai_result)
                     ai_summary = ai_result.get("summary")
 
+        # Handle auto-fix if requested
+        auto_fix_applied = False
+        fix_summary = None
+        fix_errors = None
+        total_issues_fixed = 0
+        files_modified = []
+
+        if inputs.auto_fix and inputs.enable_ai_agents:
+            auto_fix_applied, total_issues_fixed, files_modified, fix_summary, fix_errors = await self._run_auto_fix(inputs, files_to_check)
+
         # Build the comprehensive summary
         from .summary import build_comprehensive_summary
 
@@ -283,14 +420,17 @@ class QualityEngine(Action):
         return QualityOutputs(
             success=total_issues_found == 0,
             total_issues_found=total_issues_found,
-            total_issues_fixed=0,  # Placeholder for future fix implementation
-            files_modified=[],  # Placeholder for future fix implementation
+            total_issues_fixed=total_issues_fixed,
+            files_modified=files_modified,
             issues_by_tool=issues_by_tool,
             files_by_tool=files_by_tool,
             tool_execution_times=tool_execution_times,
             summary=summary,
             ai_enhanced=inputs.mode == QualityMode.AI_ENHANCED and ai_result is not None,
             ai_summary=ai_summary,
+            auto_fix_applied=auto_fix_applied,
+            fix_summary=fix_summary,
+            fix_errors=fix_errors,
         )
 
     async def run(self, inputs: QualityInputs) -> QualityOutputs:

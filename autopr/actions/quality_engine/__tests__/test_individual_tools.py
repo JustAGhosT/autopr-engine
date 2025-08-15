@@ -7,11 +7,15 @@ from unittest.mock import patch
 import pytest
 
 from autopr.actions.quality_engine.tools.bandit_tool import BanditTool
-from autopr.actions.quality_engine.tools.dependency_scanner_tool import DependencyScannerTool
+from autopr.actions.quality_engine.tools.dependency_scanner_tool import (
+    DependencyScannerTool,
+)
 from autopr.actions.quality_engine.tools.eslint_tool import ESLintTool
 from autopr.actions.quality_engine.tools.interrogate_tool import InterrogateTool
 from autopr.actions.quality_engine.tools.mypy_tool import MyPyTool
-from autopr.actions.quality_engine.tools.performance_analyzer_tool import PerformanceAnalyzerTool
+from autopr.actions.quality_engine.tools.performance_analyzer_tool import (
+    PerformanceAnalyzerTool,
+)
 from autopr.actions.quality_engine.tools.pytest_tool import PyTestTool
 from autopr.actions.quality_engine.tools.radon_tool import RadonTool
 from autopr.actions.quality_engine.tools.ruff_tool import RuffTool
@@ -26,7 +30,7 @@ class TestRuffTool:
         self.tool = RuffTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_ruff_execution_success(self):
         """Test successful Ruff execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -39,7 +43,7 @@ class TestRuffTool:
             assert result.issues_found == 2
             mock_run.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_ruff_execution_failure(self):
         """Test Ruff execution failure."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -50,7 +54,7 @@ class TestRuffTool:
             assert result.success is False
             assert "ruff not found" in result.error_message
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_ruff_with_custom_config(self):
         """Test Ruff with custom configuration."""
         config = {"max_line_length": 100, "select": ["E", "W"]}
@@ -75,7 +79,7 @@ class TestMyPyTool:
         self.tool = MyPyTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_mypy_execution_success(self):
         """Test successful MyPy execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -87,7 +91,7 @@ class TestMyPyTool:
             assert result.tool_name == "mypy"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_mypy_with_type_errors(self):
         """Test MyPy with type errors."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -109,7 +113,7 @@ class TestBanditTool:
         self.tool = BanditTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_bandit_execution_success(self):
         """Test successful Bandit execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -121,7 +125,7 @@ class TestBanditTool:
             assert result.tool_name == "bandit"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_bandit_with_security_issues(self):
         """Test Bandit with security issues."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -141,7 +145,7 @@ class TestSemgrepTool:
         self.tool = SemgrepTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_semgrep_execution_success(self):
         """Test successful Semgrep execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -153,7 +157,7 @@ class TestSemgrepTool:
             assert result.tool_name == "semgrep"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_semgrep_with_findings(self):
         """Test Semgrep with security findings."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -177,7 +181,7 @@ class TestInterrogateTool:
         self.tool = InterrogateTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_interrogate_execution_success(self):
         """Test successful Interrogate execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -189,7 +193,7 @@ class TestInterrogateTool:
             assert result.tool_name == "interrogate"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_interrogate_with_coverage_issues(self):
         """Test Interrogate with coverage issues."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -209,7 +213,7 @@ class TestRadonTool:
         self.tool = RadonTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_radon_execution_success(self):
         """Test successful Radon execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -221,7 +225,7 @@ class TestRadonTool:
             assert result.tool_name == "radon"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_radon_with_complexity_issues(self):
         """Test Radon with complexity issues."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -241,7 +245,7 @@ class TestPyTestTool:
         self.tool = PyTestTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_pytest_execution_success(self):
         """Test successful PyTest execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -253,7 +257,7 @@ class TestPyTestTool:
             assert result.tool_name == "pytest"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_pytest_with_failures(self):
         """Test PyTest with test failures."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -273,7 +277,7 @@ class TestESLintTool:
         self.tool = ESLintTool()
         self.test_files = ["test.js"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_eslint_execution_success(self):
         """Test successful ESLint execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -285,7 +289,7 @@ class TestESLintTool:
             assert result.tool_name == "eslint"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_eslint_with_linting_errors(self):
         """Test ESLint with linting errors."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -305,7 +309,7 @@ class TestDependencyScannerTool:
         self.tool = DependencyScannerTool()
         self.test_files = ["requirements.txt"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_dependency_scanner_execution_success(self):
         """Test successful Dependency Scanner execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -317,7 +321,7 @@ class TestDependencyScannerTool:
             assert result.tool_name == "dependency_scanner"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_dependency_scanner_with_vulnerabilities(self):
         """Test Dependency Scanner with vulnerabilities."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -337,7 +341,7 @@ class TestPerformanceAnalyzerTool:
         self.tool = PerformanceAnalyzerTool()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_performance_analyzer_execution_success(self):
         """Test successful Performance Analyzer execution."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -349,7 +353,7 @@ class TestPerformanceAnalyzerTool:
             assert result.tool_name == "performance_analyzer"
             assert result.issues_found == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_performance_analyzer_with_issues(self):
         """Test Performance Analyzer with performance issues."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -387,7 +391,7 @@ class TestToolBase:
         invalid_config = {"invalid_option": "value"}
         assert self.tool.validate_config(invalid_config) is False
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_tool_execution_with_timeout(self):
         """Test tool execution with timeout."""
         with patch.object(self.tool, "_run_command") as mock_run:
@@ -398,7 +402,7 @@ class TestToolBase:
             assert result.success is False
             assert "timeout" in result.error_message.lower()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_tool_execution_with_missing_tool(self):
         """Test tool execution when tool is not installed."""
         with patch.object(self.tool, "_run_command") as mock_run:

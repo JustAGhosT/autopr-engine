@@ -6,6 +6,7 @@ Handles rendering of templates with variables and variants.
 
 import logging
 from pathlib import Path
+import re
 from typing import Any
 
 import jinja2
@@ -60,8 +61,6 @@ class TemplateRenderer:
 
         # Example filter: convert string to snake_case
         def to_snake_case(s: str) -> str:
-            import re
-
             s = re.sub(r"(?<!^)(?=[A-Z])", "_", s).lower()
             return re.sub(r"[^\w]+", "_", s).strip("_")
 
@@ -82,7 +81,10 @@ class TemplateRenderer:
                 "list": list,
                 "dict": dict,
             }
-            return type_map.get(type_name, type(None)) == type(value)
+            target_type = type_map.get(type_name)
+            if target_type is None:
+                return False
+            return isinstance(value, target_type)
 
         env.tests["type"] = is_type
 
@@ -91,6 +93,7 @@ class TemplateRenderer:
         template_path: str | Path,
         variables: dict[str, Any] | None = None,
         variant: str | TemplateVariant | None = None,
+        *,
         strict: bool = True,
     ) -> str:
         """Render a template with the given variables and variant.
@@ -121,17 +124,18 @@ class TemplateRenderer:
             if strict:
                 msg = f"Template not found: {template_path}"
                 raise FileNotFoundError(msg) from e
-            logger.warning(f"Template not found, using empty template: {template_path}")
+            logger.warning("Template not found, using empty template: %s", template_path)
             return ""
 
         # Apply variant modifications if specified
         if variant is not None:
             if isinstance(variant, str):
-                # TODO: Look up variant from template metadata if needed
-                pass
+                # Treat unknown string variant as no-op by clearing variant
+                variant = None
 
             # Apply variant modifications to variables
-            variables = self._apply_variant(variant, variables)
+            if isinstance(variant, TemplateVariant):
+                variables = self._apply_variant(variant, variables)
 
         try:
             # Render the template with the provided variables
@@ -218,7 +222,9 @@ class TemplateRenderer:
             variant = template_metadata.variants.get(variant_name)
             if variant is None:
                 logger.warning(
-                    f"Variant '{variant_name}' not found in template '{template_metadata.id}'"
+                    "Variant '%s' not found in template '%s'",
+                    variant_name,
+                    template_metadata.id,
                 )
 
         # Get the template path relative to the template directories

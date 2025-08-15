@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Quality Scorer Module
 ====================
@@ -11,8 +10,12 @@ scoring algorithms used to calculate quality metrics from validation results.
 
 from typing import Any
 
-from ...templates.discovery.template_validators import ValidationIssue, ValidationSeverity
-from .quality_models import DEFAULT_CATEGORY_WEIGHTS, DEFAULT_SEVERITY_WEIGHTS, QualityMetrics
+from .quality_models import (
+    DEFAULT_CATEGORY_WEIGHTS,
+    DEFAULT_SEVERITY_WEIGHTS,
+    QualityMetrics,
+)
+from .validation_types import ValidationIssue, ValidationSeverity
 
 
 class QualityScorer:
@@ -112,7 +115,7 @@ class QualityScorer:
 
     def compare_metrics(self, metrics1: QualityMetrics, metrics2: QualityMetrics) -> dict[str, Any]:
         """Compare two quality metrics."""
-        comparison = {
+        comparison: dict[str, Any] = {
             "template1": {
                 "path": metrics1.template_path,
                 "overall_score": metrics1.overall_score,
@@ -144,17 +147,19 @@ class QualityScorer:
             comparison["better_template"] = "tie"
 
         # Category comparison
-        comparison["category_comparison"] = {}
         all_categories = set(metrics1.category_scores.keys()) | set(metrics2.category_scores.keys())
+        category_comparison: dict[str, Any] = {}
 
         for category in all_categories:
             score1 = metrics1.category_scores.get(category, 0.0)
             score2 = metrics2.category_scores.get(category, 0.0)
-            comparison["category_comparison"][category] = {
+            category_comparison[category] = {
                 "template1_score": score1,
                 "template2_score": score2,
                 "difference": score1 - score2,
             }
+
+        comparison["category_comparison"] = category_comparison
 
         return comparison
 

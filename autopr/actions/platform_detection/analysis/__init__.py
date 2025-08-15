@@ -6,7 +6,10 @@ Provides a modular system for analyzing files and directories to detect platform
 
 from typing import Dict, Optional, Type
 
-from autopr.actions.platform_detection.analysis.base import FileAnalysisResult, FileAnalyzer
+from autopr.actions.platform_detection.analysis.base import (
+    FileAnalysisResult,
+    FileAnalyzer,
+)
 from autopr.actions.platform_detection.analysis.handlers import (
     DefaultFileHandler,
     DockerfileHandler,

@@ -1,0 +1,48 @@
+{
+  "tool": "json",
+  "description": "JSON language support and validation",
+  "activation_levels": {
+    "0": {
+      "enabled": false,
+      "settings": {
+        "json.validate.enable": false,
+        "json.format.enable": false,
+        "json.schemas": []
+      }
+    },
+    "100": {
+      "enabled": true,
+      "settings": {
+        "json.validate.enable": true,
+        "json.format.enable": false,
+        "json.schemas": []
+      }
+    },
+    "200": {
+      "enabled": true,
+      "settings": {
+        "json.validate.enable": true,
+        "json.format.enable": false,
+        "json.schemas": [],
+        "editor.formatOnSave": false
+      }
+    },
+    "400": {
+      "enabled": true,
+      "settings": {
+        "json.validate.enable": true,
+        "json.format.enable": true,
+        "json.schemas": []
+      }
+    },
+    "1000": {
+      "enabled": true,
+      "settings": {
+        "json.validate.enable": true,
+        "json.format.enable": true,
+        "json.schemas": [],
+        "editor.formatOnSave": true
+      }
+    }
+  }
+}

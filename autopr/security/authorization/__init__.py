@@ -28,31 +28,31 @@ from .utils import (
 )
 
 __all__ = [
-    # Models
-    "Permission",
-    "ResourceType",
-    "AuthorizationContext",
-    "ResourcePermission",
-    # Managers
-    "BaseAuthorizationManager",
-    "EnterpriseAuthorizationManager",
-    "CachedAuthorizationManager",
     "AuditedAuthorizationManager",
-    # Decorators
-    "AuthorizationDecorator",
-    "require_permission",
-    # Middleware
-    "AuthorizationMiddleware",
-    # Cache
-    "PermissionCache",
     # Audit
     "AuthorizationAuditLogger",
+    "AuthorizationContext",
+    # Decorators
+    "AuthorizationDecorator",
+    # Middleware
+    "AuthorizationMiddleware",
+    # Managers
+    "BaseAuthorizationManager",
+    "CachedAuthorizationManager",
+    "EnterpriseAuthorizationManager",
+    # Models
+    "Permission",
+    # Cache
+    "PermissionCache",
+    "ResourcePermission",
+    "ResourceType",
+    "authorize_request",
     # Utils
     "create_project_authorization_context",
     "create_repository_authorization_context",
-    "create_workflow_authorization_context",
     "create_template_authorization_context",
-    "authorize_request",
-    "get_authorization_manager",
+    "create_workflow_authorization_context",
     "get_access_logger",
+    "get_authorization_manager",
+    "require_permission",
 ]

@@ -9,7 +9,7 @@ with the AutoWeave template service.
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from .base import TemplateMetadata, TemplateProvider
 from .providers.autoweave_provider import AutoWeaveProvider
@@ -61,8 +61,8 @@ class TemplateSystem:
         if autoweave_api_key:
             try:
                 self.add_provider("autoweave", AutoWeaveProvider(api_key=autoweave_api_key))
-            except Exception as e:
-                logger.warning(f"Failed to initialize AutoWeave provider: {e}")
+            except Exception:
+                logger.warning("Failed to initialize AutoWeave provider: %s", "autoweave")
 
     def add_provider(self, name: str, provider: TemplateProvider) -> None:
         """Add a template provider.
@@ -75,7 +75,7 @@ class TemplateSystem:
             msg = "Provider must be an instance of TemplateProvider"
             raise ValueError(msg)
         self.providers[name] = provider
-        logger.info(f"Added template provider: {name}")
+        logger.info("Added template provider: %s", name)
 
     def remove_provider(self, name: str) -> bool:
         """Remove a template provider.
@@ -88,7 +88,7 @@ class TemplateSystem:
         """
         if name in self.providers:
             del self.providers[name]
-            logger.info(f"Removed template provider: {name}")
+            logger.info("Removed template provider: %s", name)
             return True
         return False
 

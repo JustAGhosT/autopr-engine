@@ -11,12 +11,8 @@ class LintHandler(Handler[LintIssue]):
             results: The list of lint issues.
         """
         if not results:
-            print("No lint issues found.")
             return
 
-        print(f"Found {len(results)} lint issues:")
 
-        for issue in results:
-            print(
-                f"[{issue['level'].upper()}] {issue['filename']}:{issue['line_number']}:{issue['column_number']} → {issue['message']}"
-            )
+        for _issue in results:
+            pass

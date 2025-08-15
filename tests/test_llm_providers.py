@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "."))
 
 
-def test_imports() -> bool:
+def test_imports() -> None:
     """Test that all imports work correctly."""
 
     try:
@@ -21,12 +21,12 @@ def test_imports() -> bool:
 
         # Test individual provider imports
 
-        return True
+        assert True
     except ImportError:
-        return False
+        raise AssertionError
 
 
-def test_manager_creation() -> bool:
+def test_manager_creation() -> None:
     """Test that the manager can be created."""
 
     try:
@@ -37,12 +37,12 @@ def test_manager_creation() -> bool:
         # Test provider info
         manager.get_provider_info()
 
-        return True
+        assert True
     except Exception:
-        return False
+        raise AssertionError
 
 
-def test_provider_availability() -> bool:
+def test_provider_availability() -> None:
     """Test provider availability without API keys."""
 
     try:
@@ -55,23 +55,23 @@ def test_provider_availability() -> bool:
             if provider:
                 pass
 
-        return True
+        assert True
     except Exception:
-        return False
+        raise AssertionError
 
 
-def test_backward_compatibility() -> bool:
+def test_backward_compatibility() -> None:
     """Test that the old import still works."""
 
     try:
         # This should work via the compatibility wrapper
 
-        return True
+        assert True
     except ImportError:
-        return False
+        raise AssertionError
 
 
-def test_configuration() -> bool:
+def test_configuration() -> None:
     """Test configuration and provider information retrieval."""
 
     try:
@@ -91,12 +91,12 @@ def test_configuration() -> bool:
         # Test available providers list
         manager.get_available_providers()
 
-        return True
+        assert True
     except Exception:
-        return False
+        raise AssertionError
 
 
-def test_error_handling() -> bool:
+def test_error_handling() -> None:
     """Test error handling for invalid providers and configurations."""
 
     try:
@@ -109,7 +109,7 @@ def test_error_handling() -> bool:
         if invalid_provider is None:
             pass
         else:
-            return False
+            raise AssertionError
 
         # Test empty messages
         try:
@@ -121,12 +121,12 @@ def test_error_handling() -> bool:
         except Exception:
             pass
 
-        return True
+        assert True
     except Exception:
-        return False
+        raise AssertionError
 
 
-def test_message_formatting() -> bool:
+def test_message_formatting() -> None:
     """Test message formatting and validation."""
 
     try:
@@ -134,12 +134,12 @@ def test_message_formatting() -> bool:
 
         # Test message creation
 
-        return True
+        assert True
     except Exception:
-        return False
+        raise AssertionError
 
 
-def test_api_calls() -> bool:
+def test_api_calls() -> None:
     """Test actual API calls if API keys are available."""
 
     try:
@@ -165,11 +165,11 @@ def test_api_calls() -> bool:
                 pass
 
         if successful_calls > 0:
-            pass
-
-        return True
+            assert True
+        else:
+            assert True  # No API keys; acceptable to pass
     except Exception:
-        return False
+        raise AssertionError
 
 
 async def main() -> int:

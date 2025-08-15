@@ -1,10 +1,11 @@
 import asyncio
+import logging
 import re
 from typing import TypedDict
 
-from ..handlers.lint_issue import LintIssue
-from .registry import register_tool
-from .tool_base import Tool
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
+from autopr.actions.quality_engine.tools.registry import register_tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class MyPyConfig(TypedDict, total=False):
@@ -60,7 +61,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
         # A non-zero/non-one return code indicates an actual error.
         if process.returncode not in [0, 1]:
             error_message = stderr.decode().strip()
-            print(f"Error running mypy: {error_message}")
+            logging.error("Error running mypy: %s", error_message)
             return [
                 {
                     "filename": "",
@@ -75,8 +76,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
         if not stdout:
             return []
 
-        issues = self._parse_output(stdout.decode())
-        return issues
+        return self._parse_output(stdout.decode())
 
     def _parse_output(self, output: str) -> list[LintIssue]:
         """

@@ -43,7 +43,7 @@ class AuthorizationMiddleware:
             return self.auth_manager.authorize(context)
 
         except Exception as e:
-            logger.error("Authorization middleware error", error=str(e))
+            logger.exception("Authorization middleware error", error=str(e))
             return False
 
     def _extract_user_id(self, request: Any) -> str | None:
@@ -104,15 +104,18 @@ class AuthorizationMiddleware:
                 # Extract resource_id from kwargs or path parameters
                 resource_id = kwargs.get(resource_id_param)
                 if not resource_id:
-                    raise ValueError(f"Missing {resource_id_param} parameter")
+                    msg = f"Missing {resource_id_param} parameter"
+                    raise ValueError(msg)
 
                 # Get request object (implementation depends on framework)
                 request = kwargs.get("request") or args[0] if args else None
                 if not request:
-                    raise ValueError("Request object not found")
+                    msg = "Request object not found"
+                    raise ValueError(msg)
 
                 if not self.check_authorization(request, resource_type, resource_id, action):
-                    raise PermissionError("Access denied")
+                    msg = "Access denied"
+                    raise PermissionError(msg)
 
                 return func(*args, **kwargs)
 
@@ -129,11 +132,13 @@ class AuthorizationMiddleware:
             def wrapper(*args, **kwargs):
                 resource_id = kwargs.get(resource_id_param)
                 if not resource_id:
-                    raise ValueError(f"Missing {resource_id_param} parameter")
+                    msg = f"Missing {resource_id_param} parameter"
+                    raise ValueError(msg)
 
                 request = kwargs.get("request") or args[0] if args else None
                 if not request:
-                    raise ValueError("Request object not found")
+                    msg = "Request object not found"
+                    raise ValueError(msg)
 
                 # Check if user has any of the required permissions
                 for perm in permissions:
@@ -142,7 +147,8 @@ class AuthorizationMiddleware:
                     ):
                         return func(*args, **kwargs)
 
-                raise PermissionError("Access denied - insufficient permissions")
+                msg = "Access denied - insufficient permissions"
+                raise PermissionError(msg)
 
             return wrapper
 
@@ -157,19 +163,22 @@ class AuthorizationMiddleware:
             def wrapper(*args, **kwargs):
                 resource_id = kwargs.get(resource_id_param)
                 if not resource_id:
-                    raise ValueError(f"Missing {resource_id_param} parameter")
+                    msg = f"Missing {resource_id_param} parameter"
+                    raise ValueError(msg)
 
                 request = kwargs.get("request") or args[0] if args else None
                 if not request:
-                    raise ValueError("Request object not found")
+                    msg = "Request object not found"
+                    raise ValueError(msg)
 
                 # Check if user has all required permissions
                 for perm in permissions:
                     if not self.check_authorization(
                         request, perm["resource_type"], resource_id, perm["action"]
                     ):
+                        msg = f"Access denied - missing {perm['action']} permission on {perm['resource_type']}"
                         raise PermissionError(
-                            f"Access denied - missing {perm['action']} permission on {perm['resource_type']}"
+                            msg
                         )
 
                 return func(*args, **kwargs)

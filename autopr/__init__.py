@@ -5,34 +5,38 @@ A comprehensive platform for intelligent GitHub pull request analysis,
 automated issue creation, and multi-agent AI collaboration.
 """
 
+import logging
+import os
 from typing import Any, cast
+
+from .actions.base import Action, ActionInputs, ActionOutputs
+from .actions.registry import ActionRegistry
+from .ai.base import LLMProvider
+from .ai.providers.manager import LLMProviderManager
+from .config import AutoPRConfig
+from .engine import AutoPREngine
+from .exceptions import AutoPRException, ConfigurationError, IntegrationError
+from .integrations.base import Integration
+from .integrations.registry import IntegrationRegistry
+from .workflows.base import Workflow
+from .workflows.engine import WorkflowEngine
+
+# Import structlog with error handling
+STRUCTLOG_AVAILABLE: bool
+try:
+    import structlog
+
+    STRUCTLOG_AVAILABLE = True
+    structlog_module = cast("Any", structlog)
+except ImportError:
+    STRUCTLOG_AVAILABLE = False
+    structlog_module = None
 
 __version__ = "1.0.0"
 __author__ = "VeritasVault Team"
 __email__ = "dev@veritasvault.net"
 __license__ = "MIT"
 __url__ = "https://github.com/veritasvault/autopr-engine"
-
-# Action framework
-from .actions.base import Action, ActionInputs, ActionOutputs
-from .actions.registry import ActionRegistry
-
-# AI and LLM providers
-from .ai.base import LLMProvider
-from .ai.providers.manager import LLMProviderManager
-from .config import AutoPRConfig
-
-# Core components
-from .engine import AutoPREngine
-from .exceptions import AutoPRException, ConfigurationError, IntegrationError
-
-# Integration framework
-from .integrations.base import Integration
-from .integrations.registry import IntegrationRegistry
-from .workflows.base import Workflow
-
-# Workflow system
-from .workflows.engine import WorkflowEngine
 
 # Public API exports
 __all__ = [
@@ -96,19 +100,11 @@ __package_info__ = {
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Topic :: Software Development",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
 }
-
-# Compatibility check
-import sys
 
 # Optional dependency warnings
 try:
@@ -138,21 +134,9 @@ except ImportError:
     )
 
 # Setup logging defaults
-import logging
-
-# Import structlog with error handling
-STRUCTLOG_AVAILABLE: bool
-try:
-    import structlog
-
-    STRUCTLOG_AVAILABLE = True
-    structlog_module = cast("Any", structlog)
-except ImportError:
-    STRUCTLOG_AVAILABLE = False
-    structlog_module = None
 
 
-def configure_logging(level: str = "INFO", format_json: bool = False) -> None:
+def configure_logging(level: str = "INFO", *, format_json: bool = False) -> None:
     """Configure default logging for AutoPR Engine."""
 
     if format_json and STRUCTLOG_AVAILABLE and structlog_module:
@@ -178,9 +162,6 @@ def configure_logging(level: str = "INFO", format_json: bool = False) -> None:
             datefmt="%Y-%m-%d %H:%M:%S",
         )
 
-
-# Configure default logging
-import os
 
 log_level = os.getenv("AUTOPR_LOG_LEVEL", "INFO")
 json_logging = os.getenv("AUTOPR_JSON_LOGGING", "false").lower() == "true"

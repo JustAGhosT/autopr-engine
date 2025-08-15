@@ -81,6 +81,25 @@ class PlatformDetector:
             hybrid_workflow_analysis=hybrid_analysis,
         )
 
+    # Compatibility shim for older call sites/tests expecting 'analyze' with repo_path
+    async def analyze(
+        self,
+        repo_path: str,
+        file_paths: list[str] | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> PlatformDetectorOutputs:
+        """Analyze repository path by building inputs and delegating to run().
+        This method preserves compatibility with tests that call detector.analyze(repo_path).
+        """
+        inputs = PlatformDetectorInputs(
+            repository_url="",
+            commit_messages=context.get("commit_messages", []) if context else [],
+            workspace_path=repo_path,
+            package_json_content=None,
+            git_log_depth=50,
+        )
+        return await self.run(inputs)
+
     async def _perform_detection_analysis(
         self,
         file_analyzer: FileAnalyzer,
@@ -196,3 +215,27 @@ class PlatformDetector:
                 configs[platform] = platform_config
 
         return configs
+
+    # Compatibility shim for very old usage expecting synchronous detect_platform()
+    def detect_platform(self, repo_path: str) -> dict[str, Any]:
+        """Synchronous compatibility method returning a minimal dict.
+
+        Legacy code/tests may expect a quick detection dictionary.
+        We map our structured outputs into a simple dict.
+        """
+        import asyncio
+
+        async def _run() -> PlatformDetectorOutputs:
+            return await self.analyze(repo_path)
+
+        outputs = asyncio.get_event_loop().run_until_complete(_run())
+
+        # Convert to minimal legacy dict
+        primary = outputs.primary_platform
+        score = outputs.confidence_scores.get(primary, 0.0)
+        return {
+            "platform": primary,
+            "confidence": score,
+            "components": [],
+            "recommendations": outputs.recommended_enhancements,
+        }

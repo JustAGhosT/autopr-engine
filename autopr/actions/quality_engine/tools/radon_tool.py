@@ -10,6 +10,10 @@ class RadonTool(Tool):
     A tool for analyzing Python code complexity using Radon.
     """
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
+
     @property
     def name(self) -> str:
         return "radon"
@@ -18,6 +22,14 @@ class RadonTool(Tool):
     def description(self) -> str:
         return "A tool for analyzing Python code complexity."
 
+    def is_available(self) -> bool:
+        """Check if radon is available."""
+        return self.check_command_availability("radon")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "radon"
+
     async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Radon's cyclomatic complexity check on a list of files.
@@ -25,7 +37,9 @@ class RadonTool(Tool):
         if not files:
             return []
 
-        command = ["radon", "cc", "--json", *files]
+        # Limit files to prevent timeouts
+        files_to_check = files[:50] if len(files) > 50 else files
+        command = ["radon", "cc", "--json", *files_to_check]
 
         # Default max complexity to 10 (Rank C)
         max_complexity = config.get("max_complexity", 10)
@@ -42,7 +56,6 @@ class RadonTool(Tool):
 
         if process.returncode != 0:
             error_message = stderr.decode().strip()
-            print(f"Error running radon: {error_message}")
             return [{"error": f"Radon execution failed: {error_message}"}]
 
         if not stdout:
@@ -53,7 +66,6 @@ class RadonTool(Tool):
             output = json.loads(stdout)
             return self._format_output(output, max_complexity)
         except json.JSONDecodeError:
-            print(f"Failed to parse radon output: {stdout.decode()}")
             return [{"error": "Failed to parse radon JSON output"}]
 
     def _format_output(

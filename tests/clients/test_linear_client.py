@@ -32,7 +32,7 @@ class TestLinearClient(TestCase):
         assert self.client.base_url == "https://api.linear.app/graphql"
         assert self.client.headers["Content-Type"] == "application/json"
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_query_success(self) -> None:
         """Test successful GraphQL query."""
         query = """
@@ -66,7 +66,7 @@ class TestLinearClient(TestCase):
             # Verify the response was handled correctly
             assert result == self.mock_response["data"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_query_with_variables(self) -> None:
         """Test query with variables."""
         query = """
@@ -92,7 +92,7 @@ class TestLinearClient(TestCase):
             assert request_data["variables"] == variables
             assert result == self.mock_response["data"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_query_http_error(self) -> None:
         """Test handling of HTTP errors."""
         with patch("aiohttp.ClientSession.post") as mock_post:
@@ -105,7 +105,7 @@ class TestLinearClient(TestCase):
             with pytest.raises(ClientResponseError):
                 await self.client.query("query { test }")
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_query_graphql_errors(self) -> None:
         """Test handling of GraphQL errors."""
         error_response = {"errors": [{"message": "Unauthorized"}, {"message": "Invalid query"}]}
@@ -121,7 +121,7 @@ class TestLinearClient(TestCase):
 
             assert "Linear API error: Unauthorized, Invalid query" in str(context.value)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_context_manager(self) -> None:
         """Test client can be used as a context manager."""
         async with LinearClient(api_key=self.api_key) as client:

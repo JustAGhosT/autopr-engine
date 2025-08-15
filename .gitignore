@@ -4,6 +4,21 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Generated reports and test artifacts
+*_report.txt
+*_report.json
+coverage.xml
+bandit-report.json
+*.coverage
+htmlcov/
+.coverage.*
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # C extensions
 *.so
 

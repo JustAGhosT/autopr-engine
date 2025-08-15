@@ -10,51 +10,59 @@
 - Explain your OBSERVATIONS clearly, then provide REASONING to identify the exact issue. Add console logs when needed to gather more information.
 
 
-The AutoPR system implements an AI-powered code analysis and automation platform with several key business domains:
+AutoPR implements an AI-powered code analysis and enhancement system with several key business domains:
 
-## Core Implementation Strategy
-Located in `autopr/ai/implementation_roadmap.py`, the system uses a three-phase approach:
+1. AI Linting and Code Fixing Engine
+- Core system for automated code improvement using AI agents
+- Multi-stage workflow: detection → analysis → fix generation → validation
+- Specialized agent selection based on issue types
+- Domain-specific confidence scoring for fix validation
+File: autopr/actions/ai_linting_fixer/ai_linting_fixer.py
 
-1. Immediate Phase (10 days):
-- Infrastructure setup
-- Monitoring implementation
-- Core system health tracking
+2. Quality Control System
+- Volume-based quality control (0-1000 scale)
+- Maps volume levels to operational modes:
+  * 0-199: Ultra-fast mode
+  * 200-399: Fast mode
+  * 400-599: Smart mode
+  * 600-799: Comprehensive mode
+  * 800-1000: AI-enhanced mode
+File: autopr/actions/quality_engine/volume_mapping.py
 
-2. Medium Phase (25 days):
-- Integration components
-- Testing frameworks
-- Automated workflows
+3. Platform Detection and Enhancement
+- Identifies development platforms through weighted scoring
+- Generates platform-specific enhancements:
+  * Testing infrastructure
+  * Security hardening
+  * Production readiness
+File: autopr/actions/platform_detection/detector.py
 
-3. Strategic Phase (45 days):
-- Advanced AI capabilities
-- Analytics systems
-- Fine-tuning pipelines
+4. Memory and Learning System
+- Pattern recognition from historical fixes
+- Success rate tracking per issue type
+- AI agent performance optimization
+File: autopr/actions/learning_memory_system.py
 
-## Business Logic Organization
+Core Integration Points:
+1. AI Provider Management
+- Multi-provider fallback system
+- Provider-specific confidence scoring
+- Load balancing and quota management
+File: autopr/actions/llm/manager.py
 
-The system divides core functionality into specialized domains:
+2. Security Authorization Framework
+- Resource-based access control
+- Zero-trust security model
+- Progressive lockout system
+File: autopr/security/authorization/enterprise_manager.py
 
-1. AI Linting Operations (`autopr/actions/ai_linting_fixer/`):
-- Intelligent code fixing with specialized agents
-- Multi-provider LLM integration
-- Custom confidence scoring system
+3. Quality Analytics Engine
+- Success rate analysis
+- Fix confidence tracking
+- Resource utilization monitoring
+File: autopr/quality/metrics_collector.py
 
-2. Platform Detection (`autopr/actions/platform_detection/`):
-- Repository technology fingerprinting
-- Stack compatibility analysis
-- Migration path determination
-
-3. Quality Control (`autopr/quality/`):
-- Template validation systems
-- Code health scoring
-- Multi-factor quality metrics
-
-4. Implementation Management (`autopr/extensions/implementation/`):
-- Phase-based task orchestration
-- Dependency-aware execution
-- Progress tracking and reporting
-
-The architecture emphasizes modular integration between these domains while maintaining strict phase dependencies and quality controls. Each domain implements specialized business rules for its area while coordinating through the central implementation roadmap.
+The system integrates these components through a workflow orchestration layer that coordinates between AI agents, quality controls, and platform-specific enhancements while maintaining comprehensive security and performance tracking.
 
 $END$
 

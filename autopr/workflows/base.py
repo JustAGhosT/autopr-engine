@@ -5,6 +5,7 @@ Base classes and interfaces for workflow implementation.
 """
 
 from abc import ABC, abstractmethod
+import asyncio
 import logging
 from typing import Any
 
@@ -56,6 +57,7 @@ class Workflow(ABC):
             ValidationError: If inputs are invalid
         """
         # Default implementation - can be overridden
+        return
 
     async def validate_outputs(self, result: dict[str, Any]) -> None:
         """
@@ -68,6 +70,7 @@ class Workflow(ABC):
             ValidationError: If outputs are invalid
         """
         # Default implementation - can be overridden
+        return
 
     def handles_event(self, event_type: str) -> bool:
         """
@@ -150,13 +153,13 @@ class YAMLWorkflow(Workflow):
         results = []
         workflow_context = context.copy()
 
-        logger.info(f"Executing YAML workflow: {self.name}")
+        logger.info("Executing YAML workflow: %s", self.name)
 
         for i, step in enumerate(self.steps):
             step_name = step.get("name", f"step_{i}")
             step_type = step.get("type", "unknown")
 
-            logger.info(f"Executing step: {step_name} (type: {step_type})")
+            logger.info("Executing step: %s (type: %s)", step_name, step_type)
 
             try:
                 step_result = await self._execute_step(step, workflow_context)
@@ -173,10 +176,10 @@ class YAMLWorkflow(Workflow):
                 if isinstance(step_result, dict):
                     workflow_context.update(step_result)
 
-            except Exception as e:
-                logger.exception(f"Step {step_name} failed: {e}")
+            except Exception as err:
+                logger.exception("Step %s failed", step_name)
                 results.append(
-                    {"step": step_name, "type": step_type, "status": "error", "error": str(e)}
+                    {"step": step_name, "type": step_type, "status": "error", "error": str(err)}
                 )
 
                 # Check if workflow should continue on error
@@ -215,7 +218,7 @@ class YAMLWorkflow(Workflow):
         return {"message": f"Step type '{step_type}' not implemented yet"}
 
     async def _execute_action_step(
-        self, step: dict[str, Any], context: dict[str, Any]
+        self, step: dict[str, Any], _context: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute an action step."""
         action_name = step.get("action")
@@ -229,7 +232,7 @@ class YAMLWorkflow(Workflow):
         }
 
     async def _execute_condition_step(
-        self, step: dict[str, Any], context: dict[str, Any]
+        self, step: dict[str, Any], _context: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute a conditional step."""
         condition = step.get("condition")
@@ -242,7 +245,7 @@ class YAMLWorkflow(Workflow):
         }
 
     async def _execute_parallel_step(
-        self, step: dict[str, Any], context: dict[str, Any]
+        self, step: dict[str, Any], _context: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute parallel steps."""
         parallel_steps = step.get("steps", [])
@@ -254,10 +257,9 @@ class YAMLWorkflow(Workflow):
         }
 
     async def _execute_delay_step(
-        self, step: dict[str, Any], context: dict[str, Any]
+        self, step: dict[str, Any], _context: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute a delay step."""
-        import asyncio
 
         delay_seconds = step.get("seconds", 1)
         await asyncio.sleep(delay_seconds)

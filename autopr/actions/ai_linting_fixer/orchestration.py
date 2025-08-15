@@ -9,7 +9,12 @@ import logging
 import os
 from typing import Any
 
-from .models import AILintingFixerInputs, AILintingFixerOutputs, OrchestrationConfig, WorkflowResult
+from .models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    OrchestrationConfig,
+    WorkflowResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -97,9 +102,8 @@ def _execute_standalone(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
         fixer = AILintingFixer()
 
         # Run the AI linting fixer
-        result = fixer.run(inputs)
+        return fixer.run(inputs)
 
-        return result
 
     except Exception as e:
         logger.exception(f"Standalone execution failed: {e}")
@@ -119,7 +123,10 @@ def _execute_with_temporal(
     try:
         from datetime import timedelta
 
-        from temporalio import activity, workflow
+        from temporalio import (  # type: ignore[import-not-found]  # type: ignore
+            activity,
+            workflow,
+        )
 
         @activity.defn
         async def ai_linting_activity(input_data: dict[str, Any]) -> dict[str, Any]:
@@ -173,7 +180,7 @@ def _execute_with_celery(
 ) -> WorkflowResult:
     """Execute with Celery orchestration."""
     try:
-        from celery import Celery
+        from celery import Celery  # type: ignore[import-not-found]  # type: ignore
 
         # Initialize Celery app
         app = Celery(
@@ -225,7 +232,7 @@ def _execute_with_prefect(
 ) -> WorkflowResult:
     """Execute with Prefect orchestration."""
     try:
-        from prefect import flow, task
+        from prefect import flow, task  # type: ignore[import-not-found]  # type: ignore
 
         @task
         def ai_linting_task(input_data: dict[str, Any]) -> dict[str, Any]:
@@ -277,8 +284,9 @@ def create_workflow_context(
     """Create a workflow context for orchestration."""
     from .models import WorkflowContext
 
+    valid_workflow_id: str = workflow_id or ""
     return WorkflowContext(
-        workflow_id=workflow_id,
+        workflow_id=valid_workflow_id,
         step_name=step_name,
         execution_mode=execution_mode,
         priority=priority,

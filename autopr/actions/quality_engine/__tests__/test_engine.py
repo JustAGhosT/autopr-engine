@@ -9,7 +9,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityMode, QualityOutputs
+from autopr.actions.quality_engine.models import QualityOutputs
+from autopr.utils.volume_utils import QualityMode
 
 
 class TestQualityEngine:
@@ -20,7 +21,7 @@ class TestQualityEngine:
         self.engine = QualityEngine()
         self.test_files = ["test1.py", "test2.py"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_fast_mode(self):
         """Test Quality Engine execution in fast mode."""
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
@@ -41,7 +42,7 @@ class TestQualityEngine:
             assert result.total_issues == 2
             mock_run_tools.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_comprehensive_mode(self):
         """Test Quality Engine execution in comprehensive mode."""
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
@@ -65,7 +66,7 @@ class TestQualityEngine:
             assert len(result.issues_by_tool) == 2
             mock_run_tools.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_ai_enhanced_mode(self):
         """Test Quality Engine execution in AI-enhanced mode."""
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
@@ -91,7 +92,7 @@ class TestQualityEngine:
                 mock_run_tools.assert_called_once()
                 mock_ai_analysis.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_smart_mode(self):
         """Test Quality Engine execution in smart mode."""
         with patch.object(self.engine, "_select_tools_for_context") as mock_select:
@@ -114,7 +115,7 @@ class TestQualityEngine:
                 mock_select.assert_called_once_with(self.test_files)
                 mock_run_tools.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_empty_file_list(self):
         """Test Quality Engine execution with empty file list."""
         result = await self.engine.execute(files=[], mode=QualityMode.FAST)
@@ -123,7 +124,7 @@ class TestQualityEngine:
         assert result.total_issues_found == 0
         assert len(result.files_modified) == 0
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_disabled_tools(self):
         """Test Quality Engine execution with disabled tools."""
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
@@ -145,7 +146,7 @@ class TestQualityEngine:
             assert result.success is True
             mock_run_tools.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_tool_failure(self):
         """Test Quality Engine execution when tools fail."""
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
@@ -186,7 +187,7 @@ class TestQualityEngine:
         # This should not raise an exception but return False
         assert self.engine._validate_configuration(invalid_config) is False
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_run_ai_analysis(self):
         """Test AI analysis execution."""
         with patch.object(self.engine, "_get_ai_provider") as mock_get_provider:
@@ -220,7 +221,7 @@ class TestQualityEngine:
         assert "mypy" in filtered_tools
         assert "bandit" not in filtered_tools
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_with_custom_config(self):
         """Test Quality Engine execution with custom configuration."""
         custom_config = {
@@ -254,7 +255,7 @@ class TestQualityEngine:
         assert "javascript" in file_types
         assert "typescript" in file_types
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_execute_with_verbose_logging(self):
         """Test Quality Engine execution with verbose logging."""
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
@@ -313,7 +314,7 @@ class TestQualityEngineIntegration:
         file_path.write_text(content)
         return str(file_path)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_end_to_end_fast_mode(self):
         """Test end-to-end Quality Engine execution in fast mode."""
         # Create test files
@@ -334,7 +335,7 @@ class TestQualityEngineIntegration:
             assert result.total_issues == 1
             mock_run_tools.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_end_to_end_comprehensive_mode(self):
         """Test end-to-end Quality Engine execution in comprehensive mode."""
         # Create test files with various issues

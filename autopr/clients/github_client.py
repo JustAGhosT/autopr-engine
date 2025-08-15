@@ -1,14 +1,21 @@
 """GitHub API client for AutoPR with retry logic and rate limiting."""
 
 import asyncio
+from dataclasses import dataclass
+from datetime import UTC, datetime
 import logging
 import random
 import time
-from dataclasses import dataclass
-from datetime import UTC, datetime
+import types
 from typing import Any, TypeVar, Union
 
-from aiohttp import ClientError, ClientResponse, ClientResponseError, ClientSession, ClientTimeout
+from aiohttp import (
+    ClientError,
+    ClientResponse,
+    ClientResponseError,
+    ClientSession,
+    ClientTimeout,
+)
 
 # Default configuration constants
 DEFAULT_RETRIES = 3
@@ -143,7 +150,7 @@ class GitHubClient:
         now = time.time()
         if self.rate_limit_remaining < 100 and now < self.rate_limit_reset:
             sleep_time = max(1, self.rate_limit_reset - now + 1)  # Add 1s buffer
-            self.logger.warning(f"Approaching rate limit. Waiting {sleep_time:.1f}s until reset")
+            self.logger.warning("Approaching rate limit. Waiting %.1fs until reset", sleep_time)
             await asyncio.sleep(sleep_time)
 
     async def _request(self, method: str, endpoint: str, **kwargs: Any) -> dict[str, Any]:
@@ -186,7 +193,7 @@ class GitHubClient:
                                 )
                                 sleep_time = max(1, reset_time - time.time() + 1)  # Add 1s buffer
                                 self.logger.warning(
-                                    f"Rate limited. Waiting {sleep_time:.1f}s until reset"
+                                    "Rate limited. Waiting %.1fs until reset", sleep_time
                                 )
                                 await asyncio.sleep(sleep_time)
                                 continue  # Retry the request after waiting
@@ -226,8 +233,10 @@ class GitHubClient:
             if attempt < self.config.max_retries:
                 backoff = await self._calculate_backoff(attempt)
                 self.logger.warning(
-                    f"Request failed (attempt {attempt + 1}/{self.config.max_retries + 1}). "
-                    f"Retrying in {backoff:.2f}s..."
+                    "Request failed (attempt %d/%d). Retrying in %.2fs...",
+                    attempt + 1,
+                    self.config.max_retries + 1,
+                    backoff,
                 )
                 await asyncio.sleep(backoff)
 
@@ -313,8 +322,9 @@ class GitHubClient:
         Raises:
             GitHubError: If the request fails
         """
+        HTTP_NO_CONTENT = 204
         response = await self._request("DELETE", endpoint, **kwargs)
-        return response.get("status", 0) == 204
+        return response.get("status", 0) == HTTP_NO_CONTENT
 
     async def graphql(
         self, query: str, variables: dict[str, Any] | None = None, **kwargs: Any
@@ -358,7 +368,10 @@ class GitHubClient:
         return self
 
     async def __aexit__(
-        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
     ) -> None:
         """Async context manager exit."""
         await self.close()

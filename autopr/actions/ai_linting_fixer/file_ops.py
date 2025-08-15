@@ -8,7 +8,7 @@ and atomic operations for the AI linting system.
 import ast
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 import logging
 from pathlib import Path
 import shutil
@@ -49,7 +49,7 @@ class FileValidator:
     def validate_file_syntax(file_path: str) -> tuple[bool, str | None]:
         """Validate syntax of a Python file."""
         try:
-            with open(file_path, encoding="utf-8") as f:
+            with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
             return FileValidator.validate_python_syntax(content)
         except Exception as e:
@@ -103,7 +103,7 @@ class FileValidator:
                     if " as " in imported_part:
                         return imported_part.split(" as ")[1].strip()
                     return imported_part.split(",")[0].strip()
-            except:
+            except Exception:
                 pass
 
         return None
@@ -212,17 +212,17 @@ class BackupManager:
         try:
             import hashlib
 
-            with open(file_path, "rb") as f:
+            with Path(file_path).open("rb") as f:
                 content = f.read()
             return hashlib.md5(content, usedforsecurity=False).hexdigest()
-        except:
+        except Exception:
             return ""
 
 
 class SafeFileOperations:
     """Provides safe file operations with validation and rollback capabilities."""
 
-    def __init__(self, backup_manager: BackupManager = None):
+    def __init__(self, backup_manager: BackupManager | None = None):
         self.backup_manager = backup_manager or BackupManager()
         self.validator = FileValidator()
         self.temp_files: list[str] = []
@@ -304,7 +304,7 @@ class SafeFileOperations:
         """Apply multiple fixes to a file safely."""
         try:
             # Read original content
-            with open(file_path, encoding="utf-8") as f:
+            with Path(file_path).open(encoding="utf-8") as f:
                 original_content = f.read()
 
             current_content = original_content
@@ -332,7 +332,7 @@ class SafeFileOperations:
 
                 # Write final result
                 if current_content != original_content:
-                    with open(file_path, "w", encoding="utf-8") as f:
+                    with Path(file_path).open("w", encoding="utf-8") as f:
                         f.write(current_content)
 
             return True, applied_fixes
@@ -400,7 +400,7 @@ class SafeFileOperations:
             stat = path.stat()
 
             # Read content for analysis
-            with open(file_path, encoding="utf-8") as f:
+            with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
 
             # Validate syntax
@@ -414,7 +414,7 @@ class SafeFileOperations:
                 "path": str(path.absolute()),
                 "size_bytes": stat.st_size,
                 "size_lines": len(content.splitlines()),
-                "last_modified": datetime.fromtimestamp(stat.st_mtime),
+                "last_modified": datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 "is_syntax_valid": is_valid,
                 "syntax_error": syntax_error,
                 "complexity_score": complexity,
@@ -444,22 +444,22 @@ class SafeFileOperations:
 
             return round(complexity, 2)
 
-        except:
+        except Exception:
             return 0.0
 
 
 class DryRunOperations:
     """Provides dry-run capabilities for file operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.planned_operations: list[dict[str, Any]] = []
-        self.validator = FileValidator()
+        self.validator: FileValidator = FileValidator()
 
     def plan_file_write(
         self, file_path: str, content: str, reason: str = "AI fix"
     ) -> dict[str, Any]:
         """Plan a file write operation for dry-run mode."""
-        operation = {
+        operation: dict[str, Any] = {
             "type": "file_write",
             "file_path": file_path,
             "reason": reason,
@@ -517,28 +517,31 @@ class DryRunOperations:
         if not self.planned_operations:
             return {"total_operations": 0}
 
-        summary = {
-            "total_operations": len(self.planned_operations),
-            "file_writes": 0,
-            "backup_creations": 0,
-            "files_affected": set(),
-            "syntax_errors": 0,
-            "total_content_size": 0,
-        }
+        file_writes = 0
+        backup_creations = 0
+        files_affected: set[str] = set()
+        syntax_errors = 0
+        total_content_size = 0
 
         for op in self.planned_operations:
             if op["type"] == "file_write":
-                summary["file_writes"] += 1
-                summary["total_content_size"] += op.get("content_size", 0)
+                file_writes += 1
+                total_content_size += int(op.get("content_size", 0))
                 if not op.get("syntax_valid", True):
-                    summary["syntax_errors"] += 1
+                    syntax_errors += 1
             elif op["type"] == "backup_creation":
-                summary["backup_creations"] += 1
+                backup_creations += 1
 
-            summary["files_affected"].add(op["file_path"])
+            files_affected.add(op["file_path"])
 
-        summary["files_affected"] = len(summary["files_affected"])
-        return summary
+        return {
+            "total_operations": len(self.planned_operations),
+            "file_writes": file_writes,
+            "backup_creations": backup_creations,
+            "files_affected": len(files_affected),
+            "syntax_errors": syntax_errors,
+            "total_content_size": total_content_size,
+        }
 
 
 # Global instances

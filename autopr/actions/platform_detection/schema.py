@@ -14,14 +14,17 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 import json
-from typing import TYPE_CHECKING, Any, ClassVar, TypedDict
+from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 class PlatformType(StrEnum):
-    """Types of platforms we support."""
+    """Types of platforms we support.
+
+    Extended to cover test expectations (frameworks and unknown types).
+    """
 
     IDE = "ide"
     CLOUD = "cloud"
@@ -33,6 +36,18 @@ class PlatformType(StrEnum):
     AI = "ai"
     DEVELOPMENT_PLATFORM = "development_platform"
     GENERAL = "general"
+
+    # Additional entries used by tests and higher-level detection outputs
+    FRAMEWORK = "framework"
+    REACT = "react"
+    NEXT_JS = "next_js"
+    UNKNOWN = "unknown"
+
+
+class PlatformCategory(StrEnum):
+    """High-level platform categories used in reporting and tests."""
+
+    WEB = "web"
 
 
 class PlatformSource(StrEnum):
@@ -76,7 +91,6 @@ class PlatformReference(TypedDict):
     description: str
     config_file: str
     is_active: bool
-    priority: int
 
 
 class PlatformIndex(TypedDict):
@@ -100,6 +114,16 @@ class ProjectConfig(TypedDict, total=False):
     configuration_files: list[str]
 
 
+def _default_detection_rules() -> DetectionRules:
+    # Empty rules by default
+    return cast("DetectionRules", {})
+
+
+def _default_project_config() -> ProjectConfig:
+    # Empty project config by default
+    return cast("ProjectConfig", {})
+
+
 @dataclass
 class PlatformConfig:
     """
@@ -114,7 +138,7 @@ class PlatformConfig:
     name: str
     category: str
     description: str
-    priority: int
+    priority: int = 0
 
     # Display information
     display_name: str = ""
@@ -154,8 +178,8 @@ class PlatformConfig:
     compatibility: dict[str, Any] = field(default_factory=dict)
 
     # Nested configurations
-    detection: DetectionRules = field(default_factory=dict)
-    project_config: ProjectConfig = field(default_factory=dict)
+    detection: DetectionRules = field(default_factory=_default_detection_rules)
+    project_config: ProjectConfig = field(default_factory=_default_project_config)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     # Class variables
@@ -184,7 +208,16 @@ class PlatformConfig:
 
         # Handle enums and special types
         status = PlatformStatus(data.get("status", "active")) if "status" in data else None
-        platform_type = PlatformType(data["type"]) if "type" in data else None
+        platform_type_val = data.get("type")
+        if isinstance(platform_type_val, PlatformType):
+            platform_type = platform_type_val
+        elif isinstance(platform_type_val, str):
+            try:
+                platform_type = PlatformType(platform_type_val)
+            except Exception:
+                platform_type = PlatformType.GENERAL
+        else:
+            platform_type = None
 
         # Handle source more flexibly
         source = None

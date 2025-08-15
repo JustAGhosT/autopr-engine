@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Template Quality Metrics Package
 ================================
@@ -24,8 +23,8 @@ from .quality_models import QualityMetrics
 from .quality_scorer import QualityScorer
 
 # Factory functions for global instances
-_scorer_instance = None
-_analyzer_instance = None
+_scorer_instance: QualityScorer | None = None
+_analyzer_instance: QualityAnalyzer | None = None
 
 
 def get_quality_scorer() -> QualityScorer:

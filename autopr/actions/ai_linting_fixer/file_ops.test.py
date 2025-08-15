@@ -27,7 +27,7 @@ class TestGetFileInfoBasic(unittest.TestCase):
         # Non-existent file should return only {"exists": False}
         non_existent_path = os.path.join(self.test_dir, "non_existent_file.py")
         file_info = self.safe_file_ops.get_file_info(non_existent_path)
-        self.assertEqual(file_info, {"exists": False})
+        assert file_info == {"exists": False}
 
     def test_get_file_info_valid_file(self):
         # Arrange
@@ -39,16 +39,16 @@ class TestGetFileInfoBasic(unittest.TestCase):
         result = self.safe_file_ops.get_file_info(self.test_file_path)
 
         # Assert
-        self.assertTrue(result["exists"])
-        self.assertEqual(result["path"], str(Path(self.test_file_path).absolute()))
+        assert result["exists"]
+        assert result["path"] == str(Path(self.test_file_path).absolute())
         # Fix: Use the actual encoded size instead of string length
-        self.assertEqual(result["size_bytes"], len(test_content.encode("utf-8")))
-        self.assertEqual(result["size_lines"], 2)
-        self.assertIsInstance(result["last_modified"], datetime)
-        self.assertTrue(result["is_syntax_valid"])
-        self.assertIsNone(result["syntax_error"])
-        self.assertIsInstance(result["complexity_score"], float)
-        self.assertEqual(result["encoding"], "utf-8")
+        assert result["size_bytes"] == len(test_content.encode("utf-8"))
+        assert result["size_lines"] == 2
+        assert isinstance(result["last_modified"], datetime)
+        assert result["is_syntax_valid"]
+        assert result["syntax_error"] is None
+        assert isinstance(result["complexity_score"], float)
+        assert result["encoding"] == "utf-8"
 
 
 class TestSyntaxValidation(unittest.TestCase):
@@ -72,10 +72,10 @@ class TestSyntaxValidation(unittest.TestCase):
         file_info = self.safe_file_ops.get_file_info(self.test_file_path)
 
         # Assert syntax error in file
-        self.assertFalse(file_info["is_syntax_valid"])
-        self.assertIsNotNone(file_info["syntax_error"])
+        assert not file_info["is_syntax_valid"]
+        assert file_info["syntax_error"] is not None
         # Fix: Check for specific error message that actually occurs
-        self.assertIn("expected ':", file_info["syntax_error"])
+        assert "expected ':" in file_info["syntax_error"]
 
 
 class TestComplexityCalculation(unittest.TestCase):
@@ -102,7 +102,7 @@ def function2():
 class TestClass:
     def method1(self):
         pass
-        
+
     def method2(self):
         pass
 
@@ -126,7 +126,7 @@ from datetime import datetime
         file_info = self.safe_file_ops.get_file_info(self.test_file_path)
 
         # Assert complexity score is exactly what we expect
-        self.assertEqual(file_info["complexity_score"], expected_complexity)
+        assert file_info["complexity_score"] == expected_complexity
 
 
 class TestFileEncoding(unittest.TestCase):
@@ -151,7 +151,7 @@ class TestFileEncoding(unittest.TestCase):
         file_info = self.safe_file_ops.get_file_info(self.test_file_path)
 
         # Assert encoding is utf-8
-        self.assertEqual(file_info["encoding"], "utf-8")
+        assert file_info["encoding"] == "utf-8"
 
 
 class TestLastModifiedTime(unittest.TestCase):
@@ -175,12 +175,12 @@ class TestLastModifiedTime(unittest.TestCase):
         file_info = self.safe_file_ops.get_file_info(self.test_file_path)
 
         # Check if last_modified is a datetime object
-        self.assertIsInstance(file_info["last_modified"], datetime)
+        assert isinstance(file_info["last_modified"], datetime)
 
         # Check if last_modified is within a reasonable range (last few seconds)
         current_time = datetime.now()
         time_diff = abs((current_time - file_info["last_modified"]).total_seconds())
-        self.assertLess(time_diff, 5, "Last modified time should be recent")
+        assert time_diff < 5, "Last modified time should be recent"
 
 
 if __name__ == "__main__":

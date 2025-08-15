@@ -1,0 +1,49 @@
+{
+  "0": {
+    "name": "OFF",
+    "description": "No linting - pure coding experience",
+    "enabled": false,
+    "config": null
+  },
+  "100": {
+    "name": "QUIET",
+    "description": "Basic syntax only - minimal interference",
+    "enabled": false,
+    "config": {
+      "typeCheckingMode": "off",
+      "reportMissingImports": "none",
+      "reportUnusedImport": "none"
+    }
+  },
+  "200": {
+    "name": "BALANCED",
+    "description": "Standard type checking - good balance of strictness and productivity",
+    "enabled": true,
+    "config": {
+      "typeCheckingMode": "basic",
+      "reportMissingImports": "warning",
+      "reportUnusedImport": "warning",
+      "reportUnusedVariable": "warning",
+      "reportOptionalMemberAccess": "warning"
+    }
+  },
+  "1000": {
+    "name": "MAXIMUM",
+    "description": "Nuclear mode - everything enabled",
+    "enabled": true,
+    "config": {
+      "typeCheckingMode": "strict",
+      "reportMissingImports": "error",
+      "reportUnusedImport": "error",
+      "reportUnusedVariable": "error",
+      "reportUnusedClass": "error",
+      "reportUnusedFunction": "error",
+      "reportOptionalSubscript": "error",
+      "reportOptionalMemberAccess": "error",
+      "reportOptionalCall": "error",
+      "reportOptionalIterable": "error",
+      "reportOptionalContextManager": "error",
+      "reportOptionalOperand": "error"
+    }
+  }
+} 

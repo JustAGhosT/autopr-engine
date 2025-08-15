@@ -68,13 +68,10 @@ class ReportGenerator:
         task_health = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
         overall_health = (phase_health + task_health) / 2
 
-        # Determine status color
-        if overall_health >= 80:
-            status_color = "green"
-        elif overall_health >= 60:
-            status_color = "yellow"
-        else:
-            status_color = "red"
+        # Determine status color via shared utility
+        from autopr.reporting.html_utils import status_color_name
+
+        status_color = status_color_name(overall_health)
 
         return {
             "overall_health_score": round(overall_health, 1),
@@ -358,47 +355,16 @@ class ReportGenerator:
 
     def generate_html_report(self, report: dict[str, Any]) -> str:
         """Generate HTML version of the report."""
-        html_template = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>AutoPR Implementation Report</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                .header { background: #f5f5f5; padding: 20px; border-radius: 8px; }
-                .status-green { color: #28a745; }
-                .status-yellow { color: #ffc107; }
-                .status-red { color: #dc3545; }
-                .metric { display: inline-block; margin: 10px; padding: 15px; background: #f8f9fa; border-radius: 5px; }
-                .phase { margin: 20px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
-                .recommendation { margin: 10px 0; padding: 10px; border-radius: 5px; }
-                .critical { background: #f8d7da; border: 1px solid #f5c6cb; }
-                .performance { background: #fff3cd; border: 1px solid #ffeaa7; }
-                .strategic { background: #d1ecf1; border: 1px solid #bee5eb; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>AutoPR Implementation Report</h1>
-                <p>Generated: {generated_at}</p>
-                <p class="status-{status_color}">Health Score: {health_score}%</p>
-            </div>
+        from autopr.reporting.html_page import PageHeader, build_basic_page
 
-            <h2>Executive Summary</h2>
-            <div class="metric">Progress: {progress}%</div>
-            <div class="metric">Phases: {phases_completed}</div>
-            <div class="metric">Tasks: {tasks_completed}</div>
-            <div class="metric">Success Rate: {success_rate}%</div>
-
-            <h2>Recommendations</h2>
-            {recommendations_html}
-
-            <h2>Phase Status</h2>
-            {phases_html}
-
-        </body>
-        </html>
-        """
+        extra_css = """
+.metric { display: inline-block; margin: 10px; padding: 15px; background: #f8f9fa; border-radius: 5px; }
+.phase { margin: 20px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
+.recommendation { margin: 10px 0; padding: 10px; border-radius: 5px; }
+.critical { background: #f8d7da; border: 1px solid #f5c6cb; }
+.performance { background: #fff3cd; border: 1px solid #ffeaa7; }
+.strategic { background: #d1ecf1; border: 1px solid #bee5eb; }
+"""
 
         # Format recommendations
         recommendations_html = ""
@@ -425,16 +391,28 @@ class ReportGenerator:
 
         executive = report.get("executive_summary", {})
 
-        return html_template.format(
+        content_html = f"""
+            <div>
+                <p class=\"status-{executive.get('status_color','red')}\">Health Score: {executive.get('overall_health_score',0)}%</p>
+            </div>
+            <h2>Executive Summary</h2>
+            <div class=\"metric\">Progress: {executive.get('progress_percentage',0)}%</div>
+            <div class=\"metric\">Phases: {executive.get('phases_completed','0/0')}</div>
+            <div class=\"metric\">Tasks: {executive.get('tasks_completed','0/0')}</div>
+            <div class=\"metric\">Success Rate: {report.get('metrics', {}).get('success_rate_percentage', 0)}%</div>
+
+            <h2>Recommendations</h2>
+            {recommendations_html}
+
+            <h2>Phase Status</h2>
+            {phases_html}
+        """
+
+        return build_basic_page(
+            header=PageHeader(title="AutoPR Implementation Report"),
             generated_at=report.get("report_metadata", {}).get("generated_at", ""),
-            status_color=executive.get("status_color", "red"),
-            health_score=executive.get("overall_health_score", 0),
-            progress=executive.get("progress_percentage", 0),
-            phases_completed=executive.get("phases_completed", "0/0"),
-            tasks_completed=executive.get("tasks_completed", "0/0"),
-            success_rate=report.get("metrics", {}).get("success_rate_percentage", 0),
-            recommendations_html=recommendations_html,
-            phases_html=phases_html,
+            content_html=content_html,
+            extra_css=extra_css,
         )
 
     # Helper methods

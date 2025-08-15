@@ -17,13 +17,13 @@ from .ai_analyzer import AICodeAnalyzer
 logger = structlog.get_logger(__name__)
 
 # System prompt templates
-CODE_REVIEW_PROMPT = """You are CodeQualityGPT, an expert code review assistant specialized in identifying improvements, 
-optimizations, and potential issues in code. Your task is to analyze code snippets and provide detailed, 
+CODE_REVIEW_PROMPT = """You are CodeQualityGPT, an expert code review assistant specialized in identifying improvements,
+optimizations, and potential issues in code. Your task is to analyze code snippets and provide detailed,
 actionable feedback that goes beyond what static analysis tools can find.
 
 Focus on the following aspects:
 1. Architecture and design patterns
-2. Performance optimization opportunities 
+2. Performance optimization opportunities
 3. Security vulnerabilities or risks
 4. Maintainability and readability concerns
 5. Edge case handling and robustness
@@ -137,7 +137,7 @@ async def run_ai_analysis(
 
             files_for_analysis.append(file_path)
         except Exception as e:
-            logger.error("Error checking file for AI analysis", file_path=file_path, error=str(e))
+            logger.exception("Error checking file for AI analysis", file_path=file_path, error=str(e))
 
     # If no files are suitable for analysis, return empty results
     if not files_for_analysis:

@@ -102,7 +102,7 @@ class EnterpriseAuthenticationManager:
             return True
 
         except Exception as e:
-            logger.error("User creation failed", username=username, error=str(e))
+            logger.exception("User creation failed", username=username, error=str(e))
             return False
 
     def authenticate_user(self, username: str, password: str) -> AuthenticationResult:
@@ -185,7 +185,7 @@ class EnterpriseAuthenticationManager:
             )
 
         except Exception as e:
-            logger.error("Authentication failed", username=username, error=str(e))
+            logger.exception("Authentication failed", username=username, error=str(e))
             return AuthenticationResult(success=False, error_message="An unexpected error occurred")
 
     def validate_token(self, token: str) -> AuthenticationResult:
@@ -219,7 +219,7 @@ class EnterpriseAuthenticationManager:
             logger.warning("Token validation failed - invalid token")
             return AuthenticationResult(success=False, error_message="Invalid token")
         except Exception as e:
-            logger.error("Token validation error", error=str(e))
+            logger.exception("Token validation error", error=str(e))
             return AuthenticationResult(success=False, error_message="Token validation failed")
 
     def create_api_key(
@@ -250,7 +250,7 @@ class EnterpriseAuthenticationManager:
             return api_key
 
         except Exception as e:
-            logger.error("API key creation failed", username=username, error=str(e))
+            logger.exception("API key creation failed", username=username, error=str(e))
             return None
 
     def validate_api_key(self, api_key: str) -> AuthenticationResult:
@@ -288,7 +288,7 @@ class EnterpriseAuthenticationManager:
             )
 
         except Exception as e:
-            logger.error("API key validation failed", error=str(e))
+            logger.exception("API key validation failed", error=str(e))
             return AuthenticationResult(success=False, error_message="API key validation failed")
 
     def revoke_api_key(self, api_key: str) -> bool:
@@ -300,7 +300,7 @@ class EnterpriseAuthenticationManager:
                 return True
             return False
         except Exception as e:
-            logger.error("API key revocation failed", error=str(e))
+            logger.exception("API key revocation failed", error=str(e))
             return False
 
     def check_permission(self, user_permissions: list[str], required_permission: str) -> bool:
@@ -332,7 +332,7 @@ class EnterpriseAuthenticationManager:
             return True
 
         except Exception as e:
-            logger.error("Logout failed", error=str(e))
+            logger.exception("Logout failed", error=str(e))
             return False
 
     def cleanup_expired_sessions(self) -> int:
@@ -352,7 +352,7 @@ class EnterpriseAuthenticationManager:
             return len(expired_sessions)
 
         except Exception as e:
-            logger.error("Session cleanup failed", error=str(e))
+            logger.exception("Session cleanup failed", error=str(e))
             return 0
 
     def get_user_sessions(self, username: str) -> list[dict[str, Any]]:
@@ -386,5 +386,5 @@ class EnterpriseAuthenticationManager:
             return len(sessions_to_remove)
 
         except Exception as e:
-            logger.error("Session revocation failed", username=username, error=str(e))
+            logger.exception("Session revocation failed", username=username, error=str(e))
             return 0

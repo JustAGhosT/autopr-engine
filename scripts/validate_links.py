@@ -39,12 +39,12 @@ def extract_links(file_path: str) -> list[tuple[str, int, str]]:
             matches = re.finditer(link_pattern, line)
 
             for match in matches:
-                link_text = match.group(1)
+                match.group(1)
                 link_url = match.group(2)
                 links.append((link_url, line_num, line.strip()))
 
-    except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+    except Exception:
+        pass
 
     return links
 
@@ -95,7 +95,6 @@ def validate_links(project_root: str) -> dict[str, list[tuple[str, int, str]]]:
     markdown_files = find_markdown_files(project_root)
     broken_links = {}
 
-    print(f"Scanning {len(markdown_files)} Markdown files...")
 
     for file_path in markdown_files:
         links = extract_links(file_path)
@@ -132,29 +131,22 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-    print("🔍 AutoPR Engine Link Validation")
-    print("=" * 50)
 
     # Validate links
     broken_links = validate_links(project_root)
 
     # Generate report
     report = generate_link_report(broken_links)
-    print(report)
 
     # Save report to file
     report_file = os.path.join(project_root, "link_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"\n📄 Report saved to: {report_file}")
 
     if broken_links:
-        print(f"\n⚠️  Found {len(broken_links)} files with broken links")
         return 1
-    else:
-        print("\n✅ All links are valid!")
-        return 0
+    return 0
 
 
 if __name__ == "__main__":

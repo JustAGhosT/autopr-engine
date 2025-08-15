@@ -38,7 +38,7 @@ class IntegrationRegistry:
         integration_name = temp_instance.name
 
         self._integrations[integration_name] = integration_class
-        logger.info(f"Registered integration: {integration_name}")
+        logger.info("Registered integration: %s", integration_name)
 
     def unregister_integration(self, integration_name: str) -> None:
         """
@@ -52,17 +52,17 @@ class IntegrationRegistry:
 
         if integration_name in self._instances:
             # Clean up instance
-            self._instances[integration_name]
+            _ = self._instances[integration_name]
             try:
                 # Note: This is synchronous, but cleanup might be async
                 # In a real implementation, you'd want to handle this properly
                 pass
-            except Exception as e:
-                logger.exception(f"Error cleaning up integration '{integration_name}': {e}")
+            except Exception:
+                logger.exception("Error cleaning up integration '%s'", integration_name)
 
             del self._instances[integration_name]
 
-        logger.info(f"Unregistered integration: {integration_name}")
+        logger.info("Unregistered integration: %s", integration_name)
 
     async def get_integration(
         self, integration_name: str, config: dict[str, Any] | None = None
@@ -78,7 +78,7 @@ class IntegrationRegistry:
             Integration instance or None if not found
         """
         if integration_name not in self._integrations:
-            logger.warning(f"Integration not found: {integration_name}")
+            logger.warning("Integration not found: %s", integration_name)
             return None
 
         # Return cached instance if available and initialized
@@ -99,8 +99,8 @@ class IntegrationRegistry:
             self._instances[integration_name] = instance
             return instance
 
-        except Exception as e:
-            logger.exception(f"Failed to create integration instance '{integration_name}': {e}")
+        except Exception:
+            logger.exception("Failed to create integration instance '%s'", integration_name)
             return None
 
     async def initialize(self, configs: dict[str, dict[str, Any]] | None = None) -> None:
@@ -117,18 +117,18 @@ class IntegrationRegistry:
             if integration_name in configs:
                 try:
                     await self.get_integration(integration_name, configs[integration_name])
-                    logger.info(f"Initialized integration: {integration_name}")
-                except Exception as e:
-                    logger.exception(f"Failed to initialize integration '{integration_name}': {e}")
+                    logger.info("Initialized integration: %s", integration_name)
+                except Exception:
+                    logger.exception("Failed to initialize integration '%s'", integration_name)
 
     async def cleanup(self) -> None:
         """Clean up all integration instances."""
         for integration_name, instance in self._instances.items():
             try:
                 await instance.cleanup()
-                logger.info(f"Cleaned up integration: {integration_name}")
-            except Exception as e:
-                logger.exception(f"Error cleaning up integration '{integration_name}': {e}")
+                logger.info("Cleaned up integration: %s", integration_name)
+            except Exception:
+                logger.exception("Error cleaning up integration '%s'", integration_name)
 
         self._instances.clear()
 
@@ -169,9 +169,9 @@ class IntegrationRegistry:
                     integration_class = self._integrations[integration_name]
                     temp_instance = integration_class(integration_name, "Temporary")
                     metadata[integration_name] = temp_instance.get_metadata()
-                except Exception as e:
-                    logger.exception(f"Failed to get metadata for '{integration_name}': {e}")
-                    metadata[integration_name] = {"error": str(e)}
+                except Exception:
+                    logger.exception("Failed to get metadata for '%s'", integration_name)
+                    metadata[integration_name] = {"error": "metadata_error"}
 
         return metadata
 

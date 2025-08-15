@@ -107,7 +107,7 @@ class WorkflowEngine:
         execution_id = workflow_id or f"{workflow_name}_{datetime.now().isoformat()}"
 
         try:
-            logger.info(f"Starting workflow execution: {execution_id}")
+            logger.info("Starting workflow execution: %s", execution_id)
 
             # Create execution task
             task = asyncio.create_task(self._execute_workflow_task(workflow, context, execution_id))
@@ -126,13 +126,13 @@ class WorkflowEngine:
 
         except TimeoutError:
             error_msg = f"Workflow execution timed out: {execution_id}"
-            logger.exception(error_msg)
+            logger.exception("Workflow execution timed out: %s", execution_id)
             self._record_execution(execution_id, workflow_name, "timeout", {"error": error_msg})
             raise WorkflowError(error_msg, workflow_name)
 
         except Exception as e:
             error_msg = f"Workflow execution failed: {e}"
-            logger.exception(f"Workflow execution failed: {execution_id} - {e}")
+            logger.exception("Workflow execution failed: %s - %s", execution_id, e)
             self._record_execution(execution_id, workflow_name, "failed", {"error": str(e)})
             raise WorkflowError(error_msg, workflow_name)
 
@@ -168,7 +168,7 @@ class WorkflowEngine:
             return result
 
         except Exception as e:
-            logger.exception(f"Workflow task execution failed: {execution_id} - {e}")
+            logger.exception("Workflow task execution failed: %s - %s", execution_id, e)
             raise
 
     async def process_event(self, event_type: str, event_data: dict[str, Any]) -> dict[str, Any]:
@@ -196,7 +196,10 @@ class WorkflowEngine:
                     )
                 except Exception as e:
                     logger.exception(
-                        f"Failed to execute workflow {workflow_name} for event {event_type}: {e}"
+                        "Failed to execute workflow %s for event %s: %s",
+                        workflow_name,
+                        event_type,
+                        e,
                     )
                     results.append({"workflow": workflow_name, "status": "error", "error": str(e)})
 

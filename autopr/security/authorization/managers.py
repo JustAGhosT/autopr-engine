@@ -10,9 +10,9 @@ from .cached_manager import CachedAuthorizationManager
 from .enterprise_manager import EnterpriseAuthorizationManager
 
 __all__ = [
-    "BaseAuthorizationManager",
-    "EnterpriseAuthorizationManager",
-    "CachedAuthorizationManager",
-    "AuthorizationAuditLogger",
     "AuditedAuthorizationManager",
+    "AuthorizationAuditLogger",
+    "BaseAuthorizationManager",
+    "CachedAuthorizationManager",
+    "EnterpriseAuthorizationManager",
 ]

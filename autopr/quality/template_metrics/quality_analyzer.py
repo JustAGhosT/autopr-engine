@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
 """
 Quality Analyzer Module
 ======================
-
 Quality trend analysis and insights for template quality assurance.
 
 This module contains the QualityAnalyzer class which provides advanced
@@ -10,14 +8,12 @@ analysis capabilities including trend analysis, batch processing, and
 improvement recommendations.
 """
 
-import operator
 import statistics
 from typing import Any
 
 from .quality_models import QualityMetrics
 from .quality_scorer import QualityScorer
-
-# from templates.discovery.template_validators import ValidationSeverity
+from .validation_types import ValidationSeverity
 
 
 class QualityAnalyzer:
@@ -221,7 +217,7 @@ class QualityAnalyzer:
 
     def _find_common_issues(self, template_metrics: list[QualityMetrics]) -> list[dict[str, Any]]:
         """Find issues that appear across multiple templates."""
-        issue_counts = {}
+        issue_counts: dict[tuple[str, str], dict[str, Any]] = {}
 
         for metrics in template_metrics:
             for issue in metrics.issues:
@@ -234,18 +230,30 @@ class QualityAnalyzer:
                         "count": 0,
                         "templates": [],
                     }
-                issue_counts[key]["count"] += 1
-                issue_counts[key]["templates"].append(metrics.template_path)
+                issue_counts[key]["count"] = int(issue_counts[key]["count"]) + 1
+                templates_list = issue_counts[key]["templates"]
+                if isinstance(templates_list, list):
+                    templates_list.append(metrics.template_path)
 
         # Return issues that appear in multiple templates
-        common_issues = [
-            issue_data for issue_data in issue_counts.values() if issue_data["count"] > 1
+        common_issues_data: list[dict[str, Any]] = [
+            issue_data for issue_data in issue_counts.values() if int(issue_data["count"]) > 1
         ]
 
         # Sort by frequency
-        common_issues.sort(key=operator.itemgetter("count"), reverse=True)
+        common_issues_data.sort(key=lambda d: int(d["count"]), reverse=True)
 
-        return common_issues[:10]  # Top 10 common issues
+        # Convert to simple dicts
+        return [
+            {
+                "category": d["category"],
+                "message": d["message"],
+                "severity": d["severity"],
+                "count": d["count"],
+                "templates": d["templates"],
+            }
+            for d in common_issues_data[:10]
+        ]
 
     def _identify_best_practices(self, template_metrics: list[QualityMetrics]) -> list[str]:
         """Identify best practices from high-quality templates."""

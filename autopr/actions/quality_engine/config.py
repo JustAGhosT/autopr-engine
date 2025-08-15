@@ -1,9 +1,10 @@
+"""Configuration loading for the Quality Engine."""
+
+import importlib
 import os
-from typing import Any
+from typing import Any, cast
 
 import pydantic
-import toml
-import yaml
 
 
 class ToolConfig(pydantic.BaseModel):
@@ -14,25 +15,71 @@ class ToolConfig(pydantic.BaseModel):
 
 
 class QualityEngineConfig(pydantic.BaseModel):
-    """Configuration for the Quality Engine."""
+    """Define the configuration for the Quality Engine."""
 
     default_mode: str = "smart"
     tools: dict[str, ToolConfig] = {}
     modes: dict[str, list[str]] = {}  # New Field for mode tools
 
 
-def validate_config(config: QualityEngineConfig):
-    """Validates the loaded configuration."""
+def validate_config(config: QualityEngineConfig) -> None:
+    """Validate the loaded configuration."""
     for mode, tools in config.modes.items():
         for tool in tools:
             if tool not in config.tools:
+                msg = f"Tool '{tool}' in mode '{mode}' is not defined in the tools section."
                 raise ValueError(
-                    f"Tool '{tool}' in mode '{mode}' is not defined in the tools section."
+                    msg
                 )
 
 
+def _merge_quality_from_dict(
+    quality_config: dict[str, Any], default_config: dict[str, Any]
+) -> None:
+    """Merge quality configuration dict into the default config in-place."""
+    # Merge default mode
+    if "default_mode" in quality_config:
+        default_config["default_mode"] = cast("str", quality_config["default_mode"])
+
+    # Merge tools
+    if isinstance(quality_config.get("tools"), dict):
+        merged_tools: dict[str, Any] = dict(cast("dict[str, Any]", default_config.get("tools", {})))
+        for tool, tool_config in cast("dict[str, Any]", quality_config["tools"]).items():
+            merged_tools[cast("str", tool)] = cast("dict[str, Any]", tool_config)
+        default_config["tools"] = merged_tools
+
+    # Merge modes
+    if isinstance(quality_config.get("modes"), dict):
+        merged_modes: dict[str, list[str]] = dict(
+            cast("dict[str, list[str]]", default_config.get("modes", {}))
+        )
+        for mode, tools in cast("dict[str, Any]", quality_config["modes"]).items():
+            merged_modes[cast("str", mode)] = cast("list[str]", tools)
+        default_config["modes"] = merged_modes
+
+
+def _load_toml_config(config_path: str) -> dict[str, Any]:
+    """Load a TOML file if the toml module is available; otherwise return empty dict."""
+    try:
+        toml_mod = importlib.import_module("toml")  # type: ignore[import-not-found]
+    except Exception:
+        return {}
+    with open(config_path, "rb") as f:
+        return cast("dict[str, Any]", toml_mod.load(f))  # type: ignore[attr-defined]
+
+
+def _load_yaml_config(config_path: str) -> dict[str, Any]:
+    """Load a YAML file if PyYAML is available; otherwise return empty dict."""
+    try:
+        yaml_mod = importlib.import_module("yaml")  # type: ignore[import-not-found]
+    except Exception:
+        return {}
+    with open(config_path, encoding="utf-8") as f:
+        return cast("dict[str, Any]", yaml_mod.safe_load(f)) or {}  # type: ignore[attr-defined]
+
+
 def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
-    """Loads the quality engine configuration from the project settings."""
+    """Load the quality engine configuration from project settings."""
     default_config = {
         "default_mode": "smart",
         "tools": {
@@ -81,45 +128,29 @@ def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
         # Try to load configuration from the specified file
         if os.path.exists(config_path):
             if config_path.endswith(".toml"):
-                with open(config_path) as f:
-                    file_config = toml.load(f)
-
+                file_config = _load_toml_config(config_path)
                 # Extract tool configuration from pyproject.toml
-                if "autopr" in file_config and "quality" in file_config["autopr"]:
-                    quality_config = file_config["autopr"]["quality"]
+                autopr_section = (
+                    cast("dict[str, Any] | None", file_config.get("autopr"))
+                    if file_config
+                    else None
+                )
+                if (
+                    autopr_section
+                    and isinstance(autopr_section, dict)
+                    and "quality" in autopr_section
+                ):
+                    _merge_quality_from_dict(
+                        cast("dict[str, Any]", autopr_section["quality"]), default_config
+                    )
 
-                    # Merge with default config
-                    if "default_mode" in quality_config:
-                        default_config["default_mode"] = quality_config["default_mode"]
-
-                    if "tools" in quality_config:
-                        for tool, tool_config in quality_config["tools"].items():
-                            default_config["tools"][tool] = tool_config
-
-                    if "modes" in quality_config:
-                        for mode, tools in quality_config["modes"].items():
-                            default_config["modes"][mode] = tools
-
-            elif config_path.endswith(".yaml") or config_path.endswith(".yml"):
-                with open(config_path) as f:
-                    yaml_config = yaml.safe_load(f)
-
-                # Merge with default config
+            elif config_path.endswith((".yaml", ".yml")):
+                yaml_config = _load_yaml_config(config_path)
                 if yaml_config:
-                    if "default_mode" in yaml_config:
-                        default_config["default_mode"] = yaml_config["default_mode"]
+                    _merge_quality_from_dict(yaml_config, default_config)
 
-                    if "tools" in yaml_config:
-                        for tool, tool_config in yaml_config["tools"].items():
-                            default_config["tools"][tool] = tool_config
-
-                    if "modes" in yaml_config:
-                        for mode, tools in yaml_config["modes"].items():
-                            default_config["modes"][mode] = tools
-
-    except Exception as e:
-        print(f"Error loading configuration from {config_path}: {e}")
-        print("Using default configuration.")
+    except Exception:
+        pass
 
     config = QualityEngineConfig.parse_obj(default_config)
     validate_config(config)

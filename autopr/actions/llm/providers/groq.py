@@ -30,7 +30,7 @@ class GroqProvider(BaseLLMProvider):
 
     async def _call_groq_api(self, messages: list[dict[str, Any]], **kwargs: Any) -> Any:
         groq_messages = self._convert_to_provider_messages(messages, "groq")
-        return self.client.chat.completions.create(messages=groq_messages, **kwargs)
+        return self.client.chat.completions.create(messages=groq_messages, **kwargs)  # type: ignore[arg-type]
 
     def complete(self, request: dict[str, Any]) -> LLMResponse:
         try:
@@ -45,7 +45,7 @@ class GroqProvider(BaseLLMProvider):
                 if m.get("content")
             ]
 
-            response = self.client.chat.completions.create(
+            response = self.client.chat.completions.create(  # type: ignore[arg-type]
                 model=str(model),
                 messages=filtered_messages,
                 max_tokens=max_tokens,
