@@ -90,15 +90,12 @@ class QualityEngine(Action):
             recommendations=recommendations,
         )
 
-
         if limitations:
             for _limitation in limitations:
                 pass
-
         if recommendations:
             for _rec in recommendations:
                 pass
-
 
     def _filter_tools_for_platform(self) -> dict[str, Any]:
         """Filter tools based on platform compatibility."""
@@ -112,19 +109,74 @@ class QualityEngine(Action):
 
         return filtered_tools
 
-    def _apply_tool_substitutions(self):
-        """Apply tool substitutions for Windows-incompatible tools."""
-        substitutions = self.platform_detector.get_tool_substitutions()
+    def _apply_tool_substitutions(self) -> None:
+        """Apply platform-specific tool substitutions."""
+        if self.platform_detector.is_windows:
+            # Substitute CodeQL with Semgrep on Windows
+            if "codeql" in self.tools and "semgrep" in self.tools:
+                logger.info("Substituting CodeQL with Semgrep for Windows compatibility")
+                # Remove CodeQL and keep Semgrep
+                self.tools.pop("codeql", None)
 
-        for old_tool, new_tool in substitutions.items():
-            if old_tool in self.tools and new_tool in self.tools:
-                logger.info(
-                    f"Substituting {old_tool} with {new_tool} for Windows compatibility",
-                    old_tool=old_tool,
-                    new_tool=new_tool,
-                )
-                # Replace the old tool with the new one
-                self.tools[new_tool] = self.tools.pop(old_tool)
+    def _get_tool_config(self, tool_name: str) -> dict[str, Any]:
+        """Get configuration for a specific tool."""
+        return self.config.get("tools", {}).get(tool_name, {})
+
+    def _validate_volume(self, volume: int) -> int:
+        """Validate and clamp volume to valid range."""
+        if not isinstance(volume, int):
+            msg = f"Volume must be an integer, got {type(volume).__name__}"
+            raise ValueError(msg)
+        return max(0, min(1000, volume))  # Clamp to 0-1000 range
+
+    async def _run_auto_fix(self, inputs: QualityInputs, files_to_check: list[str]) -> tuple[bool, int, list[str], str | None, list[str] | None]:
+        """Run auto-fix process and return results."""
+        try:
+            logger.info("Starting auto-fix process", fix_types=inputs.fix_types, max_fixes=inputs.max_fixes)
+            
+            # Import AI Linting Fixer
+            from autopr.actions.ai_linting_fixer import AILintingFixer
+            from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
+            
+            # Prepare fixer inputs
+            target_path = files_to_check[0] if files_to_check else "."
+            if isinstance(target_path, str) and target_path == ".":
+                target_path = "."
+            
+            fixer_inputs = AILintingFixerInputs(
+                target_path=target_path,
+                fix_types=inputs.fix_types or ["E501", "F401", "F841", "E722", "E302", "E305"],
+                max_fixes_per_run=inputs.max_fixes,
+                provider=inputs.ai_provider,
+                model=inputs.ai_model,
+                dry_run=inputs.dry_run,
+                max_workers=2,  # Conservative for quality engine integration
+                use_specialized_agents=True,
+                create_backups=True,
+            )
+            
+            # Run the AI Linting Fixer
+            with AILintingFixer() as fixer:
+                fix_result = await fixer.run(fixer_inputs)
+            
+            # Update results with fix information
+            total_issues_fixed = fix_result.issues_fixed
+            files_modified = fix_result.files_modified
+            fix_summary = f"Fixed {fix_result.issues_fixed} issues across {len(fix_result.files_modified)} files"
+            
+            logger.info(
+                "Auto-fix completed successfully",
+                issues_fixed=fix_result.issues_fixed,
+                files_modified=len(fix_result.files_modified),
+                success=fix_result.success,
+            )
+            
+            return True, total_issues_fixed, files_modified, fix_summary, None
+            
+        except Exception as e:
+            logger.exception("Auto-fix failed", error=str(e))
+            fix_errors = [f"Auto-fix failed: {str(e)}"]
+            return False, 0, [], None, fix_errors
 
     def _determine_tools_for_mode(
         self, mode: QualityMode, files: list[str], volume: int = 500
@@ -170,38 +222,6 @@ class QualityEngine(Action):
         # At higher volumes, use all tools determined by the quality mode
 
         return available_tools
-
-    def _get_tool_config(self, tool_name: str) -> Any:
-        """Get configuration for a specific tool."""
-        if not self.config:
-            return {"enabled": True, "config": {}}
-
-        tool_config = getattr(self.config, "tools", {})
-        tool_settings = tool_config.get(tool_name, {})
-
-        # Handle different config formats
-        if isinstance(tool_settings, dict):
-            if "enabled" in tool_settings:
-                return tool_settings
-            return {"enabled": True, "config": tool_settings}
-        return {"enabled": True, "config": {}}
-
-    def _validate_volume(self, volume: int) -> int:
-        """Validate that the volume is within the expected range (0-1000).
-
-        Args:
-            volume: The volume level to validate
-
-        Returns:
-            The validated volume (clamped to 0-1000 range)
-
-        Raises:
-            ValueError: If volume is not an integer
-        """
-        if not isinstance(volume, int):
-            msg = f"Volume must be an integer, got {type(volume).__name__}"
-            raise ValueError(msg)
-        return max(0, min(1000, volume))  # Clamp to 0-1000 range
 
     async def execute(
         self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None
@@ -343,6 +363,16 @@ class QualityEngine(Action):
                     results["ai_analysis"] = create_tool_result_from_ai_analysis(ai_result)
                     ai_summary = ai_result.get("summary")
 
+        # Handle auto-fix if requested
+        auto_fix_applied = False
+        fix_summary = None
+        fix_errors = None
+        total_issues_fixed = 0
+        files_modified = []
+
+        if inputs.auto_fix and inputs.enable_ai_agents:
+            auto_fix_applied, total_issues_fixed, files_modified, fix_summary, fix_errors = await self._run_auto_fix(inputs, files_to_check)
+
         # Build the comprehensive summary
         from .summary import build_comprehensive_summary
 
@@ -370,14 +400,17 @@ class QualityEngine(Action):
         return QualityOutputs(
             success=total_issues_found == 0,
             total_issues_found=total_issues_found,
-            total_issues_fixed=0,  # Placeholder for future fix implementation
-            files_modified=[],  # Placeholder for future fix implementation
+            total_issues_fixed=total_issues_fixed,
+            files_modified=files_modified,
             issues_by_tool=issues_by_tool,
             files_by_tool=files_by_tool,
             tool_execution_times=tool_execution_times,
             summary=summary,
             ai_enhanced=inputs.mode == QualityMode.AI_ENHANCED and ai_result is not None,
             ai_summary=ai_summary,
+            auto_fix_applied=auto_fix_applied,
+            fix_summary=fix_summary,
+            fix_errors=fix_errors,
         )
 
     async def run(self, inputs: QualityInputs) -> QualityOutputs:
