@@ -27,7 +27,7 @@ def main() -> None:
     parser.add_argument("--ai-model", help="AI model to use for AI-enhanced mode")
     parser.add_argument("--skip-windows-check", action="store_true", help="Skip Windows compatibility warnings and checks")
     parser.add_argument("--continue-on-errors", action="store_true", help="Continue execution even if some tools fail or are not available")
-    
+
     # Auto-fix options
     parser.add_argument("--auto-fix", action="store_true", help="Automatically fix issues using AI")
     parser.add_argument("--fix-types", nargs="+", help="Types of issues to fix (e.g., E501 F401 F841)")

@@ -120,7 +120,20 @@ class QualityEngine(Action):
 
     def _get_tool_config(self, tool_name: str) -> dict[str, Any]:
         """Get configuration for a specific tool."""
-        return self.config.get("tools", {}).get(tool_name, {})
+        if not self.config:
+            return {"enabled": True, "config": {}}
+        
+        # Handle Pydantic model
+        if hasattr(self.config, "tools"):
+            tools_config = getattr(self.config, "tools", {})
+            if isinstance(tools_config, dict):
+                return tools_config.get(tool_name, {"enabled": True, "config": {}})
+        
+        # Fallback to dictionary access
+        try:
+            return self.config.get("tools", {}).get(tool_name, {"enabled": True, "config": {}})
+        except (AttributeError, TypeError):
+            return {"enabled": True, "config": {}}
 
     def _validate_volume(self, volume: int) -> int:
         """Validate and clamp volume to valid range."""
@@ -157,7 +170,7 @@ class QualityEngine(Action):
             
             # Run the AI Linting Fixer
             with AILintingFixer() as fixer:
-                fix_result = await fixer.run(fixer_inputs)
+                fix_result = fixer.run(fixer_inputs)
             
             # Update results with fix information
             total_issues_fixed = fix_result.issues_fixed
@@ -320,12 +333,19 @@ class QualityEngine(Action):
 
             tool_config = self._get_tool_config(tool_name)
 
-            if tool_config.get("enabled", True):
+            # Handle both dict and Pydantic model
+            enabled = True
+            if isinstance(tool_config, dict):
+                enabled = tool_config.get("enabled", True)
+            elif hasattr(tool_config, "enabled"):
+                enabled = tool_config.enabled
+
+            if enabled:
                 task = run_tool(
                     tool_name=tool_name,
                     tool_instance=tool_instance,
                     files=files_to_check,
-                    tool_config=tool_config.get("config", {}),
+                    tool_config=tool_config.get("config", {}) if isinstance(tool_config, dict) else {},
                     handler_registry=self.handler_registry,
                 )
                 tool_tasks.append((tool_name, task))
