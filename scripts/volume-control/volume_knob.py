@@ -328,7 +328,9 @@ class DevVolumeKnob(VolumeKnob):
 
                     if "per-file-ignores" not in pyproject_data["tool"]["ruff"]["lint"]:
                         pyproject_data["tool"]["ruff"]["lint"]["per-file-ignores"] = {}
-                    pyproject_data["tool"]["ruff"]["lint"]["per-file-ignores"]["*"] = ["ALL"]
+                    pyproject_data["tool"]["ruff"]["lint"]["per-file-ignores"]["*"] = [
+                        "ALL"
+                    ]
 
                 if "mypy" in pyproject_data["tool"]:
                     pyproject_data["tool"]["mypy"] = {
@@ -496,7 +498,9 @@ class CommitVolumeKnob(VolumeKnob):
         """Apply the current volume settings to commit checks"""
         volume = self.current_volume
 
-        print(f"🎛️ Applying Commit Volume {volume}/1000: {self.get_volume_description()}")
+        print(
+            f"🎛️ Applying Commit Volume {volume}/1000: {self.get_volume_description()}"
+        )
 
         # Use JSON migration system
         from json_migrations import json_migrations
@@ -573,7 +577,9 @@ def main():
     if len(sys.argv) < 2:
         print("Usage examples:")
         print("  python volume_knob.py dev 100  # Set dev volume to 100")
-        print("  python volume_knob.py commit up 5  # Increase commit volume by 5 ticks")
+        print(
+            "  python volume_knob.py commit up 5  # Increase commit volume by 5 ticks"
+        )
         return
 
     knob_type = sys.argv[1].lower()

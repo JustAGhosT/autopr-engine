@@ -149,7 +149,10 @@ class YAMLLinter:
             # Check for multiple spaces after colon
             if ":" in line:
                 colon_pos = line.find(":")
-                if colon_pos < len(line) - 2 and line[colon_pos + 1 : colon_pos + 3] == "  ":
+                if (
+                    colon_pos < len(line) - 2
+                    and line[colon_pos + 1 : colon_pos + 3] == "  "
+                ):
                     report.add_issue(
                         LintIssue(
                             line=line_num,
@@ -157,7 +160,9 @@ class YAMLLinter:
                             message="Multiple spaces after colon",
                             code="YML022",
                             severity=IssueSeverity.STYLE,
-                            fix=lambda line_content: re.sub(r":  +", ": ", line_content),
+                            fix=lambda line_content: re.sub(
+                                r":  +", ": ", line_content
+                            ),
                             fixable=True,
                         )
                     )
@@ -190,7 +195,9 @@ class YAMLLinter:
                 )
             )
 
-    def _check_truthy_values(self, report: FileReport, line: str, line_num: int) -> None:
+    def _check_truthy_values(
+        self, report: FileReport, line: str, line_num: int
+    ) -> None:
         """Check for truthy values that should be explicit."""
         if ":" not in line:
             return
@@ -231,10 +238,14 @@ class YAMLLinter:
                 )
             )
 
-    def _check_document_issues(self, report: FileReport, content: str, lines: list[str]) -> None:
+    def _check_document_issues(
+        self, report: FileReport, content: str, lines: list[str]
+    ) -> None:
         """Check document-level issues."""
         # Check for document start marker
-        if self.config["enforce_document_start"] and not content.strip().startswith("---"):
+        if self.config["enforce_document_start"] and not content.strip().startswith(
+            "---"
+        ):
             report.add_issue(
                 LintIssue(
                     line=1,

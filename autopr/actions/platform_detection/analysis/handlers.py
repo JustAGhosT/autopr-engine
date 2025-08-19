@@ -76,7 +76,9 @@ class FileHandler(ABC):
                 result.merge(custom_result)
 
         except Exception as e:
-            logger.exception(f"Error in {self.__class__.__name__} analyzing {file_path}")
+            logger.exception(
+                f"Error in {self.__class__.__name__} analyzing {file_path}"
+            )
             result.metadata["error"] = str(e)
 
         return result
@@ -282,7 +284,11 @@ class RequirementsFileHandler(FileHandler):
 
             # Basic package name extraction (handles most common cases)
             pkg_name = (
-                line.split(">", 1)[0].split("<", 1)[0].split("=", 1)[0].split("[", 1)[0].strip()
+                line.split(">", 1)[0]
+                .split("<", 1)[0]
+                .split("=", 1)[0]
+                .split("[", 1)[0]
+                .strip()
             )
 
             # Map packages to platforms

@@ -82,7 +82,9 @@ def _get_volume() -> int:
 
 def _get_unstaged_changes() -> set[str]:
     try:
-        rc, out, _ = _run_with_timeout(["git", "diff", "--name-only"], timeout_seconds=5)
+        rc, out, _ = _run_with_timeout(
+            ["git", "diff", "--name-only"], timeout_seconds=5
+        )
         if rc == 0 and out:
             return {line.strip() for line in out.splitlines() if line.strip()}
     except Exception:
@@ -407,7 +409,9 @@ def main(argv: list[str]) -> int:
                     file_counts[filename] += 1
             _persist_findings(findings)
             if os.getenv("AUTOPR_BG_FIX", "0") in {"1", "true", "True"}:
-                _run_with_timeout([sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120)
+                _run_with_timeout(
+                    [sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120
+                )
     elif 300 < volume < 600:
         rc |= _run_security_and_typing(py_files)
         if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
@@ -424,7 +428,9 @@ def main(argv: list[str]) -> int:
                     file_counts[filename] += 1
             _persist_findings(findings)
             if os.getenv("AUTOPR_BG_FIX", "0") in {"1", "true", "True"}:
-                _run_with_timeout([sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120)
+                _run_with_timeout(
+                    [sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120
+                )
 
     if volume >= 600:
         rc |= _run_quality_engine(files)
@@ -440,11 +446,18 @@ def main(argv: list[str]) -> int:
         # Concise low-volume summary with top rules/files and next-step hint
         if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
             if rule_counts:
-                ", ".join([f"{code}:{count}" for code, count in rule_counts.most_common(5)])
+                ", ".join(
+                    [f"{code}:{count}" for code, count in rule_counts.most_common(5)]
+                )
             if file_counts:
                 from pathlib import Path as _P
 
-                ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
+                ", ".join(
+                    [
+                        f"{_P(fp).as_posix()}:{cnt}"
+                        for fp, cnt in file_counts.most_common(5)
+                    ]
+                )
         _print_low_volume_note()
         return 0
 
@@ -466,7 +479,9 @@ def main(argv: list[str]) -> int:
         if file_counts:
             from pathlib import Path as _P
 
-            ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
+            ", ".join(
+                [f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)]
+            )
         next_hint = os.getenv("AUTOPR_BG_FIX", "0")
         if next_hint in {"1", "true", "True"}:
             pass

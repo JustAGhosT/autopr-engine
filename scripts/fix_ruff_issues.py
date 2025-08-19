@@ -27,7 +27,7 @@ class RuffIssueFixer:
                 ["ruff", "check", "--output-format=json"],
                 capture_output=True,
                 text=True,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
             return result.stdout
         except subprocess.CalledProcessError as e:
@@ -46,19 +46,19 @@ class RuffIssueFixer:
 
                 # Categorize by rule type
                 category = self._get_category(rule_code)
-                self.issues_by_category[category].append({
-                    "file": file_path,
-                    "line": line,
-                    "code": rule_code,
-                    "message": message
-                })
+                self.issues_by_category[category].append(
+                    {
+                        "file": file_path,
+                        "line": line,
+                        "code": rule_code,
+                        "message": message,
+                    }
+                )
 
                 # Group by file
-                self.issues_by_file[file_path].append({
-                    "line": line,
-                    "code": rule_code,
-                    "message": message
-                })
+                self.issues_by_file[file_path].append(
+                    {"line": line, "code": rule_code, "message": message}
+                )
         except json.JSONDecodeError:
             print("Failed to parse ruff output as JSON")
 
@@ -120,9 +120,7 @@ class RuffIssueFixer:
 
         # Sort categories by number of issues
         sorted_categories = sorted(
-            self.issues_by_category.items(),
-            key=lambda x: len(x[1]),
-            reverse=True
+            self.issues_by_category.items(), key=lambda x: len(x[1]), reverse=True
         )
 
         for category, issues in sorted_categories:
@@ -132,9 +130,7 @@ class RuffIssueFixer:
 
         # Sort files by number of issues
         sorted_files = sorted(
-            self.issues_by_file.items(),
-            key=lambda x: len(x[1]),
-            reverse=True
+            self.issues_by_file.items(), key=lambda x: len(x[1]), reverse=True
         )
 
         for file_path, issues in sorted_files[:10]:
@@ -151,7 +147,7 @@ class RuffIssueFixer:
             "pycodestyle_issues",
             "pycodestyle_warnings",
             "naming_issues",
-            "simplify_issues"
+            "simplify_issues",
         ]
 
         print("Priority 1 - Easy Auto-fixes:")
@@ -166,7 +162,7 @@ class RuffIssueFixer:
             "pyflakes_issues",
             "argument_issues",
             "try_except_issues",
-            "import_issues"
+            "import_issues",
         ]
 
         print("\nPriority 2 - Manual Fixes:")
@@ -176,10 +172,7 @@ class RuffIssueFixer:
                 print(f"  - {category}: {count} issues")
 
         # Priority 3: Security and critical issues
-        critical_fixes = [
-            "security_issues",
-            "bugbear_issues"
-        ]
+        critical_fixes = ["security_issues", "bugbear_issues"]
 
         print("\nPriority 3 - Critical Issues:")
         for category in critical_fixes:
@@ -197,7 +190,7 @@ class RuffIssueFixer:
                 ["ruff", "check", "--fix"],
                 capture_output=True,
                 text=True,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
 
             if result.returncode == 0:
@@ -225,7 +218,7 @@ def main():
 
         # Ask user if they want to run auto-fixes
         response = input("\nWould you like to run auto-fixes? (y/n): ")
-        if response.lower() == 'y':
+        if response.lower() == "y":
             fixer.run_auto_fixes()
     else:
         print("No issues found or error running ruff")

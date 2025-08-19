@@ -220,7 +220,9 @@ class FixAttemptLog(BaseModel):
 class AILintingFixerInputs(BaseModel):
     """Input configuration for AI linting fixer with optional orchestration."""
 
-    target_path: str = Field(default=".", description="Path to check for linting issues")
+    target_path: str = Field(
+        default=".", description="Path to check for linting issues"
+    )
     fix_types: list[str] = Field(
         default=[
             "E501",
@@ -241,7 +243,9 @@ class AILintingFixerInputs(BaseModel):
     )
     provider: str | None = Field(default=None, description="LLM provider to use")
     model: str | None = Field(default=None, description="Specific model to use")
-    max_workers: int = Field(default=4, description="Maximum number of parallel workers")
+    max_workers: int = Field(
+        default=4, description="Maximum number of parallel workers"
+    )
 
     # Additional fields for display compatibility
     max_fixes: int = Field(
@@ -254,7 +258,9 @@ class AILintingFixerInputs(BaseModel):
         default=True, description="Whether to create backups before making changes"
     )
     dry_run: bool = Field(default=False, description="Whether to run in dry-run mode")
-    enable_async: bool = Field(default=False, description="Whether to enable async processing")
+    enable_async: bool = Field(
+        default=False, description="Whether to enable async processing"
+    )
 
     # Orchestration configuration
     orchestration: OrchestrationConfig | None = Field(

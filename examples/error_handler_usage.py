@@ -28,7 +28,9 @@ from autopr.actions.llm.manager import LLMProviderManager
 def setup_error_handler() -> None:
     """Set up the error handler with custom configuration."""
     # Create display configuration
-    display_config = DisplayConfig(mode=OutputMode.VERBOSE, use_colors=True, use_emojis=True)
+    display_config = DisplayConfig(
+        mode=OutputMode.VERBOSE, use_colors=True, use_emojis=True
+    )
 
     # Initialize error handler
     error_handler = ErrorHandler(display_config)
@@ -146,7 +148,9 @@ def demonstrate_error_categories():
         {
             "name": "File Not Found",
             "exception": FileNotFoundError("test_file.py not found"),
-            "context": create_error_context(file_path="test_file.py", workflow_step="file_reading"),
+            "context": create_error_context(
+                file_path="test_file.py", workflow_step="file_reading"
+            ),
         },
         {
             "name": "Permission Error",
@@ -158,17 +162,23 @@ def demonstrate_error_categories():
         {
             "name": "API Timeout",
             "exception": TimeoutError("API request timed out after 30 seconds"),
-            "context": create_error_context(workflow_step="api_request", provider="openai"),
+            "context": create_error_context(
+                workflow_step="api_request", provider="openai"
+            ),
         },
         {
             "name": "Syntax Error",
             "exception": SyntaxError("invalid syntax"),
-            "context": create_error_context(file_path="test.py", workflow_step="code_parsing"),
+            "context": create_error_context(
+                file_path="test.py", workflow_step="code_parsing"
+            ),
         },
         {
             "name": "AI Confidence Low",
             "exception": ValueError("AI confidence is too low for automatic fix"),
-            "context": create_error_context(workflow_step="ai_processing", confidence=0.3),
+            "context": create_error_context(
+                workflow_step="ai_processing", confidence=0.3
+            ),
         },
     ]
 

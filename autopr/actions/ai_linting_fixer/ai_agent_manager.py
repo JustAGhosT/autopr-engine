@@ -63,7 +63,9 @@ class AIAgentManager:
         logger.debug("Selected agent '%s' for %d issues", best_agent, len(issues))
         return best_agent
 
-    def get_specialized_system_prompt(self, agent_type: str, issues: list[LintingIssue]) -> str:
+    def get_specialized_system_prompt(
+        self, agent_type: str, issues: list[LintingIssue]
+    ) -> str:
         """Get a specialized system prompt for the given agent type."""
         base_prompt = self._get_base_system_prompt()
 
@@ -130,7 +132,9 @@ If you cannot fix the issue, respond with:
 
 IMPORTANT: Never include markdown formatting, code blocks, or any text outside the JSON."""
 
-    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
+    def get_user_prompt(
+        self, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> str:
         """Generate a user prompt for fixing the given issues."""
         prompt = f"Please fix the following linting issues in the Python file '{file_path}':\n\n"
 
@@ -140,11 +144,15 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
         # Add specific issues
         prompt += "Linting issues to fix:\n"
         for i, issue in enumerate(issues, 1):
-            prompt += f"{i}. Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
+            prompt += (
+                f"{i}. Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
+            )
             if issue.line_content:
                 prompt += f"   Line content: {issue.line_content}\n"
 
-        prompt += "\nPlease provide the complete fixed code that resolves all these issues."
+        prompt += (
+            "\nPlease provide the complete fixed code that resolves all these issues."
+        )
         return prompt
 
     def parse_ai_response(self, content: str) -> dict[str, Any]:
@@ -159,7 +167,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 return {
                     "success": False,
                     "error": "No JSON response found",
-                    "raw_response": (content[:200] + "..." if len(content) > 200 else content),
+                    "raw_response": (
+                        content[:200] + "..." if len(content) > 200 else content
+                    ),
                 }
 
             json_content = content[json_start:json_end]
@@ -176,7 +186,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
 
                 if "fixed_code" not in parsed and parsed.get("success", False):
                     parsed["success"] = False
-                    parsed["error"] = "Missing 'fixed_code' field in successful response"
+                    parsed["error"] = (
+                        "Missing 'fixed_code' field in successful response"
+                    )
 
                 return parsed
 
@@ -195,7 +207,11 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                         continue
                     if in_code_block:
                         fixed_code.append(line)
-                    elif line.strip() and not line.startswith("{") and not line.startswith("}"):
+                    elif (
+                        line.strip()
+                        and not line.startswith("{")
+                        and not line.startswith("}")
+                    ):
                         explanation += line + "\n"
 
                 if fixed_code:
@@ -210,7 +226,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 return {
                     "success": False,
                     "error": f"JSON parsing failed: {e}",
-                    "raw_response": (content[:300] + "..." if len(content) > 300 else content),
+                    "raw_response": (
+                        content[:300] + "..." if len(content) > 300 else content
+                    ),
                     "suggestion": "AI response format needs improvement",
                 }
 
@@ -219,7 +237,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
             return {
                 "success": False,
                 "error": f"Parsing error: {exc}",
-                "raw_response": (content[:200] + "..." if len(content) > 200 else content),
+                "raw_response": (
+                    content[:200] + "..." if len(content) > 200 else content
+                ),
             }
 
     def calculate_confidence_score(
@@ -234,7 +254,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
             confidence = 0.3
             confidence = self._score_response_success(ai_response, confidence)
             confidence = self._score_ai_confidence(ai_response, confidence)
-            confidence = self._score_change_size(original_content, fixed_content, confidence)
+            confidence = self._score_change_size(
+                original_content, fixed_content, confidence
+            )
             confidence = self._score_explanation(ai_response, confidence)
             confidence = self._score_changes_list(ai_response, confidence)
             confidence = self._score_issue_complexity(issues, confidence)
@@ -244,15 +266,22 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
             logger.debug("Error calculating confidence score: %s", exc)
             return 0.3
 
-    def _score_response_success(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_response_success(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         if ai_response.get("success"):
             confidence += 0.2
         return confidence
 
-    def _score_ai_confidence(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_ai_confidence(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         if "confidence" in ai_response:
             response_confidence = ai_response["confidence"]
-            if isinstance(response_confidence, (int, float)) and 0 <= response_confidence <= 1:
+            if (
+                isinstance(response_confidence, (int, float))
+                and 0 <= response_confidence <= 1
+            ):
                 confidence = confidence * 0.7 + response_confidence * 0.3
         return confidence
 
@@ -268,7 +297,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 confidence -= 0.1
         return confidence
 
-    def _score_explanation(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_explanation(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         explanation = ai_response.get("explanation")
         if explanation:
             confidence += 0.1
@@ -276,7 +307,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 confidence += 0.05
         return confidence
 
-    def _score_changes_list(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_changes_list(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         changes = ai_response.get("changes_made")
         if changes:
             confidence += 0.1
@@ -284,7 +317,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 confidence += 0.05
         return confidence
 
-    def _score_issue_complexity(self, issues: list[LintingIssue], confidence: float) -> float:
+    def _score_issue_complexity(
+        self, issues: list[LintingIssue], confidence: float
+    ) -> float:
         if len(issues) == 1:
             confidence += 0.1
         elif len(issues) <= 3:
@@ -293,7 +328,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
             confidence -= 0.1
         return confidence
 
-    def _score_issue_types(self, issues: list[LintingIssue], confidence: float) -> float:
+    def _score_issue_types(
+        self, issues: list[LintingIssue], confidence: float
+    ) -> float:
         easy = {"E501", "F401", "W292", "W293"}
         medium = {"F841", "E722", "E401"}
         hard = {"B001", "E302", "E305"}
@@ -311,7 +348,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
         """Get the base system prompt."""
         return self.get_system_prompt()
 
-    def _get_agent_instructions(self, agent_type: str, issues: list[LintingIssue]) -> str:
+    def _get_agent_instructions(
+        self, agent_type: str, issues: list[LintingIssue]
+    ) -> str:
         """Get agent-specific instructions."""
         instructions = {
             "line_length_agent": """

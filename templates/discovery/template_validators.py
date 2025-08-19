@@ -25,7 +25,9 @@ if TYPE_CHECKING:
     from .validation_rules import ValidationRule
 
 # Type variable for validator functions
-ValidatorFunc = Callable[[dict[str, Any], Path, "ValidationRule"], list["ValidationIssue"]]
+ValidatorFunc = Callable[
+    [dict[str, Any], Path, "ValidationRule"], list["ValidationIssue"]
+]
 
 
 class ValidationSeverity(Enum):
@@ -81,7 +83,9 @@ class StructureValidator:
         field_types = (rule.parameters or {}).get("field_types", {})
 
         for field, expected_type in field_types.items():
-            if field in data and not isinstance(data[field], ast.literal_eval(expected_type)):
+            if field in data and not isinstance(
+                data[field], ast.literal_eval(expected_type)
+            ):
                 issues.append(
                     ValidationIssue(
                         severity=ValidationSeverity.ERROR,

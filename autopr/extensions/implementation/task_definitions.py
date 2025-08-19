@@ -320,4 +320,7 @@ class TaskRegistry:
     def get_dependency_graph() -> dict[str, list[str]]:
         """Get the complete dependency graph for all tasks."""
         tasks = TaskRegistry.get_task_definitions()
-        return {task_id: task_info.get("dependencies", []) for task_id, task_info in tasks.items()}
+        return {
+            task_id: task_info.get("dependencies", [])
+            for task_id, task_info in tasks.items()
+        }

@@ -123,7 +123,9 @@ class AutoPRCrew:
             except ImportError:
                 self.llm_provider = None
 
-    def _create_platform_analysis_task(self, repo_path: Path, _context: dict[str, Any]) -> Any:
+    def _create_platform_analysis_task(
+        self, repo_path: Path, _context: dict[str, Any]
+    ) -> Any:
         """Create platform analysis task."""
         agent = self.platform_agent
 
@@ -134,13 +136,13 @@ class AutoPRCrew:
         # Execute platform analysis
         return analyze(repo_path)
 
-    def _create_code_quality_task(self, repo_path: Path, context: dict[str, Any]) -> Any:
+    def _create_code_quality_task(
+        self, repo_path: Path, context: dict[str, Any]
+    ) -> Any:
         """Create code quality analysis task."""
         agent = self.code_quality_agent
         agent.role = "Senior Code Quality Engineer"
-        agent.goal = (
-            "Analyze code quality, maintainability, and technical debt with configurable depth"
-        )
+        agent.goal = "Analyze code quality, maintainability, and technical debt with configurable depth"
 
         # Determine analysis depth based on volume
         current_volume = context.get("volume", self.volume)
@@ -152,7 +154,9 @@ class AutoPRCrew:
 
         # Create task
         tasks_mod = _importlib.import_module("autopr.agents.crew.tasks")
-        task = tasks_mod.create_code_quality_task(repo_path, context, self.code_quality_agent)
+        task = tasks_mod.create_code_quality_task(
+            repo_path, context, self.code_quality_agent
+        )
 
         # Update task description with volume context
         desc = getattr(task, "description", "") or ""
@@ -180,7 +184,9 @@ class AutoPRCrew:
                 merged_ctx = {}
                 merged_ctx.update(context)
                 merged_ctx.update(task_ctx)
-                _ = analyze_code(repo_path=context.get("repo_path", repo_path), context=merged_ctx)
+                _ = analyze_code(
+                    repo_path=context.get("repo_path", repo_path), context=merged_ctx
+                )
 
         # Update task with volume context
         task_ctx = getattr(task, "context", None)
@@ -310,12 +316,17 @@ class AutoPRCrew:
             params = [
                 p
                 for p in sig.parameters.values()
-                if p.name != "self" and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
+                if p.name != "self"
+                and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
             ]
             return builder(*args[: len(params)])
 
-        code_quality_task = _call_builder(self._create_code_quality_task, repo_path, ctx)
-        platform_task = _call_builder(self._create_platform_analysis_task, repo_path, ctx)
+        code_quality_task = _call_builder(
+            self._create_code_quality_task, repo_path, ctx
+        )
+        platform_task = _call_builder(
+            self._create_platform_analysis_task, repo_path, ctx
+        )
         linting_task = _call_builder(self._create_linting_task, repo_path, ctx)
 
         # Create task pairs
@@ -376,7 +387,9 @@ class AutoPRCrew:
             linting_issues = self._normalize_linting_result(linting_result)
 
         # Generate summary
-        summary = self._generate_summary(code_quality, platform_analysis, linting_issues, context)
+        summary = self._generate_summary(
+            code_quality, platform_analysis, linting_issues, context
+        )
 
         return self._build_final_result(
             code_quality=code_quality,

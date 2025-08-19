@@ -134,7 +134,9 @@ class TaskExecutor:
         while remaining_tasks:
             # Find tasks that can be executed
             ready_tasks = [
-                task_id for task_id in remaining_tasks if await can_execute_task(task_id)
+                task_id
+                for task_id in remaining_tasks
+                if await can_execute_task(task_id)
             ]
 
             if not ready_tasks:
@@ -167,7 +169,9 @@ class TaskExecutor:
                         failed_tasks.add(task_id)
                 else:
                     # Unexpected result type
-                    logger.error(f"Task {task_id} returned unexpected result type: {type(result)}")
+                    logger.error(
+                        f"Task {task_id} returned unexpected result type: {type(result)}"
+                    )
                     failed_tasks.add(task_id)
 
                 remaining_tasks.discard(task_id)
@@ -181,7 +185,8 @@ class TaskExecutor:
         failed = sum(1 for e in self.executions.values() if e.is_failed)
 
         total_duration = sum(
-            (e.duration.total_seconds() if e.duration else 0) for e in self.executions.values()
+            (e.duration.total_seconds() if e.duration else 0)
+            for e in self.executions.values()
         )
 
         return {
@@ -194,7 +199,9 @@ class TaskExecutor:
                 task_id: {
                     "status": execution.status,
                     "duration_seconds": (
-                        execution.duration.total_seconds() if execution.duration else None
+                        execution.duration.total_seconds()
+                        if execution.duration
+                        else None
                     ),
                     "error": execution.error_message,
                 }
@@ -491,7 +498,9 @@ class CircuitBreaker:
     async def _implement_multi_cloud_deployment(self) -> dict[str, Any]:
         return {"status": "completed", "message": "Multi-cloud deployment implemented"}
 
-    async def _execute_task_implementation(self, task_id: str) -> TaskExecution | BaseException:
+    async def _execute_task_implementation(
+        self, task_id: str
+    ) -> TaskExecution | BaseException:
         """Execute task implementation."""
         handler = self.task_handlers.get(task_id)
         if handler:

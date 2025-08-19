@@ -63,7 +63,9 @@ class FileManager:
                 successful_backups += 1
         return successful_backups
 
-    def write_file_safely(self, file_path: str, content: str, backup: bool = True) -> bool:
+    def write_file_safely(
+        self, file_path: str, content: str, backup: bool = True
+    ) -> bool:
         """Write content to a file with optional backup."""
         backup_path = None
         if backup:
@@ -82,7 +84,9 @@ class FileManager:
             if backup_path and Path(backup_path).exists():
                 try:
                     shutil.copy2(backup_path, file_path)
-                    logger.info("Restored %s from backup after write failure", file_path)
+                    logger.info(
+                        "Restored %s from backup after write failure", file_path
+                    )
                     return False
                 except Exception as restore_error:
                     logger.exception("Failed to restore from backup: %s", restore_error)
@@ -101,7 +105,9 @@ class FileManager:
             return True
 
         except Exception as e:
-            logger.exception("Failed to restore %s from backup %s: %s", file_path, backup_path, e)
+            logger.exception(
+                "Failed to restore %s from backup %s: %s", file_path, backup_path, e
+            )
             return False
 
     def read_file_safely(self, file_path: str) -> tuple[bool, str]:
@@ -152,8 +158,12 @@ class FileManager:
                 "exists": True,
                 "size_bytes": stat.st_size,
                 "size_mb": stat.st_size / (1024 * 1024),
-                "modified_time": datetime.fromtimestamp(stat.st_mtime, tz=UTC).isoformat(),
-                "created_time": datetime.fromtimestamp(stat.st_ctime, tz=UTC).isoformat(),
+                "modified_time": datetime.fromtimestamp(
+                    stat.st_mtime, tz=UTC
+                ).isoformat(),
+                "created_time": datetime.fromtimestamp(
+                    stat.st_ctime, tz=UTC
+                ).isoformat(),
                 "is_file": file_path_obj.is_file(),
                 "is_directory": file_path_obj.is_dir(),
                 "extension": file_path_obj.suffix,
@@ -186,7 +196,9 @@ class FileManager:
                     backup_info["original_name"] = original_name
 
                     # Filter by original file if specified
-                    if file_path and not backup_file.name.startswith(Path(file_path).stem):
+                    if file_path and not backup_file.name.startswith(
+                        Path(file_path).stem
+                    ):
                         continue
 
                 backups.append(backup_info)
@@ -199,7 +211,9 @@ class FileManager:
         else:
             return backups
 
-    def cleanup_old_backups(self, max_backups: int = 10, older_than_days: int | None = None) -> int:
+    def cleanup_old_backups(
+        self, max_backups: int = 10, older_than_days: int | None = None
+    ) -> int:
         """Clean up old backup files."""
         try:
             backups = self.list_backups()
@@ -211,11 +225,14 @@ class FileManager:
 
             # Additional filtering by age if specified
             if older_than_days:
-                cutoff_time = datetime.now(UTC).timestamp() - (older_than_days * 24 * 60 * 60)
+                cutoff_time = datetime.now(UTC).timestamp() - (
+                    older_than_days * 24 * 60 * 60
+                )
                 backups_to_remove = [
                     backup
                     for backup in backups_to_remove
-                    if datetime.fromisoformat(backup["modified_time"]).timestamp() < cutoff_time
+                    if datetime.fromisoformat(backup["modified_time"]).timestamp()
+                    < cutoff_time
                 ]
 
             removed_count = 0
@@ -225,7 +242,9 @@ class FileManager:
                     logger.debug("Removed old backup: %s", backup["backup_path"])
                     removed_count += 1
                 except Exception as e:
-                    logger.warning("Failed to remove backup %s: %s", backup["backup_path"], e)
+                    logger.warning(
+                        "Failed to remove backup %s: %s", backup["backup_path"], e
+                    )
 
             logger.info("Cleaned up %d old backup files", removed_count)
             return removed_count
@@ -264,7 +283,9 @@ class FileManager:
                 if len(line) > 1000:  # Very long lines might indicate issues
                     warnings_list = validation_result["warnings"]
                     self._validate_warnings_list(warnings_list)
-                    warnings_list.append(f"Line {i} is very long ({len(line)} characters)")
+                    warnings_list.append(
+                        f"Line {i} is very long ({len(line)} characters)"
+                    )
 
             # Check for mixed line endings
             if "\r\n" in content and "\n" in content:
@@ -360,7 +381,9 @@ class FileManager:
     def _validate_file_info_list(self, file_info_list: list) -> None:
         """Validate that file_info_list is a list of valid file_info dicts."""
         if not isinstance(file_info_list, list):
-            msg = f"Expected list for file_info_list, got {type(file_info_list).__name__}"
+            msg = (
+                f"Expected list for file_info_list, got {type(file_info_list).__name__}"
+            )
             raise TypeError(msg)
 
         for file_info in file_info_list:
@@ -369,7 +392,9 @@ class FileManager:
     def _validate_file_info_dict(self, file_info_dict: dict) -> None:
         """Validate that file_info_dict is a dict of valid file_info dicts."""
         if not isinstance(file_info_dict, dict):
-            msg = f"Expected dict for file_info_dict, got {type(file_info_dict).__name__}"
+            msg = (
+                f"Expected dict for file_info_dict, got {type(file_info_dict).__name__}"
+            )
             raise TypeError(msg)
 
         for file_info in file_info_dict.values():

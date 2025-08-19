@@ -26,7 +26,9 @@ def main():
             for ext_dir in vscode_cache.iterdir():
                 if ext_dir.is_dir():
                     ext_name = ext_dir.name.lower()
-                    if any(name in ext_name for name in ["continue", "monica", "tabnine"]):
+                    if any(
+                        name in ext_name for name in ["continue", "monica", "tabnine"]
+                    ):
                         shutil.rmtree(ext_dir, ignore_errors=True)
         except Exception:
             pass
@@ -39,7 +41,9 @@ def main():
             for ext_dir in cursor_cache.iterdir():
                 if ext_dir.is_dir():
                     ext_name = ext_dir.name.lower()
-                    if any(name in ext_name for name in ["continue", "monica", "tabnine"]):
+                    if any(
+                        name in ext_name for name in ["continue", "monica", "tabnine"]
+                    ):
                         shutil.rmtree(ext_dir, ignore_errors=True)
         except Exception:
             pass
@@ -65,7 +69,9 @@ def main():
     # Create a touch file to force IDE refresh
     touch_file = ".extension-refresh"
     with open(touch_file, "w") as f:
-        f.write(f"Extension refresh triggered at {__import__('datetime').datetime.now()}")
+        f.write(
+            f"Extension refresh triggered at {__import__('datetime').datetime.now()}"
+        )
 
     # Try to reload the IDE window
     try:

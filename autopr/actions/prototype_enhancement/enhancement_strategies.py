@@ -18,7 +18,9 @@ class EnhancementStrategy:
         self.config = platform_config
         self.file_generator = file_generator
 
-    def enhance_project(self, project_path: Path, enhancement_type: str) -> dict[str, Any]:
+    def enhance_project(
+        self, project_path: Path, enhancement_type: str
+    ) -> dict[str, Any]:
         """Enhance a project based on the enhancement type."""
         msg = "Subclasses must implement enhance_project"
         raise NotImplementedError(msg)
@@ -37,7 +39,9 @@ class EnhancementStrategy:
 class ReplitEnhancementStrategy(EnhancementStrategy):
     """Enhancement strategy for Replit projects."""
 
-    def enhance_project(self, project_path: Path, enhancement_type: str) -> dict[str, Any]:
+    def enhance_project(
+        self, project_path: Path, enhancement_type: str
+    ) -> dict[str, Any]:
         """Enhance a Replit project."""
         result = {
             "platform": "replit",
@@ -66,7 +70,9 @@ class ReplitEnhancementStrategy(EnhancementStrategy):
         # Generate production files
         files = {
             "Dockerfile": self.file_generator.generate_dockerfile("replit"),
-            ".env.example": self.file_generator.generate_security_files("replit")[".env.example"],
+            ".env.example": self.file_generator.generate_security_files("replit")[
+                ".env.example"
+            ],
             "ecosystem.config.js": self._generate_pm2_config(),
         }
 
@@ -152,7 +158,8 @@ module.exports = {
 
         if enhancement_type == "production_ready":
             return {
-                "dependencies": packages["security"]["common"] + packages["performance"]["common"],
+                "dependencies": packages["security"]["common"]
+                + packages["performance"]["common"],
                 "devDependencies": [],
             }
         if enhancement_type == "testing":
@@ -189,7 +196,9 @@ module.exports = {
 class LovableEnhancementStrategy(EnhancementStrategy):
     """Enhancement strategy for Lovable.dev projects."""
 
-    def enhance_project(self, project_path: Path, enhancement_type: str) -> dict[str, Any]:
+    def enhance_project(
+        self, project_path: Path, enhancement_type: str
+    ) -> dict[str, Any]:
         """Enhance a Lovable.dev project."""
         result = {
             "platform": "lovable",
@@ -317,7 +326,8 @@ export default ErrorBoundary;
 
         if enhancement_type == "production_ready":
             return {
-                "dependencies": packages["performance"]["react"] + packages["monitoring"]["react"],
+                "dependencies": packages["performance"]["react"]
+                + packages["monitoring"]["react"],
                 "devDependencies": packages["development"]["typescript"],
             }
         if enhancement_type == "testing":
@@ -335,7 +345,9 @@ export default ErrorBoundary;
         if enhancement_type == "production_ready":
             return {
                 "Dockerfile": self.file_generator.generate_dockerfile("lovable"),
-                "tsconfig.json": self.file_generator.generate_typescript_config("lovable"),
+                "tsconfig.json": self.file_generator.generate_typescript_config(
+                    "lovable"
+                ),
                 "src/utils/errorBoundary.tsx": self._generate_error_boundary(),
             }
         if enhancement_type == "testing":
@@ -351,7 +363,9 @@ export default ErrorBoundary;
 class BoltEnhancementStrategy(EnhancementStrategy):
     """Enhancement strategy for Bolt.new projects."""
 
-    def enhance_project(self, project_path: Path, enhancement_type: str) -> dict[str, Any]:
+    def enhance_project(
+        self, project_path: Path, enhancement_type: str
+    ) -> dict[str, Any]:
         """Enhance a Bolt.new project."""
         result = {
             "platform": "bolt",
@@ -506,7 +520,8 @@ global.IntersectionObserver = vi.fn(() => ({
         if enhancement_type == "testing":
             return {
                 "dependencies": [],
-                "devDependencies": ["vitest", "@vitest/ui", "jsdom"] + packages["testing"]["react"],
+                "devDependencies": ["vitest", "@vitest/ui", "jsdom"]
+                + packages["testing"]["react"],
             }
         if enhancement_type == "security":
             return {
@@ -553,7 +568,9 @@ class EnhancementStrategyFactory:
 
         # Generic strategy for other platforms - create a basic implementation
         class GenericEnhancementStrategy(EnhancementStrategy):
-            def enhance_project(self, project_path: Path, enhancement_type: str) -> dict[str, Any]:
+            def enhance_project(
+                self, project_path: Path, enhancement_type: str
+            ) -> dict[str, Any]:
                 return {
                     "platform": platform,
                     "enhancement_type": enhancement_type,
@@ -563,7 +580,9 @@ class EnhancementStrategyFactory:
                     "next_steps": [],
                 }
 
-            def get_package_updates(self, enhancement_type: str) -> dict[str, list[str]]:
+            def get_package_updates(
+                self, enhancement_type: str
+            ) -> dict[str, list[str]]:
                 return {"dependencies": [], "devDependencies": []}
 
             def generate_files(self, enhancement_type: str) -> dict[str, str]:

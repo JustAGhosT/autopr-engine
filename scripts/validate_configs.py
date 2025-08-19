@@ -60,7 +60,9 @@ def validate_json_file(file_path: str) -> tuple[bool, str]:
         return False, f"File Error: {e}"
 
 
-def check_duplicate_workflows(config_files: dict[str, list[str]]) -> list[tuple[str, str]]:
+def check_duplicate_workflows(
+    config_files: dict[str, list[str]]
+) -> list[tuple[str, str]]:
     """Check for duplicate workflow configurations."""
     duplicates = []
     workflow_names = {}
@@ -145,7 +147,9 @@ def generate_config_report(results: dict[str, Any]) -> str:
 
     # Invalid files
     if results["invalid_files"]:
-        report.append(f"❌ Invalid Configuration Files ({len(results['invalid_files'])}):")
+        report.append(
+            f"❌ Invalid Configuration Files ({len(results['invalid_files'])}):"
+        )
         for file_path, error in results["invalid_files"]:
             report.append(f"  - {file_path}: {error}")
         report.append("")

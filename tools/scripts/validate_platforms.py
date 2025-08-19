@@ -73,13 +73,19 @@ def find_config_files() -> list[Path]:
 
 def validate_platform_config(config: dict[str, Any]) -> tuple[bool, list[str]]:
     """Validate platform config against schema."""
-    errors = [f"Missing required field: {f}" for f in REQUIRED_PLATFORM_FIELDS if f not in config]
+    errors = [
+        f"Missing required field: {f}"
+        for f in REQUIRED_PLATFORM_FIELDS
+        if f not in config
+    ]
     return len(errors) == 0, errors
 
 
 def validate_platform_index(index: dict[str, Any]) -> tuple[bool, list[str]]:
     """Validate platform index against schema."""
-    errors = [f"Missing required field: {f}" for f in REQUIRED_INDEX_FIELDS if f not in index]
+    errors = [
+        f"Missing required field: {f}" for f in REQUIRED_INDEX_FIELDS if f not in index
+    ]
     return len(errors) == 0, errors
 
 

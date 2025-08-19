@@ -20,7 +20,9 @@ from .template_models import TemplateInfo
 class TemplateReportGenerator:
     """Generates comprehensive reports about templates."""
 
-    def __init__(self, templates: list[TemplateInfo], platform_categories: dict[str, Any]) -> None:
+    def __init__(
+        self, templates: list[TemplateInfo], platform_categories: dict[str, Any]
+    ) -> None:
         """Initialize the report generator."""
         self.templates = templates
         self.platform_categories = platform_categories
@@ -76,7 +78,9 @@ class TemplateReportGenerator:
             report["platform_coverage"][platform] = {
                 "total_templates": len(platform_templates),
                 "categories": list({t.category for t in platform_templates}),
-                "use_cases": list({uc for t in platform_templates for uc in t.use_cases}),
+                "use_cases": list(
+                    {uc for t in platform_templates for uc in t.use_cases}
+                ),
             }
 
         return report
@@ -232,7 +236,9 @@ class TemplateReportGenerator:
             "complex": 5,
         }
 
-        total_score = sum(complexity_mapping.get(t.complexity.lower(), 2) for t in templates)
+        total_score = sum(
+            complexity_mapping.get(t.complexity.lower(), 2) for t in templates
+        )
         return total_score / len(templates)
 
     def _get_most_common_features(
@@ -246,5 +252,7 @@ class TemplateReportGenerator:
                 feature_counts[feature.lower()] += 1
 
         # Sort by frequency and return top features
-        sorted_features = sorted(feature_counts.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_features = sorted(
+            feature_counts.items(), key=operator.itemgetter(1), reverse=True
+        )
         return [feature for feature, _ in sorted_features[:limit]]

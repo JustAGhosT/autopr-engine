@@ -239,7 +239,8 @@ Template content not available.
             template_file.stem for template_file in self.doc_templates_dir.glob("*.md")
         )
         templates.update(
-            template_file.stem for template_file in self.doc_templates_dir.glob("*.html")
+            template_file.stem
+            for template_file in self.doc_templates_dir.glob("*.html")
         )
         templates.update(
             template_file.stem for template_file in self.doc_templates_dir.glob("*.txt")
@@ -270,7 +271,9 @@ def load_template(template_name: str, templates_root: Path | None = None) -> str
     return loader.load_template(template_name)
 
 
-def render_template(template_name: str, templates_root: Path | None = None, **kwargs: Any) -> str:
+def render_template(
+    template_name: str, templates_root: Path | None = None, **kwargs: Any
+) -> str:
     """Render a template with variables."""
     loader = TemplateLoader(templates_root)
     return loader.render_template(template_name, **kwargs)

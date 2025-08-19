@@ -28,7 +28,9 @@ async def run_tool(
 
         # Use the enhanced run_with_timeout method if available
         if hasattr(tool_instance, "run_with_timeout"):
-            result: ToolExecutionResult = await tool_instance.run_with_timeout(files, tool_config)
+            result: ToolExecutionResult = await tool_instance.run_with_timeout(
+                files, tool_config
+            )
 
             # Extract issues and handle errors
             issues = result["issues"]

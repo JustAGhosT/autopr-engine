@@ -48,7 +48,9 @@ def get_warning_filters(volume: int) -> list[str]:
         config = toml.load(f)
 
     # Get the volume warnings configuration
-    volume_warnings = config.get("tool", {}).get("pytest", {}).get("volume_warnings", {})
+    volume_warnings = (
+        config.get("tool", {}).get("pytest", {}).get("volume_warnings", {})
+    )
 
     # Find the closest volume level that's less than or equal to the current volume
     volume_levels = sorted(int(k) for k in volume_warnings if k.isdigit())
@@ -90,7 +92,9 @@ def _wrap_warnings_warn(volume: int):
         if volume == 100:
             if category in (UserWarning, PendingDeprecationWarning):
                 return None
-            return original_warn(message, category=category, stacklevel=stacklevel, source=source)
+            return original_warn(
+                message, category=category, stacklevel=stacklevel, source=source
+            )
 
         # Maximum: treat all warnings as errors
         if volume >= 1000:
@@ -98,7 +102,9 @@ def _wrap_warnings_warn(volume: int):
             raise exc(message)  # type: ignore[misc]
 
         # Default behavior for other volumes
-        return original_warn(message, category=category, stacklevel=stacklevel, source=source)
+        return original_warn(
+            message, category=category, stacklevel=stacklevel, source=source
+        )
 
     return warn
 
@@ -107,7 +113,9 @@ def pytest_configure(config):
     """Configure pytest with volume-based warning filters."""
     # Set default test volume if not already set
     if "AUTOPR_TEST_VOLUME_LEVEL" not in os.environ:
-        os.environ["AUTOPR_TEST_VOLUME_LEVEL"] = "500"  # Default to balanced mode for tests
+        os.environ["AUTOPR_TEST_VOLUME_LEVEL"] = (
+            "500"  # Default to balanced mode for tests
+        )
 
     # Add a custom marker for volume-based tests
     config.addinivalue_line(
@@ -130,7 +138,9 @@ def pytest_configure(config):
 def event_loop():
     """Create and set a cross-platform event loop for the test session."""
     # Use Windows selector policy on Windows only; default elsewhere
-    if sys.platform.startswith("win") and hasattr(asyncio, "WindowsSelectorEventLoopPolicy"):
+    if sys.platform.startswith("win") and hasattr(
+        asyncio, "WindowsSelectorEventLoopPolicy"
+    ):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)

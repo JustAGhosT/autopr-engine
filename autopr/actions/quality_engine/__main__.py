@@ -20,8 +20,12 @@ def main() -> None:
         default="smart",
         help="Quality check mode",
     )
-    parser.add_argument("--files", nargs="*", help="Files to check (supports glob patterns)")
-    parser.add_argument("--config", default="pyproject.toml", help="Path to configuration file")
+    parser.add_argument(
+        "--files", nargs="*", help="Files to check (supports glob patterns)"
+    )
+    parser.add_argument(
+        "--config", default="pyproject.toml", help="Path to configuration file"
+    )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument("--ai-provider", help="AI provider to use for AI-enhanced mode")
     parser.add_argument("--ai-model", help="AI model to use for AI-enhanced mode")
@@ -37,7 +41,9 @@ def main() -> None:
     )
 
     # Auto-fix options
-    parser.add_argument("--auto-fix", action="store_true", help="Automatically fix issues using AI")
+    parser.add_argument(
+        "--auto-fix", action="store_true", help="Automatically fix issues using AI"
+    )
     parser.add_argument(
         "--fix-types", nargs="+", help="Types of issues to fix (e.g., E501 F401 F841)"
     )

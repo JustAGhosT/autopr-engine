@@ -48,7 +48,11 @@ def force_ide_refresh():
     if os.path.exists("pyproject.toml"):
         with open("pyproject.toml") as f:
             content = f.read()
-            if "[tool.flake8]" in content or "[tool.ruff]" in content or "[tool.mypy]" in content:
+            if (
+                "[tool.flake8]" in content
+                or "[tool.ruff]" in content
+                or "[tool.mypy]" in content
+            ):
                 pass
             else:
                 pass

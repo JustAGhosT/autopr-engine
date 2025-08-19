@@ -37,7 +37,9 @@ class SecurityGenerator(BaseGenerator):
         generated_files.extend(self._generate_env_example(output_dir, template_vars))
 
         # Generate security middleware/config
-        generated_files.extend(self._generate_security_config(output_dir, template_vars))
+        generated_files.extend(
+            self._generate_security_config(output_dir, template_vars)
+        )
 
         # Generate security.txt
         generated_files.extend(self._generate_security_txt(output_dir, template_vars))
@@ -49,7 +51,9 @@ class SecurityGenerator(BaseGenerator):
         alphabet = string.ascii_letters + string.digits + "!@#$%^&*()_+-=[]{}|;:,.<>?"
         return "".join(secrets.choice(alphabet) for _ in range(length))
 
-    def _generate_env_example(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_env_example(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate .env.example file with security variables."""
         env_vars = {
             "NODE_ENV": "development",
@@ -71,7 +75,9 @@ class SecurityGenerator(BaseGenerator):
 
         return [file_path]
 
-    def _generate_security_config(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_security_config(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate security configuration files."""
         generated_files = []
         language = variables.get("language", "")
@@ -116,7 +122,9 @@ export const securityConfig = {
 
         return generated_files
 
-    def _generate_security_txt(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_security_txt(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate security.txt file."""
         content = """# Security contact information
 Contact: security@example.com

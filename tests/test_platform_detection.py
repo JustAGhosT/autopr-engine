@@ -15,7 +15,9 @@ class TestPlatformDetection(unittest.TestCase):
         # Verify each platform has the required structure
         for platform_id, platform in ai_platforms.items():
             # Check required top-level fields
-            assert platform_id == platform.get("id"), f"Platform ID mismatch for {platform_id}"
+            assert platform_id == platform.get(
+                "id"
+            ), f"Platform ID mismatch for {platform_id}"
             assert isinstance(
                 platform.get("name"), str
             ), f"Platform {platform_id} missing or invalid 'name'"
@@ -27,7 +29,9 @@ class TestPlatformDetection(unittest.TestCase):
             ), f"Platform {platform_id} has incorrect category"
 
             # Verify detection section exists
-            assert "detection" in platform, f"Platform {platform_id} missing 'detection' section"
+            assert (
+                "detection" in platform
+            ), f"Platform {platform_id} missing 'detection' section"
 
             # Log the platforms we're testing for visibility in test output
 
@@ -47,7 +51,9 @@ class TestPlatformDetection(unittest.TestCase):
 
         for platform_id, platform in all_platforms.items():
             # Check required top-level fields
-            assert platform_id == platform.get("id"), f"Platform ID mismatch for {platform_id}"
+            assert platform_id == platform.get(
+                "id"
+            ), f"Platform ID mismatch for {platform_id}"
 
             # Check detection section (optional)
             if "detection" in platform:

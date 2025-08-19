@@ -87,7 +87,9 @@ def execute_with_orchestration(
             return _execute_with_celery(inputs, orchestration_config)
         if orchestration_config.orchestrator_type == "prefect":
             return _execute_with_prefect(inputs, orchestration_config)
-        logger.warning(f"Unknown orchestrator type: {orchestration_config.orchestrator_type}")
+        logger.warning(
+            f"Unknown orchestrator type: {orchestration_config.orchestrator_type}"
+        )
         return _execute_standalone(inputs)
 
     except Exception as e:

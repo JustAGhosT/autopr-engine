@@ -192,12 +192,16 @@ class TestGitHubClient(TestCase):
         expected_response = {"data": {"repository": {"id": "R_123", "name": "repo"}}}
 
         # Mock the post method
-        with patch.object(self.client, "post", return_value=expected_response) as mock_post:
+        with patch.object(
+            self.client, "post", return_value=expected_response
+        ) as mock_post:
             # Execute the GraphQL query
             result = await self.client.graphql(query)
 
             # Verify the request was made correctly
-            mock_post.assert_called_once_with("/graphql", data={"query": query, "variables": None})
+            mock_post.assert_called_once_with(
+                "/graphql", data={"query": query, "variables": None}
+            )
 
             # Verify the result
             assert result == expected_response["data"]
@@ -206,7 +210,9 @@ class TestGitHubClient(TestCase):
     async def test_graphql_errors(self) -> None:
         """Test GraphQL query with errors."""
         query = "INVALID_QUERY"
-        error_response = {"errors": [{"message": "Syntax Error: Expected Name, found '}'"}]}
+        error_response = {
+            "errors": [{"message": "Syntax Error: Expected Name, found '}'"}]
+        }
 
         # Mock the post method to return an error
         with patch.object(self.client, "post", return_value=error_response):
@@ -291,7 +297,9 @@ class TestGitHubClient(TestCase):
         with patch.object(self.client, "_post") as mock_post:
             mock_post.return_value = self.mock_response
 
-            result = await self.client.create_issue(owner, repo, title, body, labels, assignees)
+            result = await self.client.create_issue(
+                owner, repo, title, body, labels, assignees
+            )
 
             mock_post.assert_called_once_with(expected_url, data=expected_data)
             assert result == self.mock_response

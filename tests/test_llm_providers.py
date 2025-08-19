@@ -153,7 +153,9 @@ def test_api_calls() -> None:
         from autopr.actions.llm import MessageRole, complete_chat
 
         # Simple test message
-        test_messages = [{"role": MessageRole.USER.value, "content": "Say 'Hello from AutoPR!'"}]
+        test_messages = [
+            {"role": MessageRole.USER.value, "content": "Say 'Hello from AutoPR!'"}
+        ]
 
         # Try each provider
         successful_calls = 0
