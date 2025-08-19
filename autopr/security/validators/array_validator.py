@@ -1,5 +1,4 @@
-from autopr.security.validation_models import (ValidationResult,
-                                               ValidationSeverity)
+from autopr.security.validation_models import ValidationResult, ValidationSeverity
 
 
 class ArrayValidator:

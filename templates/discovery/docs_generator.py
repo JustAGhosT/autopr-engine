@@ -22,8 +22,8 @@ from datetime import datetime
 from pathlib import Path
 
 from discovery.content_analyzer import ContentAnalyzer, TemplateAnalysis
-from discovery.format_generators import (DocumentationConfig,
-                                         FormatGeneratorFactory)
+from discovery.format_generators import DocumentationConfig, FormatGeneratorFactory
+
 # Import modular components
 from discovery.template_loader import TemplateLoader
 

@@ -5,24 +5,27 @@ Orchestrates all modular components and provides the same interface as the origi
 for backward compatibility while improving maintainability and testability.
 """
 
-import logging
 from dataclasses import asdict
+import logging
 from pathlib import Path
 from typing import Any
 
 try:
     from autopr.models.artifacts import (  # type: ignore[import-untyped]
-        PrototypeEnhancerInputs, PrototypeEnhancerOutputs)
+        PrototypeEnhancerInputs,
+        PrototypeEnhancerOutputs,
+    )
 except ImportError:
     # Fallback for when models are not available during development
     from typing import Any as PrototypeEnhancerInputs
     from typing import Any as PrototypeEnhancerOutputs
 
 from autopr.actions.prototype_enhancement.enhancement_strategies import (
-    EnhancementStrategy, EnhancementStrategyFactory)
+    EnhancementStrategy,
+    EnhancementStrategyFactory,
+)
 from autopr.actions.prototype_enhancement.file_generators import FileGenerator
-from autopr.actions.prototype_enhancement.platform_configs import (
-    PlatformConfig, PlatformRegistry)
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig, PlatformRegistry
 
 logger = logging.getLogger(__name__)
 

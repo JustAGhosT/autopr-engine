@@ -3,8 +3,7 @@ from typing import Any
 # mypy: disable-error-code=misc
 import structlog
 
-from autopr.security.validation_models import (ValidationResult,
-                                               ValidationSeverity)
+from autopr.security.validation_models import ValidationResult, ValidationSeverity
 from autopr.security.validators.array_validator import ArrayValidator
 from autopr.security.validators.file_validator import FileValidator
 from autopr.security.validators.number_validator import NumberValidator

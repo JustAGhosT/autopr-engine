@@ -7,8 +7,7 @@ Handles generation of Dockerfiles, docker-compose files, and related configurati
 from pathlib import Path
 from typing import Any
 
-from autopr.actions.prototype_enhancement.generators.base_generator import \
-    BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class DockerGenerator(BaseGenerator):

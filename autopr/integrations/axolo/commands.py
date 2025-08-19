@@ -1,6 +1,6 @@
+from datetime import datetime
 import logging
 import re
-from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 logger = logging.getLogger(__name__)
@@ -68,8 +68,7 @@ class AxoloCommandHandler:
 
         except Exception as e:
             try:
-                from slack_sdk.errors import \
-                    SlackApiError  # type: ignore[import-not-found]
+                from slack_sdk.errors import SlackApiError  # type: ignore[import-not-found]
 
                 if isinstance(e, SlackApiError):
                     logger.exception(f"Slack API error: {e!s}")

@@ -9,10 +9,12 @@ import logging
 import os
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs,
-                                                    OrchestrationConfig,
-                                                    WorkflowResult)
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    OrchestrationConfig,
+    WorkflowResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +103,7 @@ def execute_with_orchestration(
 def _execute_standalone(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
     """Execute AI linting fixer in standalone mode."""
     try:
-        from autopr.actions.ai_linting_fixer.ai_linting_fixer import \
-            AILintingFixer
+        from autopr.actions.ai_linting_fixer.ai_linting_fixer import AILintingFixer
 
         # Initialize components
         fixer = AILintingFixer()
@@ -128,8 +129,7 @@ def _execute_with_temporal(
     try:
         from datetime import timedelta
 
-        from temporalio import (  # type: ignore[import-not-found]  # type: ignore
-            activity, workflow)
+        from temporalio import activity, workflow  # type: ignore[import-not-found]  # type: ignore
 
         @activity.defn
         async def ai_linting_activity(input_data: dict[str, Any]) -> dict[str, Any]:
@@ -190,8 +190,7 @@ def _execute_with_celery(
 ) -> WorkflowResult:
     """Execute with Celery orchestration."""
     try:
-        from celery import \
-            Celery  # type: ignore[import-not-found]  # type: ignore
+        from celery import Celery  # type: ignore[import-not-found]  # type: ignore
 
         # Initialize Celery app
         app = Celery(
@@ -248,8 +247,7 @@ def _execute_with_prefect(
 ) -> WorkflowResult:
     """Execute with Prefect orchestration."""
     try:
-        from prefect import (  # type: ignore[import-not-found]  # type: ignore
-            flow, task)
+        from prefect import flow, task  # type: ignore[import-not-found]  # type: ignore
 
         @task
         def ai_linting_task(input_data: dict[str, Any]) -> dict[str, Any]:

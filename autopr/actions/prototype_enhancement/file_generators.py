@@ -10,10 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from autopr.actions.prototype_enhancement.config_loader import ConfigLoader
-from autopr.actions.prototype_enhancement.platform_configs import (
-    PlatformConfig, PlatformRegistry)
-from autopr.actions.prototype_enhancement.template_metadata import \
-    TemplateRegistry
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig, PlatformRegistry
+from autopr.actions.prototype_enhancement.template_metadata import TemplateRegistry
 
 
 class FileGenerator:

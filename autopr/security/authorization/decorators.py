@@ -3,8 +3,7 @@
 from functools import wraps
 from typing import Any
 
-from autopr.security.authorization.models import (AuthorizationContext,
-                                                  Permission, ResourceType)
+from autopr.security.authorization.models import AuthorizationContext, Permission, ResourceType
 from autopr.security.authorization.utils import get_authorization_manager
 
 

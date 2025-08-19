@@ -3,16 +3,15 @@ Main Implementation Roadmap Orchestrator
 Coordinates all modular components and maintains backward compatibility
 """
 
-import logging
-import sys
 from datetime import datetime
+import logging
 from pathlib import Path
+import sys
 from typing import Any
 
 from implementation_roadmap.phase_manager import PhaseManager
 from implementation_roadmap.report_generator import ReportGenerator
-from implementation_roadmap.task_definitions import (ImplementationPhases,
-                                                     TaskRegistry)
+from implementation_roadmap.task_definitions import ImplementationPhases, TaskRegistry
 from implementation_roadmap.task_executor import TaskExecutor
 
 logger = logging.getLogger(__name__)

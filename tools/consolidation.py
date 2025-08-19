@@ -4,8 +4,8 @@ AutoPR Consolidation Tool
 Handles all cleanup, migration, and optimization tasks
 """
 
-import shutil
 from pathlib import Path
+import shutil
 
 
 class Consolidator:

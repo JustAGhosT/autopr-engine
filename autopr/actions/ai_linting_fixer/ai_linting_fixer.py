@@ -12,15 +12,12 @@ from typing import Any
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
 from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
 from autopr.actions.ai_linting_fixer.detection import IssueDetector
-from autopr.actions.ai_linting_fixer.display import (AILintingFixerDisplay,
-                                                     DisplayConfig)
+from autopr.actions.ai_linting_fixer.display import AILintingFixerDisplay, DisplayConfig
 from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
 from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs)
-from autopr.actions.ai_linting_fixer.performance_tracker import \
-    PerformanceTracker
+from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
+from autopr.actions.ai_linting_fixer.performance_tracker import PerformanceTracker
 from autopr.actions.llm.manager import LLMProviderManager
 
 logger = logging.getLogger(__name__)
@@ -67,8 +64,7 @@ class AILintingFixer:
 
         # Initialize database for logging interactions
         try:
-            from autopr.actions.ai_linting_fixer.database import \
-                AIInteractionDB
+            from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 
             self.database = AIInteractionDB()
             self.issue_fixer.database = self.database

@@ -4,9 +4,9 @@ Base classes and interfaces for file analysis.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 import fnmatch
 import logging
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
@@ -89,8 +89,7 @@ class FileAnalyzer:
     ) -> None:
         """Register a handler for files matching the given pattern."""
         # Import here to avoid circular import
-        from autopr.actions.platform_detection.analysis.handlers import \
-            FileHandler
+        from autopr.actions.platform_detection.analysis.handlers import FileHandler
 
         if not issubclass(handler_cls, FileHandler):
             msg = f"Handler must be a subclass of FileHandler, got {handler_cls}"

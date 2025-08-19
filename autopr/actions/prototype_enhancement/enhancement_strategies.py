@@ -8,8 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from autopr.actions.prototype_enhancement.file_generators import FileGenerator
-from autopr.actions.prototype_enhancement.platform_configs import (
-    PlatformConfig, PlatformRegistry)
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig, PlatformRegistry
 
 
 class EnhancementStrategy:

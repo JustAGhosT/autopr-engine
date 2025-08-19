@@ -19,24 +19,23 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from discovery.report_generators import (ReportGeneratorFactory,
-                                         generate_batch_report,
-                                         generate_report, save_report)
-from discovery.template_validators import \
-    ValidationIssue as LocalValidationIssue
-from discovery.template_validators import \
-    ValidationSeverity as LocalValidationSeverity
+from autopr.quality.template_metrics import QualityMetrics, get_quality_analyzer, get_quality_scorer
+from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue
+from autopr.quality.template_metrics.validation_types import (
+    ValidationSeverity as QMValidationSeverity,
+)
+from discovery.report_generators import (
+    ReportGeneratorFactory,
+    generate_batch_report,
+    generate_report,
+    save_report,
+)
+from discovery.template_validators import ValidationIssue as LocalValidationIssue
+from discovery.template_validators import ValidationSeverity as LocalValidationSeverity
 from discovery.template_validators import get_validator_registry
+
 # Import modular components
 from discovery.validation_rules import get_validation_rules
-
-from autopr.quality.template_metrics import (QualityMetrics,
-                                             get_quality_analyzer,
-                                             get_quality_scorer)
-from autopr.quality.template_metrics.validation_types import \
-    ValidationIssue as QMValidationIssue
-from autopr.quality.template_metrics.validation_types import \
-    ValidationSeverity as QMValidationSeverity
 
 
 def convert_validation_issue(

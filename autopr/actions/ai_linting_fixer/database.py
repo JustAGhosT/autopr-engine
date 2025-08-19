@@ -5,16 +5,15 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
+from datetime import UTC, datetime
 import json
 import logging
-import sqlite3
-from datetime import UTC, datetime
 from pathlib import Path
+import sqlite3
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
-from autopr.actions.ai_linting_fixer.reporting import \
-    get_database_info as _get_db_info
+from autopr.actions.ai_linting_fixer.reporting import get_database_info as _get_db_info
 
 logger = logging.getLogger(__name__)
 

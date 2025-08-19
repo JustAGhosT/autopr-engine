@@ -4,8 +4,8 @@ AutoPR Integration Base Classes
 Base classes and interfaces for integration implementation.
 """
 
-import logging
 from abc import ABC, abstractmethod
+import logging
 from typing import Any
 
 logger = logging.getLogger(__name__)

@@ -7,8 +7,7 @@ Handles generation of test files and configurations for different testing framew
 from pathlib import Path
 from typing import Any
 
-from autopr.actions.prototype_enhancement.generators.base_generator import \
-    BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class TestGenerator(BaseGenerator):

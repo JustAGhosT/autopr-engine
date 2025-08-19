@@ -6,9 +6,9 @@ Extracted from database module to improve modularity and security.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import logging
 import sqlite3
-from datetime import UTC, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)

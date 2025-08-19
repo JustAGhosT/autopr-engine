@@ -5,10 +5,12 @@ from datetime import datetime
 import structlog
 
 from autopr.security.authorization.base_manager import BaseAuthorizationManager
-from autopr.security.authorization.models import (AuthorizationContext,
-                                                  Permission,
-                                                  ResourcePermission,
-                                                  ResourceType)
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourcePermission,
+    ResourceType,
+)
 
 logger = structlog.get_logger(__name__)
 

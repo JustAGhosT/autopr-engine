@@ -2,9 +2,9 @@
 Tests for the AutoPR Agent Framework.
 """
 
+from pathlib import Path
 import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.agents.crew.main import AutoPRCrew

@@ -4,12 +4,11 @@ AutoPR LLM Provider Manager
 Manages multiple LLM providers and provides unified access.
 """
 
-import logging
 from collections.abc import AsyncGenerator
+import logging
 from typing import Any
 
-from ..base import (AnthropicProvider, LLMMessage, LLMProvider, LLMResponse,
-                    OpenAIProvider)
+from ..base import AnthropicProvider, LLMMessage, LLMProvider, LLMResponse, OpenAIProvider
 
 logger = logging.getLogger(__name__)
 

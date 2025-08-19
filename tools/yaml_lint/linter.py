@@ -1,7 +1,7 @@
 """Core YAML linter implementation with auto-fixing."""
 
-import re
 from pathlib import Path
+import re
 from typing import Any
 
 from tools.yaml_lint.models import FileReport, IssueSeverity, LintIssue

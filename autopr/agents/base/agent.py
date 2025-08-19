@@ -11,8 +11,7 @@ from typing import Any, TypeVar
 
 # Optional dependency: provide a lightweight fallback when crewai is unavailable
 try:  # pragma: no cover - runtime optional import
-    from crewai import \
-        Agent as CrewAgent  # type: ignore[import-not-found,import-untyped]
+    from crewai import Agent as CrewAgent  # type: ignore[import-not-found,import-untyped]
 except Exception:  # pragma: no cover
 
     class CrewAgent:  # type: ignore[no-redef]
