@@ -95,11 +95,13 @@ When fixing code:
 Provide your response in the following JSON format:
 {
     "success": true/false,
-    "fixed_code": "the complete fixed code",
+    "fixed_code": "only the specific lines that were fixed",
     "changes_made": ["list of specific changes made"],
     "confidence": 0.0-1.0,
     "explanation": "brief explanation of the fix"
-}"""
+}
+
+IMPORTANT: In the "fixed_code" field, provide ONLY the specific lines that need to be changed, not the entire file."""
 
     def get_enhanced_system_prompt(self) -> str:
         """Get an enhanced system prompt for better JSON generation."""
@@ -151,7 +153,8 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
                 prompt += f"   Line content: {issue.line_content}\n"
 
         prompt += (
-            "\nPlease provide the complete fixed code that resolves all these issues."
+            "\nPlease provide ONLY the specific lines that need to be fixed, not the entire file. "
+            "Focus on the exact changes needed to resolve the linting issues."
         )
         return prompt
 

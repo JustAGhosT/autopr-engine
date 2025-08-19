@@ -96,11 +96,11 @@ class PerformanceTracker:
 
         if self.display:
             self.display.error.show_info(
-                f"📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s"
+f'📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s'
             )
         else:
             logger.info(
-                f"Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s"
+f'📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s'
             )
 
     def log_metric(self, metric_name: str, value: Any) -> None:

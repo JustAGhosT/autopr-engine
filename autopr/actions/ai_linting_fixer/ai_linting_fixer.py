@@ -48,9 +48,12 @@ class AILintingFixer:
         llm_config = {
             "default_provider": "azure_openai",
             "fallback_order": ["azure_openai"],  # Only use Azure OpenAI
-            "azure_openai": {
-                "azure_endpoint": "https://dev-saf-openai-phoenixvc-ai.openai.azure.com/",
-                "api_key": None,  # Will be loaded from environment
+            "providers": {
+                "azure_openai": {
+                    "azure_endpoint": "https://jurie-mcnb2krj-swedencentral.cognitiveservices.azure.com/",
+                    "api_key": None,  # Will be loaded from environment
+                    "api_version": "2025-01-01-preview",
+                },
             },
         }
         self.llm_manager = LLMProviderManager(llm_config, display=self.display)

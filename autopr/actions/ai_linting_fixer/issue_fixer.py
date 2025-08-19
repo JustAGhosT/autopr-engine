@@ -374,8 +374,19 @@ class IssueFixer:
                     "raw_response": parsed_response.get("raw_response", ""),
                 }
 
-            # Apply the fix
-            fixed_content = parsed_response.get("fixed_code", content)
+            # Apply the fix to the specific line
+            fixed_line = parsed_response.get("fixed_code", "")
+            if fixed_line and issue.line_number > 0:
+                # Split content into lines
+                lines = content.split("\n")
+                if 1 <= issue.line_number <= len(lines):
+                    # Replace the specific line (line_number is 1-indexed)
+                    lines[issue.line_number - 1] = fixed_line.strip()
+                    fixed_content = "\n".join(lines)
+                else:
+                    fixed_content = content
+            else:
+                fixed_content = content
 
             # Calculate confidence
             confidence = self.ai_agent_manager.calculate_confidence_score(
