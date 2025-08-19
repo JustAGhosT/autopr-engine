@@ -4,11 +4,11 @@ Performance Tracker Module
 This module tracks performance metrics and analytics for AI linting operations.
 """
 
+from datetime import datetime
 import json
 import logging
-import time
-from datetime import datetime
 from pathlib import Path
+import time
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ class PerformanceTracker:
         if metric_name in self.metrics:
             if isinstance(self.metrics[metric_name], list):
                 self.metrics[metric_name].append(value)
-            elif isinstance(self.metrics[metric_name], (int, float)):
+            elif isinstance(self.metrics[metric_name], int | float):
                 self.metrics[metric_name] += value
             else:
                 self.metrics[metric_name] = value

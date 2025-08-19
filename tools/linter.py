@@ -5,13 +5,12 @@ Tool for all code quality checks and AI-powered fixes
 """
 
 import asyncio
-import sys
 from dataclasses import dataclass
 from enum import Enum
+import sys
 from typing import Any
 
-from autopr.actions.ai_linting_fixer import (AILintingFixer,
-                                             AILintingFixerInputs)
+from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
 
 
 class LintMode(Enum):

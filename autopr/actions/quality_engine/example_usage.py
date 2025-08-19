@@ -4,8 +4,8 @@ Example usage of the Quality Engine with dependency injection.
 
 import asyncio
 
-from .engine import create_quality_engine
-from .handlers.lint_issue import LintIssue
+from autopr.actions.quality_engine.engine import create_quality_engine
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
 
 
 async def run_quality_analysis(files: list[str]) -> None:

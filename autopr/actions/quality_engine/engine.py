@@ -8,14 +8,13 @@ from typing import Any
 import structlog
 
 from autopr.actions.base.action import Action
+from autopr.actions.quality_engine.config import load_config
+from autopr.actions.quality_engine.handler_registry import HandlerRegistry
+from autopr.actions.quality_engine.models import QualityInputs, QualityMode, QualityOutputs
+from autopr.actions.quality_engine.platform_detector import PlatformDetector
+from autopr.actions.quality_engine.tool_runner import determine_smart_tools, run_tool
+from autopr.actions.quality_engine.tools.registry import ToolRegistry
 from autopr.utils.volume_utils import get_volume_level_name
-
-from .config import load_config
-from .handler_registry import HandlerRegistry
-from .models import QualityInputs, QualityMode, QualityOutputs
-from .platform_detector import PlatformDetector
-from .tool_runner import determine_smart_tools, run_tool
-from .tools.registry import ToolRegistry
 
 logger = structlog.get_logger(__name__)
 
@@ -43,7 +42,7 @@ class QualityEngine(Action):
         self.tool_registry = tool_registry
         if self.tool_registry is None:
             # Fallback to discover tools if not injected
-            from .tools import discover_tools
+            from autopr.actions.quality_engine.tools import discover_tools
 
             tools = discover_tools()
             self.tools = {tool().name: tool() for tool in tools}
@@ -162,8 +161,7 @@ class QualityEngine(Action):
 
             # Import AI Linting Fixer
             from autopr.actions.ai_linting_fixer import AILintingFixer
-            from autopr.actions.ai_linting_fixer.models import \
-                AILintingFixerInputs
+            from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
 
             # Prepare fixer inputs
             target_path = files_to_check[0] if files_to_check else "."
@@ -403,12 +401,12 @@ class QualityEngine(Action):
         if inputs.mode == QualityMode.AI_ENHANCED and inputs.enable_ai_agents:
             # Lazy load the LLM manager if needed
             if not self.llm_manager:
-                from .ai import initialize_llm_manager
+                from autopr.actions.quality_engine.ai import initialize_llm_manager
 
                 self.llm_manager = await initialize_llm_manager()
 
             if self.llm_manager:
-                from .ai import run_ai_analysis
+                from autopr.actions.quality_engine.ai import run_ai_analysis
 
                 ai_result = await run_ai_analysis(
                     files_to_check,
@@ -418,7 +416,7 @@ class QualityEngine(Action):
                 )
 
                 if ai_result:
-                    from .ai import create_tool_result_from_ai_analysis
+                    from autopr.actions.quality_engine.ai import create_tool_result_from_ai_analysis
 
                     results["ai_analysis"] = create_tool_result_from_ai_analysis(
                         ai_result
@@ -442,7 +440,7 @@ class QualityEngine(Action):
             ) = await self._run_auto_fix(inputs, files_to_check)
 
         # Build the comprehensive summary
-        from .summary import build_comprehensive_summary
+        from autopr.actions.quality_engine.summary import build_comprehensive_summary
 
         summary = build_comprehensive_summary(results, ai_summary)
 

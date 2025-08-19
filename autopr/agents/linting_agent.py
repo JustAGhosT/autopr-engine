@@ -5,13 +5,12 @@ and fixing code style and quality issues in a codebase.
 """
 
 import asyncio
-import logging
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 from typing import Any
 
-from autopr.actions.ai_linting_fixer import \
-    create_ai_linting_fixer as _create_ai_linting_fixer
+from autopr.actions.ai_linting_fixer import create_ai_linting_fixer as _create_ai_linting_fixer
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.agents.base import BaseAgent
 

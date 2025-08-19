@@ -5,32 +5,43 @@ This is the core module that orchestrates all the modular components
 to provide AI-powered linting fixes. Much cleaner and focused!
 """
 
-import logging
-import random
 from contextlib import suppress
 from datetime import UTC, datetime
+import logging
 from pathlib import Path
+import random
 from typing import Any
 
+from autopr.actions.ai_linting_fixer.agents import AgentType, agent_manager
+from autopr.actions.ai_linting_fixer.database import AIInteractionDB, IssueQueueManager
+from autopr.actions.ai_linting_fixer.detection import issue_detector
+from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode, get_display
+from autopr.actions.ai_linting_fixer.display import (
+    display_provider_status as display_show_provider_status,
+)
+from autopr.actions.ai_linting_fixer.display import (
+    print_feature_status as display_print_feature_status,
+)
+from autopr.actions.ai_linting_fixer.file_ops import dry_run_ops, safe_file_ops
+from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    LintingFixResult,
+    LintingIssue,
+    create_empty_outputs,
+)
+from autopr.actions.ai_linting_fixer.workflow import WorkflowContext, WorkflowIntegrationMixin
 from autopr.actions.llm.manager import LLMProviderManager
 from autopr.config.settings import AutoPRConfig  # type: ignore[attr-defined]
 
-from .agents import AgentType, agent_manager
-from .database import AIInteractionDB, IssueQueueManager
-from .detection import issue_detector
-from .display import DisplayConfig, OutputMode
-from .display import display_provider_status as display_show_provider_status
-from .display import get_display
-from .display import print_feature_status as display_print_feature_status
-from .file_ops import dry_run_ops, safe_file_ops
-from .metrics import MetricsCollector
-from .models import (AILintingFixerInputs, AILintingFixerOutputs,
-                     LintingFixResult, LintingIssue, create_empty_outputs)
-from .workflow import WorkflowContext, WorkflowIntegrationMixin
-
 # Optional Redis support
 try:
-    from .redis_queue import REDIS_AVAILABLE, RedisConfig, RedisQueueManager
+    from autopr.actions.ai_linting_fixer.redis_queue import (
+        REDIS_AVAILABLE,
+        RedisConfig,
+        RedisQueueManager,
+    )
 except ImportError:
     REDIS_AVAILABLE = False
     # Do not assign RedisQueueManager = None here; just rely on REDIS_AVAILABLE
@@ -790,7 +801,7 @@ def print_feature_status() -> None:
 
     # Check orchestration availability
     try:
-        from .orchestration import detect_available_orchestrators
+        from autopr.actions.ai_linting_fixer.orchestration import detect_available_orchestrators
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())

@@ -9,29 +9,51 @@ from typing import Any
 
 # Optional CodeAnalyzer (psutil optional dep)
 try:
-    from .code_analyzer import CodeAnalyzer as _CodeAnalyzer
+    from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer as _CodeAnalyzer
 
     CODE_ANALYZER_AVAILABLE = True
 except Exception:
     _CodeAnalyzer = None  # type: ignore[assignment]
     CODE_ANALYZER_AVAILABLE = False
-from .detection import IssueDetector
-from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode
-from .error_handler import (ErrorCategory, ErrorContext, ErrorHandler,
-                            ErrorInfo, ErrorRecoveryStrategy, ErrorSeverity,
-                            create_error_context, get_default_error_handler)
-from .file_manager import FileManager
-from .issue_fixer import IssueFixer
-from .models import (AILintingFixerInputs, AILintingFixerOutputs,
-                     FixAttemptLog, LintingFixResult, LintingIssue,
-                     OrchestrationConfig, PerformanceMetrics, WorkflowContext,
-                     WorkflowEvent, WorkflowResult)
-from .orchestration import (create_workflow_context,
-                            detect_available_orchestrators,
-                            execute_with_orchestration,
-                            get_orchestration_config,
-                            validate_orchestration_config)
-from .performance_tracker import PerformanceTracker
+from autopr.actions.ai_linting_fixer.detection import IssueDetector
+from autopr.actions.ai_linting_fixer.display import (
+    DisplayConfig,
+    DisplayFormatter,
+    ErrorDisplay,
+    OutputMode,
+)
+from autopr.actions.ai_linting_fixer.error_handler import (
+    ErrorCategory,
+    ErrorContext,
+    ErrorHandler,
+    ErrorInfo,
+    ErrorRecoveryStrategy,
+    ErrorSeverity,
+    create_error_context,
+    get_default_error_handler,
+)
+from autopr.actions.ai_linting_fixer.file_manager import FileManager
+from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    FixAttemptLog,
+    LintingFixResult,
+    LintingIssue,
+    OrchestrationConfig,
+    PerformanceMetrics,
+    WorkflowContext,
+    WorkflowEvent,
+    WorkflowResult,
+)
+from autopr.actions.ai_linting_fixer.orchestration import (
+    create_workflow_context,
+    detect_available_orchestrators,
+    execute_with_orchestration,
+    get_orchestration_config,
+    validate_orchestration_config,
+)
+from autopr.actions.ai_linting_fixer.performance_tracker import PerformanceTracker
 
 # Optional symbols (pre-declared as variables)
 AIAgentManager: Any | None = None
@@ -41,7 +63,7 @@ run_ai_linting_fixer: Callable[..., Any] | None = None
 
 # AI Components (optional imports)
 try:
-    from .ai_agent_manager import AIAgentManager as _AIAgentManager
+    from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager as _AIAgentManager
 
     AIAgentManager = _AIAgentManager
     AI_COMPONENTS_AVAILABLE = True
@@ -50,10 +72,13 @@ except ImportError:
 
 # Main class (optional AI imports)
 try:
-    from .ai_linting_fixer import AILintingFixer as _AILintingFixer
-    from .ai_linting_fixer import \
-        create_ai_linting_fixer as _create_ai_linting_fixer
-    from .ai_linting_fixer import run_ai_linting_fixer as _run_ai_linting_fixer
+    from autopr.actions.ai_linting_fixer.ai_linting_fixer import AILintingFixer as _AILintingFixer
+    from autopr.actions.ai_linting_fixer.ai_linting_fixer import (
+        create_ai_linting_fixer as _create_ai_linting_fixer,
+    )
+    from autopr.actions.ai_linting_fixer.ai_linting_fixer import (
+        run_ai_linting_fixer as _run_ai_linting_fixer,
+    )
 
     AILintingFixer = _AILintingFixer
     create_ai_linting_fixer = _create_ai_linting_fixer

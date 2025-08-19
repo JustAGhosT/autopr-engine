@@ -8,14 +8,16 @@ This package replaces the monolithic PrototypeEnhancer class with a modular arch
 while maintaining backward compatibility.
 """
 
-from .enhancement_strategies import (BoltEnhancementStrategy,
-                                     EnhancementStrategy,
-                                     EnhancementStrategyFactory,
-                                     LovableEnhancementStrategy,
-                                     ReplitEnhancementStrategy)
-from .enhancer import PrototypeEnhancer
-from .file_generators import FileGenerator
-from .platform_configs import PlatformConfig, PlatformRegistry
+from autopr.actions.prototype_enhancement.enhancement_strategies import (
+    BoltEnhancementStrategy,
+    EnhancementStrategy,
+    EnhancementStrategyFactory,
+    LovableEnhancementStrategy,
+    ReplitEnhancementStrategy,
+)
+from autopr.actions.prototype_enhancement.enhancer import PrototypeEnhancer
+from autopr.actions.prototype_enhancement.file_generators import FileGenerator
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig, PlatformRegistry
 
 __version__ = "2.0.0"
 __author__ = "AutoPR Team"

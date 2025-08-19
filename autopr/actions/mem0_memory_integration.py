@@ -3,8 +3,8 @@ AutoPR Action: Mem0 Memory Integration
 Advanced memory system using Mem0 for persistent, intelligent memory across interactions.
 """
 
-import os
 from datetime import datetime
+import os
 from typing import Any
 
 from pydantic import BaseModel

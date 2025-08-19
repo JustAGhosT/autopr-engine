@@ -12,14 +12,17 @@ Key Principles:
 - Easy to test and modify
 """
 
-import logging
-import sys
 from dataclasses import dataclass
 from enum import Enum
+import logging
+import sys
 from typing import Any, TextIO
 
-from .models import (  # SessionMetrics, # Removed; ProcessingMode, # Removed
-    AILintingFixerInputs, AILintingFixerOutputs, LintingIssue)
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    LintingIssue,
+)
 
 logger = logging.getLogger(__name__)
 

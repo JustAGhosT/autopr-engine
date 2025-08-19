@@ -2,11 +2,11 @@
 Abstract base class for LLM providers.
 """
 
-import os
 from abc import ABC, abstractmethod
+import os
 from typing import Any
 
-from .types import LLMResponse
+from autopr.actions.llm.types import LLMResponse
 
 
 class BaseLLMProvider(ABC):

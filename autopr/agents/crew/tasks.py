@@ -89,7 +89,7 @@ def _select_task_class(agent: Any):
         from autopr.agents.agents import BaseAgent as AgentsBaseAgent
         from autopr.agents.base import BaseAgent
 
-        if isinstance(agent, (BaseAgent, AgentsBaseAgent)):
+        if isinstance(agent, BaseAgent | AgentsBaseAgent):
             return _SimpleTask
     except Exception:
         pass

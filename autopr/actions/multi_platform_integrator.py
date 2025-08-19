@@ -6,10 +6,10 @@ Integrates with various platforms for enhanced workflow coordination.
 import os
 from typing import Any
 
-import requests
 from pydantic import BaseModel
+import requests
 
-from .base import Action
+from autopr.actions.base import Action
 
 
 class MultiPlatformInputs(BaseModel):

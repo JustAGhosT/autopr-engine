@@ -6,8 +6,8 @@ Checks both platform index files and individual platform configurations.
 """
 
 import json
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 # Project directories

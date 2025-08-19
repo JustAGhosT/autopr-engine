@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 from typing import Any, ClassVar, Optional, Self, TypeVar
 
-from .schema import PlatformConfig, PlatformType
+from autopr.actions.platform_detection.schema import PlatformConfig, PlatformType
 
 # Set up logging
 logger = logging.getLogger(__name__)

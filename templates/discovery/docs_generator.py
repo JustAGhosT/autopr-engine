@@ -21,10 +21,11 @@ Features:
 from datetime import datetime
 from pathlib import Path
 
-from .content_analyzer import ContentAnalyzer, TemplateAnalysis
-from .format_generators import DocumentationConfig, FormatGeneratorFactory
+from discovery.content_analyzer import ContentAnalyzer, TemplateAnalysis
+from discovery.format_generators import DocumentationConfig, FormatGeneratorFactory
+
 # Import modular components
-from .template_loader import TemplateLoader
+from discovery.template_loader import TemplateLoader
 
 
 class TemplateDocumentationGenerator:

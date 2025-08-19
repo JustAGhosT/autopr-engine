@@ -12,7 +12,7 @@ from typing import Any
 
 import yaml
 
-from .template_models import TemplateInfo
+from discovery.template_models import TemplateInfo
 
 
 class TemplateFileLoader:

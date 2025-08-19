@@ -8,7 +8,7 @@ Handles template combinations and use case recommendations.
 
 from typing import TypedDict
 
-from .template_models import TemplateCombination, TemplateInfo
+from discovery.template_models import TemplateCombination, TemplateInfo
 
 
 class CombinationDict(TypedDict):

@@ -2,7 +2,7 @@
 Summary generation for quality engine results
 """
 
-from .models import ToolResult
+from autopr.actions.quality_engine.models import ToolResult
 
 
 def build_comprehensive_summary(

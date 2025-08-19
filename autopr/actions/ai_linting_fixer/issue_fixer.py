@@ -8,10 +8,10 @@ import logging
 import time
 from typing import Any
 
-from .ai_agent_manager import AIAgentManager
-from .error_handler import ErrorHandler, create_error_context
-from .file_manager import FileManager
-from .models import LintingFixResult, LintingIssue
+from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
+from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler, create_error_context
+from autopr.actions.ai_linting_fixer.file_manager import FileManager
+from autopr.actions.ai_linting_fixer.models import LintingFixResult, LintingIssue
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +173,7 @@ class IssueFixer:
                 raise FileNotFoundError(msg)
 
             # Validate syntax before processing
-            from .code_analyzer import CodeAnalyzer
+            from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
 
             code_analyzer = CodeAnalyzer()
             syntax_valid_before = code_analyzer.validate_python_syntax(original_content)

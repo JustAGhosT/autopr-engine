@@ -1,7 +1,7 @@
 """Debug script for CrewAI boolean validation issue."""
 
-import sys
 from pathlib import Path
+import sys
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent)
@@ -14,8 +14,7 @@ def debug_crew_instantiation():
     try:
         # Import with debug prints
         from autopr.actions.quality_engine.models import QualityInputs
-        from autopr.actions.quality_engine.volume_mapping import \
-            get_volume_config
+        from autopr.actions.quality_engine.volume_mapping import get_volume_config
         from autopr.agents.crew import AutoPRCrew
 
         volume = 500

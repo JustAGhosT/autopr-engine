@@ -169,19 +169,18 @@ class TestCLI:
         """Test CLI with invalid mode."""
         test_args = ["--files", "test.py", "--mode", "invalid_mode"]
 
-        with patch("sys.argv", ["cli.py", *test_args]):
-            with patch(
-                "builtins.input", return_value="y"
-            ):  # Mock input to avoid stdin capture
-                with patch("sys.stderr", new=StringIO()) as mock_stderr:
-                    try:
-                        result = main()
-                    except SystemExit:
-                        result = 2  # SystemExit(2) for argument error
+        with patch("sys.argv", ["cli.py", *test_args]), patch(
+            "builtins.input", return_value="y"
+        ):  # Mock input to avoid stdin capture
+            with patch("sys.stderr", new=StringIO()) as mock_stderr:
+                try:
+                    result = main()
+                except SystemExit:
+                    result = 2  # SystemExit(2) for argument error
 
-                    assert result == 2
-                    error_output = mock_stderr.getvalue()
-                    assert "error" in error_output.lower()
+                assert result == 2
+                error_output = mock_stderr.getvalue()
+                assert "error" in error_output.lower()
 
     @patch("autopr.actions.quality_engine.cli.QualityEngine")
     @patch("autopr.actions.quality_engine.cli.PlatformDetector")

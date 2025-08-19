@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Any
 
 import structlog
 
-from .models import ToolResult
+from autopr.actions.quality_engine.models import ToolResult
 
 if TYPE_CHECKING:
-    from .tools.tool_base import ToolExecutionResult
+    from autopr.actions.quality_engine.tools.tool_base import ToolExecutionResult
 
 logger = structlog.get_logger(__name__)
 

@@ -9,8 +9,7 @@ Generates documentation in Markdown format.
 from datetime import datetime
 
 from discovery.content_analyzer import TemplateAnalysis
-
-from .base import BaseFormatGenerator
+from discovery.format_generators.base import BaseFormatGenerator
 
 
 class MarkdownGenerator(BaseFormatGenerator):

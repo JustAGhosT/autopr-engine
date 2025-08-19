@@ -5,13 +5,13 @@ External service integrations for communication and project management
 
 from typing import Any, List, Optional, Type
 
-from .base import Integration
+from autopr.integrations.base import Integration
 
 # Import integration classes with error handling
 AxoloIntegration: type[Any] | None = None
 _axolo_available = False
 try:
-    from .axolo import AxoloIntegration
+    from autopr.integrations.axolo import AxoloIntegration
 
     _axolo_available = True
 except ImportError:

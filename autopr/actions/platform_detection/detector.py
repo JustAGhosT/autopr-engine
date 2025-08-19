@@ -7,12 +7,12 @@ Orchestrates platform detection using modular components for better maintainabil
 import re
 from typing import Any
 
-from .config import PlatformConfigManager
-from .file_analyzer import FileAnalyzer
-from .inputs import PlatformDetectorInputs, PlatformDetectorOutputs
+from autopr.actions.platform_detection.config import PlatformConfigManager
+from autopr.actions.platform_detection.file_analyzer import FileAnalyzer
+from autopr.actions.platform_detection.inputs import PlatformDetectorInputs, PlatformDetectorOutputs
 
 __all__ = ["PlatformDetector", "PlatformDetectorInputs", "PlatformDetectorOutputs"]
-from .scoring import PlatformScoringEngine
+from autopr.actions.platform_detection.scoring import PlatformScoringEngine
 
 
 class PlatformDetector:

@@ -346,7 +346,6 @@ class DevVolumeKnob(VolumeKnob):
                         "warn_unused_ignores": False,
                         "warn_no_return": False,
                         "warn_unreachable": False,
-                        "warn_return_any": False,
                         "allow_redefinition": True,
                         "allow_untyped_globals": True,
                         "allow_untyped_calls": True,

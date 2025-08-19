@@ -5,9 +5,9 @@ Command-line interface for the Quality Engine.
 import argparse
 import sys
 
-from .engine import QualityEngine
-from .models import QualityInputs, QualityMode
-from .platform_detector import PlatformDetector
+from autopr.actions.quality_engine.engine import QualityEngine
+from autopr.actions.quality_engine.models import QualityInputs, QualityMode
+from autopr.actions.quality_engine.platform_detector import PlatformDetector
 
 
 def ask_windows_confirmation() -> bool:

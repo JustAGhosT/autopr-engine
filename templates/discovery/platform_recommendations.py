@@ -9,7 +9,7 @@ Handles platform recommendations based on project requirements.
 import operator
 from typing import Any
 
-from .template_models import PlatformRequirements, TemplateInfo
+from discovery.template_models import PlatformRequirements, TemplateInfo
 
 
 class PlatformRecommendationEngine:

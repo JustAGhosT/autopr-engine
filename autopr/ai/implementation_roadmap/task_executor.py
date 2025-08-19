@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .task_definitions import Task, TaskRegistry
+from implementation_roadmap.task_definitions import Task, TaskRegistry
 
 
 @dataclass

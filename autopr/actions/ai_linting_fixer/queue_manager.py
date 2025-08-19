@@ -6,9 +6,9 @@ Extracted from database module to improve modularity and security.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import logging
 import sqlite3
-from datetime import UTC, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class IssueQueueManager:
                 issue_ids = [
                     int(issue["id"])
                     for issue in issues
-                    if isinstance(issue.get("id"), (int, str))
+                    if isinstance(issue.get("id"), int | str)
                 ]
                 placeholders = self._safe_in_placeholders(len(issue_ids))
                 update_query = (

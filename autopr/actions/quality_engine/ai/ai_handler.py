@@ -7,7 +7,7 @@ from typing import Any
 
 import structlog
 
-from .models import ToolResult
+from autopr.actions.quality_engine.ai.models import ToolResult
 
 logger = structlog.get_logger(__name__)
 
@@ -31,7 +31,7 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from .ai_modes import run_ai_analysis as run_analysis
+        from autopr.actions.quality_engine.ai.ai_modes import run_ai_analysis as run_analysis
 
         logger.info("Starting AI-enhanced analysis", file_count=len(files))
         start_time = time.time()

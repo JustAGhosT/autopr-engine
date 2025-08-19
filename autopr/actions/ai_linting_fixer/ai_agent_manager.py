@@ -4,13 +4,12 @@ AI Agent Manager Module
 This module manages AI agents and their specializations for different types of linting issues.
 """
 
-import logging
 from collections import Counter
+import logging
 from typing import Any
 
+from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.llm.manager import LLMProviderManager
-
-from .models import LintingIssue
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +278,7 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
         if "confidence" in ai_response:
             response_confidence = ai_response["confidence"]
             if (
-                isinstance(response_confidence, (int, float))
+                isinstance(response_confidence, int | float)
                 and 0 <= response_confidence <= 1
             ):
                 confidence = confidence * 0.7 + response_confidence * 0.3

@@ -9,17 +9,17 @@ import logging
 import os
 from typing import Any, cast
 
-from .actions.base import Action, ActionInputs, ActionOutputs
-from .actions.registry import ActionRegistry
-from .ai.base import LLMProvider
-from .ai.providers.manager import LLMProviderManager
-from .config import AutoPRConfig
-from .engine import AutoPREngine
-from .exceptions import AutoPRException, ConfigurationError, IntegrationError
-from .integrations.base import Integration
-from .integrations.registry import IntegrationRegistry
-from .workflows.base import Workflow
-from .workflows.engine import WorkflowEngine
+from autopr.actions.base import Action, ActionInputs, ActionOutputs
+from autopr.actions.registry import ActionRegistry
+from autopr.ai.base import LLMProvider
+from autopr.ai.providers.manager import LLMProviderManager
+from autopr.config import AutoPRConfig
+from autopr.engine import AutoPREngine
+from autopr.exceptions import AutoPRException, ConfigurationError, IntegrationError
+from autopr.integrations.base import Integration
+from autopr.integrations.registry import IntegrationRegistry
+from autopr.workflows.base import Workflow
+from autopr.workflows.engine import WorkflowEngine
 
 # Import structlog with error handling
 STRUCTLOG_AVAILABLE: bool

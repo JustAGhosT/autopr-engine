@@ -7,7 +7,7 @@ Registry for managing and discovering integrations.
 import logging
 from typing import Any
 
-from .base import Integration
+from autopr.integrations.base import Integration
 
 logger = logging.getLogger(__name__)
 

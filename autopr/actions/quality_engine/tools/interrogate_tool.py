@@ -1,10 +1,10 @@
 import asyncio
 import logging
-import re
 from pathlib import Path
+import re
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class InterrogateTool(Tool):

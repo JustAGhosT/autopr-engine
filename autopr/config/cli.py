@@ -15,9 +15,12 @@ import sys
 
 import click
 
-from .settings import AutoPRSettings, Environment, get_settings
-from .validation import (check_environment_variables, generate_config_report,
-                         validate_configuration)
+from autopr.config.settings import AutoPRSettings, Environment, get_settings
+from autopr.config.validation import (
+    check_environment_variables,
+    generate_config_report,
+    validate_configuration,
+)
 
 
 @click.group()

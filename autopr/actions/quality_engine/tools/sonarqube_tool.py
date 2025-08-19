@@ -2,7 +2,7 @@ import asyncio
 import os
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class SonarQubeTool(Tool):

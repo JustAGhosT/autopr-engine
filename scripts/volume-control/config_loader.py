@@ -37,7 +37,7 @@ class VolumeConfigLoader:
         """Get combined settings for all tools at the specified volume level"""
         combined_settings = {}
 
-        for tool_name, config in self.tools.items():
+        for tool_name, _config in self.tools.items():
             tool_settings = self.get_tool_settings_for_volume(tool_name, volume)
             combined_settings.update(tool_settings)
 
@@ -55,7 +55,7 @@ class VolumeConfigLoader:
 
         # Find the highest activation level that is <= volume
         applicable_level = None
-        for level_str in activation_levels.keys():
+        for level_str in activation_levels:
             level = int(level_str)
             if level <= volume:
                 if applicable_level is None or level > applicable_level:
@@ -75,7 +75,7 @@ class VolumeConfigLoader:
             activation_levels = config.get("activation_levels", {})
 
             # Check if any level <= volume has enabled: true
-            for level_str in activation_levels.keys():
+            for level_str in activation_levels:
                 level = int(level_str)
                 if level <= volume:
                     level_config = activation_levels[level_str]
@@ -93,7 +93,7 @@ class VolumeConfigLoader:
             "tool_details": {},
         }
 
-        for tool_name in self.tools.keys():
+        for tool_name in self.tools:
             is_active = tool_name in summary["active_tools"]
             settings_count = len(self.get_tool_settings_for_volume(tool_name, volume))
 

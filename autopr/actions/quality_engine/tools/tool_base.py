@@ -2,10 +2,10 @@
 Base tool class for quality analysis tools with timeout handling, error handling, and display output.
 """
 
+from abc import ABC, abstractmethod
 import asyncio
 import shutil
 import time
-from abc import ABC, abstractmethod
 from typing import Any, TypedDict, TypeVar
 
 import structlog
@@ -257,7 +257,7 @@ class Tool[TConfig: Any, TIssue](ABC):
         # Check timeout
         if "timeout" in config:
             timeout = config["timeout"]
-            if not isinstance(timeout, (int, float)) or timeout <= 0:
+            if not isinstance(timeout, int | float) or timeout <= 0:
                 errors.append("Timeout must be a positive number")
 
         # Check max_files

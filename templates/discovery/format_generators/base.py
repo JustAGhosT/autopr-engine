@@ -11,9 +11,8 @@ from datetime import datetime
 from typing import Any
 
 from discovery.content_analyzer import TemplateAnalysis
+from discovery.format_generators.config import DocumentationConfig
 from discovery.template_loader import TemplateLoader
-
-from .config import DocumentationConfig
 
 
 class BaseFormatGenerator(ABC):

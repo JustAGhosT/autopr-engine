@@ -1,14 +1,14 @@
-import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
+import secrets
 from typing import Any
 
 import bcrypt
 import jwt
 import structlog
 
-from .encryption import EnterpriseEncryptionManager
+from autopr.security.encryption import EnterpriseEncryptionManager
 
 logger = structlog.get_logger(__name__)
 

@@ -5,7 +5,7 @@ Registry for handlers that process tool results.
 from collections.abc import Callable
 from typing import TypeVar
 
-from .handler_base import Handler
+from autopr.actions.quality_engine.handler_base import Handler
 
 TResult = TypeVar("TResult")
 THandler = TypeVar("THandler", bound=Handler)
@@ -157,7 +157,7 @@ def register_for_result[
     [type[Handler[TResult]]], type[Handler[TResult]]
 ]:
     """Placeholder for the DI-based decorator."""
-    from .di import container
+    from autopr.actions.quality_engine.di import container
 
     registry = container.handler_registry.registry()
     return registry.register_for_result(result_type)
@@ -165,7 +165,7 @@ def register_for_result[
 
 def register_for_tool(tool_class: type) -> Callable[[type[Handler]], type[Handler]]:
     """Placeholder for the DI-based decorator."""
-    from .di import container
+    from autopr.actions.quality_engine.di import container
 
     registry = container.handler_registry.registry()
     return registry.register_for_tool(tool_class)

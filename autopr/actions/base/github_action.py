@@ -4,7 +4,7 @@ GitHub-specific action class for AutoPR.
 
 from typing import Any
 
-from .action import Action
+from autopr.actions.base.action import Action
 
 
 class GitHubAction(Action):

@@ -5,7 +5,7 @@ from typing import Any
 
 import aiohttp
 
-from .config import AxoloConfig
+from autopr.integrations.axolo.config import AxoloConfig
 
 logger = logging.getLogger(__name__)
 

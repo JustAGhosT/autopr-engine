@@ -40,7 +40,7 @@ class JSONMigrations:
             return tool_configs[str(volume)]
 
         # For volumes between defined levels, find the closest one
-        defined_levels = [int(level) for level in tool_configs.keys()]
+        defined_levels = [int(level) for level in tool_configs]
         defined_levels.sort()
 
         if volume <= defined_levels[0]:
@@ -79,7 +79,7 @@ class JSONMigrations:
             # Build checks list
             if pre_commit_config and pre_commit_config.get("enabled", False):
                 hooks = pre_commit_config.get("hooks", {})
-                for hook_name in hooks.keys():
+                for hook_name in hooks:
                     if hook_name not in ["all_stages", "other_tools", "description"]:
                         result["checks"].append(f"{hook_name}_check")
 

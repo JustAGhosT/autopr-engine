@@ -11,9 +11,9 @@ improvement recommendations.
 import statistics
 from typing import Any
 
-from .quality_models import QualityMetrics
-from .quality_scorer import QualityScorer
-from .validation_types import ValidationSeverity
+from autopr.quality.template_metrics.quality_models import QualityMetrics
+from autopr.quality.template_metrics.quality_scorer import QualityScorer
+from autopr.quality.template_metrics.validation_types import ValidationSeverity
 
 
 class QualityAnalyzer:

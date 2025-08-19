@@ -7,8 +7,8 @@ Handles platform-specific enhancement logic and package management for prototype
 from pathlib import Path
 from typing import Any
 
-from .file_generators import FileGenerator
-from .platform_configs import PlatformConfig, PlatformRegistry
+from autopr.actions.prototype_enhancement.file_generators import FileGenerator
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig, PlatformRegistry
 
 
 class EnhancementStrategy:

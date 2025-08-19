@@ -10,9 +10,8 @@ from typing import Any
 
 import structlog
 
+from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
 from autopr.ai.providers.manager import LLMProviderManager
-
-from .ai_analyzer import AICodeAnalyzer
 
 logger = structlog.get_logger(__name__)
 

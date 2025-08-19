@@ -13,16 +13,16 @@ Features:
 """
 
 import ast
-import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+import re
 from typing import TYPE_CHECKING, Any
 
 # Forward reference types to avoid circular imports
 if TYPE_CHECKING:
-    from .validation_rules import ValidationRule
+    from discovery.validation_rules import ValidationRule
 
 # Type variable for validator functions
 ValidatorFunc = Callable[

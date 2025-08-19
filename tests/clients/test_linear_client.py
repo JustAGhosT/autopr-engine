@@ -5,8 +5,8 @@ import os
 from unittest import TestCase, mock
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from aiohttp import ClientResponseError, ClientSession
+import pytest
 
 from autopr.clients.linear_client import LinearClient
 

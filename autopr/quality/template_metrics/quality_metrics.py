@@ -9,11 +9,14 @@ This file maintains the same API as the original quality_metrics.py file
 while importing from the new modular components.
 """
 
-from .quality_analyzer import QualityAnalyzer
-from .quality_models import (DEFAULT_CATEGORY_WEIGHTS,
-                             DEFAULT_SEVERITY_WEIGHTS, QUALITY_GRADES,
-                             QualityMetrics)
-from .quality_scorer import QualityScorer
+from autopr.quality.template_metrics.quality_analyzer import QualityAnalyzer
+from autopr.quality.template_metrics.quality_models import (
+    DEFAULT_CATEGORY_WEIGHTS,
+    DEFAULT_SEVERITY_WEIGHTS,
+    QUALITY_GRADES,
+    QualityMetrics,
+)
+from autopr.quality.template_metrics.quality_scorer import QualityScorer
 
 # Global instances for backward compatibility
 _scorer_instance: QualityScorer | None = None

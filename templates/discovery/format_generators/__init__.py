@@ -7,16 +7,22 @@ Modular format generators for documentation generation.
 Provides specialized generators for different output formats (Markdown, HTML, JSON).
 """
 
-from .base import BaseFormatGenerator
+from discovery.format_generators.base import BaseFormatGenerator
+
 # Core components
-from .config import DocumentationConfig
+from discovery.format_generators.config import DocumentationConfig
+
 # Factory and utilities
-from .factory import (FormatGeneratorFactory, generate_documentation_index,
-                      generate_platform_guide)
-from .html import HTMLGenerator
-from .json_generator import JSONGenerator
+from discovery.format_generators.factory import (
+    FormatGeneratorFactory,
+    generate_documentation_index,
+    generate_platform_guide,
+)
+from discovery.format_generators.html import HTMLGenerator
+from discovery.format_generators.json_generator import JSONGenerator
+
 # Format generators
-from .markdown import MarkdownGenerator
+from discovery.format_generators.markdown import MarkdownGenerator
 
 # Main exports
 __all__ = [

@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .base import Action
+from autopr.actions.base import Action
 
 
 class HandlePRCommentInputs(BaseModel):

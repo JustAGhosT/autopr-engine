@@ -7,12 +7,12 @@ dependency verification.
 """
 
 import os
-import re
 from pathlib import Path
+import re
 from typing import Any
 from urllib.parse import urlparse
 
-from .settings import AutoPRSettings, Environment, LLMProvider
+from autopr.config.settings import AutoPRSettings, Environment, LLMProvider
 
 
 class ConfigurationValidator:

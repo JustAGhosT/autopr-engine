@@ -5,10 +5,13 @@ from typing import Any, ClassVar, Union, cast
 
 import structlog
 
-from .audit import AuthorizationAuditLogger
-from .managers import (AuditedAuthorizationManager, CachedAuthorizationManager,
-                       EnterpriseAuthorizationManager)
-from .models import AuthorizationContext, Permission, ResourceType
+from autopr.security.authorization.audit import AuthorizationAuditLogger
+from autopr.security.authorization.managers import (
+    AuditedAuthorizationManager,
+    CachedAuthorizationManager,
+    EnterpriseAuthorizationManager,
+)
+from autopr.security.authorization.models import AuthorizationContext, Permission, ResourceType
 
 logger = structlog.get_logger(__name__)
 

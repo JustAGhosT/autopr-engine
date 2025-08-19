@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from .models import AuthorizationContext, Permission, ResourceType
+from autopr.security.authorization.models import AuthorizationContext, Permission, ResourceType
 
 
 class BaseAuthorizationManager(ABC):

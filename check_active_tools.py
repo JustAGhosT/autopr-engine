@@ -10,8 +10,7 @@ from config_loader import VolumeConfigLoader
 
 def main():
     loader = VolumeConfigLoader()
-    active_tools = loader.get_active_tools(200)
-    print("Active tools at volume 200:", active_tools)
+    loader.get_active_tools(200)
 
 
 if __name__ == "__main__":

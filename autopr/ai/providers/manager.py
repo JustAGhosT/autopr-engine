@@ -4,12 +4,11 @@ AutoPR LLM Provider Manager
 Manages multiple LLM providers and provides unified access.
 """
 
-import logging
 from collections.abc import AsyncGenerator
+import logging
 from typing import Any
 
-from ..base import (AnthropicProvider, LLMMessage, LLMProvider, LLMResponse,
-                    OpenAIProvider)
+from ..base import AnthropicProvider, LLMMessage, LLMProvider, LLMResponse, OpenAIProvider
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +83,10 @@ class LLMProviderManager:
         if (
             hasattr(self.config, "default_llm_provider")
             and self.config.default_llm_provider
-        ):
-            if self.config.default_llm_provider in self.providers:
-                provider = self.providers[self.config.default_llm_provider]
-                if hasattr(provider, "is_initialized") and provider.is_initialized:
-                    self.default_provider = self.config.default_llm_provider
+        ) and self.config.default_llm_provider in self.providers:
+            provider = self.providers[self.config.default_llm_provider]
+            if hasattr(provider, "is_initialized") and provider.is_initialized:
+                self.default_provider = self.config.default_llm_provider
 
     async def cleanup(self) -> None:
         """Clean up all LLM providers."""

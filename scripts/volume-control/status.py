@@ -5,8 +5,8 @@ Volume Control Status Utility
 Shows current status of both dev and commit volume knobs
 """
 
-import sys
 from pathlib import Path
+import sys
 
 # Ensure we can import from current directory
 sys.path.insert(0, str(Path(__file__).parent))

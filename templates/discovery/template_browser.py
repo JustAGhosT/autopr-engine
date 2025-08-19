@@ -10,14 +10,18 @@ Uses modular components for better maintainability and type safety.
 from pathlib import Path
 from typing import Any
 
-from .platform_recommendations import PlatformRecommendationEngine
-from .template_combinations import TemplateCombinationEngine
-from .template_file_loader import TemplateFileLoader
-from .template_models import (PlatformRecommendation, PlatformRequirements,
-                              TemplateCombination, TemplateInfo,
-                              TemplateReport)
-from .template_reports import TemplateReportGenerator
-from .template_search import TemplateSearchEngine
+from discovery.platform_recommendations import PlatformRecommendationEngine
+from discovery.template_combinations import TemplateCombinationEngine
+from discovery.template_file_loader import TemplateFileLoader
+from discovery.template_models import (
+    PlatformRecommendation,
+    PlatformRequirements,
+    TemplateCombination,
+    TemplateInfo,
+    TemplateReport,
+)
+from discovery.template_reports import TemplateReportGenerator
+from discovery.template_search import TemplateSearchEngine
 
 # Export all components
 __all__ = [
