@@ -5,8 +5,8 @@ Volume Control Wrapper for AutoPR Engine
 Simple wrapper to use the HiFi-style volume control system.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add the volume-control directory to the path
 volume_control_path = Path(__file__).parent / "volume-control"

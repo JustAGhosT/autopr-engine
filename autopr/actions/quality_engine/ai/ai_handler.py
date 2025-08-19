@@ -31,7 +31,8 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from autopr.actions.quality_engine.ai.ai_modes import run_ai_analysis as run_analysis
+        from autopr.actions.quality_engine.ai.ai_modes import \
+            run_ai_analysis as run_analysis
 
         logger.info("Starting AI-enhanced analysis", file_count=len(files))
         start_time = time.time()

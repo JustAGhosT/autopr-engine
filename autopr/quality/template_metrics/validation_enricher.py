@@ -12,7 +12,8 @@ so they can be properly rendered by report generators.
 from dataclasses import dataclass
 from typing import Any
 
-from autopr.quality.template_metrics.validation_types import ValidationIssue, ValidationSeverity
+from autopr.quality.template_metrics.validation_types import (
+    ValidationIssue, ValidationSeverity)
 
 
 @dataclass

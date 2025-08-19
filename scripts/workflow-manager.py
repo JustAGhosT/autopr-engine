@@ -6,8 +6,8 @@ This script helps developers understand and interact with the workflow system.
 """
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 class WorkflowManager:

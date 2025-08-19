@@ -10,7 +10,8 @@ import structlog
 from autopr.actions.quality_engine.models import ToolResult
 
 if TYPE_CHECKING:
-    from autopr.actions.quality_engine.tools.tool_base import ToolExecutionResult
+    from autopr.actions.quality_engine.tools.tool_base import \
+        ToolExecutionResult
 
 logger = structlog.get_logger(__name__)
 

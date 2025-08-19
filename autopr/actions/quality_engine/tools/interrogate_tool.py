@@ -1,7 +1,7 @@
 import asyncio
 import logging
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 from autopr.actions.quality_engine.tools.tool_base import Tool

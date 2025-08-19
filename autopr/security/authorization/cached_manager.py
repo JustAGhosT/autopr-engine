@@ -1,8 +1,10 @@
 """Cached authorization manager implementation."""
 
 from autopr.security.authorization.cache import PermissionCache
-from autopr.security.authorization.enterprise_manager import EnterpriseAuthorizationManager
-from autopr.security.authorization.models import AuthorizationContext, Permission, ResourceType
+from autopr.security.authorization.enterprise_manager import \
+    EnterpriseAuthorizationManager
+from autopr.security.authorization.models import (AuthorizationContext,
+                                                  Permission, ResourceType)
 
 
 class CachedAuthorizationManager(EnterpriseAuthorizationManager):

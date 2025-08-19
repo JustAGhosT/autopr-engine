@@ -5,12 +5,13 @@ Handles generation of security-related configurations and implementations.
 """
 
 import os
-from pathlib import Path
 import secrets
 import string
+from pathlib import Path
 from typing import Any
 
-from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import \
+    BaseGenerator
 
 
 class SecurityGenerator(BaseGenerator):

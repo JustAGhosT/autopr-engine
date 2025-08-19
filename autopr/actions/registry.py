@@ -4,8 +4,8 @@ AutoPR Action Registry
 Registry for managing and discovering actions.
 """
 
-from collections.abc import Callable
 import logging
+from collections.abc import Callable
 from typing import Any, Protocol, TypeVar
 
 from autopr.actions.base.action import Action
@@ -163,7 +163,8 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
         """Register built-in actions."""
         try:
             # Import and register built-in actions
-            from autopr.actions.create_or_update_issue import CreateOrUpdateIssue
+            from autopr.actions.create_or_update_issue import \
+                CreateOrUpdateIssue
             from autopr.actions.label_pr import LabelPR
             from autopr.actions.post_comment import PostComment
 

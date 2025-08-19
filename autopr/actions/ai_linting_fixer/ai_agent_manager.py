@@ -4,8 +4,8 @@ AI Agent Manager Module
 This module manages AI agents and their specializations for different types of linting issues.
 """
 
-from collections import Counter
 import logging
+from collections import Counter
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
