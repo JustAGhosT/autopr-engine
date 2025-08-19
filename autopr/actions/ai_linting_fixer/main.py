@@ -40,7 +40,7 @@ from autopr.actions.ai_linting_fixer.workflow import (
     WorkflowIntegrationMixin,
 )
 from autopr.actions.llm.manager import LLMProviderManager
-from autopr.config.settings import AutoPRConfig  # type: ignore[attr-defined]
+from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
 
 
 # Optional Redis support
@@ -832,7 +832,7 @@ def display_provider_status(*, quiet: bool = False) -> None:
     try:
         # Create a basic config for LLMProviderManager
 
-        config = AutoPRConfig()  # type: ignore[attr-defined]
+        config = AutoPRSettings()  # type: ignore[attr-defined]
         llm_manager = LLMProviderManager(config)
         available_providers = llm_manager.get_available_providers()
         display_show_provider_status(available_providers, quiet=quiet)
