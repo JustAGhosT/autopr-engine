@@ -22,6 +22,7 @@ from autopr.quality.template_metrics.quality_analyzer import QualityAnalyzer
 from autopr.quality.template_metrics.quality_models import QualityMetrics
 from autopr.quality.template_metrics.quality_scorer import QualityScorer
 
+
 # Factory functions for global instances
 _scorer_instance: QualityScorer | None = None
 _analyzer_instance: QualityAnalyzer | None = None

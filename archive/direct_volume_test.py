@@ -1,8 +1,9 @@
 """Direct test for VolumeConfig validation."""
 
 import contextlib
-import sys
 from pathlib import Path
+import sys
+
 
 # Add project root to path
 project_root = str(Path(__file__).parent.absolute())

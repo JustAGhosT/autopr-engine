@@ -9,6 +9,7 @@ import os
 import pathlib
 import sys
 
+
 # Add the autopr package to the path
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "."))
 

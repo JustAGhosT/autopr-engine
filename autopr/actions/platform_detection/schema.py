@@ -10,11 +10,12 @@ This module contains schemas for:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
+import json
 from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
+
 
 if TYPE_CHECKING:
     from pathlib import Path

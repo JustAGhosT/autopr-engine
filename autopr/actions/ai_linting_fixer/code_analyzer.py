@@ -7,6 +7,7 @@ This module handles code analysis, validation, and complexity calculations.
 import ast
 import logging
 
+
 try:
     import psutil  # type: ignore[import-not-found]
 except Exception:  # pragma: no cover - optional dependency in tests/CI

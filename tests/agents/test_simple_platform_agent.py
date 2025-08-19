@@ -1,5 +1,6 @@
 import unittest
 
+
 # Try to import the required modules
 try:
     from autopr.actions.platform_detection.schema import PlatformType

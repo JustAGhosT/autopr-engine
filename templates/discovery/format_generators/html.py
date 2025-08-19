@@ -10,8 +10,7 @@ from typing import Any
 
 from discovery.content_analyzer import TemplateAnalysis
 from discovery.format_generators.base import BaseFormatGenerator
-from discovery.format_generators.html_template_loader import \
-    YAMLHTMLTemplateLoader
+from discovery.format_generators.html_template_loader import YAMLHTMLTemplateLoader
 from discovery.format_generators.markdown import MarkdownGenerator
 
 

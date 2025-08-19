@@ -7,6 +7,7 @@ import structlog
 
 from autopr.security.authorization.models import AuthorizationContext
 
+
 logger = structlog.get_logger(__name__)
 
 

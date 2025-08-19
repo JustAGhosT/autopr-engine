@@ -10,6 +10,7 @@ from implementation.report_generator import ReportGenerator
 from implementation.task_definitions import Task, TaskRegistry
 from implementation.task_executor import TaskExecution, TaskExecutor
 
+
 __all__ = [
     "Phase1ExtensionImplementor",
     "PhaseExecution",

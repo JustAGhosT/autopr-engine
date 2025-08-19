@@ -7,6 +7,7 @@ import aiohttp
 
 from autopr.integrations.axolo.config import AxoloConfig
 
+
 logger = logging.getLogger(__name__)
 
 

@@ -3,10 +3,12 @@
 from datetime import datetime
 
 from autopr.security.authorization.audit_logger import AuthorizationAuditLogger
-from autopr.security.authorization.cached_manager import \
-    CachedAuthorizationManager
-from autopr.security.authorization.models import (AuthorizationContext,
-                                                  Permission, ResourceType)
+from autopr.security.authorization.cached_manager import CachedAuthorizationManager
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourceType,
+)
 
 
 class AuditedAuthorizationManager(CachedAuthorizationManager):

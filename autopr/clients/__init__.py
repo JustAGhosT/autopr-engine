@@ -7,4 +7,5 @@ These clients are used throughout the AutoPR codebase to interact with external 
 from autopr.clients.github_client import GitHubClient
 from autopr.clients.linear_client import LinearClient
 
+
 __all__ = ["GitHubClient", "LinearClient"]

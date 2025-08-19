@@ -1,13 +1,14 @@
 """Authorization audit logging functionality."""
 
+from datetime import datetime
 import json
 import os
-from datetime import datetime
 from typing import Any
 
 import structlog
 
 from autopr.security.authorization.models import AuthorizationContext
+
 
 logger = structlog.get_logger(__name__)
 

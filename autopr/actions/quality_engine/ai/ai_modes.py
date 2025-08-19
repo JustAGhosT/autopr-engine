@@ -13,6 +13,7 @@ import structlog
 from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
 from autopr.ai.providers.manager import LLMProviderManager
 
+
 logger = structlog.get_logger(__name__)
 
 # System prompt templates

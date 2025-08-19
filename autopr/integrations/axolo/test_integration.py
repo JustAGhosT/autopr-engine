@@ -3,8 +3,7 @@
 
 import asyncio
 
-from autopr.integrations.axolo import (create_axolo_integration,
-                                       is_axolo_available)
+from autopr.integrations.axolo import create_axolo_integration, is_axolo_available
 
 
 async def test_axolo_integration() -> None:

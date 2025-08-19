@@ -13,12 +13,13 @@ Features:
 """
 
 import ast
-import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+import re
 from typing import TYPE_CHECKING, Any
+
 
 # Forward reference types to avoid circular imports
 if TYPE_CHECKING:

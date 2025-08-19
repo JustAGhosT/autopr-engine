@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+
 from discovery.template_models import TemplateInfo
 
 

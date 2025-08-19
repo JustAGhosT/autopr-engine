@@ -7,14 +7,15 @@ from unittest.mock import patch
 import pytest
 
 from autopr.actions.quality_engine.tools.bandit_tool import BanditTool
-from autopr.actions.quality_engine.tools.dependency_scanner_tool import \
-    DependencyScannerTool
+from autopr.actions.quality_engine.tools.dependency_scanner_tool import (
+    DependencyScannerTool,
+)
 from autopr.actions.quality_engine.tools.eslint_tool import ESLintTool
-from autopr.actions.quality_engine.tools.interrogate_tool import \
-    InterrogateTool
+from autopr.actions.quality_engine.tools.interrogate_tool import InterrogateTool
 from autopr.actions.quality_engine.tools.mypy_tool import MyPyTool
-from autopr.actions.quality_engine.tools.performance_analyzer_tool import \
-    PerformanceAnalyzerTool
+from autopr.actions.quality_engine.tools.performance_analyzer_tool import (
+    PerformanceAnalyzerTool,
+)
 from autopr.actions.quality_engine.tools.pytest_tool import PyTestTool
 from autopr.actions.quality_engine.tools.radon_tool import RadonTool
 from autopr.actions.quality_engine.tools.ruff_tool import RuffTool

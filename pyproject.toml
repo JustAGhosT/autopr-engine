@@ -414,6 +414,11 @@ docstring-code-format = true
 # Force sort within sections
 force-sort-within-sections = true
 
+# Use deterministic sorting
+force-wrap-aliases = true
+force-single-line = false
+lines-after-imports = 2
+
 # Known first party modules
 known-first-party = ["autopr"]
 
@@ -435,6 +440,15 @@ known-third-party = [
     "pyyaml",
     "structlog",
     "websockets",
+]
+
+# Import section order (deterministic)
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
 ]
 
 [tool.ruff.lint.flake8-tidy-imports]

@@ -2,9 +2,9 @@
 File handler implementations for different file types.
 """
 
+from abc import ABC, abstractmethod
 import json
 import logging
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -12,7 +12,10 @@ import yaml
 
 from autopr.actions.platform_detection.analysis.base import FileAnalysisResult
 from autopr.actions.platform_detection.analysis.patterns import (
-    ContentPattern, FilePattern)
+    ContentPattern,
+    FilePattern,
+)
+
 
 if TYPE_CHECKING:
     from autopr.actions.platform_detection.analysis.base import FileAnalyzer

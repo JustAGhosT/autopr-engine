@@ -7,6 +7,7 @@ from typing import TypeVar
 
 from autopr.actions.quality_engine.handler_base import Handler
 
+
 TResult = TypeVar("TResult")
 THandler = TypeVar("THandler", bound=Handler)
 

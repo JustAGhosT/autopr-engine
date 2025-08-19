@@ -2,8 +2,9 @@
 Minimal test script to diagnose CrewAI integration test issues.
 """
 
-import sys
 from pathlib import Path
+import sys
+
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent.parent)

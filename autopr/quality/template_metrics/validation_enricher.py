@@ -13,7 +13,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from autopr.quality.template_metrics.validation_types import (
-    ValidationIssue, ValidationSeverity)
+    ValidationIssue,
+    ValidationSeverity,
+)
 
 
 @dataclass

@@ -5,11 +5,13 @@ Tests for CrewAI integration with volume control in AutoPR Engine.
 # mypy: ignore-errors
 # Standard library imports
 import importlib
-import sys
 from pathlib import Path
+import sys
 from typing import TYPE_CHECKING, Any
+
 # Third-party imports
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
 
 if TYPE_CHECKING:
     # Provide lightweight type stubs to satisfy type checkers
@@ -42,8 +44,7 @@ sys.modules["autopr.agents.linting_agent"] = Mock()
 
 # Now import the rest of the modules
 from autopr.agents.crew import AutoPRCrew  # noqa: E402
-from autopr.utils.volume_utils import (QualityMode,  # noqa: E402
-                                       get_volume_config)
+from autopr.utils.volume_utils import QualityMode, get_volume_config  # noqa: E402
 
 
 class MockTask:

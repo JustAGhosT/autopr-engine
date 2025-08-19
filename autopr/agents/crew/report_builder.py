@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from autopr.agents.models import CodeIssue, PlatformAnalysis
 from autopr.config.settings import get_settings
 
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 

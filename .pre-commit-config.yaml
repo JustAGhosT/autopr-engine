@@ -28,12 +28,8 @@ repos:
         args: ["--line-length=100"]
         stages: ["manual"] # Moved to manual - won't block commits
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ["--profile=black"]
-        stages: ["manual"] # Moved to manual - won't block commits
+  # Removed standalone isort - using ruff's isort functionality instead
+  # This prevents conflicts between isort and ruff's isort handling
 
   # Prettier for JSON, YAML, Markdown formatting
   - repo: https://github.com/pre-commit/mirrors-prettier

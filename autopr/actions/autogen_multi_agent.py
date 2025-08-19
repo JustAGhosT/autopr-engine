@@ -9,6 +9,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+
 try:
     from autogen import ConversableAgent, GroupChat, GroupChatManager
 

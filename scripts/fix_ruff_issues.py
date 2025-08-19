@@ -6,10 +6,10 @@ This script helps address the remaining 3,154 Ruff issues by categorizing them
 and providing systematic fixes.
 """
 
-import json
-import subprocess
 from collections import defaultdict
+import json
 from pathlib import Path
+import subprocess
 
 
 class RuffIssueFixer:

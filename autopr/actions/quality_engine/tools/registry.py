@@ -2,6 +2,7 @@ from typing import Any, TypeVar
 
 from autopr.actions.quality_engine.tools.tool_base import Tool
 
+
 TIssue = TypeVar("TIssue")
 TConfig = TypeVar("TConfig")
 TTool = TypeVar("TTool", bound=Tool)

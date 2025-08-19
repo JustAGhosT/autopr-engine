@@ -13,6 +13,7 @@ from implementation.report_generator import ReportGenerator
 from implementation.task_definitions import Task, TaskRegistry
 from implementation.task_executor import TaskExecutor
 
+
 logger = logging.getLogger(__name__)
 
 

@@ -1,6 +1,7 @@
 from ..registry import HandlerRegistry
 from ..results import LintIssue
 
+
 registry = HandlerRegistry()
 
 

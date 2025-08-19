@@ -7,10 +7,16 @@ import structlog
 
 from autopr.security.authorization.audit import AuthorizationAuditLogger
 from autopr.security.authorization.managers import (
-    AuditedAuthorizationManager, CachedAuthorizationManager,
-    EnterpriseAuthorizationManager)
-from autopr.security.authorization.models import (AuthorizationContext,
-                                                  Permission, ResourceType)
+    AuditedAuthorizationManager,
+    CachedAuthorizationManager,
+    EnterpriseAuthorizationManager,
+)
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourceType,
+)
+
 
 logger = structlog.get_logger(__name__)
 

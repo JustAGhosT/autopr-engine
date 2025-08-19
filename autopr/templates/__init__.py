@@ -15,6 +15,7 @@ from autopr.templates.base import TemplateMetadata, TemplateProvider
 from autopr.templates.providers.autoweave_provider import AutoWeaveProvider
 from autopr.templates.providers.jinja2_provider import Jinja2TemplateProvider
 
+
 # Set up logger
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,10 @@
 """Command-line interface for the markdown linter."""
 
 import argparse
-import sys
 from pathlib import Path
+import sys
 from typing import Any
+
 
 try:
     from tools.markdown_lint.linter import MarkdownLinter

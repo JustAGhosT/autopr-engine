@@ -10,4 +10,5 @@ from autopr.actions.base.action_outputs import ActionOutputs
 from autopr.actions.base.github_action import GitHubAction
 from autopr.actions.base.llm_action import LLMAction
 
+
 __all__ = ["Action", "ActionInputs", "ActionOutputs", "GitHubAction", "LLMAction"]

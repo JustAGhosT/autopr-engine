@@ -9,6 +9,7 @@ from typing import Any
 
 from autopr.templates.base import TemplateMetadata, TemplateProvider
 
+
 logger = logging.getLogger(__name__)
 
 

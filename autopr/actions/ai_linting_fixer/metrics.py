@@ -5,16 +5,18 @@ Comprehensive performance tracking and analysis for AI linting operations,
 including timing, throughput, resource usage, and quality metrics.
 """
 
+from datetime import datetime
 import logging
 import time
-from datetime import datetime
 from typing import Any
+
 
 try:
     import psutil  # type: ignore[import-not-found]
 except Exception:  # pragma: no cover - optional in CI/tests
     psutil = None  # type: ignore[assignment]
 from pydantic import BaseModel, Field
+
 
 logger = logging.getLogger(__name__)
 

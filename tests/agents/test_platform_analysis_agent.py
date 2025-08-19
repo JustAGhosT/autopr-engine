@@ -1,14 +1,18 @@
-import unittest
 from dataclasses import dataclass
 from pathlib import Path
+import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from autopr.actions.platform_detection.schema import (PlatformCategory,
-                                                      PlatformConfig,
-                                                      PlatformStatus,
-                                                      PlatformType)
-from autopr.agents.platform_analysis_agent import (PlatformAnalysisAgent,
-                                                   PlatformAnalysisInputs)
+from autopr.actions.platform_detection.schema import (
+    PlatformCategory,
+    PlatformConfig,
+    PlatformStatus,
+    PlatformType,
+)
+from autopr.agents.platform_analysis_agent import (
+    PlatformAnalysisAgent,
+    PlatformAnalysisInputs,
+)
 
 
 @dataclass

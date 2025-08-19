@@ -1,8 +1,9 @@
 """Simple test file to diagnose import issues."""
 
-import sys
 from pathlib import Path
+import sys
 from unittest.mock import patch
+
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.parent)

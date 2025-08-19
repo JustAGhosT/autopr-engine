@@ -9,6 +9,7 @@ from typing import Any
 
 from autopr.integrations.base import Integration
 
+
 logger = logging.getLogger(__name__)
 
 

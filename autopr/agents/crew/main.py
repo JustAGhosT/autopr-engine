@@ -15,6 +15,7 @@ from autopr.actions.quality_engine.models import QualityMode
 from autopr.config.settings import get_settings
 from autopr.utils.volume_utils import get_volume_level_name
 
+
 # Constants for volume thresholds
 VOLUME_HIGH = 700
 VOLUME_MEDIUM = 600
@@ -84,8 +85,7 @@ class AutoPRCrew:
             self.platform_agent = injected_pa
         else:
             # Import from the correct location
-            from autopr.agents.platform_analysis_agent import \
-                PlatformAnalysisAgent
+            from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
 
             self.platform_agent = PlatformAnalysisAgent(**agent_kwargs)
 

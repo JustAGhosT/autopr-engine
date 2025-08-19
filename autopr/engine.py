@@ -14,6 +14,7 @@ from autopr.exceptions import AutoPRException
 from autopr.integrations.registry import IntegrationRegistry
 from autopr.workflows.engine import WorkflowEngine
 
+
 logger = logging.getLogger(__name__)
 
 

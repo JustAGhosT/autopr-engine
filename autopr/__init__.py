@@ -15,12 +15,12 @@ from autopr.ai.base import LLMProvider
 from autopr.ai.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.engine import AutoPREngine
-from autopr.exceptions import (AutoPRException, ConfigurationError,
-                               IntegrationError)
+from autopr.exceptions import AutoPRException, ConfigurationError, IntegrationError
 from autopr.integrations.base import Integration
 from autopr.integrations.registry import IntegrationRegistry
 from autopr.workflows.base import Workflow
 from autopr.workflows.engine import WorkflowEngine
+
 
 # Import structlog with error handling
 STRUCTLOG_AVAILABLE: bool

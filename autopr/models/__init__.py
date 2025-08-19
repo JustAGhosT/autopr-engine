@@ -6,6 +6,7 @@ This package contains data models and schemas used throughout the AutoPR system.
 
 from pathlib import Path
 
+
 package_dir = Path(__file__).parent
 package_dir.mkdir(parents=True, exist_ok=True)
 

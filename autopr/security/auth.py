@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any
 
+
 try:
     from fastapi import HTTPException, status
 except Exception:  # pragma: no cover - type-checking fallback
@@ -20,6 +21,7 @@ except Exception:  # pragma: no cover - type-checking fallback
     status = _status()  # type: ignore
 import jwt  # type: ignore[import-untyped]
 
+
 try:
     from passlib.context import CryptContext  # type: ignore[import-untyped]
 except Exception:  # pragma: no cover - minimal runtime fallback for typing
@@ -36,6 +38,7 @@ except Exception:  # pragma: no cover - minimal runtime fallback for typing
 
 
 import structlog
+
 
 logger = structlog.get_logger(__name__)
 

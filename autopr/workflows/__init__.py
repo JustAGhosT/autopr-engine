@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 
 import yaml
 
+
 # Workflow registry
 WORKFLOW_REGISTRY: dict[str, Any] = {}
 

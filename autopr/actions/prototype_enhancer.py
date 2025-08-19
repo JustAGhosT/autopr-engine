@@ -21,6 +21,7 @@ This refactoring improves:
 # Import the new modular PrototypeEnhancer
 from autopr.actions.prototype_enhancement import PrototypeEnhancer
 
+
 # Maintain backward compatibility by re-exporting
 __all__ = ["PrototypeEnhancer"]
 

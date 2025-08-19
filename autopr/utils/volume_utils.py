@@ -10,6 +10,7 @@ from typing import Any
 
 from autopr.enums import QualityMode
 
+
 # Volume threshold constants for consistent behavior
 AI_AGENTS_THRESHOLD = 200  # Volume level at which to enable AI agents
 MIN_FIXES = 1  # Minimum number of fixes to apply

@@ -7,6 +7,7 @@ from typing import Any, List, Optional, Type
 
 from autopr.integrations.base import Integration
 
+
 # Import integration classes with error handling
 AxoloIntegration: type[Any] | None = None
 _axolo_available = False

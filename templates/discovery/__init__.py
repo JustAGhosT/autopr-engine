@@ -19,22 +19,34 @@ Main Components:
 
 from discovery.content_analyzer import ContentAnalyzer
 from discovery.docs_generator import TemplateDocumentationGenerator
-from discovery.format_generators import (BaseFormatGenerator,
-                                         FormatGeneratorFactory, HTMLGenerator,
-                                         JSONGenerator, MarkdownGenerator)
+from discovery.format_generators import (
+    BaseFormatGenerator,
+    FormatGeneratorFactory,
+    HTMLGenerator,
+    JSONGenerator,
+    MarkdownGenerator,
+)
 from discovery.qa_framework import QualityAssuranceFramework
+
 # Quality metrics have been moved to autopr.quality.template_metrics
 # Import them directly from there when needed
-from discovery.report_generators import (HTMLReportGenerator,
-                                         JSONReportGenerator,
-                                         MarkdownReportGenerator)
-from discovery.report_generators import \
-    ReportGeneratorFactory as QAReportGeneratorFactory
+from discovery.report_generators import (
+    HTMLReportGenerator,
+    JSONReportGenerator,
+    MarkdownReportGenerator,
+)
+from discovery.report_generators import (
+    ReportGeneratorFactory as QAReportGeneratorFactory,
+)
 from discovery.template_browser import TemplateBrowser, TemplateInfo
 from discovery.template_loader import TemplateLoader
-from discovery.template_validators import (ValidationIssue, ValidationSeverity,
-                                           ValidatorRegistry)
+from discovery.template_validators import (
+    ValidationIssue,
+    ValidationSeverity,
+    ValidatorRegistry,
+)
 from discovery.validation_rules import ValidationRuleLoader
+
 
 __all__ = [
     # Format generators

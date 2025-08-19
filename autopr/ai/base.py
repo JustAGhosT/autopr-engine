@@ -4,10 +4,11 @@ AutoPR AI/LLM Base Classes
 Base classes and interfaces for AI/LLM provider implementation.
 """
 
-import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import logging
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

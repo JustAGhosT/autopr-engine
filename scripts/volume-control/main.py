@@ -6,8 +6,9 @@ HiFi-style volume control with 0-1000 scale in ticks of 5.
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
+
 
 # Add the volume-control directory to the path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -123,15 +124,13 @@ def autofix_current():
             print("   Running: ruff check . --fix")
             os.system("ruff check . --fix")
         elif level in ["MEDIUM_LOW", "MEDIUM", "MEDIUM_HIGH"]:
-            print("   Running: ruff check . --fix && black . && isort .")
+            print("   Running: ruff check . --fix && black .")
             os.system("ruff check . --fix")
             os.system("black .")
-            os.system("isort .")
         else:
-            print("   Running: ruff check . --fix && black . && isort .")
+            print("   Running: ruff check . --fix && black .")
             os.system("ruff check . --fix")
             os.system("black .")
-            os.system("isort .")
 
     # Autofix commit volume
     if commit_knob.get_volume() > 0:

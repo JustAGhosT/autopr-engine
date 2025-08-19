@@ -1,7 +1,8 @@
 """Minimal test script to verify AutoPRCrew import and instantiation."""
 
-import sys
 from pathlib import Path
+import sys
+
 
 # Add project root to Python path
 project_root = str(Path(__file__).parent.resolve())

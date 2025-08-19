@@ -5,6 +5,7 @@ import argparse
 from collections.abc import Callable
 from pathlib import Path
 
+
 # Default file extensions to consider as Markdown
 DEFAULT_EXTENSIONS = {".md", ".markdown", ".mdown", ".mkd", ".mkdn"}
 

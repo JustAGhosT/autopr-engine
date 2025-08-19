@@ -14,12 +14,13 @@ This worker is safe to run at low volumes to continuously reduce trivial issues.
 
 from __future__ import annotations
 
+from collections import defaultdict
 import os
+from pathlib import Path
 import subprocess
 import sys
-from collections import defaultdict
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
+
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -93,10 +94,12 @@ def _remaining_issues_for_file(file_path: str, codes: list[str]) -> int:
 
 def main() -> int:
     # Fast import inside function to avoid import cost when listing help
-    from autopr.actions.ai_linting_fixer.database import \
-        AIInteractionDB  # type: ignore[import-not-found]
-    from autopr.actions.ai_linting_fixer.queue_manager import \
-        IssueQueueManager  # type: ignore[import-not-found]
+    from autopr.actions.ai_linting_fixer.database import (
+        AIInteractionDB,
+    )  # type: ignore[import-not-found]
+    from autopr.actions.ai_linting_fixer.queue_manager import (
+        IssueQueueManager,
+    )  # type: ignore[import-not-found]
 
     db_path = os.getenv("AUTOPR_DB_PATH", ".autopr/ai_interactions.db")
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)

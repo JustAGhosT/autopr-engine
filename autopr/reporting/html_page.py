@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 """
 Shared HTML page builder for simple reports.
 
@@ -7,6 +8,7 @@ Provides a minimal wrapper with a common header and basic styles.
 """
 
 from dataclasses import dataclass
+
 
 BASE_CSS = """
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }

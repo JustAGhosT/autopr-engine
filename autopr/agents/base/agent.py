@@ -9,10 +9,12 @@ volume-based configuration.
 import logging
 from typing import Any, TypeVar
 
+
 # Optional dependency: provide a lightweight fallback when crewai is unavailable
 try:  # pragma: no cover - runtime optional import
-    from crewai import \
-        Agent as CrewAgent  # type: ignore[import-not-found,import-untyped]
+    from crewai import (
+        Agent as CrewAgent,
+    )  # type: ignore[import-not-found,import-untyped]
 except Exception:  # pragma: no cover
 
     class CrewAgent:  # type: ignore[no-redef]
@@ -24,6 +26,7 @@ except Exception:  # pragma: no cover
 
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.agents.base.volume_config import VolumeConfig
+
 
 # Set up logger
 logger = logging.getLogger(__name__)

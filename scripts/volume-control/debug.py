@@ -3,8 +3,9 @@
 Debug script to show exactly what settings are applied at different volumes
 """
 
-import sys
 from pathlib import Path
+import sys
+
 
 # Add volume-control to path
 volume_control_path = Path(__file__).parent / "volume-control"
