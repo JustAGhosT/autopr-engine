@@ -19,14 +19,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from autopr.quality.template_metrics import (
-    QualityMetrics,
-    get_quality_analyzer,
-    get_quality_scorer,
-)
-from autopr.quality.template_metrics.validation_types import (
-    ValidationIssue as QMValidationIssue,
-)
+from autopr.quality.template_metrics import QualityMetrics, get_quality_analyzer, get_quality_scorer
+from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue
 from autopr.quality.template_metrics.validation_types import (
     ValidationSeverity as QMValidationSeverity,
 )

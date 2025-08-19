@@ -10,10 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from autopr.actions.platform_detection.config import PlatformConfigManager
-from autopr.actions.platform_detection.detector import (
-    PlatformDetector,
-    PlatformDetectorOutputs,
-)
+from autopr.actions.platform_detection.detector import PlatformDetector, PlatformDetectorOutputs
 from autopr.actions.platform_detection.schema import PlatformType
 from autopr.agents.agents import BaseAgent
 

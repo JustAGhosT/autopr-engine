@@ -9,9 +9,7 @@ import pytest
 
 from autopr.actions.quality_engine.tools.semgrep_tool import SemgrepTool
 from autopr.actions.quality_engine.tools.tool_base import Tool
-from autopr.actions.quality_engine.tools.windows_security_tool import (
-    WindowsSecurityTool,
-)
+from autopr.actions.quality_engine.tools.windows_security_tool import WindowsSecurityTool
 
 
 class TestTool:

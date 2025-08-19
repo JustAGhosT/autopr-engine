@@ -25,9 +25,7 @@ try:
     from redis.exceptions import (
         ConnectionError as RedisConnectionError,  # type: ignore[import-not-found, import-untyped]
     )
-    from redis.exceptions import (
-        RedisError,  # type: ignore[import-not-found, import-untyped]
-    )
+    from redis.exceptions import RedisError  # type: ignore[import-not-found, import-untyped]
 
     REDIS_AVAILABLE = True
 except ImportError:

@@ -10,21 +10,21 @@ from .audit import AuthorizationAuditLogger
 from .cache import PermissionCache
 from .decorators import AuthorizationDecorator, require_permission
 from .managers import (
-    AuditedAuthorizationManager,
-    BaseAuthorizationManager,
-    CachedAuthorizationManager,
-    EnterpriseAuthorizationManager,
+                       AuditedAuthorizationManager,
+                       BaseAuthorizationManager,
+                       CachedAuthorizationManager,
+                       EnterpriseAuthorizationManager,
 )
 from .middleware import AuthorizationMiddleware
 from .models import AuthorizationContext, Permission, ResourcePermission, ResourceType
 from .utils import (
-    authorize_request,
-    create_project_authorization_context,
-    create_repository_authorization_context,
-    create_template_authorization_context,
-    create_workflow_authorization_context,
-    get_access_logger,
-    get_authorization_manager,
+                       authorize_request,
+                       create_project_authorization_context,
+                       create_repository_authorization_context,
+                       create_template_authorization_context,
+                       create_workflow_authorization_context,
+                       get_access_logger,
+                       get_authorization_manager,
 )
 
 __all__ = [

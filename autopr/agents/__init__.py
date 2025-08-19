@@ -24,11 +24,11 @@ from autopr.agents.agents import BaseAgent, LintingAgent, VolumeConfig
 
 # Import models
 from autopr.agents.models import (
-    CodeAnalysisReport,
-    CodeIssue,
-    IssueSeverity,
-    PlatformAnalysis,
-    PlatformComponent,
+                                  CodeAnalysisReport,
+                                  CodeIssue,
+                                  IssueSeverity,
+                                  PlatformAnalysis,
+                                  PlatformComponent,
 )
 
 # Import modular agent IO types

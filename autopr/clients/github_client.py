@@ -9,13 +9,7 @@ import time
 import types
 from typing import Any, TypeVar, Union
 
-from aiohttp import (
-    ClientError,
-    ClientResponse,
-    ClientResponseError,
-    ClientSession,
-    ClientTimeout,
-)
+from aiohttp import ClientError, ClientResponse, ClientResponseError, ClientSession, ClientTimeout
 
 # Default configuration constants
 DEFAULT_RETRIES = 3

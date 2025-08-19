@@ -199,12 +199,8 @@ def _persist_ruff_findings(py_files: list[str]) -> int:
             return 0
         import json
 
-        from autopr.actions.ai_linting_fixer.database import (
-            AIInteractionDB,  # type: ignore
-        )
-        from autopr.actions.ai_linting_fixer.queue_manager import (
-            IssueQueueManager,  # type: ignore
-        )
+        from autopr.actions.ai_linting_fixer.database import AIInteractionDB  # type: ignore
+        from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager  # type: ignore
 
         findings = json.loads(out_json)
         issues: list[dict[str, object]] = []
@@ -270,12 +266,8 @@ def _persist_findings(findings: list[dict]) -> int:
     if not findings:
         return 0
     try:
-        from autopr.actions.ai_linting_fixer.database import (
-            AIInteractionDB,  # type: ignore
-        )
-        from autopr.actions.ai_linting_fixer.queue_manager import (
-            IssueQueueManager,  # type: ignore
-        )
+        from autopr.actions.ai_linting_fixer.database import AIInteractionDB  # type: ignore
+        from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager  # type: ignore
 
         issues: list[dict[str, object]] = []
         for f in findings:

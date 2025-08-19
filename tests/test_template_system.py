@@ -83,11 +83,7 @@ def test_autoweave_provider():
 def test_provider_fallback():
     """Test provider fallback mechanism."""
     try:
-        from autopr.templates import (
-            AutoWeaveProvider,
-            Jinja2TemplateProvider,
-            TemplateSystem,
-        )
+        from autopr.templates import AutoWeaveProvider, Jinja2TemplateProvider, TemplateSystem
 
         # Initialize providers
         template_dirs = [project_root / "autopr" / "templates" / "examples"]

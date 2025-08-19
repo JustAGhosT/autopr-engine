@@ -93,11 +93,11 @@ def _remaining_issues_for_file(file_path: str, codes: list[str]) -> int:
 
 def main() -> int:
     # Fast import inside function to avoid import cost when listing help
-    from autopr.actions.ai_linting_fixer.database import (  # type: ignore[import-not-found]
-        AIInteractionDB,
+    from autopr.actions.ai_linting_fixer.database import (
+        AIInteractionDB,  # type: ignore[import-not-found]
     )
-    from autopr.actions.ai_linting_fixer.queue_manager import (  # type: ignore[import-not-found]
-        IssueQueueManager,
+    from autopr.actions.ai_linting_fixer.queue_manager import (
+        IssueQueueManager,  # type: ignore[import-not-found]
     )
 
     db_path = os.getenv("AUTOPR_DB_PATH", ".autopr/ai_interactions.db")

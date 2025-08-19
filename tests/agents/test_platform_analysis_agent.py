@@ -9,10 +9,7 @@ from autopr.actions.platform_detection.schema import (
     PlatformStatus,
     PlatformType,
 )
-from autopr.agents.platform_analysis_agent import (
-    PlatformAnalysisAgent,
-    PlatformAnalysisInputs,
-)
+from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent, PlatformAnalysisInputs
 
 
 @dataclass

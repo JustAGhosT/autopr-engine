@@ -19,9 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from autopr.quality.template_metrics import QualityMetrics
-from autopr.quality.template_metrics.validation_enricher import (
-    enrich_quality_metrics_issues,
-)
+from autopr.quality.template_metrics.validation_enricher import enrich_quality_metrics_issues
 from autopr.quality.template_metrics.validation_types import (
     ValidationSeverity as QMValidationSeverity,
 )
