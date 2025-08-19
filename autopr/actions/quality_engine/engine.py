@@ -162,7 +162,8 @@ class QualityEngine(Action):
 
             # Import AI Linting Fixer
             from autopr.actions.ai_linting_fixer import AILintingFixer
-            from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
+            from autopr.actions.ai_linting_fixer.models import \
+                AILintingFixerInputs
 
             # Prepare fixer inputs
             target_path = files_to_check[0] if files_to_check else "."

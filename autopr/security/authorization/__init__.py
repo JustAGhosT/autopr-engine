@@ -9,23 +9,17 @@ and caching for performance optimization.
 from .audit import AuthorizationAuditLogger
 from .cache import PermissionCache
 from .decorators import AuthorizationDecorator, require_permission
-from .managers import (
-                       AuditedAuthorizationManager,
-                       BaseAuthorizationManager,
+from .managers import (AuditedAuthorizationManager, BaseAuthorizationManager,
                        CachedAuthorizationManager,
-                       EnterpriseAuthorizationManager,
-)
+                       EnterpriseAuthorizationManager)
 from .middleware import AuthorizationMiddleware
-from .models import AuthorizationContext, Permission, ResourcePermission, ResourceType
-from .utils import (
-                       authorize_request,
-                       create_project_authorization_context,
-                       create_repository_authorization_context,
-                       create_template_authorization_context,
-                       create_workflow_authorization_context,
-                       get_access_logger,
-                       get_authorization_manager,
-)
+from .models import (AuthorizationContext, Permission, ResourcePermission,
+                     ResourceType)
+from .utils import (authorize_request, create_project_authorization_context,
+                    create_repository_authorization_context,
+                    create_template_authorization_context,
+                    create_workflow_authorization_context, get_access_logger,
+                    get_authorization_manager)
 
 __all__ = [
     "AuditedAuthorizationManager",

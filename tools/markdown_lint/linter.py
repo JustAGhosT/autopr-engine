@@ -1,9 +1,9 @@
 """Core markdown linter implementation."""
 
-from collections.abc import Callable
 import operator
-from pathlib import Path
 import re
+from collections.abc import Callable
+from pathlib import Path
 
 try:
     from .models import FileReport, IssueSeverity, LintIssue

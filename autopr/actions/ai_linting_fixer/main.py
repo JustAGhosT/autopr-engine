@@ -5,11 +5,11 @@ This is the core module that orchestrates all the modular components
 to provide AI-powered linting fixes. Much cleaner and focused!
 """
 
+import logging
+import random
 from contextlib import suppress
 from datetime import UTC, datetime
-import logging
 from pathlib import Path
-import random
 from typing import Any
 
 from autopr.actions.llm.manager import LLMProviderManager
@@ -18,18 +18,14 @@ from autopr.config.settings import AutoPRConfig  # type: ignore[attr-defined]
 from .agents import AgentType, agent_manager
 from .database import AIInteractionDB, IssueQueueManager
 from .detection import issue_detector
-from .display import DisplayConfig, OutputMode, get_display
+from .display import DisplayConfig, OutputMode
 from .display import display_provider_status as display_show_provider_status
+from .display import get_display
 from .display import print_feature_status as display_print_feature_status
 from .file_ops import dry_run_ops, safe_file_ops
 from .metrics import MetricsCollector
-from .models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    LintingFixResult,
-    LintingIssue,
-    create_empty_outputs,
-)
+from .models import (AILintingFixerInputs, AILintingFixerOutputs,
+                     LintingFixResult, LintingIssue, create_empty_outputs)
 from .workflow import WorkflowContext, WorkflowIntegrationMixin
 
 # Optional Redis support

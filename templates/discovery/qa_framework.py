@@ -19,22 +19,19 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from autopr.quality.template_metrics import QualityMetrics, get_quality_analyzer, get_quality_scorer
-from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue
-from autopr.quality.template_metrics.validation_types import (
-    ValidationSeverity as QMValidationSeverity,
-)
+from autopr.quality.template_metrics import (QualityMetrics,
+                                             get_quality_analyzer,
+                                             get_quality_scorer)
+from autopr.quality.template_metrics.validation_types import \
+    ValidationIssue as QMValidationIssue
+from autopr.quality.template_metrics.validation_types import \
+    ValidationSeverity as QMValidationSeverity
 
-from .report_generators import (
-    ReportGeneratorFactory,
-    generate_batch_report,
-    generate_report,
-    save_report,
-)
+from .report_generators import (ReportGeneratorFactory, generate_batch_report,
+                                generate_report, save_report)
 from .template_validators import ValidationIssue as LocalValidationIssue
 from .template_validators import ValidationSeverity as LocalValidationSeverity
 from .template_validators import get_validator_registry
-
 # Import modular components
 from .validation_rules import get_validation_rules
 

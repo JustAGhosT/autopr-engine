@@ -1,9 +1,9 @@
 """Minimal test for VolumeConfig validation."""
 
 import logging
-from pathlib import Path
 import sys
 import traceback
+from pathlib import Path
 
 # Set up debug logging to file
 log_file = Path("volume_config_test.log")

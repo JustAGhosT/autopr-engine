@@ -10,9 +10,7 @@ from typing import Any
 import jinja2
 
 from autopr.actions.prototype_enhancement.template_metadata import (
-    TemplateMetadata,
-    TemplateRegistry,
-)
+    TemplateMetadata, TemplateRegistry)
 
 
 class TemplateManager:

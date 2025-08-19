@@ -6,11 +6,8 @@ from typing import Any, ClassVar, Union, cast
 import structlog
 
 from .audit import AuthorizationAuditLogger
-from .managers import (
-    AuditedAuthorizationManager,
-    CachedAuthorizationManager,
-    EnterpriseAuthorizationManager,
-)
+from .managers import (AuditedAuthorizationManager, CachedAuthorizationManager,
+                       EnterpriseAuthorizationManager)
 from .models import AuthorizationContext, Permission, ResourceType
 
 logger = structlog.get_logger(__name__)

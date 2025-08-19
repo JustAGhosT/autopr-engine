@@ -8,22 +8,10 @@ This module maintains backward compatibility by re-exporting the modular compone
 
 # Re-export everything from the modular LLM package for backward compatibility
 from .llm import (  # Types; Base classes; Manager; Providers; Factory functions
-    AnthropicProvider,
-    BaseLLMProvider,
-    GroqProvider,
-    LLMConfig,
-    LLMProviderManager,
-    LLMProviderType,
-    LLMResponse,
-    Message,
-    MessageRole,
-    MistralProvider,
-    OpenAIProvider,
-    PerplexityProvider,
-    TogetherAIProvider,
-    complete_chat,
-    get_llm_provider_manager,
-)
+    AnthropicProvider, BaseLLMProvider, GroqProvider, LLMConfig,
+    LLMProviderManager, LLMProviderType, LLMResponse, Message, MessageRole,
+    MistralProvider, OpenAIProvider, PerplexityProvider, TogetherAIProvider,
+    complete_chat, get_llm_provider_manager)
 
 # Maintain the same public API
 __all__ = [

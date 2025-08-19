@@ -84,7 +84,8 @@ class AutoPRCrew:
             self.platform_agent = injected_pa
         else:
             # Import from the correct location
-            from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+            from autopr.agents.platform_analysis_agent import \
+                PlatformAnalysisAgent
 
             self.platform_agent = PlatformAnalysisAgent(**agent_kwargs)
 

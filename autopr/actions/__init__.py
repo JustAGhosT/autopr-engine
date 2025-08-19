@@ -12,7 +12,8 @@ from typing import Any
 # Import action classes with error handling for optional dependencies
 PlatformDetector: type[Any] | None = None
 try:
-    from .platform_detector_enhanced import PlatformDetector as _RealPlatformDetector
+    from .platform_detector_enhanced import \
+        PlatformDetector as _RealPlatformDetector
 
     PlatformDetector = _RealPlatformDetector
 except ImportError:
@@ -36,7 +37,8 @@ except ImportError:
 
 AutoGenImplementation: type[Any] | None = None
 try:
-    from .autogen_implementation import AutoGenImplementation as _RealAutoGenImplementation
+    from .autogen_implementation import \
+        AutoGenImplementation as _RealAutoGenImplementation
 
     AutoGenImplementation = _RealAutoGenImplementation
 except ImportError:
@@ -60,7 +62,8 @@ except ImportError:
 
 AutoGenAgentSystem: type[Any] | None = None
 try:
-    from .autogen_multi_agent import AutoGenAgentSystem as _RealAutoGenAgentSystem
+    from .autogen_multi_agent import \
+        AutoGenAgentSystem as _RealAutoGenAgentSystem
 
     AutoGenAgentSystem = _RealAutoGenAgentSystem
 except ImportError:
@@ -68,7 +71,8 @@ except ImportError:
 
 Mem0MemoryManager: type[Any] | None = None
 try:
-    from .mem0_memory_integration import Mem0MemoryManager as _RealMem0MemoryManager
+    from .mem0_memory_integration import \
+        Mem0MemoryManager as _RealMem0MemoryManager
 
     Mem0MemoryManager = _RealMem0MemoryManager
 except ImportError:
@@ -84,7 +88,8 @@ except ImportError:
 
 LearningMemorySystem: type[Any] | None = None
 try:
-    from .learning_memory_system import LearningMemorySystem as _RealLearningMemorySystem
+    from .learning_memory_system import \
+        LearningMemorySystem as _RealLearningMemorySystem
 
     LearningMemorySystem = _RealLearningMemorySystem
 except ImportError:
@@ -92,7 +97,8 @@ except ImportError:
 
 MultiPlatformIntegrator: type[Any] | None = None
 try:
-    from .multi_platform_integrator import MultiPlatformIntegrator as _RealMultiPlatformIntegrator
+    from .multi_platform_integrator import \
+        MultiPlatformIntegrator as _RealMultiPlatformIntegrator
 
     MultiPlatformIntegrator = _RealMultiPlatformIntegrator
 except ImportError:
@@ -100,7 +106,8 @@ except ImportError:
 
 AICommentAnalyzer: type[Any] | None = None
 try:
-    from .ai_comment_analyzer import AICommentAnalyzer as _RealAICommentAnalyzer
+    from .ai_comment_analyzer import \
+        AICommentAnalyzer as _RealAICommentAnalyzer
 
     AICommentAnalyzer = _RealAICommentAnalyzer
 except ImportError:
@@ -133,7 +140,8 @@ except ImportError:
 
 CreateOrUpdateIssue: type[Any] | None = None
 try:
-    from .create_or_update_issue import CreateOrUpdateIssue as _RealCreateOrUpdateIssue
+    from .create_or_update_issue import \
+        CreateOrUpdateIssue as _RealCreateOrUpdateIssue
 
     CreateOrUpdateIssue = _RealCreateOrUpdateIssue
 except ImportError:
@@ -157,7 +165,8 @@ except ImportError:
 
 CheckPerformanceBudget: type[Any] | None = None
 try:
-    from .check_performance_budget import CheckPerformanceBudget as _RealCheckPerformanceBudget
+    from .check_performance_budget import \
+        CheckPerformanceBudget as _RealCheckPerformanceBudget
 
     CheckPerformanceBudget = _RealCheckPerformanceBudget
 except ImportError:
@@ -165,7 +174,8 @@ except ImportError:
 
 VisualRegressionTest: type[Any] | None = None
 try:
-    from .visual_regression_test import VisualRegressionTest as _RealVisualRegressionTest
+    from .visual_regression_test import \
+        VisualRegressionTest as _RealVisualRegressionTest
 
     VisualRegressionTest = _RealVisualRegressionTest
 except ImportError:
@@ -173,7 +183,8 @@ except ImportError:
 
 GenerateReleaseNotes: type[Any] | None = None
 try:
-    from .generate_release_notes import GenerateReleaseNotes as _RealGenerateReleaseNotes
+    from .generate_release_notes import \
+        GenerateReleaseNotes as _RealGenerateReleaseNotes
 
     GenerateReleaseNotes = _RealGenerateReleaseNotes
 except ImportError:

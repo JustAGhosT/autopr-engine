@@ -4,8 +4,8 @@ Demonstration of Hybrid YAML + Template Approach
 Shows how the enhanced FileGenerator works with metadata-driven templates.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add the autopr package to the path
 sys.path.insert(0, str(Path(__file__).parent))

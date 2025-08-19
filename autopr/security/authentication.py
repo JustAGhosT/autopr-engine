@@ -1,7 +1,7 @@
+import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-import secrets
 from typing import Any
 
 import bcrypt

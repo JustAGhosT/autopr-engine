@@ -10,7 +10,6 @@ from .handler_registry import HandlerRegistry
 from .handlers.lint_handler import LintHandler
 from .handlers.lint_issue import LintIssue
 from .tools import discover_tools
-
 # Import registry at the module level to avoid circular imports
 from .tools.registry import registry as tool_registry_instance
 
