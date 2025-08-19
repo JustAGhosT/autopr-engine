@@ -9,6 +9,7 @@ import logging
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.actions.ai_linting_fixer.specialists import SpecialistManager
 from autopr.actions.llm.manager import LLMProviderManager
 
 
@@ -23,56 +24,28 @@ class AIAgentManager:
         self.llm_manager = llm_manager
         self.performance_tracker = performance_tracker
 
-        # Agent specialization mapping
-        self.agent_specializations = {
-            "line_length_agent": ["E501"],  # Line length specialist
-            "import_agent": ["F401", "F811"],  # Import specialist
-            "variable_agent": ["F841", "F821"],  # Variable specialist
-            "exception_agent": ["E722", "B001"],  # Exception handling specialist
-            "style_agent": ["F541", "E741"],  # Style and naming specialist
-            "general_agent": ["*"],  # Fallback for everything else
-        }
+        # Initialize specialist manager
+        self.specialist_manager = SpecialistManager()
 
     def select_agent_for_issues(self, issues: list[LintingIssue]) -> str:
         """Select the most appropriate agent for the given issues."""
         if not issues:
-            return "general_agent"
+            return "GeneralSpecialist"
 
-        # Count issues by type
-        issue_counts: Counter[str] = Counter()
-        for issue in issues:
-            error_code = issue.error_code
-            issue_counts[error_code] += 1
-
-        # Find the best agent based on issue types
-        best_agent = "general_agent"
-        best_score = 0
-
-        for agent_name, supported_codes in self.agent_specializations.items():
-            score = 0
-            for code in supported_codes:
-                if code == "*":  # Wildcard agent
-                    score += len(issue_counts)
-                elif code in issue_counts:
-                    score += issue_counts[code]
-
-            if score > best_score:
-                best_score = score
-                best_agent = agent_name
-
-        logger.debug("Selected agent '%s' for %d issues", best_agent, len(issues))
-        return best_agent
+        # Use specialist manager to get the best specialist
+        specialist = self.specialist_manager.get_specialist_for_issues(issues)
+        logger.debug(
+            "Selected specialist '%s' for %d issues", specialist.name, len(issues)
+        )
+        return specialist.name
 
     def get_specialized_system_prompt(
         self, agent_type: str, issues: list[LintingIssue]
     ) -> str:
         """Get a specialized system prompt for the given agent type."""
-        base_prompt = self._get_base_system_prompt()
-
-        # Add agent-specific instructions
-        agent_instructions = self._get_agent_instructions(agent_type, issues)
-
-        return f"{base_prompt}\n\n{agent_instructions}"
+        # Get the specialist for the agent type
+        specialist = self.specialist_manager.get_specialist_by_name(agent_type)
+        return specialist.get_system_prompt(issues)
 
     def get_system_prompt(self) -> str:
         """Get the base system prompt for AI linting fixer."""
@@ -138,25 +111,9 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
         self, file_path: str, content: str, issues: list[LintingIssue]
     ) -> str:
         """Generate a user prompt for fixing the given issues."""
-        prompt = f"Please fix the following linting issues in the Python file '{file_path}':\n\n"
-
-        # Add file content
-        prompt += f"File content:\n```python\n{content}\n```\n\n"
-
-        # Add specific issues
-        prompt += "Linting issues to fix:\n"
-        for i, issue in enumerate(issues, 1):
-            prompt += (
-                f"{i}. Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
-            )
-            if issue.line_content:
-                prompt += f"   Line content: {issue.line_content}\n"
-
-        prompt += (
-            "\nPlease provide ONLY the specific lines that need to be fixed, not the entire file. "
-            "Focus on the exact changes needed to resolve the linting issues."
-        )
-        return prompt
+        # Get the best specialist for these issues
+        specialist = self.specialist_manager.get_specialist_for_issues(issues)
+        return specialist.get_user_prompt(file_path, content, issues)
 
     def parse_ai_response(self, content: str) -> dict[str, Any]:
         """Parse the AI response and extract the fix information."""
@@ -350,69 +307,6 @@ IMPORTANT: Never include markdown formatting, code blocks, or any text outside t
     def _get_base_system_prompt(self) -> str:
         """Get the base system prompt."""
         return self.get_system_prompt()
-
-    def _get_agent_instructions(
-        self, agent_type: str, issues: list[LintingIssue]
-    ) -> str:
-        """Get agent-specific instructions."""
-        instructions = {
-            "line_length_agent": """
-SPECIALIZATION: Line Length and Formatting Issues
-Focus on:
-- Breaking long lines appropriately
-- Maintaining readability
-- Using proper line continuation
-- Following PEP 8 line length guidelines
-- Preserving logical structure
-""",
-            "import_agent": """
-SPECIALIZATION: Import and Module Issues
-Focus on:
-- Removing unused imports
-- Organizing imports properly
-- Fixing import order
-- Handling circular imports
-- Using appropriate import statements
-""",
-            "variable_agent": """
-SPECIALIZATION: Variable and Assignment Issues
-Focus on:
-- Fixing unused variables
-- Proper variable naming
-- Assignment issues
-- Scope problems
-- Variable initialization
-""",
-            "exception_agent": """
-SPECIALIZATION: Exception Handling Issues
-Focus on:
-- Proper exception handling
-- Avoiding bare except clauses
-- Using specific exception types
-- Proper error handling patterns
-- Exception safety
-""",
-            "style_agent": """
-SPECIALIZATION: Code Style and Naming Issues
-Focus on:
-- Variable naming conventions
-- Function naming
-- Class naming
-- Style consistency
-- PEP 8 compliance
-""",
-            "general_agent": """
-SPECIALIZATION: General Code Quality
-Focus on:
-- Overall code quality
-- Best practices
-- Readability improvements
-- Performance considerations
-- Maintainability
-""",
-        }
-
-        return instructions.get(agent_type, instructions["general_agent"])
 
     def _extract_code_blocks(self, content: str) -> list[str]:
         """Extract code blocks from AI response."""

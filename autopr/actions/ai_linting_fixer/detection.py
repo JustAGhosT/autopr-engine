@@ -357,36 +357,57 @@ class RuffParser:
         try:
             import json
 
+            # Handle empty output
+            if not json_output.strip():
+                return []
+
             data = json.loads(json_output)
             issues = []
 
+            # Ensure data is a list
+            if not isinstance(data, list):
+                logger.warning("Ruff JSON output is not a list: %s", type(data))
+                return []
+
             for item in data:
-                # Classify the issue
-                category, severity, priority = self.classifier.classify_issue(
-                    item["code"]
-                )
-                confidence = self.classifier.estimate_fix_confidence(item["code"])
+                try:
+                    # Validate required fields
+                    if not all(
+                        key in item
+                        for key in ["code", "message", "filename", "location"]
+                    ):
+                        logger.debug("Skipping item with missing fields: %s", item)
+                        continue
 
-                # Get line content if possible
-                line_content = self._get_line_content(
-                    item["filename"], item["location"]["row"]
-                )
+                    # Classify the issue
+                    category, severity, priority = self.classifier.classify_issue(
+                        item["code"]
+                    )
+                    confidence = self.classifier.estimate_fix_confidence(item["code"])
 
-                issue = LintingIssue(
-                    file_path=item["filename"],
-                    line_number=item["location"]["row"],
-                    column_number=item["location"]["column"],
-                    error_code=item["code"],
-                    message=item["message"],
-                    tool="ruff",
-                    category=category,
-                    severity=severity,
-                    line_content=line_content,
-                    fix_priority=priority,
-                    estimated_confidence=confidence,
-                    requires_human_review=category == IssueCategory.CRITICAL,
-                )
-                issues.append(issue)
+                    # Get line content if possible
+                    line_content = self._get_line_content(
+                        item["filename"], item["location"]["row"]
+                    )
+
+                    issue = LintingIssue(
+                        file_path=item["filename"],
+                        line_number=item["location"]["row"],
+                        column_number=item["location"]["column"],
+                        error_code=item["code"],
+                        message=item["message"],
+                        tool="ruff",
+                        category=category,
+                        severity=severity,
+                        line_content=line_content,
+                        fix_priority=priority,
+                        estimated_confidence=confidence,
+                        requires_human_review=category == IssueCategory.CRITICAL,
+                    )
+                    issues.append(issue)
+                except Exception as e:
+                    logger.debug("Failed to parse ruff item: %s - %s", item, e)
+                    continue
 
             return issues
 

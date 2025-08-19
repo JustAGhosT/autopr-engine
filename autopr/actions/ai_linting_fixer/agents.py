@@ -113,7 +113,7 @@ class LineLengthAgent(SpecializedAgent):
         ]
 
     def get_system_prompt(self, issues: list[dict[str, Any]]) -> str:
-        return """You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.
 
 CORE PRINCIPLES:
 1. Break lines at logical points (after operators, commas, parentheses)
@@ -131,6 +131,29 @@ PREFERRED STRATEGIES:
 
 AVOID:
 • Breaking in the middle of words or strings
+• Creating less readable code
+• Changing logic or functionality
+• Using backslash continuation (\) unless absolutely necessary
+
+Focus on making clean, readable fixes that improve code quality.'''
+
+CORE PRINCIPLES:
+1. Break lines at logical points (after operators, commas, parentheses)
+2. Maintain code readability and logical flow
+3. Use Python's implicit line continuation (parentheses) when possible
+4. Preserve original functionality exactly
+5. Follow PEP 8 line breaking guidelines
+
+PREFERRED STRATEGIES:
+• Break after operators (+, -, ==, and, or, etc.)
+• Break after commas in function calls/definitions
+• Use parentheses for implicit continuation
+• Break long string concatenations
+• Extract complex expressions to variables when needed
+
+AVOID:
+def get_system_prompt(self, issues: list[dict[str, Any]]) -> str:
+        return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
 • Creating less readable code
 • Changing logic or functionality
 • Using backslash continuation (\\) unless absolutely necessary
@@ -151,7 +174,7 @@ CODE:
 ```python
 {file_content}
 ```
-
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
 Please fix ONLY the line length issues. Return the corrected code maintaining exact functionality."""
 
     def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
@@ -165,8 +188,9 @@ class ImportOptimizerAgent(SpecializedAgent):
         super().__init__(AgentType.IMPORT_OPTIMIZER)
 
     def _get_supported_issue_codes(self) -> list[str]:
-        return ["F401", "F811", "F405"]
-
+def get_system_prompt(self, issues: list[dict[str, Any]]) -> str:
+        return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
+return '''You are an IMPORT OPTIMIZATION SPECIALIST AI. Your expertise is fixing import-related issues.\n\nCORE PRINCIPLES:\n1. Remove unused imports (F401) safely\n2. Fix import redefinitions (F811)\n3. Organize imports following PEP 8\n4. Preserve functionality - never remove imports that ARE actually used\n5. Consider dynamic usage (getattr, eval, string references)\n\nANALYSIS STEPS:\n1. Scan entire file for ALL usage of the imported name\n2. Check for indirect usage (getattr, locals(), globals())\n3. Look for usage in strings, comments, or docstrings\n4. Verify the import is truly unused before removing\n\nIMPORT ORGANIZATION:\n1. Standard library imports\n2. Third-party imports\n3. Local application imports\n4. Separated by blank lines\n\nBE EXTREMELY CAREFUL: Only remove imports you are 100% certain are unused.'''
     def _define_fix_strategies(self) -> list[FixStrategy]:
         return [
             FixStrategy(
@@ -186,7 +210,7 @@ class ImportOptimizerAgent(SpecializedAgent):
                 confidence_multiplier=1.1,
             ),
         ]
-
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
     def get_system_prompt(self, issues: list[dict[str, Any]]) -> str:
         return """You are an IMPORT OPTIMIZATION SPECIALIST AI. Your expertise is fixing import-related issues.
 
@@ -246,9 +270,9 @@ class VariableCleanerAgent(SpecializedAgent):
 
     def __init__(self):
         super().__init__(AgentType.VARIABLE_CLEANER)
-
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
     def _get_supported_issue_codes(self) -> list[str]:
-        return ["F841", "F821", "F823"]
+return '''You are a VARIABLE CLEANUP SPECIALIST AI. Your expertise is fixing unused variable issues.\n\nCORE PRINCIPLES:\n1. Fix F841 (assigned but never used) variables\n2. Fix F821 (undefined name) variables\n3. Preserve side effects of assignments\n4. Choose the most appropriate fix strategy\n\nFIX STRATEGIES (in order of preference):\n1. UNDERSCORE PREFIX: If variable might be used later or serves documentation purpose\n   - Change `result = func()` to `_result = func()`\n2. REMOVE ASSIGNMENT: If the assignment serves no purpose\n   - Change `x = 5` to just remove the line (if no side effects)\n3. MEANINGFUL USAGE: If the variable should be used\n   - Add appropriate usage like logging, return, or assertion\n\nCRITICAL CONSIDERATIONS:\n- Preserve function call side effects\n- Don't remove assignments that have side effects\n- Consider if variable is used for future development\n- Maintain code readability and intent'''
 
     def _define_fix_strategies(self) -> list[FixStrategy]:
         return [
@@ -268,7 +292,7 @@ class VariableCleanerAgent(SpecializedAgent):
                 confidence_multiplier=0.8,
             ),
         ]
-
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
     def get_system_prompt(self, issues: list[dict[str, Any]]) -> str:
         return """You are a VARIABLE CLEANUP SPECIALIST AI. Your expertise is fixing unused variable issues.
 
@@ -323,9 +347,9 @@ class ExceptionHandlerAgent(SpecializedAgent):
 
     def __init__(self):
         super().__init__(AgentType.EXCEPTION_HANDLER)
-
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
     def _get_supported_issue_codes(self) -> list[str]:
-        return ["E722", "B001", "B014"]
+return '''You are an EXCEPTION HANDLING SPECIALIST AI. Your expertise is fixing exception handling issues.\n\nCORE PRINCIPLES:\n1. Never use bare 'except:' clauses\n2. Catch specific exceptions when possible\n3. Use 'except Exception:' for broad catching\n4. Preserve error handling behavior\n5. Follow Python exception handling best practices\n\nEXCEPTION HIERARCHY KNOWLEDGE:\n- BaseException (system exit, keyboard interrupt)\n  - Exception (all normal exceptions)\n    - ValueError, TypeError, AttributeError, etc.\n\nFIX STRATEGIES:\n1. SPECIFIC EXCEPTIONS: If you can determine likely exceptions\n   - `except (ValueError, TypeError):`\n2. GENERAL EXCEPTION: For broad error catching\n   - `except Exception:` (not bare except)\n3. PRESERVE BEHAVIOR: Maintain the same error handling logic\n\nAVOID catching BaseException unless specifically needed for system events.'''
 
     def _define_fix_strategies(self) -> list[FixStrategy]:
         return [
@@ -345,7 +369,7 @@ class ExceptionHandlerAgent(SpecializedAgent):
                 confidence_multiplier=0.9,
             ),
         ]
-
+return '''You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.\n\nCORE PRINCIPLES:\n1. Break lines at logical points (after operators, commas, parentheses)\n2. Maintain code readability and logical flow\n3. Use Python's implicit line continuation (parentheses) when possible\n4. Preserve original functionality exactly\n5. Follow PEP 8 line breaking guidelines\n\nPREFERRED STRATEGIES:\n• Break after operators (+, -, ==, and, or, etc.)\n• Break after commas in function calls/definitions\n• Use parentheses for implicit continuation\n• Break long string concatenations\n• Extract complex expressions to variables when needed\n\nAVOID:\n• Breaking in the middle of words or strings\n• Creating less readable code\n• Changing logic or functionality\n• Using backslash continuation (\\) unless absolutely necessary\n\nFocus on making clean, readable fixes that improve code quality.'''
     def get_system_prompt(self, issues: list[dict[str, Any]]) -> str:
         return """You are an EXCEPTION HANDLING SPECIALIST AI. Your expertise is fixing exception handling issues.
 
@@ -397,7 +421,7 @@ Replace bare 'except:' clauses with appropriate exception handling:
 
 class StyleFixerAgent(SpecializedAgent):
     """Specialized agent for fixing style and formatting issues (F541, E741)."""
-
+return '''You are a CODE STYLE SPECIALIST AI. Your expertise is fixing style and formatting issues.\n\nCORE PRINCIPLES:\n1. Fix f-string formatting issues (F541)\n2. Replace ambiguous variable names (E741, E742, E743)\n3. Maintain code functionality while improving readability\n4. Follow Python naming conventions\n\nF-STRING FIXES:\n- Add missing variables to f-strings\n- Fix empty f-strings\n- Ensure all placeholders have corresponding variables\n\nVARIABLE NAMING:\n- Replace single letters (l, O, I) with descriptive names\n- Use meaningful names that indicate purpose\n- Follow snake_case convention\n- Consider context and variable usage\n\nBE CONSERVATIVE: Only make changes that clearly improve code quality.'''
     def __init__(self):
         super().__init__(AgentType.STYLE_FIXER)
 
@@ -463,7 +487,7 @@ Fix the issues while maintaining exact functionality:
     def _get_agent_confidence_multiplier(self, issue_code: str) -> float:
         if issue_code.startswith("F541"):
             return 1.3  # High confidence for f-string fixes
-        return 0.9  # Lower confidence for style changes
+return '''You are a CODE STYLE SPECIALIST AI. Your expertise is fixing style and formatting issues.\n\nCORE PRINCIPLES:\n1. Fix f-string formatting issues (F541)\n2. Replace ambiguous variable names (E741, E742, E743)\n3. Maintain code functionality while improving readability\n4. Follow Python naming conventions\n\nF-STRING FIXES:\n- Add missing variables to f-strings\n- Fix empty f-strings\n- Ensure all placeholders have corresponding variables\n\nVARIABLE NAMING:\n- Replace single letters (l, O, I) with descriptive names\n- Use meaningful names that indicate purpose\n- Follow snake_case convention\n- Consider context and variable usage\n\nBE CONSERVATIVE: Only make changes that clearly improve code quality.'''
 
 
 class GeneralFixerAgent(SpecializedAgent):

@@ -115,6 +115,9 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
         "max_fixes": min(MAX_FIXES, legacy_max_fixes),
         "max_issues": min(MAX_ISSUES, max(MIN_ISSUES, volume // 5)),
         "enable_ai_agents": volume >= AI_AGENTS_THRESHOLD,
+        "ai_fixer_enabled": volume >= AI_AGENTS_THRESHOLD,
+        "ai_fixer_max_fixes": min(MAX_FIXES, legacy_max_fixes),
+        "ai_fixer_issue_types": _get_ai_fixer_issue_types(volume),
     }
 
     # Get the quality mode based on volume
@@ -135,3 +138,25 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
             "enable_ai_agents": True,
         }
     return quality_mode, base_config
+
+
+def _get_ai_fixer_issue_types(volume: int) -> list[str]:
+    """Get AI fixer issue types based on volume level."""
+    # Start with basic, safe fixes
+    basic_types = ["F401", "F841", "F541"]  # Unused imports, variables, f-strings
+
+    # Add more aggressive fixes at higher volumes
+    if volume >= 300:
+        basic_types.extend(["G004", "TRY401"])  # Logging issues
+    if volume >= 500:
+        basic_types.extend(["E501", "E741"])  # Line length, ambiguous names
+    if volume >= 700:
+        basic_types.extend(
+            ["E722", "B001", "F821"]
+        )  # Exception handling, undefined names
+    if volume >= 800:
+        basic_types.extend(["F811"])  # Redefined imports
+    if volume >= 900:
+        basic_types.extend(["*"])  # All issues at maximum volume
+
+    return basic_types
