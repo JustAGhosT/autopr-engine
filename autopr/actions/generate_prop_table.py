@@ -50,26 +50,20 @@ class GeneratePropTable(Action[Inputs, Outputs]):
             props = component_info.get("props", {})
 
             if not props:
-                return Outputs(
-                    markdown_table="No props found for this component.", error=None
-                )
+                return Outputs(markdown_table="No props found for this component.", error=None)
 
             table = "| Prop | Type | Default | Description |\\n"
             table += "|------|------|---------|-------------|\\n"
 
             for prop_name, prop_details in props.items():
-                prop_type = (
-                    prop_details.get("type", {}).get("name", "n/a").replace("|", "\\|")
-                )
+                prop_type = prop_details.get("type", {}).get("name", "n/a").replace("|", "\\|")
                 default_value = prop_details.get("defaultValue", {}).get("value", "n/a")
                 description = prop_details.get("description", "").replace("\\n", " ")
                 table += f"| `{prop_name}` | `{prop_type}` | `{default_value}` | {description} |\\n"
 
             return Outputs(markdown_table=table, error=None)
         except (json.JSONDecodeError, IndexError) as e:
-            return Outputs(
-                markdown_table="", error=f"Failed to parse docgen output: {e}"
-            )
+            return Outputs(markdown_table="", error=f"Failed to parse docgen output: {e}")
 
 
 if __name__ == "__main__":

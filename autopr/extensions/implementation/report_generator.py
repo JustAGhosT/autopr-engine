@@ -4,10 +4,10 @@ Report Generator Module
 Generates comprehensive reports and analytics for implementation roadmap execution.
 """
 
+from datetime import datetime, timedelta
 import json
 import logging
 import operator
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -67,9 +67,7 @@ class ReportGenerator:
         failed_tasks = execution_summary.get("failed", 0)
 
         # Calculate health score
-        phase_health = (
-            (completed_phases / total_phases * 100) if total_phases > 0 else 0
-        )
+        phase_health = (completed_phases / total_phases * 100) if total_phases > 0 else 0
         task_health = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
         overall_health = (phase_health + task_health) / 2
 
@@ -82,9 +80,7 @@ class ReportGenerator:
             "overall_health_score": round(overall_health, 1),
             "status_color": status_color,
             "current_phase": overall_status.get("current_phase"),
-            "progress_percentage": round(
-                overall_status.get("overall_progress_percentage", 0), 1
-            ),
+            "progress_percentage": round(overall_status.get("overall_progress_percentage", 0), 1),
             "phases_completed": f"{completed_phases}/{total_phases}",
             "tasks_completed": f"{completed_tasks}/{total_tasks}",
             "critical_issues": failed_phases + failed_tasks,
@@ -182,9 +178,7 @@ class ReportGenerator:
 
         # Analyze failed tasks
         failed_executions = [
-            execution
-            for execution in self.task_executor.executions.values()
-            if execution.is_failed
+            execution for execution in self.task_executor.executions.values() if execution.is_failed
         ]
 
         if failed_executions:
@@ -246,18 +240,12 @@ class ReportGenerator:
         if all_executions:
             # Extract non-None start times directly
             start_times = [
-                exec.start_time
-                for exec in all_executions
-                if exec.start_time is not None
+                exec.start_time for exec in all_executions if exec.start_time is not None
             ]
             if start_times:
                 earliest_start = min(start_times)
                 # Extract non-None end times directly
-                end_times = [
-                    exec.end_time
-                    for exec in all_executions
-                    if exec.end_time is not None
-                ]
+                end_times = [exec.end_time for exec in all_executions if exec.end_time is not None]
                 if end_times:
                     latest_end = max(end_times)
                     total_duration = latest_end - earliest_start
@@ -277,9 +265,7 @@ class ReportGenerator:
 
         if completed_executions:
             # Extract non-None start times directly
-            start_times = [
-                e.start_time for e in completed_executions if e.start_time is not None
-            ]
+            start_times = [e.start_time for e in completed_executions if e.start_time is not None]
             if start_times:
                 earliest_start = min(start_times)
                 days_elapsed = (datetime.now() - earliest_start).days or 1
@@ -296,17 +282,13 @@ class ReportGenerator:
             if execution.duration
         ]
         avg_task_duration = (
-            sum(completed_durations) / len(completed_durations)
-            if completed_durations
-            else 0
+            sum(completed_durations) / len(completed_durations) if completed_durations else 0
         )
 
         return {
             "velocity_tasks_per_day": round(velocity, 2),
             "average_task_duration_hours": round(avg_task_duration, 2),
-            "success_rate_percentage": round(
-                execution_summary.get("success_rate", 0) * 100, 1
-            ),
+            "success_rate_percentage": round(execution_summary.get("success_rate", 0) * 100, 1),
             "total_implementation_time_hours": round(
                 execution_summary.get("total_duration_seconds", 0) / 3600, 2
             ),
@@ -465,9 +447,7 @@ class ReportGenerator:
         """Assess risk level for a phase."""
         if phase_id in self.phase_manager.phase_executions:
             execution = self.phase_manager.phase_executions[phase_id]
-            failed_tasks = sum(
-                1 for e in execution.task_executions.values() if e.is_failed
-            )
+            failed_tasks = sum(1 for e in execution.task_executions.values() if e.is_failed)
             if failed_tasks > 2:
                 return "high"
             if failed_tasks > 0:
@@ -502,9 +482,7 @@ class ReportGenerator:
             {
                 "task_id": task_id,
                 "duration_hours": (
-                    round(execution.duration.total_seconds() / 3600, 2)
-                    if execution.duration
-                    else 0
+                    round(execution.duration.total_seconds() / 3600, 2) if execution.duration else 0
                 ),
             }
             for task_id, execution in completed_tasks[:5]

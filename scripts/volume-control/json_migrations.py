@@ -118,11 +118,11 @@ class JSONMigrations:
             toml_lines.append("[tool.ruff.format]")
             format_config = ruff_config["format"]
             if "quote_style" in format_config:
-                toml_lines.append(f'quote-style = "{format_config['quote_style']}"')
+                toml_lines.append(f'quote-style = "{format_config["quote_style"]}"')
             if "indent_style" in format_config:
-                toml_lines.append(f'indent-style = "{format_config['indent_style']}"')
+                toml_lines.append(f'indent-style = "{format_config["indent_style"]}"')
             if "line_ending" in format_config:
-                toml_lines.append(f'line-ending = "{format_config['line_ending']}"')
+                toml_lines.append(f'line-ending = "{format_config["line_ending"]}"')
 
         return "\n".join(toml_lines)
 

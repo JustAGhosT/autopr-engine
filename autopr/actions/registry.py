@@ -4,16 +4,14 @@ AutoPR Action Registry
 Registry for managing and discovering actions.
 """
 
-import logging
 from collections.abc import Callable
+import logging
 from typing import Any, Protocol, TypeVar
 
 from autopr.actions.base.action import Action
 
 T = TypeVar("T")
-ActionT = TypeVar(
-    "ActionT", bound=Action[Any, Any]
-)  # Define ActionT with proper bounds
+ActionT = TypeVar("ActionT", bound=Action[Any, Any])  # Define ActionT with proper bounds
 
 
 class ActionProtocol(Protocol):
@@ -152,10 +150,7 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
         for action_name in self._actions:
             action = self.get_action(action_name)
             if action:
-                if (
-                    query_lower in action.name.lower()
-                    or query_lower in action.description.lower()
-                ):
+                if query_lower in action.name.lower() or query_lower in action.description.lower():
                     matching_actions.append(action_name)
 
         return matching_actions

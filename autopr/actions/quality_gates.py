@@ -41,9 +41,7 @@ class QualityGateOutputs(BaseModel):
 
 class QualityGateValidator:
     def __init__(self) -> None:
-        self.quality_checks: dict[
-            str, Callable[[str, QualityGateInputs], dict[str, Any]]
-        ] = {
+        self.quality_checks: dict[str, Callable[[str, QualityGateInputs], dict[str, Any]]] = {
             "syntax": self._check_syntax,
             "style": self._check_style,
             "complexity": self._check_complexity,
@@ -88,9 +86,7 @@ class QualityGateValidator:
                     warnings.append(f"{check_name} check failed: {e!s}")
 
             # Calculate overall quality score
-            overall_quality = (
-                sum(quality_scores) / len(quality_scores) if quality_scores else 0.5
-            )
+            overall_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0.5
 
             # Determine if quality gate passes
             passed = len(errors) == 0 and overall_quality >= 0.7
@@ -109,9 +105,7 @@ class QualityGateValidator:
             if pathlib.Path(temp_file).exists():
                 pathlib.Path(temp_file).unlink()
 
-    def _check_syntax(
-        self, file_path: str, inputs: QualityGateInputs
-    ) -> dict[str, Any]:
+    def _check_syntax(self, file_path: str, inputs: QualityGateInputs) -> dict[str, Any]:
         """Check syntax validity of the modified file."""
         if not inputs.check_syntax:
             return {"quality_score": 1.0}
@@ -171,9 +165,7 @@ class QualityGateValidator:
             warnings.append(f"Lines too long (>120 chars): {long_lines[:5]}")
 
         # Check trailing whitespace
-        trailing_ws_lines = [
-            i + 1 for i, line in enumerate(lines) if line.rstrip() != line
-        ]
+        trailing_ws_lines = [i + 1 for i, line in enumerate(lines) if line.rstrip() != line]
         if trailing_ws_lines:
             warnings.append(f"Trailing whitespace on lines: {trailing_ws_lines[:5]}")
 
@@ -185,9 +177,7 @@ class QualityGateValidator:
 
             # Check for proper imports
             if re.search(r'import.*from [\'"][\.\/]', content):
-                recommendations.append(
-                    "Consider using absolute imports for better maintainability"
-                )
+                recommendations.append("Consider using absolute imports for better maintainability")
 
         quality_score = max(0.0, 1.0 - (len(warnings) * 0.1))
 
@@ -197,9 +187,7 @@ class QualityGateValidator:
             "quality_score": quality_score,
         }
 
-    def _check_complexity(
-        self, file_path: str, inputs: QualityGateInputs
-    ) -> dict[str, Any]:
+    def _check_complexity(self, file_path: str, inputs: QualityGateInputs) -> dict[str, Any]:
         """Check code complexity metrics."""
         warnings: list[str] = []
         file_ext = os.path.splitext(file_path)[1]
@@ -219,13 +207,9 @@ class QualityGateValidator:
 
         elif file_ext in {".js", ".ts", ".tsx", ".jsx"}:
             # Simple complexity check for JS/TS
-            function_count = len(
-                re.findall(r"function\s+\w+|=>\s*{|\w+\s*\([^)]*\)\s*{", content)
-            )
+            function_count = len(re.findall(r"function\s+\w+|=>\s*{|\w+\s*\([^)]*\)\s*{", content))
             if function_count > 20:
-                warnings.append(
-                    f"File has many functions ({function_count}), consider splitting"
-                )
+                warnings.append(f"File has many functions ({function_count}), consider splitting")
 
         # Check file size
         lines = len(content.split("\n"))
@@ -236,9 +220,7 @@ class QualityGateValidator:
 
         return {"warnings": warnings, "quality_score": quality_score}
 
-    def _check_security(
-        self, file_path: str, inputs: QualityGateInputs
-    ) -> dict[str, Any]:
+    def _check_security(self, file_path: str, inputs: QualityGateInputs) -> dict[str, Any]:
         """Check for potential security issues."""
         warnings: list[str] = []
         file_ext = os.path.splitext(file_path)[1]
@@ -271,9 +253,7 @@ class QualityGateValidator:
 
         return {"warnings": warnings, "quality_score": quality_score}
 
-    def _check_performance(
-        self, file_path: str, inputs: QualityGateInputs
-    ) -> dict[str, Any]:
+    def _check_performance(self, file_path: str, inputs: QualityGateInputs) -> dict[str, Any]:
         """Check for potential performance issues."""
         warnings: list[str] = []
         recommendations: list[str] = []
@@ -307,9 +287,7 @@ class QualityGateValidator:
             "quality_score": quality_score,
         }
 
-    def _check_accessibility(
-        self, file_path: str, inputs: QualityGateInputs
-    ) -> dict[str, Any]:
+    def _check_accessibility(self, file_path: str, inputs: QualityGateInputs) -> dict[str, Any]:
         """Check for accessibility issues."""
         warnings: list[str] = []
         file_ext = os.path.splitext(file_path)[1]
@@ -358,9 +336,7 @@ class QualityGateValidator:
             ]
 
             existing_test_files = [
-                pattern
-                for pattern in test_file_patterns
-                if pathlib.Path(pattern).exists()
+                pattern for pattern in test_file_patterns if pathlib.Path(pattern).exists()
             ]
 
             if existing_test_files:
@@ -376,9 +352,7 @@ class QualityGateValidator:
 
         # Calculate quality score based on test results
         if test_results:
-            passed_tests = sum(
-                1 for result in test_results.values() if result.get("passed", False)
-            )
+            passed_tests = sum(1 for result in test_results.values() if result.get("passed", False))
             total_tests = len(test_results)
             quality_score = passed_tests / total_tests if total_tests > 0 else 0.5
         else:
@@ -422,9 +396,7 @@ class QualityGateValidator:
         except Exception as e:
             return {"passed": False, "errors": str(e)}
 
-    def _check_dependencies(
-        self, file_path: str, inputs: QualityGateInputs
-    ) -> dict[str, Any]:
+    def _check_dependencies(self, file_path: str, inputs: QualityGateInputs) -> dict[str, Any]:
         """Check for dependency-related issues."""
         warnings: list[str] = []
         file_ext = os.path.splitext(file_path)[1]
@@ -434,9 +406,7 @@ class QualityGateValidator:
                 content = f.read()
 
             # Check for unused imports (basic check)
-            import_lines = re.findall(
-                r'import\s+.*?from\s+[\'"]([^\'"]+)[\'"]', content
-            )
+            import_lines = re.findall(r'import\s+.*?from\s+[\'"]([^\'"]+)[\'"]', content)
             used_imports = []
 
             for imp in import_lines:

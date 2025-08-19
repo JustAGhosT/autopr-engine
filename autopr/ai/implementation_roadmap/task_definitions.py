@@ -375,9 +375,7 @@ class ImplementationPhases:
         phase = self.get_phase(phase_name)
 
         return [
-            dep_phase
-            for dep_phase in phase.depends_on
-            if not self._is_phase_completed(dep_phase)
+            dep_phase for dep_phase in phase.depends_on if not self._is_phase_completed(dep_phase)
         ]
 
     def _is_phase_completed(self, phase_name: str) -> bool:

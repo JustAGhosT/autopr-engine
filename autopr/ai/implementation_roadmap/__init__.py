@@ -4,8 +4,11 @@ Automated setup script for production-grade enhancements with clean separation o
 Implementation Roadmap Modular Package
 """
 
-from .implementor import (Phase1ExtensionImplementor, get_phase1_implementor,
-                          reset_global_implementor)
+from .implementor import (
+    Phase1ExtensionImplementor,
+    get_phase1_implementor,
+    reset_global_implementor,
+)
 from .phase_manager import PhaseExecution, PhaseManager
 from .report_generator import ReportGenerator
 from .task_definitions import ImplementationPhases, Phase, Task, TaskRegistry

@@ -10,9 +10,12 @@ while importing from the new modular components.
 """
 
 from .quality_analyzer import QualityAnalyzer
-from .quality_models import (DEFAULT_CATEGORY_WEIGHTS,
-                             DEFAULT_SEVERITY_WEIGHTS, QUALITY_GRADES,
-                             QualityMetrics)
+from .quality_models import (
+    DEFAULT_CATEGORY_WEIGHTS,
+    DEFAULT_SEVERITY_WEIGHTS,
+    QUALITY_GRADES,
+    QualityMetrics,
+)
 from .quality_scorer import QualityScorer
 
 # Global instances for backward compatibility
@@ -37,9 +40,7 @@ def get_quality_analyzer() -> QualityAnalyzer:
 
 
 # Factory functions for easy instantiation
-def create_quality_scorer(
-    severity_weights=None, category_weights=None
-) -> QualityScorer:
+def create_quality_scorer(severity_weights=None, category_weights=None) -> QualityScorer:
     """Create a new quality scorer with optional custom weights."""
     scorer = QualityScorer()
     if severity_weights or category_weights:

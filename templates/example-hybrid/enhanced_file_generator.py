@@ -57,9 +57,7 @@ class EnhancedFileGenerator:
         # Template file is same name but without .yml extension
         return yaml_path.with_suffix("")
 
-    def list_templates(
-        self, platform: str | None = None, category: str | None = None
-    ) -> list[str]:
+    def list_templates(self, platform: str | None = None, category: str | None = None) -> list[str]:
         """List available templates, optionally filtered by platform/category."""
         templates = []
         for key, metadata in self.template_cache.items():
@@ -135,9 +133,7 @@ class EnhancedFileGenerator:
 
         return content
 
-    def _apply_variants(
-        self, content: str, metadata: TemplateMetadata, variants: list[str]
-    ) -> str:
+    def _apply_variants(self, content: str, metadata: TemplateMetadata, variants: list[str]) -> str:
         """Apply variant modifications to template content."""
         lines = content.split("\n")
 

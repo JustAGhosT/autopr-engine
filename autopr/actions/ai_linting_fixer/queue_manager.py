@@ -6,9 +6,9 @@ Extracted from database module to improve modularity and security.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import logging
 import sqlite3
-from datetime import UTC, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -98,9 +98,7 @@ class IssueQueueManager:
             # Mark issues as in_progress and assign worker
             if issues and worker_id:
                 issue_ids = [
-                    int(issue["id"])
-                    for issue in issues
-                    if isinstance(issue.get("id"), (int, str))
+                    int(issue["id"]) for issue in issues if isinstance(issue.get("id"), (int, str))
                 ]
                 placeholders = self._safe_in_placeholders(len(issue_ids))
                 update_query = (
@@ -108,9 +106,7 @@ class IssueQueueManager:
                     "SET status = 'in_progress', assigned_worker_id = ?, processing_started_at = ? "
                     f"WHERE id IN ({placeholders})"
                 )
-                conn.execute(
-                    update_query, [worker_id, datetime.now(UTC).isoformat(), *issue_ids]
-                )
+                conn.execute(update_query, [worker_id, datetime.now(UTC).isoformat(), *issue_ids])
                 conn.commit()
 
             return issues
@@ -251,9 +247,7 @@ class IssueQueueManager:
                 " GROUP BY error_code ORDER BY count DESC"
             )
 
-            type_stats = [
-                dict(row) for row in conn.execute(type_query, params).fetchall()
-            ]
+            type_stats = [dict(row) for row in conn.execute(type_query, params).fetchall()]
 
             return {
                 "overall": overall_stats,
@@ -284,9 +278,7 @@ class IssueQueueManager:
         """Reset issues that have been in_progress for too long."""
         with sqlite3.connect(self.db.db_path) as conn:
             timeout_time = datetime.now(UTC).replace(microsecond=0)
-            timeout_time = timeout_time.replace(
-                minute=timeout_time.minute - timeout_minutes
-            )
+            timeout_time = timeout_time.replace(minute=timeout_time.minute - timeout_minutes)
 
             conn.execute(
                 """

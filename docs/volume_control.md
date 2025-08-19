@@ -2,30 +2,35 @@
 
 ## Overview
 
-Volume control in AutoPR Engine allows you to adjust the depth and strictness of code analysis on a scale from 0 to 1000. This feature helps balance between thoroughness and performance based on your needs.
+Volume control in AutoPR Engine allows you to adjust the depth and strictness of code analysis on a
+scale from 0 to 1000. This feature helps balance between thoroughness and performance based on your
+needs.
 
 ## Volume Levels
 
-| Volume | Quality Mode | Analysis Depth | Best For |
-|--------|--------------|----------------|-----------|
-| 0-299  | Fast         | Quick          | Quick feedback during active development |
-| 300-699| Smart        | Standard       | Regular pull requests and code reviews |
-| 700-899| Comprehensive| Thorough       | Important merges and releases |
-| 900-1000| AI-Enhanced | Exhaustive     | Security audits and critical releases |
+| Volume   | Quality Mode  | Analysis Depth | Best For                                 |
+| -------- | ------------- | -------------- | ---------------------------------------- |
+| 0-299    | Fast          | Quick          | Quick feedback during active development |
+| 300-699  | Smart         | Standard       | Regular pull requests and code reviews   |
+| 700-899  | Comprehensive | Thorough       | Important merges and releases            |
+| 900-1000 | AI-Enhanced   | Exhaustive     | Security audits and critical releases    |
 
 ## Key Features
 
 ### 1. Dynamic Analysis Depth
+
 - **Low Volume (0-299)**: Surface-level analysis focusing on critical issues
 - **Medium Volume (300-699)**: Balanced analysis with reasonable depth
 - **High Volume (700-1000)**: In-depth analysis with comprehensive checks
 
 ### 2. Quality Mode Adjustment
+
 - Automatically adjusts quality modes based on volume
 - Affects tool selection and validation strictness
 - Configurable via `QualityInputs`
 
 ### 3. Performance Optimization
+
 - Reduces analysis time at lower volumes
 - Scales resource usage with volume level
 - Smart caching of results
@@ -79,6 +84,7 @@ AUTOPR_VOLUME_HIGH_TIMEOUT=300
 ### Quality Inputs
 
 Volume affects these `QualityInputs` parameters:
+
 - `mode`: QualityMode (FAST, SMART, COMPREHENSIVE, AI_ENHANCED)
 - `max_issues`: Maximum number of issues to report
 - `timeout_seconds`: Analysis timeout
@@ -125,6 +131,7 @@ Volume affects these `QualityInputs` parameters:
 ### AutoPRCrew
 
 #### analyze_repository
+
 ```python
 async def analyze_repository(
     self,
@@ -133,25 +140,26 @@ async def analyze_repository(
     **analysis_kwargs
 ) -> CodeAnalysisReport:
     """Analyze a repository with volume-based quality control.
-    
+
     Args:
         repo_path: Path to the repository
         volume: Analysis volume (0-1000)
         **analysis_kwargs: Additional analysis parameters
-        
+
     Returns:
         CodeAnalysisReport: Analysis results
     """
 ```
 
-#### _create_quality_inputs
+#### \_create_quality_inputs
+
 ```python
 def _create_quality_inputs(self, volume: int) -> QualityInputs:
     """Create QualityInputs based on volume level.
-    
+
     Args:
         volume: Volume level (0-1000)
-        
+
     Returns:
         QualityInputs: Configured quality inputs
     """

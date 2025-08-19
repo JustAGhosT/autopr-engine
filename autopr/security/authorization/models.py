@@ -59,9 +59,7 @@ class ResourcePermission(pydantic.BaseModel):
     resource_id: str
     permissions: set[Permission]
     granted_by: str
-    granted_at: str = pydantic.Field(
-        default_factory=lambda: datetime.utcnow().isoformat()
-    )
+    granted_at: str = pydantic.Field(default_factory=lambda: datetime.utcnow().isoformat())
 
     class Config:
         use_enum_values = True
@@ -73,9 +71,7 @@ class PermissionPolicy(pydantic.BaseModel):
     name: str
     description: str = ""
     rules: list[dict[str, Any]]
-    created_at: str = pydantic.Field(
-        default_factory=lambda: datetime.utcnow().isoformat()
-    )
+    created_at: str = pydantic.Field(default_factory=lambda: datetime.utcnow().isoformat())
     active: bool = True
 
     class Config:
@@ -85,9 +81,7 @@ class PermissionPolicy(pydantic.BaseModel):
 class AuthorizationReport(pydantic.BaseModel):
     """Comprehensive authorization report."""
 
-    generated_at: str = pydantic.Field(
-        default_factory=lambda: datetime.utcnow().isoformat()
-    )
+    generated_at: str = pydantic.Field(default_factory=lambda: datetime.utcnow().isoformat())
     summary: dict[str, Any] = {}
     details: dict[str, Any] = {}
     security_analysis: dict[str, Any] = {}

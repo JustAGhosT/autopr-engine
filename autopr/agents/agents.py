@@ -129,11 +129,7 @@ class LintingAgent(BaseAgent):
         linting_config = {}
         if self.volume_config.config:
             linting_config.update(
-                {
-                    k: v
-                    for k, v in self.volume_config.config.items()
-                    if k.startswith("linting_")
-                }
+                {k: v for k, v in self.volume_config.config.items() if k.startswith("linting_")}
             )
 
         self._linting_fixer = _AILintingFixer(**linting_config)  # type: ignore[call-arg]
@@ -219,9 +215,7 @@ class LintingAgent(BaseAgent):
                 )
             ]
         except Exception as e:
-            logging.exception(
-                f"Unexpected error fixing code issues in {file_path}: {e}"
-            )
+            logging.exception(f"Unexpected error fixing code issues in {file_path}: {e}")
             return [
                 CodeIssue(
                     file_path=file_path,
@@ -270,9 +264,7 @@ class LintingAgent(BaseAgent):
             ]
 
         except Exception as e:
-            logging.exception(
-                f"Unexpected error analyzing code quality in {file_path}: {e}"
-            )
+            logging.exception(f"Unexpected error analyzing code quality in {file_path}: {e}")
             return [
                 CodeIssue(
                     file_path=file_path,
@@ -304,11 +296,7 @@ class QualityAgent(BaseAgent):
         quality_config = {}
         if self.volume_config.config:
             quality_config.update(
-                {
-                    k: v
-                    for k, v in self.volume_config.config.items()
-                    if k.startswith("quality_")
-                }
+                {k: v for k, v in self.volume_config.config.items() if k.startswith("quality_")}
             )
 
         self._quality_engine = QualityEngine()

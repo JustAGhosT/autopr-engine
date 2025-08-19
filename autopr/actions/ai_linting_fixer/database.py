@@ -5,11 +5,11 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
+from datetime import UTC, datetime
 import json
 import logging
-import sqlite3
-from datetime import UTC, datetime
 from pathlib import Path
+import sqlite3
 from typing import Any
 
 from .queue_manager import IssueQueueManager
@@ -373,15 +373,11 @@ class AIInteractionDB:
                 "successful_fixes": successful_fixes,
                 "failed_fixes": failed_fixes,
                 "success_rate": (
-                    (successful_fixes / total_interactions * 100)
-                    if total_interactions > 0
-                    else 0
+                    (successful_fixes / total_interactions * 100) if total_interactions > 0 else 0
                 ),
                 "confidence_stats": {
                     "average_confidence": (
-                        confidence_stats["average_confidence"]
-                        if confidence_stats
-                        else 0.0
+                        confidence_stats["average_confidence"] if confidence_stats else 0.0
                     ),
                     "median_confidence": 0.0,  # Would need more complex query
                     "min_confidence": (
@@ -391,14 +387,10 @@ class AIInteractionDB:
                         confidence_stats["max_confidence"] if confidence_stats else 0.0
                     ),
                     "high_confidence_count": (
-                        confidence_stats["high_confidence_count"]
-                        if confidence_stats
-                        else 0
+                        confidence_stats["high_confidence_count"] if confidence_stats else 0
                     ),
                     "low_confidence_count": (
-                        confidence_stats["low_confidence_count"]
-                        if confidence_stats
-                        else 0
+                        confidence_stats["low_confidence_count"] if confidence_stats else 0
                     ),
                     "high_confidence_percentage": high_confidence_percentage,
                     "low_confidence_percentage": low_confidence_percentage,
@@ -424,13 +416,9 @@ class AIInteractionDB:
                 },
                 "file_stats": {
                     "unique_files": file_stats["unique_files"] if file_stats else 0,
-                    "average_file_size": (
-                        file_stats["average_file_size"] if file_stats else 0
-                    ),
+                    "average_file_size": (file_stats["average_file_size"] if file_stats else 0),
                     "most_processed_file": (
-                        most_processed_file["file_path"]
-                        if most_processed_file
-                        else "None"
+                        most_processed_file["file_path"] if most_processed_file else "None"
                     ),
                 },
             }
@@ -528,9 +516,7 @@ class DatabaseManager:
         }
 
         if include_sessions:
-            export_data["performance_sessions"] = self.db.get_session_performance(
-                limit=100
-            )
+            export_data["performance_sessions"] = self.db.get_session_performance(limit=100)
 
         # Include queue statistics
         export_data["queue_statistics"] = self.queue_manager.get_queue_statistics()

@@ -78,9 +78,7 @@ class QualityMetrics:
         """Get issues for a specific category."""
         return [issue for issue in self.issues if issue.category == category]
 
-    def get_issues_by_severity(
-        self, severity: ValidationSeverity
-    ) -> list[ValidationIssue]:
+    def get_issues_by_severity(self, severity: ValidationSeverity) -> list[ValidationIssue]:
         """Get issues by severity level."""
         return [issue for issue in self.issues if issue.severity == severity]
 

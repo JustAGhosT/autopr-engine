@@ -1,14 +1,18 @@
 # Volume 200 Settings Documentation
 
-This document describes the tool configurations that are active when the AutoPR Engine volume control is set to level 200.
+This document describes the tool configurations that are active when the AutoPR Engine volume
+control is set to level 200.
 
 ## Volume Control System Overview
 
-The AutoPR Engine uses a HiFi-style volume control system with a 0-1000 scale in ticks of 5. Volume level 200 corresponds to a "LOW" setting that enables basic linting and quality checks while maintaining a relatively permissive development environment.
+The AutoPR Engine uses a HiFi-style volume control system with a 0-1000 scale in ticks of 5. Volume
+level 200 corresponds to a "LOW" setting that enables basic linting and quality checks while
+maintaining a relatively permissive development environment.
 
 ## Active Tools at Volume 200
 
 The following tools are enabled at volume level 200:
+
 - git
 - github-actions
 - json
@@ -21,6 +25,7 @@ The following tools are enabled at volume level 200:
 ## Tool Configurations at Volume 200
 
 ### Python (strict type checking with linting)
+
 - python.enabled: true
 - python.languageServer: "Pylance"
 - python.analysis.enabled: true
@@ -32,6 +37,7 @@ The following tools are enabled at volume level 200:
 - python.analysis.autoImportCompletions: true
 
 ### Git
+
 - git.enabled: true
 - git.autorefresh: true
 - git.decorations.enabled: true
@@ -41,12 +47,14 @@ The following tools are enabled at volume level 200:
 - git.enableSmartCommit: true
 
 ### JSON
+
 - json.enabled: true
 - json.validate.enable: true
 - json.schemas: [] (default schemas)
 - json.format.enable: true
 
 ### TypeScript
+
 - typescript.enabled: true
 - typescript.preferences.includePackageJsonAutoImports: "auto"
 - typescript.suggest.enabled: true
@@ -55,6 +63,7 @@ The following tools are enabled at volume level 200:
 - typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
 
 ### YAML
+
 - yaml.enabled: true
 - yaml.validate: false
 - yaml.completion: true
@@ -64,6 +73,7 @@ The following tools are enabled at volume level 200:
 - redhat.vscode-yaml.enabled: true
 
 ### Problems
+
 - problems.decorations.enabled: true
 - problems.showCurrentInStatus: true
 - problems.sortOrder: "position"
@@ -71,6 +81,7 @@ The following tools are enabled at volume level 200:
 - problems.visibility: true
 
 ### PowerShell
+
 - powershell.scriptAnalysis.enable: true
 - powershell.integratedConsole.showOnStartup: true
 - powershell.codeFormatting.enabled: true
@@ -78,6 +89,7 @@ The following tools are enabled at volume level 200:
 - powershell.integratedConsole.focusConsoleOnExecute: true
 
 ### GitHub Actions
+
 - github-actions.validate: true
 - github-actions.enableWorkflowValidation: true
 - github-actions.enableSchemaValidation: true
@@ -87,6 +99,7 @@ The following tools are enabled at volume level 200:
 ## Inactive Tools at Volume 200
 
 The following tools do not have specific configurations at volume level 200 and remain inactive:
+
 - pre_commit
 - pyright
 - ruff
@@ -94,4 +107,5 @@ The following tools do not have specific configurations at volume level 200 and 
 
 ## Verification
 
-All tests pass successfully at volume level 200, confirming that the configuration is stable and functional.
+All tests pass successfully at volume level 200, confirming that the configuration is stable and
+functional.

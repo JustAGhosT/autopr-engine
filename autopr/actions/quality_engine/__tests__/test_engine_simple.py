@@ -109,8 +109,7 @@ class TestQualityEngineIntegration:
     async def test_platform_detector(self):
         """Test platform detector functionality."""
         try:
-            from autopr.actions.quality_engine.platform_detector import \
-                PlatformDetector
+            from autopr.actions.quality_engine.platform_detector import PlatformDetector
 
             detector = PlatformDetector()
 
@@ -126,8 +125,7 @@ class TestQualityEngineIntegration:
     async def test_tool_registry(self):
         """Test tool registry functionality."""
         try:
-            from autopr.actions.quality_engine.tools.registry import \
-                ToolRegistry
+            from autopr.actions.quality_engine.tools.registry import ToolRegistry
 
             registry = ToolRegistry()
 

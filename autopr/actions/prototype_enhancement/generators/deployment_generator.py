@@ -62,9 +62,7 @@ class DeploymentGenerator(BaseGenerator):
         logger.warning(f"Unsupported deployment platform: {platform}")
         return []
 
-    def _generate_replit_deployment(
-        self, output_dir: Path, context: dict[str, Any]
-    ) -> list[Path]:
+    def _generate_replit_deployment(self, output_dir: Path, context: dict[str, Any]) -> list[Path]:
         """Generate Replit-specific deployment files."""
         generated_files = []
 
@@ -85,9 +83,7 @@ class DeploymentGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_vercel_deployment(
-        self, output_dir: Path, context: dict[str, Any]
-    ) -> list[Path]:
+    def _generate_vercel_deployment(self, output_dir: Path, context: dict[str, Any]) -> list[Path]:
         """Generate Vercel deployment configuration."""
         generated_files = []
 
@@ -100,9 +96,7 @@ class DeploymentGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_render_deployment(
-        self, output_dir: Path, context: dict[str, Any]
-    ) -> list[Path]:
+    def _generate_render_deployment(self, output_dir: Path, context: dict[str, Any]) -> list[Path]:
         """Generate Render deployment configuration."""
         generated_files = []
 

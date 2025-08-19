@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       volume:
-        description: 'Volume level (0-1000)'
+        description: "Volume level (0-1000)"
         required: false
         default: 600
         type: number
   schedule:
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
 
 jobs:
   bg-fix:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install deps
         run: |
@@ -30,11 +30,9 @@ jobs:
       - name: Run background fixer
         env:
           AUTOPR_PRECOMMIT_VOLUME: ${{ github.event.inputs.volume || '600' }}
-          AUTOPR_BG_BATCH: '30'
-          AUTOPR_BG_TYPES: 'E302,F401,F841'
-          AUTOPR_ENABLE_AUTOFIX: '1'
-          AUTOPR_AUTOFIX_MIN_VOLUME: '0'
+          AUTOPR_BG_BATCH: "30"
+          AUTOPR_BG_TYPES: "E302,F401,F841"
+          AUTOPR_ENABLE_AUTOFIX: "1"
+          AUTOPR_AUTOFIX_MIN_VOLUME: "0"
         run: |
           python scripts/bg-fix-queue.py || true
-
-

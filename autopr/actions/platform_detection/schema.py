@@ -10,10 +10,10 @@ This module contains schemas for:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
+import json
 from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
 
 if TYPE_CHECKING:
@@ -207,9 +207,7 @@ class PlatformConfig:
             raise ValueError(msg)
 
         # Handle enums and special types
-        status = (
-            PlatformStatus(data.get("status", "active")) if "status" in data else None
-        )
+        status = PlatformStatus(data.get("status", "active")) if "status" in data else None
         platform_type_val = data.get("type")
         if isinstance(platform_type_val, PlatformType):
             platform_type = platform_type_val

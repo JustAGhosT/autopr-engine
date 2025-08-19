@@ -85,18 +85,16 @@ Build applications on these no-code platforms:
 
         for platform in sorted(platforms, key=lambda x: x.name):
             platform_name = platform.name.replace("_", " ").title()
-            description = platform.platform_info.get(
-                "description", "No description available"
-            )
+            description = platform.platform_info.get("description", "No description available")
             content += f"- **[{platform_name}](platforms/{platform.name}.md)**: {description}\n"
 
-        content += "\n## Use Case Templates\n\nPre-built templates for common application types:\n\n"
+        content += (
+            "\n## Use Case Templates\n\nPre-built templates for common application types:\n\n"
+        )
 
         for use_case in sorted(use_cases, key=lambda x: x.name):
             use_case_name = use_case.name.replace("_", " ").title()
-            description = use_case.use_case_info.get(
-                "description", "No description available"
-            )
+            description = use_case.use_case_info.get("description", "No description available")
             content += f"- **[{use_case_name}](use-cases/{use_case.name}.md)**: {description}\n"
 
         content += "\n## Integration Templates\n\nAdd functionality with these integrations:\n\n"
@@ -106,7 +104,9 @@ Build applications on these no-code platforms:
             description = integration.integration_info.get(
                 "description", "No description available"
             )
-            content += f"- **[{integration_name}](integrations/{integration.name}.md)**: {description}\n"
+            content += (
+                f"- **[{integration_name}](integrations/{integration.name}.md)**: {description}\n"
+            )
 
         content += """
 
@@ -131,9 +131,7 @@ Not sure which platform to choose? Check out our [platform comparison guide](pla
 
         return content
 
-    def generate_comparison_guide(
-        self, platform_analyses: list[TemplateAnalysis]
-    ) -> str:
+    def generate_comparison_guide(self, platform_analyses: list[TemplateAnalysis]) -> str:
         """Generate platform comparison guide."""
         content = f"""# Platform Comparison Guide
 

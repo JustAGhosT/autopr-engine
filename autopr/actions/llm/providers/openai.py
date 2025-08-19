@@ -24,9 +24,7 @@ class OpenAIProvider(BaseLLMProvider):
     def complete(self, request: dict[str, Any]) -> LLMResponse:
         try:
             # Ensure all messages have non-empty content (additional robustness)
-            filtered_messages = [
-                msg for msg in request["messages"] if msg["content"].strip()
-            ]
+            filtered_messages = [msg for msg in request["messages"] if msg["content"].strip()]
             response = self.client.chat.completions.create(
                 model=request["model"] or self.default_model or "gpt-4",
                 messages=filtered_messages,
@@ -41,9 +39,7 @@ class OpenAIProvider(BaseLLMProvider):
             # Defensive: ensure response has expected attributes
             if hasattr(response, "choices") and hasattr(response.choices[0], "message"):
                 content = response.choices[0].message.content or ""
-                finish_reason = (
-                    getattr(response.choices[0], "finish_reason", "stop") or "stop"
-                )
+                finish_reason = getattr(response.choices[0], "finish_reason", "stop") or "stop"
             else:
                 content = ""
                 finish_reason = "stop"

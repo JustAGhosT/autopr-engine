@@ -8,13 +8,19 @@ Provides specialized generators for different output formats (Markdown, HTML, JS
 """
 
 from .base import BaseFormatGenerator
+
 # Core components
 from .config import DocumentationConfig
+
 # Factory and utilities
-from .factory import (FormatGeneratorFactory, generate_documentation_index,
-                      generate_platform_guide)
+from .factory import (
+    FormatGeneratorFactory,
+    generate_documentation_index,
+    generate_platform_guide,
+)
 from .html import HTMLGenerator
 from .json_generator import JSONGenerator
+
 # Format generators
 from .markdown import MarkdownGenerator
 

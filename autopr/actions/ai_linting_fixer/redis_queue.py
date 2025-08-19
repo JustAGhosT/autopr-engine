@@ -5,28 +5,29 @@ Provides Redis-based distributed processing capabilities for AI linting operatio
 This enables horizontal scaling across multiple workers and systems.
 """
 
-import json
-import logging
-import os
-import time
-import uuid
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+import json
+import logging
+import os
 from pathlib import Path
+import time
 from typing import Any, TypedDict
+import uuid
 
 logger = logging.getLogger(__name__)
 
 # Optional Redis dependency
 try:
     import redis  # type: ignore[import-not-found, import-untyped]
-    from redis.exceptions import \
-        ConnectionError as \
-        RedisConnectionError  # type: ignore[import-not-found, import-untyped]
-    from redis.exceptions import \
-        RedisError  # type: ignore[import-not-found, import-untyped]
+    from redis.exceptions import (
+        ConnectionError as RedisConnectionError,  # type: ignore[import-not-found, import-untyped]
+    )
+    from redis.exceptions import (
+        RedisError,  # type: ignore[import-not-found, import-untyped]
+    )
 
     REDIS_AVAILABLE = True
 except ImportError:
@@ -296,9 +297,7 @@ class RedisQueueManager:
             self._validate_redis_client()
             # This is a simplified implementation - in practice you'd need to scan the queue
             # and remove the specific issue by matching its ID
-            logger.warning(
-                "Remove issue by ID not implemented - would need queue scanning"
-            )
+            logger.warning("Remove issue by ID not implemented - would need queue scanning")
             return False
         except Exception as e:
             logger.exception(f"Failed to remove issue: {e}")
@@ -469,9 +468,7 @@ class RedisQueueManager:
                     "worker_id": self.worker_id,
                     "processed_count": self.processed_count,
                     "failed_count": self.failed_count,
-                    "uptime_seconds": (
-                        datetime.now(UTC) - self.start_time
-                    ).total_seconds(),
+                    "uptime_seconds": (datetime.now(UTC) - self.start_time).total_seconds(),
                 },
                 "active_workers": self._get_active_workers(),
             }
@@ -489,9 +486,7 @@ class RedisQueueManager:
             # Get workers that have sent heartbeat in last 5 minutes
             active_workers = []
             assert self.redis_client is not None
-            for worker_id, last_seen in self.redis_client.hgetall(
-                self.worker_heartbeat
-            ).items():
+            for worker_id, last_seen in self.redis_client.hgetall(self.worker_heartbeat).items():
                 if float(last_seen) > cutoff_timestamp:
                     active_workers.append(
                         {
@@ -523,15 +518,10 @@ class RedisQueueManager:
 
             stale_count = 0
             assert self.redis_client is not None
-            for issue_id, issue_data in self.redis_client.hgetall(
-                self.processing_queue
-            ).items():
+            for issue_id, issue_data in self.redis_client.hgetall(self.processing_queue).items():
                 issue = QueuedIssue.from_dict(json.loads(issue_data))
 
-                if (
-                    issue.processing_started_at
-                    and issue.processing_started_at < cutoff_time
-                ):
+                if issue.processing_started_at and issue.processing_started_at < cutoff_time:
                     # Re-enqueue stale issue
                     issue.assigned_worker = None
                     issue.processing_started_at = None
@@ -593,9 +583,7 @@ class DistributedProcessor:
         self.running = True
         iteration_count = 0
 
-        logger.info(
-            "Started distributed processing (worker: %s)", self.queue_manager.worker_id
-        )
+        logger.info("Started distributed processing (worker: %s)", self.queue_manager.worker_id)
 
         try:
             while self.running:
@@ -658,9 +646,7 @@ class RedisConfig:
 
         redis_url_env = os.getenv("REDIS_URL")
         redis_url: str
-        redis_url = (
-            "redis://localhost:6379/0" if redis_url_env is None else redis_url_env
-        )
+        redis_url = "redis://localhost:6379/0" if redis_url_env is None else redis_url_env
         queue_prefix_env = os.getenv("AI_LINTING_QUEUE_PREFIX")
         queue_prefix: str
         queue_prefix = "ai_linting" if queue_prefix_env is None else queue_prefix_env

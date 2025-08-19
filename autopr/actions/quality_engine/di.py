@@ -10,6 +10,7 @@ from .handler_registry import HandlerRegistry
 from .handlers.lint_handler import LintHandler
 from .handlers.lint_issue import LintIssue
 from .tools import discover_tools
+
 # Import registry at the module level to avoid circular imports
 from .tools.registry import registry as tool_registry_instance
 
@@ -45,11 +46,7 @@ class HandlerRegistryContainer(containers.DeclarativeContainer):
 
     # Create a handler mapping
     handler_mapping = providers.Dict(
-        {
-            LintIssue: providers.Callable(
-                lambda handlers: handlers.lint_handler(), handlers=handlers
-            )
-        }
+        {LintIssue: providers.Callable(lambda handlers: handlers.lint_handler(), handlers=handlers)}
     )
 
     # Create the handler registry with the mapping

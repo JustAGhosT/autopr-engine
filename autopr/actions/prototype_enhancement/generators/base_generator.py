@@ -8,12 +8,12 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from autopr.actions.prototype_enhancement.platform_configs import \
-    PlatformConfig
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig
 
 if TYPE_CHECKING:
-    from autopr.actions.prototype_enhancement.generators.template_utils import \
-        TemplateManager
+    from autopr.actions.prototype_enhancement.generators.template_utils import (
+        TemplateManager,
+    )
 
 T = TypeVar("T")
 

@@ -27,9 +27,7 @@ class PlatformConfigManager:
     _platforms_by_type: dict[PlatformType, list[str]] = {}
 
     # Default configuration directories
-    _BASE_CONFIG_DIR = (
-        Path(__file__).parent.parent.parent.parent / "configs" / "platforms"
-    )
+    _BASE_CONFIG_DIR = Path(__file__).parent.parent.parent.parent / "configs" / "platforms"
     _CATEGORY_FILES = {
         "core": "core_platforms.json",
         "ai": "ai_platforms.json",
@@ -77,9 +75,7 @@ class PlatformConfigManager:
             return PlatformConfig.from_file(file_path)
 
         except (OSError, json.JSONDecodeError, ValueError) as e:
-            logger.error(
-                f"Error loading platform config {file_path}: {e}", exc_info=True
-            )
+            logger.error(f"Error loading platform config {file_path}: {e}", exc_info=True)
             return None
 
     def _load_platforms_from_category(self, category: str) -> dict[str, PlatformConfig]:
@@ -150,18 +146,14 @@ class PlatformConfigManager:
                         # Load the platform configuration
                         platform_config_path = self._BASE_CONFIG_DIR / config_file
                         if not platform_config_path.exists():
-                            logger.warning(
-                                f"Platform config not found: {platform_config_path}"
-                            )
+                            logger.warning(f"Platform config not found: {platform_config_path}")
                             continue
 
                         with open(platform_config_path, encoding="utf-8") as pf:
                             platform_data = json.load(pf)
 
                         # Create and store the platform config
-                        platform_config = PlatformConfig.from_dict(
-                            platform_id, platform_data
-                        )
+                        platform_config = PlatformConfig.from_dict(platform_id, platform_data)
                         self._platforms[platform_id] = platform_config
 
                         # Update indexes
@@ -175,9 +167,7 @@ class PlatformConfigManager:
                         self._platforms_by_type[platform_type].append(platform_id)
 
                     except Exception as e:
-                        logger.exception(
-                            f"Error loading platform config {platform_id}: {e!s}"
-                        )
+                        logger.exception(f"Error loading platform config {platform_id}: {e!s}")
                         continue
 
             except Exception as e:
@@ -232,8 +222,7 @@ class PlatformConfigManager:
             A list of platform configurations in the specified category
         """
         return [
-            self._platforms[pid].to_dict()
-            for pid in self._platforms_by_category.get(category, [])
+            self._platforms[pid].to_dict() for pid in self._platforms_by_category.get(category, [])
         ]
 
     def get_ai_platforms(self) -> dict[str, dict[str, Any]]:

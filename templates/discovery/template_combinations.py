@@ -43,9 +43,7 @@ class TemplateCombinationEngine:
         main_template = use_case_templates[0]
 
         # Find relevant integration templates
-        integration_templates = [
-            t for t in self.templates if t.category == "integration_template"
-        ]
+        integration_templates = [t for t in self.templates if t.category == "integration_template"]
 
         # Create combinations for each platform
         for platform in main_template.platforms:
@@ -68,37 +66,27 @@ class TemplateCombinationEngine:
                 )
 
                 if auth_template and platform in auth_template.platforms:
-                    combination_data["recommended_integrations"].append(
-                        auth_template.name
-                    )
+                    combination_data["recommended_integrations"].append(auth_template.name)
                 if payment_template and platform in payment_template.platforms:
-                    combination_data["recommended_integrations"].append(
-                        payment_template.name
-                    )
+                    combination_data["recommended_integrations"].append(payment_template.name)
 
             elif "social" in use_case.lower():
                 auth_template = next(
                     (t for t in integration_templates if "auth" in t.name.lower()), None
                 )
                 if auth_template and platform in auth_template.platforms:
-                    combination_data["recommended_integrations"].append(
-                        auth_template.name
-                    )
+                    combination_data["recommended_integrations"].append(auth_template.name)
 
             combinations.append(combination_data)
 
         return combinations
 
-    def get_integration_recommendations(
-        self, template: TemplateInfo
-    ) -> list[TemplateInfo]:
+    def get_integration_recommendations(self, template: TemplateInfo) -> list[TemplateInfo]:
         """Get integration recommendations for a specific template."""
         if not template:
             return []
 
-        integration_templates = [
-            t for t in self.templates if t.category == "integration"
-        ]
+        integration_templates = [t for t in self.templates if t.category == "integration"]
 
         # Prefer comprehension for performance and clarity
         recommendations: list[TemplateInfo] = [
@@ -139,9 +127,7 @@ class TemplateCombinationEngine:
 
         # Calculate combined complexity
         complexity_scores = [self._complexity_to_score(main_template.complexity)]
-        complexity_scores.extend(
-            self._complexity_to_score(t.complexity) for t in integrations
-        )
+        complexity_scores.extend(self._complexity_to_score(t.complexity) for t in integrations)
         avg_complexity = int(sum(complexity_scores) / len(complexity_scores))
 
         return TemplateCombination(
@@ -166,9 +152,7 @@ class TemplateCombinationEngine:
         }
         return complexity_mapping.get(complexity.lower(), 2)
 
-    def _has_compatible_features(
-        self, template1: TemplateInfo, template2: TemplateInfo
-    ) -> bool:
+    def _has_compatible_features(self, template1: TemplateInfo, template2: TemplateInfo) -> bool:
         """Check if two templates have compatible features."""
         # Check for complementary features
         template1_features = [f.lower() for f in template1.key_features]

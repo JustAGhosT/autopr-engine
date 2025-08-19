@@ -25,24 +25,24 @@ repos:
     rev: 24.1.1
     hooks:
       - id: black
-        args: [--line-length=100]
-        stages: [manual]  # Moved to manual - won't block commits
+        args: ["--line-length=100"]
+        stages: ["manual"] # Moved to manual - won't block commits
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
-        args: [--profile=black]
-        stages: [manual]  # Moved to manual - won't block commits
+        args: ["--profile=black"]
+        stages: ["manual"] # Moved to manual - won't block commits
 
   # Prettier for JSON, YAML, Markdown formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        types_or: [json, yaml, markdown]
-        args: [--prose-wrap=always, --print-width=100]
-        stages: [manual]  # Moved to manual - won't block commits
+        types_or: ["json", "yaml", "markdown"]
+        args: ["--prose-wrap=always", "--print-width=100"]
+        stages: ["manual"] # Moved to manual - won't block commits
 
   # Quality Engine - Fast mode for pre-commit (non-blocking by default)
   - repo: local
@@ -52,42 +52,41 @@ repos:
         entry: python scripts/volume-precommit.py
         language: system
         pass_filenames: true
-        stages: [manual]
+        stages: ["manual"]
         verbose: true
       - id: quality-engine-fast
         name: AutoPR Quality Engine (Fast Mode)
         entry: python -m autopr.actions.quality_engine
         language: system
-        types: [python]
-        args: [--mode=fast, --skip-windows-check, --warn-only]
-        stages: [manual]  # Manual only - won't block commits
+        types: ["python"]
+        args: ["--mode=fast", "--skip-windows-check", "--files"]
+        stages: ["manual"] # Manual only - won't block commits
         verbose: true
         pass_filenames: true
-        description: "Run fast quality checks on Python files (non-blocking)"
 
   # Individual tool hooks for specific checks - All manual (non-blocking)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.0
     hooks:
       - id: ruff
-        args: [--fix, --exit-zero, --ignore=E501,W503,E203,W291,W292,W293]
-        stages: [manual]  # Manual only - won't block commits
+        args: ["--fix", "--exit-zero"]
+        stages: ["manual"] # Manual only - won't block commits
       - id: ruff-format
-        args: [--exit-zero]
-        stages: [manual]  # Manual only - won't block commits
+        args: ["--exit-zero"]
+        stages: ["manual"] # Manual only - won't block commits
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:
       - id: mypy
-        args: [--ignore-missing-imports, --show-error-codes, --no-strict-optional]
-        stages: [manual]  # Manual only - won't block commits
+        args: ["--ignore-missing-imports", "--show-error-codes", "--no-strict-optional"]
+        stages: ["manual"] # Manual only - won't block commits
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
     hooks:
       - id: bandit
-        args: [-r, ., -c, .bandit, --exit-zero, --severity-level=medium]        
+        args: ["-r", ".", "--exit-zero", "--severity-level=medium"]
         exclude: |
           (?x)^(
               .*/__tests__/.*|
@@ -96,4 +95,4 @@ repos:
               .*_test\.py
           )$
         pass_filenames: false
-        stages: [manual]  # Manual only - won't block commits
+        stages: ["manual"] # Manual only - won't block commits

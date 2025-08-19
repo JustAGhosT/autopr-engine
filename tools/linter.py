@@ -5,13 +5,12 @@ Tool for all code quality checks and AI-powered fixes
 """
 
 import asyncio
-import sys
 from dataclasses import dataclass
 from enum import Enum
+import sys
 from typing import Any
 
-from autopr.actions.ai_linting_fixer import (AILintingFixer,
-                                             AILintingFixerInputs)
+from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
 
 
 class LintMode(Enum):
@@ -40,9 +39,7 @@ class CodeLinter:
         self.total_issues_found = 0
         self.total_issues_fixed = 0
 
-    async def run(
-        self, mode: LintMode, files: list[str] | None = None
-    ) -> dict[str, Any]:
+    async def run(self, mode: LintMode, files: list[str] | None = None) -> dict[str, Any]:
         """Main entry point for consolidated linting"""
 
         if mode == LintMode.SMART:

@@ -1,8 +1,8 @@
 """Command-line interface for the markdown linter."""
 
 import argparse
-import sys
 from pathlib import Path
+import sys
 from typing import Any
 
 try:
@@ -262,9 +262,7 @@ def main() -> int:
     filtered_reports = {}
     for path, report in linter.reports.items():
         filtered_issues = [
-            issue
-            for issue in report.issues
-            if issue.severity.value >= min_severity.value
+            issue for issue in report.issues if issue.severity.value >= min_severity.value
         ]
         if filtered_issues:
             filtered_reports[path] = {"issues": filtered_issues}

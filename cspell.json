@@ -437,17 +437,12 @@
     // Ignore code blocks in markdown
     {
       "filename": "**/*.md",
-      "ignoreRegExpList": [
-        "`[^`]*`",
-        "\\$[^$]+\\$"
-      ]
+      "ignoreRegExpList": ["`[^`]*`", "\\$[^$]+\\$"]
     },
     // Ignore string literals in code
     {
       "filename": "**/*.{js,jsx,ts,tsx,py}",
-      "ignoreRegExpList": [
-        "(['\"]).*?\\1"
-      ]
+      "ignoreRegExpList": ["(['\"]).*?\\1"]
     }
   ]
 }

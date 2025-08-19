@@ -96,9 +96,7 @@ class Jinja2TemplateProvider(TemplateProvider):
                 # Look for template files
                 for file in files:
                     if file.endswith(".j2") and not file.startswith("_"):
-                        template_id = (
-                            f"{root_path.relative_to(template_dir)}/{file[:-3]}"
-                        )
+                        template_id = f"{root_path.relative_to(template_dir)}/{file[:-3]}"
                         self._load_template(template_id, root_path, file)
 
     def _load_template(self, template_id: str, root_path: Path, filename: str) -> bool:
@@ -183,9 +181,7 @@ class Jinja2TemplateProvider(TemplateProvider):
         try:
             # Get the template path relative to the template directory
             rel_path = template_info["path"].relative_to(
-                next(
-                    d for d in self.template_dirs if d in template_info["path"].parents
-                )
+                next(d for d in self.template_dirs if d in template_info["path"].parents)
             )
 
             # Load and render the template

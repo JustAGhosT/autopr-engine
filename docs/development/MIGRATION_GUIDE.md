@@ -304,6 +304,7 @@ python scripts/validate_build_system.py
    - Update documentation links to reflect new structure
 
 3. **Configuration Issues:**
+
    ```bash
    python scripts/validate_configs.py
    ```

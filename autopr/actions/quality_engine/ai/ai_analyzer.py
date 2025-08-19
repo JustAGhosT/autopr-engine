@@ -5,8 +5,8 @@ Provides intelligent code quality analysis using AI models via the AutoPR LLM pr
 """
 
 import asyncio
-import os
 from dataclasses import dataclass
+import os
 from typing import Any
 
 import structlog
@@ -135,9 +135,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 model=model,
                 temperature=0.3,  # Lower temperature for more deterministic responses
                 max_tokens=2000,
-                response_format={
-                    "type": "json"
-                },  # Request JSON response for easier parsing
+                response_format={"type": "json"},  # Request JSON response for easier parsing
             )
 
             if not response:
@@ -276,9 +274,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
         }
         return mapping.get(extension, "text")
 
-    def convert_to_tool_results(
-        self, ai_results: dict[str, dict[str, Any]]
-    ) -> dict[str, Any]:
+    def convert_to_tool_results(self, ai_results: dict[str, dict[str, Any]]) -> dict[str, Any]:
         """
         Convert AI analysis results to the format expected by the quality engine.
 
@@ -313,9 +309,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
 
         # Create a summary from all file summaries
         summaries = [
-            result.get("summary", "")
-            for result in ai_results.values()
-            if result.get("summary")
+            result.get("summary", "") for result in ai_results.values() if result.get("summary")
         ]
         summary = "AI Analysis Results:\n\n" + "\n\n".join(summaries)
 

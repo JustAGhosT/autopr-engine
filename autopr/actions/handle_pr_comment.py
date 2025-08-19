@@ -161,9 +161,7 @@ def fix_trailing_spaces(file_path: str) -> dict[str, Any]:
         lines = content.split("\n")
         cleaned_lines = [line.rstrip() for line in lines]
 
-        if any(
-            line != cleaned for line, cleaned in zip(lines, cleaned_lines, strict=False)
-        ):
+        if any(line != cleaned for line, cleaned in zip(lines, cleaned_lines, strict=False)):
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write("\n".join(cleaned_lines))
             return {"success": True, "description": "Removed trailing whitespace"}
@@ -232,9 +230,7 @@ def create_github_issue(inputs: HandlePRCommentInputs) -> int:
     return 0  # Failed to create issue
 
 
-def react_to_comment(
-    repo_owner: str, repo_name: str, comment_id: int, reaction: str
-) -> None:
+def react_to_comment(repo_owner: str, repo_name: str, comment_id: int, reaction: str) -> None:
     """Add reaction to PR comment."""
     import subprocess
 

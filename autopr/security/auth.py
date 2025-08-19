@@ -6,9 +6,7 @@ try:
 except Exception:  # pragma: no cover - type-checking fallback
 
     class _HTTPException(Exception):
-        def __init__(
-            self, status_code: int, detail: str
-        ) -> None:  # minimal runtime stub
+        def __init__(self, status_code: int, detail: str) -> None:  # minimal runtime stub
             super().__init__(detail)
             self.status_code = status_code
             self.detail = detail
@@ -60,9 +58,7 @@ class EnterpriseAuthManager:
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
 
-        to_encode.update(
-            {"exp": expire, "iat": datetime.utcnow(), "type": "access_token"}
-        )
+        to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "access_token"})
 
         token = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 

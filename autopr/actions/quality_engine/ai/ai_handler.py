@@ -71,9 +71,7 @@ async def initialize_llm_manager() -> Any | None:
         await llm_manager.initialize()
 
         available_providers = llm_manager.get_available_providers()
-        logger.info(
-            "Initialized LLM provider manager", available_providers=available_providers
-        )
+        logger.info("Initialized LLM provider manager", available_providers=available_providers)
 
         if not available_providers:
             logger.warning("No LLM providers available for AI-enhanced analysis")

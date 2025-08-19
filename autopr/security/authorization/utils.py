@@ -6,8 +6,11 @@ from typing import Any, ClassVar, Union, cast
 import structlog
 
 from .audit import AuthorizationAuditLogger
-from .managers import (AuditedAuthorizationManager, CachedAuthorizationManager,
-                       EnterpriseAuthorizationManager)
+from .managers import (
+    AuditedAuthorizationManager,
+    CachedAuthorizationManager,
+    EnterpriseAuthorizationManager,
+)
 from .models import AuthorizationContext, Permission, ResourceType
 
 logger = structlog.get_logger(__name__)
@@ -65,12 +68,8 @@ def get_authorization_manager(
                 audit_log_file=audit_log_file,
             )
         elif use_cache:
-            _AuthSingleton.manager = CachedAuthorizationManager(
-                cache_ttl_seconds=cache_ttl_seconds
-            )
-            logger.info(
-                "Created CachedAuthorizationManager", cache_ttl=cache_ttl_seconds
-            )
+            _AuthSingleton.manager = CachedAuthorizationManager(cache_ttl_seconds=cache_ttl_seconds)
+            logger.info("Created CachedAuthorizationManager", cache_ttl=cache_ttl_seconds)
         else:
             _AuthSingleton.manager = EnterpriseAuthorizationManager()
             logger.info("Created basic EnterpriseAuthorizationManager")
@@ -189,9 +188,7 @@ def validate_permission_hierarchy(permissions: list[str]) -> bool:
 
     missing_required = (
         max_level >= READ_REQUIRED_LEVEL and Permission.READ.value not in permissions
-    ) or (
-        max_level >= WRITE_REQUIRED_LEVEL and Permission.WRITE.value not in permissions
-    )
+    ) or (max_level >= WRITE_REQUIRED_LEVEL and Permission.WRITE.value not in permissions)
     return not missing_required
 
 
@@ -238,18 +235,13 @@ def check_permission_conflicts(permissions: list[str]) -> list[str]:
     conflicts = []
 
     # Example: DELETE without UPDATE might be problematic
-    if (
-        Permission.DELETE.value in permissions
-        and Permission.UPDATE.value not in permissions
-    ):
+    if Permission.DELETE.value in permissions and Permission.UPDATE.value not in permissions:
         conflicts.append("DELETE permission without UPDATE permission")
 
     # ADMIN should include all other permissions
     if Permission.ADMIN.value in permissions:
         missing = [
-            p.value
-            for p in Permission
-            if p.value not in permissions and p != Permission.ADMIN
+            p.value for p in Permission if p.value not in permissions and p != Permission.ADMIN
         ]
         if missing:
             conflicts.append(f"ADMIN permission without: {', '.join(missing)}")
@@ -302,8 +294,6 @@ def generate_permission_matrix(
             if user_permissions:
                 users_with_access[user_id] = users_with_access.get(user_id, 0) + 1
 
-                resources_with_access[resource] = (
-                    resources_with_access.get(resource, 0) + 1
-                )
+                resources_with_access[resource] = resources_with_access.get(resource, 0) + 1
 
     return matrix

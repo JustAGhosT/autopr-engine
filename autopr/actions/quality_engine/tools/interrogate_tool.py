@@ -1,7 +1,7 @@
 import asyncio
 import logging
-import re
 from pathlib import Path
+import re
 from typing import Any
 
 from .tool_base import Tool
@@ -32,9 +32,7 @@ class InterrogateTool(Tool):
         """Get the required command for this tool."""
         return "interrogate"
 
-    async def run(
-        self, files: list[str], config: dict[str, Any]
-    ) -> list[dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Interrogate on a list of files.
         """
@@ -43,9 +41,7 @@ class InterrogateTool(Tool):
 
         # Interrogate is best run on directories. We'll find the unique directories
         # from the file list and run Interrogate on them.
-        directories = sorted(
-            {str(Path(f).parent) for f in files if str(Path(f).parent)}
-        )
+        directories = sorted({str(Path(f).parent) for f in files if str(Path(f).parent)})
         if not directories:
             # Handle case where all files are in the root directory
             if any(str(Path(f).parent) in {"", "."} for f in files):

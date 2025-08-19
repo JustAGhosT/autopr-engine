@@ -1,6 +1,6 @@
+from datetime import datetime
 import logging
 import re
-from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 logger = logging.getLogger(__name__)
@@ -68,19 +68,16 @@ class AxoloCommandHandler:
 
         except Exception as e:
             try:
-                from slack_sdk.errors import \
-                    SlackApiError  # type: ignore[import-not-found]
+                from slack_sdk.errors import (
+                    SlackApiError,  # type: ignore[import-not-found]
+                )
 
                 if isinstance(e, SlackApiError):
                     logger.exception(f"Slack API error: {e!s}")
-                    await self.messaging.post_error_response(
-                        channel_id, f"Slack API error: {e!s}"
-                    )
+                    await self.messaging.post_error_response(channel_id, f"Slack API error: {e!s}")
             except ImportError:
                 logger.exception(f"Analysis command failed: {e!s}")
-                await self.messaging.post_error_response(
-                    channel_id, f"Analysis failed: {e!s}"
-                )
+                await self.messaging.post_error_response(channel_id, f"Analysis failed: {e!s}")
 
     async def handle_status_command(self, command_data: dict[str, Any]) -> None:
         """Handle /autopr-status command"""
@@ -170,9 +167,7 @@ class AxoloCommandHandler:
             channel_id, f"✅ {ai_tool.title()} assigned to PR #{pr_data['pr_number']}"
         )
 
-    async def _get_pr_from_channel_context(
-        self, channel_id: str
-    ) -> dict[str, Any] | None:
+    async def _get_pr_from_channel_context(self, channel_id: str) -> dict[str, Any] | None:
         """Get PR data from channel context."""
         # Look up the PR associated with this channel
         for channel in self.active_channels.values():

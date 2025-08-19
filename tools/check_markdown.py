@@ -1,6 +1,6 @@
+from pathlib import Path
 import re
 import sys
-from pathlib import Path
 
 # Configuration
 MAX_LINE_LENGTH = 120
@@ -36,9 +36,7 @@ class MarkdownLinter:
         for i, line in enumerate(lines, 1):
             # Check line length
             if len(line) > 120:
-                self.issues.append(
-                    f"{file_path}:{i}: Line too long ({len(line)} characters)"
-                )
+                self.issues.append(f"{file_path}:{i}: Line too long ({len(line)} characters)")
 
             # Check for trailing whitespace
             if line.rstrip() != line:

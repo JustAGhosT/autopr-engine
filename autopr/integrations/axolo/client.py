@@ -1,8 +1,8 @@
 """Main Axolo integration client."""
 
+from datetime import datetime
 import logging
 import os
-from datetime import datetime
 from typing import Any
 
 import aiohttp
@@ -95,8 +95,9 @@ class AxoloIntegration:
             self.github_client = GitHubClient(os.getenv("GITHUB_TOKEN"))
 
             # Slack client (if using direct API)
-            from slack_sdk.web.async_client import \
-                AsyncWebClient  # type: ignore[import-not-found]
+            from slack_sdk.web.async_client import (
+                AsyncWebClient,  # type: ignore[import-not-found]
+            )
 
             self.slack_client = AsyncWebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 
@@ -221,16 +222,12 @@ class AxoloIntegration:
 
         # Add detailed findings if any
         if analysis_result.get("issues_found"):
-            issues_block = self.messaging.create_issues_block(
-                analysis_result["issues_found"]
-            )
+            issues_block = self.messaging.create_issues_block(analysis_result["issues_found"])
             message["blocks"].append(issues_block)
 
         # Add next steps
         if analysis_result.get("next_steps"):
-            next_steps_block = self.messaging.create_next_steps_block(
-                analysis_result["next_steps"]
-            )
+            next_steps_block = self.messaging.create_next_steps_block(analysis_result["next_steps"])
             message["blocks"].append(next_steps_block)
 
         # Post to Slack

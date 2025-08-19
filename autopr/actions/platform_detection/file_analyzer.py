@@ -6,14 +6,16 @@ New code should use the modular analyzer in autopr.actions.platform_detection.an
 """
 
 import json
-import re
-import warnings
 from pathlib import Path
+import re
 from typing import Any
+import warnings
 
 from autopr.actions.platform_detection.analysis import create_file_analyzer
 from autopr.actions.platform_detection.analysis.patterns import (
-    ContentPattern, FilePattern)
+    ContentPattern,
+    FilePattern,
+)
 
 
 class FileAnalyzer:
@@ -286,9 +288,7 @@ class FileAnalyzer:
         try:
             if "*" in pattern or "?" in pattern:
                 # Use glob for wildcard patterns
-                matches.extend(
-                    [str(p) for p in self.workspace_path.glob(pattern) if p.is_dir()]
-                )
+                matches.extend([str(p) for p in self.workspace_path.glob(pattern) if p.is_dir()])
             else:
                 # Direct folder check
                 folder_path = self.workspace_path / pattern
@@ -309,9 +309,7 @@ class FileAnalyzer:
                     try:
                         with open(file_path, encoding="utf-8", errors="ignore") as f:
                             content = f.read()
-                            match_count += len(
-                                re.findall(pattern, content, re.IGNORECASE)
-                            )
+                            match_count += len(re.findall(pattern, content, re.IGNORECASE))
                     except Exception:
                         continue
         except Exception:
@@ -352,15 +350,11 @@ class FileAnalyzer:
             ".gitignore",
         }
 
-        return (
-            file_path.suffix.lower() in text_extensions
-            or file_path.name.lower()
-            in {
-                "dockerfile",
-                "makefile",
-                "readme",
-            }
-        )
+        return file_path.suffix.lower() in text_extensions or file_path.name.lower() in {
+            "dockerfile",
+            "makefile",
+            "readme",
+        }
 
     def _extract_base_images(self, dockerfile_content: str) -> list[str]:
         """Extract base images from Dockerfile."""

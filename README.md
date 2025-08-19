@@ -439,7 +439,9 @@ The workflow system uses a volume-based approach (0-1000) to determine check int
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
 
-**Note:** The workflow system will automatically run appropriate checks based on your PR and repository volume settings. See [Workflow Documentation](.github/workflows/README.md) for detailed information.
+**Note:** The workflow system will automatically run appropriate checks based on your PR and
+repository volume settings. See [Workflow Documentation](.github/workflows/README.md) for detailed
+information.
 
 ### **Code Standards**
 

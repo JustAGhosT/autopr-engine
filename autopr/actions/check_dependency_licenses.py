@@ -41,9 +41,7 @@ class CheckDependencyLicenses(Action[Inputs, Outputs]):
         stdout, stderr = await process.communicate()
 
         if process.returncode != 0:
-            return Outputs(
-                success=False, forbidden_packages=[], log=stderr.decode("utf-8")
-            )
+            return Outputs(success=False, forbidden_packages=[], log=stderr.decode("utf-8"))
 
         try:
             licenses = json.loads(stdout)

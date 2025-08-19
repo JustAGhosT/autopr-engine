@@ -5,8 +5,8 @@ import os
 from unittest import TestCase, mock
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from aiohttp import ClientResponseError, ClientSession
+import pytest
 
 from autopr.clients.linear_client import LinearClient
 
@@ -111,9 +111,7 @@ class TestLinearClient(TestCase):
     @pytest.mark.asyncio
     async def test_query_graphql_errors(self) -> None:
         """Test handling of GraphQL errors."""
-        error_response = {
-            "errors": [{"message": "Unauthorized"}, {"message": "Invalid query"}]
-        }
+        error_response = {"errors": [{"message": "Unauthorized"}, {"message": "Invalid query"}]}
 
         with patch("aiohttp.ClientSession.post") as mock_post:
             mock_resp = AsyncMock()

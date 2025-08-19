@@ -14,11 +14,11 @@ This worker is safe to run at low volumes to continuously reduce trivial issues.
 
 from __future__ import annotations
 
+from collections import defaultdict
 import os
+from pathlib import Path
 import subprocess
 import sys
-from collections import defaultdict
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -61,9 +61,7 @@ def _volume() -> int:
     return 500
 
 
-def _group_issues_by_file_and_code(
-    issues: Iterable[dict[str, Any]]
-) -> dict[str, set[str]]:
+def _group_issues_by_file_and_code(issues: Iterable[dict[str, Any]]) -> dict[str, set[str]]:
     mapping: dict[str, set[str]] = defaultdict(set)
     for issue in issues:
         file_path = str(issue.get("file_path", ""))
@@ -93,10 +91,12 @@ def _remaining_issues_for_file(file_path: str, codes: list[str]) -> int:
 
 def main() -> int:
     # Fast import inside function to avoid import cost when listing help
-    from autopr.actions.ai_linting_fixer.database import \
-        AIInteractionDB  # type: ignore[import-not-found]
-    from autopr.actions.ai_linting_fixer.queue_manager import \
-        IssueQueueManager  # type: ignore[import-not-found]
+    from autopr.actions.ai_linting_fixer.database import (  # type: ignore[import-not-found]
+        AIInteractionDB,
+    )
+    from autopr.actions.ai_linting_fixer.queue_manager import (  # type: ignore[import-not-found]
+        IssueQueueManager,
+    )
 
     db_path = os.getenv("AUTOPR_DB_PATH", ".autopr/ai_interactions.db")
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -107,9 +107,7 @@ def main() -> int:
     allowed = _get_env_list("AUTOPR_BG_TYPES")
     worker_id = os.getenv("AUTOPR_BG_WORKER_ID", "local")
 
-    issues = queue.get_next_issues(
-        limit=batch, worker_id=worker_id, filter_types=allowed or None
-    )
+    issues = queue.get_next_issues(limit=batch, worker_id=worker_id, filter_types=allowed or None)
     if not issues:
         return 0
 

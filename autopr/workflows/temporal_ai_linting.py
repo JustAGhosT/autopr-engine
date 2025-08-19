@@ -9,10 +9,10 @@ Author: AutoPR AI Systems
 """
 
 import asyncio
+from datetime import timedelta
 import logging
 import os
 import pathlib
-from datetime import timedelta
 from typing import Any
 
 from temporalio import activity, workflow
@@ -20,9 +20,12 @@ from temporalio.client import Client, TLSConfig
 from temporalio.common import RetryPolicy
 from temporalio.worker import Worker
 
-from autopr.actions.ai_linting_fixer import (AILintingFixerInputs,
-                                             WorkflowContext, WorkflowResult,
-                                             ai_linting_fixer)
+from autopr.actions.ai_linting_fixer import (
+    AILintingFixerInputs,
+    WorkflowContext,
+    WorkflowResult,
+    ai_linting_fixer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -128,9 +131,7 @@ class AILintingWorkflow:
             )
 
             # Wait for both to complete
-            test_result, report_result = await asyncio.gather(
-                test_future, report_future
-            )
+            test_result, report_result = await asyncio.gather(test_future, report_future)
 
             # Step 4: Final integration steps
             if test_result.get("success"):
@@ -190,9 +191,7 @@ class AILintingWorkflow:
             "success": linting_result.get("success", False),
             "workflow_id": workflow_id,
             "linting_result": linting_result,
-            "final_status": (
-                "no_changes" if linting_result.get("success") else "linting_failed"
-            ),
+            "final_status": ("no_changes" if linting_result.get("success") else "linting_failed"),
         }
 
 
@@ -317,9 +316,7 @@ async def run_tests_activity(test_input: dict[str, Any]) -> dict[str, Any]:
 
 
 @activity.defn
-async def generate_quality_report_activity(
-    report_input: dict[str, Any]
-) -> dict[str, Any]:
+async def generate_quality_report_activity(report_input: dict[str, Any]) -> dict[str, Any]:
     """Generate a quality report for the linting results."""
     try:
         linting_result = report_input["linting_result"]
@@ -346,9 +343,7 @@ async def generate_quality_report_activity(
             report["recommendations"].append("Consider manual review of complex issues")
 
         if len(report["files"]) > 10:
-            report["recommendations"].append(
-                "Large number of changes - review carefully"
-            )
+            report["recommendations"].append("Large number of changes - review carefully")
 
         return {
             "success": True,
@@ -388,9 +383,7 @@ async def commit_changes_activity(commit_input: dict[str, Any]) -> dict[str, Any
 
 
 @activity.defn
-async def notify_completion_activity(
-    notification_input: dict[str, Any]
-) -> dict[str, Any]:
+async def notify_completion_activity(notification_input: dict[str, Any]) -> dict[str, Any]:
     """Send completion notifications."""
     try:
         workflow_id = notification_input["workflow_id"]
@@ -412,9 +405,7 @@ View details in Temporal UI: https://cloud.temporal.io/workflows/{workflow_id}
         return {
             "success": True,
             "message": "Notifications sent",
-            "channels": [
-                "console"
-            ],  # Would be ["slack", "email"] in real implementation
+            "channels": ["console"],  # Would be ["slack", "email"] in real implementation
         }
 
     except Exception as e:
@@ -572,9 +563,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--fix-types", nargs="+", default=["E501", "F401"], help="Issue types to fix"
     )
-    parser.add_argument(
-        "--max-fixes", type=int, default=10, help="Maximum fixes per run"
-    )
+    parser.add_argument("--max-fixes", type=int, default=10, help="Maximum fixes per run")
 
     args = parser.parse_args()
 

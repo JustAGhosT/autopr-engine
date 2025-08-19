@@ -57,9 +57,7 @@ class HandlerRegistry:
 
         return decorator
 
-    def register_handler(
-        self, result_type: type[TResult], handler: Handler[TResult]
-    ) -> None:
+    def register_handler(self, result_type: type[TResult], handler: Handler[TResult]) -> None:
         """
         Register an existing handler instance for a result type.
 
@@ -69,9 +67,7 @@ class HandlerRegistry:
         """
         self._handlers[result_type] = handler
 
-    def register_for_tool(
-        self, tool_class: type
-    ) -> Callable[[type[Handler]], type[Handler]]:
+    def register_for_tool(self, tool_class: type) -> Callable[[type[Handler]], type[Handler]]:
         """
         Register a handler for a specific tool class.
 
@@ -130,9 +126,7 @@ class HandlerRegistry:
             raise KeyError(msg)
         return self._tool_handlers[tool_class]
 
-    def handle_results(
-        self, results: list[TResult], result_type: type[TResult]
-    ) -> None:
+    def handle_results(self, results: list[TResult], result_type: type[TResult]) -> None:
         """
         Handle results of a specific type.
 
@@ -153,11 +147,7 @@ class HandlerRegistry:
 
 def register_for_result[
     TResult
-](
-    result_type: type[TResult],
-) -> Callable[
-    [type[Handler[TResult]]], type[Handler[TResult]]
-]:
+](result_type: type[TResult]) -> Callable[[type[Handler[TResult]]], type[Handler[TResult]]]:
     """Placeholder for the DI-based decorator."""
     from .di import container
 

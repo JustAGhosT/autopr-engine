@@ -8,11 +8,13 @@ This package replaces the monolithic PrototypeEnhancer class with a modular arch
 while maintaining backward compatibility.
 """
 
-from .enhancement_strategies import (BoltEnhancementStrategy,
-                                     EnhancementStrategy,
-                                     EnhancementStrategyFactory,
-                                     LovableEnhancementStrategy,
-                                     ReplitEnhancementStrategy)
+from .enhancement_strategies import (
+    BoltEnhancementStrategy,
+    EnhancementStrategy,
+    EnhancementStrategyFactory,
+    LovableEnhancementStrategy,
+    ReplitEnhancementStrategy,
+)
 from .enhancer import PrototypeEnhancer
 from .file_generators import FileGenerator
 from .platform_configs import PlatformConfig, PlatformRegistry

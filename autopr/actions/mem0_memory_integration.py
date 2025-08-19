@@ -3,8 +3,8 @@ AutoPR Action: Mem0 Memory Integration
 Advanced memory system using Mem0 for persistent, intelligent memory across interactions.
 """
 
-import os
 from datetime import datetime
+import os
 from typing import Any
 
 from pydantic import BaseModel
@@ -103,9 +103,7 @@ class Mem0MemoryManager:
             )
 
         except Exception as e:
-            return Mem0MemoryOutputs(
-                success=False, error_message=f"Failed to add memory: {e!s}"
-            )
+            return Mem0MemoryOutputs(success=False, error_message=f"Failed to add memory: {e!s}")
 
     def search_memory(self, inputs: Mem0MemoryInputs) -> Mem0MemoryOutputs:
         """Search for relevant memories based on query."""
@@ -146,26 +144,20 @@ class Mem0MemoryManager:
         """Get AI-generated insights from stored memories."""
         try:
             # Get all memories for the user/agent
-            all_memories = self.memory.get_all(
-                user_id=inputs.user_id, agent_id=inputs.agent_id
-            )
+            all_memories = self.memory.get_all(user_id=inputs.user_id, agent_id=inputs.agent_id)
 
             # Generate insights using Mem0's built-in analysis
             insights = []
 
             # Analyze patterns in fix types
             fix_memories = [
-                m
-                for m in all_memories
-                if m.get("metadata", {}).get("memory_type") == "fix_pattern"
+                m for m in all_memories if m.get("metadata", {}).get("memory_type") == "fix_pattern"
             ]
             if fix_memories:
                 insights.append(f"You have applied {len(fix_memories)} automated fixes")
 
                 # Most common fix types
-                fix_types = [
-                    m.get("metadata", {}).get("fix_type", "") for m in fix_memories
-                ]
+                fix_types = [m.get("metadata", {}).get("fix_type", "") for m in fix_memories]
                 if fix_types:
                     most_common = max(set(fix_types), key=fix_types.count)
                     insights.append(f"Most common fix type: {most_common}")
@@ -188,14 +180,10 @@ class Mem0MemoryManager:
             if project_memories:
                 insights.append(f"Analyzed {len(project_memories)} project patterns")
 
-            return Mem0MemoryOutputs(
-                success=True, insights=insights, memories=all_memories
-            )
+            return Mem0MemoryOutputs(success=True, insights=insights, memories=all_memories)
 
         except Exception as e:
-            return Mem0MemoryOutputs(
-                success=False, error_message=f"Failed to get insights: {e!s}"
-            )
+            return Mem0MemoryOutputs(success=False, error_message=f"Failed to get insights: {e!s}")
 
     def update_memory(self, inputs: Mem0MemoryInputs) -> Mem0MemoryOutputs:
         """Update an existing memory."""
@@ -220,9 +208,7 @@ class Mem0MemoryManager:
             )
 
         except Exception as e:
-            return Mem0MemoryOutputs(
-                success=False, error_message=f"Failed to update memory: {e!s}"
-            )
+            return Mem0MemoryOutputs(success=False, error_message=f"Failed to update memory: {e!s}")
 
     def record_fix_pattern(
         self,
@@ -259,9 +245,7 @@ class Mem0MemoryManager:
         context: dict[str, Any],
     ) -> bool:
         """Record user preferences for personalized interactions."""
-        memory_content = (
-            f"User {user_id} prefers {preference_value} for {preference_type}"
-        )
+        memory_content = f"User {user_id} prefers {preference_value} for {preference_type}"
 
         inputs = Mem0MemoryInputs(
             action_type="add_memory",
@@ -282,11 +266,11 @@ class Mem0MemoryManager:
         self, comment_type: str, file_path: str, user_id: str
     ) -> list[dict[str, Any]]:
         """Get relevant fix patterns based on context."""
-        query = f"fix patterns for {comment_type} comments in {os.path.splitext(file_path)[1]} files"
-
-        inputs = Mem0MemoryInputs(
-            action_type="search_memory", user_id=user_id, query=query
+        query = (
+            f"fix patterns for {comment_type} comments in {os.path.splitext(file_path)[1]} files"
         )
+
+        inputs = Mem0MemoryInputs(action_type="search_memory", user_id=user_id, query=query)
 
         result = self.search_memory(inputs)
 
@@ -326,6 +310,4 @@ def mem0_memory_action(inputs: Mem0MemoryInputs) -> Mem0MemoryOutputs:
         )
 
     except Exception as e:
-        return Mem0MemoryOutputs(
-            success=False, error_message=f"Mem0 operation failed: {e!s}"
-        )
+        return Mem0MemoryOutputs(success=False, error_message=f"Mem0 operation failed: {e!s}")

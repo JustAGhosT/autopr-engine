@@ -21,8 +21,7 @@ def find_build_files(directory: str) -> dict[str, list[str]]:
         dirs[:] = [
             d
             for d in dirs
-            if not d.startswith(".")
-            and d not in ["__pycache__", "node_modules", ".venv"]
+            if not d.startswith(".") and d not in ["__pycache__", "node_modules", ".venv"]
         ]
 
         for file in files:
@@ -88,9 +87,7 @@ def check_build_artifacts(build_files: dict[str, list[str]]) -> list[str]:
 
     # Check for build artifacts in wrong locations
     for cache_file in build_files["cache"]:
-        if "build-artifacts" not in cache_file and os.path.basename(
-            cache_file
-        ).startswith("."):
+        if "build-artifacts" not in cache_file and os.path.basename(cache_file).startswith("."):
             issues.append(f"Build artifact in wrong location: {cache_file}")
 
     # Check for missing build-artifacts directory
@@ -169,9 +166,7 @@ def generate_build_report(results: dict[str, Any]) -> str:
 
     # Build artifact issues
     if results["build_artifact_issues"]:
-        report.append(
-            f"🔍 Build Artifact Issues ({len(results['build_artifact_issues'])}):"
-        )
+        report.append(f"🔍 Build Artifact Issues ({len(results['build_artifact_issues'])}):")
         for issue in results["build_artifact_issues"]:
             report.append(f"  - {issue}")
         report.append("")

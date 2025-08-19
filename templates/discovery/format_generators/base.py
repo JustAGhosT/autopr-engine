@@ -19,9 +19,7 @@ from .config import DocumentationConfig
 class BaseFormatGenerator(ABC):
     """Base class for format generators."""
 
-    def __init__(
-        self, config: DocumentationConfig, template_loader: TemplateLoader
-    ) -> None:
+    def __init__(self, config: DocumentationConfig, template_loader: TemplateLoader) -> None:
         """Initialize the format generator."""
         self.config = config
         self.template_loader = template_loader
@@ -29,9 +27,7 @@ class BaseFormatGenerator(ABC):
     def generate_content(self, template_name: str, **kwargs: Any) -> str:
         """Generate content using a template."""
         # Add common variables
-        kwargs.setdefault(
-            "generation_date", datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        )
+        kwargs.setdefault("generation_date", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         kwargs.setdefault("config", self.config)
 
         return self.template_loader.render_template(template_name, **kwargs)
@@ -53,7 +49,5 @@ class BaseFormatGenerator(ABC):
         """Generate main documentation index."""
 
     @abstractmethod
-    def generate_comparison_guide(
-        self, platform_analyses: list[TemplateAnalysis]
-    ) -> str:
+    def generate_comparison_guide(self, platform_analyses: list[TemplateAnalysis]) -> str:
         """Generate platform comparison guide."""

@@ -5,9 +5,9 @@ This module provides utilities to load externalized configuration files and temp
 from the organized configs/ and templates/ directories.
 """
 
+from functools import lru_cache
 import json
 import logging
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -130,9 +130,7 @@ class ConfigLoader:
 
     @staticmethod
     @lru_cache(maxsize=64)
-    def load_template_config(
-        template_name: str, category: str | None = None
-    ) -> dict[str, Any]:
+    def load_template_config(template_name: str, category: str | None = None) -> dict[str, Any]:
         """Load template configuration from YAML file.
 
         Args:
@@ -287,8 +285,6 @@ def load_package_dependencies(category: str) -> dict[str, Any]:
     return ConfigLoader.load_package_dependencies(category)
 
 
-def load_template_config(
-    template_name: str, category: str | None = None
-) -> dict[str, Any]:
+def load_template_config(template_name: str, category: str | None = None) -> dict[str, Any]:
     """Load template configuration - convenience function."""
     return ConfigLoader.load_template_config(template_name, category)

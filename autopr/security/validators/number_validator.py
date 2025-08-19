@@ -1,5 +1,4 @@
-from autopr.security.validation_models import (ValidationResult,
-                                               ValidationSeverity)
+from autopr.security.validation_models import ValidationResult, ValidationSeverity
 
 
 class NumberValidator:
@@ -19,9 +18,7 @@ class NumberValidator:
         if isinstance(value, float):
             FLOAT_ABS_MAX = 1e308
             if abs(value) > FLOAT_ABS_MAX:
-                result.errors.append(
-                    f"Float out of safe range for key '{key}': {value}"
-                )
+                result.errors.append(f"Float out of safe range for key '{key}': {value}")
                 result.severity = ValidationSeverity.MEDIUM
                 result.is_valid = False
                 return result

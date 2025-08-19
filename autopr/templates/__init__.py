@@ -60,13 +60,9 @@ class TemplateSystem:
         autoweave_api_key = os.environ.get("AUTOWEAVE_API_KEY")
         if autoweave_api_key:
             try:
-                self.add_provider(
-                    "autoweave", AutoWeaveProvider(api_key=autoweave_api_key)
-                )
+                self.add_provider("autoweave", AutoWeaveProvider(api_key=autoweave_api_key))
             except Exception:
-                logger.warning(
-                    "Failed to initialize AutoWeave provider: %s", "autoweave"
-                )
+                logger.warning("Failed to initialize AutoWeave provider: %s", "autoweave")
 
     def add_provider(self, name: str, provider: TemplateProvider) -> None:
         """Add a template provider.
@@ -139,9 +135,7 @@ class TemplateSystem:
         """
         return self.get_provider(provider).get_all_templates()
 
-    def search_templates(
-        self, query: str, provider: str | None = None
-    ) -> list[TemplateMetadata]:
+    def search_templates(self, query: str, provider: str | None = None) -> list[TemplateMetadata]:
         """Search for templates matching the query.
 
         Args:
@@ -174,9 +168,7 @@ class TemplateSystem:
         Raises:
             ValueError: If template is not found or rendering fails
         """
-        return self.get_provider(provider).render_template(
-            template_id, context, variant
-        )
+        return self.get_provider(provider).render_template(template_id, context, variant)
 
     def render_to_file(
         self,

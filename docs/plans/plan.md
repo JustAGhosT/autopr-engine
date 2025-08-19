@@ -5,7 +5,8 @@
 
 ## Project Overview
 
-AutoPR Engine is an AI-powered automation platform that enhances GitHub pull request workflows through:
+AutoPR Engine is an AI-powered automation platform that enhances GitHub pull request workflows
+through:
 
 - Multi-agent AI systems with memory and learning capabilities
 - Smart integrations with Slack, Teams, Discord, Notion, Linear, and Jira
@@ -41,11 +42,13 @@ AutoPR Engine is an AI-powered automation platform that enhances GitHub pull req
 
 This plan is organized into focused phases with detailed subplans:
 
-1. Quality Pipeline Implementation — see [plan-phase1-quality-pipeline.md](plan-phase1-quality-pipeline.md)
+1. Quality Pipeline Implementation — see
+   [plan-phase1-quality-pipeline.md](plan-phase1-quality-pipeline.md)
    - Current Step: Implement Comprehensive mode (all static analysis tools)
    - Key Components: Tool abstraction, modes, CI integration
 
-2. Security Authorization Framework — see [plan-phase2-security-framework.md](plan-phase2-security-framework.md)
+2. Security Authorization Framework — see
+   [plan-phase2-security-framework.md](plan-phase2-security-framework.md)
    - Current Step: Implement authorization utilities and manager access
    - Key Components: Auth models, decorators, utilities, audit logging
 
@@ -122,7 +125,8 @@ This plan is organized into focused phases with detailed subplans:
 
 ## Detailed Task Backlog (appendix from autopr/PLAN.md)
 
-The following detailed checklist is consolidated from the modernization and quality pipeline plan. Refer to the linked phase documents for the authoritative implementation details.
+The following detailed checklist is consolidated from the modernization and quality pipeline plan.
+Refer to the linked phase documents for the authoritative implementation details.
 
 1. Modernize Architecture for Modularity & Extensibility (SOLID)
    - Refactor `autopr/actions/` and `autopr/ai/` into smaller units and provider interfaces
@@ -151,4 +155,5 @@ The following detailed checklist is consolidated from the modernization and qual
 
 ---
 
-Note: This file is now the single source of truth for the program-level plan. Phase-specific details remain split across dedicated documents to keep scope manageable.
+Note: This file is now the single source of truth for the program-level plan. Phase-specific details
+remain split across dedicated documents to keep scope manageable.

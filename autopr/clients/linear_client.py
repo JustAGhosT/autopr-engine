@@ -30,23 +30,18 @@ class LinearClient:
             "Content-Type": "application/json",
         }
 
-    async def query(
-        self, query: str, variables: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    async def query(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
         """Execute a GraphQL query against the Linear API."""
         data = {"query": query, "variables": variables or {}}
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.base_url, headers=self.headers, json=data
-            ) as response:
+            async with session.post(self.base_url, headers=self.headers, json=data) as response:
                 response.raise_for_status()
                 result = await response.json()
 
                 if "errors" in result:
                     error_messages = [
-                        e.get("message", "Unknown error")
-                        for e in result.get("errors", [])
+                        e.get("message", "Unknown error") for e in result.get("errors", [])
                     ]
                     msg = f"Linear API error: {', '.join(error_messages)}"
                     raise Exception(msg)

@@ -5,9 +5,10 @@ Tests for CrewAI integration with volume control in AutoPR Engine.
 # mypy: ignore-errors
 # Standard library imports
 import importlib
-import sys
 from pathlib import Path
+import sys
 from typing import TYPE_CHECKING, Any
+
 # Third-party imports
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
@@ -42,8 +43,7 @@ sys.modules["autopr.agents.linting_agent"] = Mock()
 
 # Now import the rest of the modules
 from autopr.agents.crew import AutoPRCrew  # noqa: E402
-from autopr.utils.volume_utils import (QualityMode,  # noqa: E402
-                                       get_volume_config)
+from autopr.utils.volume_utils import QualityMode, get_volume_config  # noqa: E402
 
 
 class MockTask:
@@ -149,16 +149,12 @@ def mock_agents(monkeypatch):
     def _mk_linting_task(*_args, **_kwargs):
         return MockTask("linting_task")
 
-    monkeypatch.setattr(
-        "autopr.agents.crew.tasks.create_code_quality_task", _mk_code_quality_task
-    )
+    monkeypatch.setattr("autopr.agents.crew.tasks.create_code_quality_task", _mk_code_quality_task)
     monkeypatch.setattr(
         "autopr.agents.crew.tasks.create_platform_analysis_task",
         _mk_platform_analysis_task,
     )
-    monkeypatch.setattr(
-        "autopr.agents.crew.tasks.create_linting_task", _mk_linting_task
-    )
+    monkeypatch.setattr("autopr.agents.crew.tasks.create_linting_task", _mk_linting_task)
 
     return agents
 
@@ -426,9 +422,7 @@ class TestCrewVolumeIntegration:
                 f"Mock task: code_quality_task (Volume: {volume}, Detail: {expected_detail})"
             )
 
-        monkeypatch.setattr(
-            "autopr.agents.crew.tasks.create_code_quality_task", mock_create_task
-        )
+        monkeypatch.setattr("autopr.agents.crew.tasks.create_code_quality_task", mock_create_task)
 
         # Now test the method
         task = crew._create_code_quality_task(
@@ -466,9 +460,7 @@ class TestCrewVolumeIntegration:
         def mock_create_task(repo_path, context, agent):
             return MockTask({"auto_fix": expected_autofix})
 
-        monkeypatch.setattr(
-            "autopr.agents.crew.tasks.create_linting_task", mock_create_task
-        )
+        monkeypatch.setattr("autopr.agents.crew.tasks.create_linting_task", mock_create_task)
 
         # Now test the method
         task = crew._create_linting_task(
@@ -515,9 +507,7 @@ class TestCrewVolumeIntegration:
                 f"Mock task: code_quality_task (Volume: {volume}, Detail: {expected_detail})"
             )
 
-        monkeypatch.setattr(
-            "autopr.agents.crew.tasks.create_code_quality_task", mock_create_task
-        )
+        monkeypatch.setattr("autopr.agents.crew.tasks.create_code_quality_task", mock_create_task)
 
         # Now test the method
         task = crew._create_code_quality_task(
@@ -674,18 +664,14 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
         object.__setattr__(self, "llm_model", kwargs.get("llm_model", "test-model"))
         object.__setattr__(self, "volume", kwargs.get("volume", 500))
         object.__setattr__(self, "max_iter", kwargs.get("max_iter", 3))
-        object.__setattr__(
-            self, "max_execution_time", kwargs.get("max_execution_time", 60)
-        )
+        object.__setattr__(self, "max_execution_time", kwargs.get("max_execution_time", 60))
         object.__setattr__(
             self, "respect_context_window", kwargs.get("respect_context_window", True)
         )
         object.__setattr__(self, "step_callback", kwargs.get("step_callback"))
         object.__setattr__(self, "memory", kwargs.get("memory", True))
         object.__setattr__(self, "cache", kwargs.get("cache", True))
-        object.__setattr__(
-            self, "function_calling_llm", kwargs.get("function_calling_llm", False)
-        )
+        object.__setattr__(self, "function_calling_llm", kwargs.get("function_calling_llm", False))
         object.__setattr__(self, "max_rpm", kwargs.get("max_rpm"))
         object.__setattr__(self, "max_retries", kwargs.get("max_retries", 3))
         object.__setattr__(self, "retry_delay", kwargs.get("retry_delay", 1))
@@ -697,9 +683,7 @@ class MockBaseAgent(CrewAIAgent):  # type: ignore[misc]
 
         # Add a mock for the analyze method if it doesn't exist
         if not hasattr(self, "analyze"):
-            object.__setattr__(
-                self, "analyze", AsyncMock(return_value={"status": "success"})
-            )
+            object.__setattr__(self, "analyze", AsyncMock(return_value={"status": "success"}))
 
     async def kickoff(self, *args, **kwargs) -> dict[str, str]:
         """Mock kickoff method that returns a dummy result."""

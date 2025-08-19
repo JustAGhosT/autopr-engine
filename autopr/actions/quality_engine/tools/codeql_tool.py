@@ -1,9 +1,9 @@
 import asyncio
 import json
 import logging
+from pathlib import Path
 import shutil
 import tempfile
-from pathlib import Path
 from typing import Any
 
 from .tool_base import Tool
@@ -24,9 +24,7 @@ class CodeQLTool(Tool):
     def description(self) -> str:
         return "A static analysis engine for vulnerability scanning."
 
-    async def run(
-        self, files: list[str], config: dict[str, Any]
-    ) -> list[dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run CodeQL on the project. This involves:
         1. Creating a CodeQL database from the source code.
@@ -35,9 +33,7 @@ class CodeQLTool(Tool):
         """
         # Check if CodeQL is available
         if not shutil.which("codeql"):
-            logger.warning(
-                "CodeQL is not available on this system. Skipping CodeQL analysis."
-            )
+            logger.warning("CodeQL is not available on this system. Skipping CodeQL analysis.")
             return [{"warning": "CodeQL is not available on this system"}]
 
         # Use first file's parent as project root if provided, else current directory
@@ -101,9 +97,7 @@ class CodeQLTool(Tool):
 
             try:
                 # Read file asynchronously to avoid blocking
-                contents = await asyncio.to_thread(
-                    results_path.read_text, encoding="utf-8"
-                )
+                contents = await asyncio.to_thread(results_path.read_text, encoding="utf-8")
                 sarif_data = json.loads(contents)
                 return self._parse_sarif(sarif_data)
             except (json.JSONDecodeError, FileNotFoundError) as e:
@@ -145,9 +139,7 @@ class CodeQLTool(Tool):
 
                 # Extract rule information
                 rule = result.get("rule", {})
-                rule_id = (
-                    rule.get("id", "unknown") if isinstance(rule, dict) else "unknown"
-                )
+                rule_id = rule.get("id", "unknown") if isinstance(rule, dict) else "unknown"
 
                 issues.append(
                     {
@@ -160,15 +152,9 @@ class CodeQLTool(Tool):
                         "details": {
                             "rule_id": rule_id,
                             "rule_name": (
-                                rule.get("name", "Unknown")
-                                if isinstance(rule, dict)
-                                else "Unknown"
+                                rule.get("name", "Unknown") if isinstance(rule, dict) else "Unknown"
                             ),
-                            "help_uri": (
-                                rule.get("helpUri", "")
-                                if isinstance(rule, dict)
-                                else ""
-                            ),
+                            "help_uri": (rule.get("helpUri", "") if isinstance(rule, dict) else ""),
                         },
                     }
                 )

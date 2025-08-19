@@ -2,9 +2,9 @@
 File handler implementations for different file types.
 """
 
+from abc import ABC, abstractmethod
 import json
 import logging
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -12,7 +12,9 @@ import yaml
 
 from autopr.actions.platform_detection.analysis.base import FileAnalysisResult
 from autopr.actions.platform_detection.analysis.patterns import (
-    ContentPattern, FilePattern)
+    ContentPattern,
+    FilePattern,
+)
 
 if TYPE_CHECKING:
     from autopr.actions.platform_detection.analysis.base import FileAnalyzer
@@ -74,9 +76,7 @@ class FileHandler(ABC):
                 result.merge(custom_result)
 
         except Exception as e:
-            logger.exception(
-                f"Error in {self.__class__.__name__} analyzing {file_path}"
-            )
+            logger.exception(f"Error in {self.__class__.__name__} analyzing {file_path}")
             result.metadata["error"] = str(e)
 
         return result
@@ -282,11 +282,7 @@ class RequirementsFileHandler(FileHandler):
 
             # Basic package name extraction (handles most common cases)
             pkg_name = (
-                line.split(">", 1)[0]
-                .split("<", 1)[0]
-                .split("=", 1)[0]
-                .split("[", 1)[0]
-                .strip()
+                line.split(">", 1)[0].split("<", 1)[0].split("=", 1)[0].split("[", 1)[0].strip()
             )
 
             # Map packages to platforms

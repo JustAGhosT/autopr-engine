@@ -5,8 +5,8 @@ This module provides functionality to analyze pull request reviews and generate
 insights, metrics, and recommendations.
 """
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 logger = logging.getLogger(__name__)

@@ -9,8 +9,12 @@ import logging
 import os
 from typing import Any
 
-from .models import (AILintingFixerInputs, AILintingFixerOutputs,
-                     OrchestrationConfig, WorkflowResult)
+from .models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    OrchestrationConfig,
+    WorkflowResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +87,7 @@ def execute_with_orchestration(
             return _execute_with_celery(inputs, orchestration_config)
         if orchestration_config.orchestrator_type == "prefect":
             return _execute_with_prefect(inputs, orchestration_config)
-        logger.warning(
-            f"Unknown orchestrator type: {orchestration_config.orchestrator_type}"
-        )
+        logger.warning(f"Unknown orchestrator type: {orchestration_config.orchestrator_type}")
         return _execute_standalone(inputs)
 
     except Exception as e:
@@ -126,7 +128,9 @@ def _execute_with_temporal(
         from datetime import timedelta
 
         from temporalio import (  # type: ignore[import-not-found]  # type: ignore
-            activity, workflow)
+            activity,
+            workflow,
+        )
 
         @activity.defn
         async def ai_linting_activity(input_data: dict[str, Any]) -> dict[str, Any]:
@@ -187,8 +191,7 @@ def _execute_with_celery(
 ) -> WorkflowResult:
     """Execute with Celery orchestration."""
     try:
-        from celery import \
-            Celery  # type: ignore[import-not-found]  # type: ignore
+        from celery import Celery  # type: ignore[import-not-found]  # type: ignore
 
         # Initialize Celery app
         app = Celery(
@@ -245,8 +248,7 @@ def _execute_with_prefect(
 ) -> WorkflowResult:
     """Execute with Prefect orchestration."""
     try:
-        from prefect import (  # type: ignore[import-not-found]  # type: ignore
-            flow, task)
+        from prefect import flow, task  # type: ignore[import-not-found]  # type: ignore
 
         @task
         def ai_linting_task(input_data: dict[str, Any]) -> dict[str, Any]:

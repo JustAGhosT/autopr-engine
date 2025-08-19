@@ -249,6 +249,4 @@ class TestPlatformDetector:
             for tool in windows_incompatible:
                 assert tool not in available_tools
 
-            assert (
-                "windows_security" in available_tools
-            )  # Should be included with warning
+            assert "windows_security" in available_tools  # Should be included with warning

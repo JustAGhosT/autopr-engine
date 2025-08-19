@@ -21,13 +21,9 @@ class PermissionCache:
         """Generate cache key for permission check."""
         return f"{user_id}:{resource_type}:{resource_id}:{action}"
 
-    def get(
-        self, user_id: str, resource_type: str, resource_id: str, action: str
-    ) -> bool | None:
+    def get(self, user_id: str, resource_type: str, resource_id: str, action: str) -> bool | None:
         """Get cached permission result."""
-        cache_key = self._generate_cache_key(
-            user_id, resource_type, resource_id, action
-        )
+        cache_key = self._generate_cache_key(user_id, resource_type, resource_id, action)
 
         if cache_key in self.cache:
             result, timestamp = self.cache[cache_key]
@@ -51,9 +47,7 @@ class PermissionCache:
         result: bool,
     ):
         """Cache permission result."""
-        cache_key = self._generate_cache_key(
-            user_id, resource_type, resource_id, action
-        )
+        cache_key = self._generate_cache_key(user_id, resource_type, resource_id, action)
         self.cache[cache_key] = (result, datetime.utcnow().timestamp())
         logger.debug("Permission cached", cache_key=cache_key, result=result)
 
@@ -91,9 +85,7 @@ class PermissionCache:
         """Get cache statistics."""
         now = datetime.utcnow().timestamp()
         valid_entries = sum(
-            1
-            for _, timestamp in self.cache.values()
-            if now - timestamp < self.ttl_seconds
+            1 for _, timestamp in self.cache.values() if now - timestamp < self.ttl_seconds
         )
 
         return {

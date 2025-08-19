@@ -69,20 +69,14 @@ class DependencyScannerTool(Tool):
                     if stderr:
                         error = stderr.decode().strip()
                         if "safety: command not found" in error:
-                            summary_lines.append(
-                                "Safety is not installed. Run: pip install safety"
-                            )
+                            summary_lines.append("Safety is not installed. Run: pip install safety")
                             continue
 
                     # Parse safety output
                     if stdout:
                         try:
                             results = json.loads(stdout)
-                            if (
-                                results
-                                and isinstance(results, list)
-                                and len(results) > 0
-                            ):
+                            if results and isinstance(results, list) and len(results) > 0:
                                 files_with_issues.append(req_file)
 
                                 for vuln in results:

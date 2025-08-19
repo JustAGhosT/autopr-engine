@@ -2,16 +2,21 @@
 
 ## 🎯 Overview
 
-The AutoPR Volume Control System provides **HiFi-style volume control** for your development environment, allowing you to adjust the strictness of linting and quality checks from 0-1000 in ticks of 5. This system was successfully integrated from PR #14 and provides granular control over your development experience.
+The AutoPR Volume Control System provides **HiFi-style volume control** for your development
+environment, allowing you to adjust the strictness of linting and quality checks from 0-1000 in
+ticks of 5. This system was successfully integrated from PR #14 and provides granular control over
+your development experience.
 
 ## 🚀 Quick Start
 
 ### Check Current Status
+
 ```bash
 python scripts/volume-control/main.py status
 ```
 
 ### Set Development Volume
+
 ```bash
 # Set to specific level
 python scripts/volume-control/main.py dev 300
@@ -22,6 +27,7 @@ python scripts/volume-control/main.py dev down 1
 ```
 
 ### Set Commit Volume
+
 ```bash
 # Set to specific level
 python scripts/volume-control/main.py commit 500
@@ -32,18 +38,19 @@ python scripts/volume-control/main.py commit down 1
 ```
 
 ### Auto-fix Issues
+
 ```bash
 python scripts/volume-control/main.py autofix
 ```
 
 ## 📊 Volume Levels
 
-| Volume | Level | Description | Use Case |
-|--------|-------|-------------|----------|
-| 0-100 | QUIET | Basic syntax only | Prototyping, experiments |
-| 200-400 | LOW | Basic formatting | Development, learning |
-| 500-600 | MEDIUM | Standard checks | Regular development |
-| 700-800 | HIGH | Strict checks | Code review, quality focus |
+| Volume   | Level   | Description                 | Use Case                      |
+| -------- | ------- | --------------------------- | ----------------------------- |
+| 0-100    | QUIET   | Basic syntax only           | Prototyping, experiments      |
+| 200-400  | LOW     | Basic formatting            | Development, learning         |
+| 500-600  | MEDIUM  | Standard checks             | Regular development           |
+| 700-800  | HIGH    | Strict checks               | Code review, quality focus    |
 | 900-1000 | MAXIMUM | Nuclear - everything blocks | Production, strict compliance |
 
 ## 🛠️ Integrated Components
@@ -79,16 +86,19 @@ python scripts/volume-control/main.py autofix
 ### Development Workflow
 
 1. **Start with QUIET for prototyping:**
+
    ```bash
    python scripts/volume-control/main.py dev 75
    ```
 
 2. **Increase as you refine:**
+
    ```bash
    python scripts/volume-control/main.py dev 300
    ```
 
 3. **Use HIGH for final review:**
+
    ```bash
    python scripts/volume-control/main.py dev 700
    ```
@@ -101,11 +111,13 @@ python scripts/volume-control/main.py autofix
 ### Commit Workflow
 
 1. **Set commit volume higher than dev:**
+
    ```bash
    python scripts/volume-control/main.py commit 500
    ```
 
 2. **Verify before committing:**
+
    ```bash
    python scripts/volume-control/main.py status
    ```
@@ -120,6 +132,7 @@ python scripts/volume-control/main.py autofix
 ### Tool Configurations
 
 The system supports configurations for:
+
 - **Python**: Linting, formatting, type checking
 - **Git**: Integration and hooks
 - **GitHub Actions**: Workflow validation
@@ -155,16 +168,19 @@ python -m autopr.actions.quality_engine --mode=smart
 ## 🔍 Monitoring and Debugging
 
 ### Check Active Tools
+
 ```bash
 python check_active_tools.py
 ```
 
 ### Debug Volume Settings
+
 ```bash
 python scripts/volume-control/main.py debug
 ```
 
 ### View Configuration Details
+
 ```bash
 python scripts/volume-control/main.py status --verbose
 ```
@@ -187,6 +203,7 @@ python scripts/volume-control/main.py status --verbose
    - Install missing tools as needed
 
 ### Reset to Defaults
+
 ```bash
 # Reset development volume
 python scripts/volume-control/main.py dev 75

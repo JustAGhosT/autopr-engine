@@ -43,9 +43,7 @@ class VolumeConfigLoader:
 
         return combined_settings
 
-    def get_tool_settings_for_volume(
-        self, tool_name: str, volume: int
-    ) -> dict[str, Any]:
+    def get_tool_settings_for_volume(self, tool_name: str, volume: int) -> dict[str, Any]:
         """Get settings for a specific tool at the given volume level"""
         if tool_name not in self.tools:
             return {}
@@ -100,9 +98,7 @@ class VolumeConfigLoader:
             summary["tool_details"][tool_name] = {
                 "active": is_active,
                 "settings_applied": settings_count,
-                "description": self.tools[tool_name].get(
-                    "description", "No description"
-                ),
+                "description": self.tools[tool_name].get("description", "No description"),
             }
 
         return summary

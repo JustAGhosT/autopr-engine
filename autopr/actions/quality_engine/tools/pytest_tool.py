@@ -29,9 +29,7 @@ class PyTestTool(Tool):
         """Get the required command for this tool."""
         return "pytest"
 
-    async def run(
-        self, files: list[str], config: dict[str, Any]
-    ) -> list[dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run PyTest on the specified files or directories.
         """
