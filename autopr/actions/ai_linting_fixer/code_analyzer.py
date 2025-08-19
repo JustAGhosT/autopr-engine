@@ -72,7 +72,13 @@ class CodeAnalyzer:
             for node in ast.walk(tree):
                 if isinstance(
                     node,
-                    ast.If | ast.While | ast.For | ast.AsyncFor | ast.ExceptHandler | ast.With | ast.AsyncWith,
+                    ast.If
+                    | ast.While
+                    | ast.For
+                    | ast.AsyncFor
+                    | ast.ExceptHandler
+                    | ast.With
+                    | ast.AsyncWith,
                 ):
                     complexity += 1
                 elif isinstance(node, ast.BoolOp):
@@ -245,7 +251,13 @@ class CodeAnalyzer:
         for child in ast.walk(node):
             if isinstance(
                 child,
-                ast.If | ast.While | ast.For | ast.AsyncFor | ast.ExceptHandler | ast.With | ast.AsyncWith,
+                ast.If
+                | ast.While
+                | ast.For
+                | ast.AsyncFor
+                | ast.ExceptHandler
+                | ast.With
+                | ast.AsyncWith,
             ):
                 complexity += 1
             elif isinstance(child, ast.BoolOp):

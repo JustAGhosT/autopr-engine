@@ -14,9 +14,9 @@ from discovery.format_generators.config import DocumentationConfig
 
 # Factory and utilities
 from discovery.format_generators.factory import (
-    FormatGeneratorFactory,
-    generate_documentation_index,
-    generate_platform_guide,
+                                                 FormatGeneratorFactory,
+                                                 generate_documentation_index,
+                                                 generate_platform_guide,
 )
 from discovery.format_generators.html import HTMLGenerator
 from discovery.format_generators.json_generator import JSONGenerator

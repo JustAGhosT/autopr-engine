@@ -31,11 +31,11 @@ from autopr.agents.linting_agent import LintingInputs, LintingOutputs
 
 # Import models
 from autopr.agents.models import (
-                                  CodeAnalysisReport,
-                                  CodeIssue,
-                                  IssueSeverity,
-                                  PlatformAnalysis,
-                                  PlatformComponent,
+                                              CodeAnalysisReport,
+                                              CodeIssue,
+                                              IssueSeverity,
+                                              PlatformAnalysis,
+                                              PlatformComponent,
 )
 from autopr.agents.platform_analysis_agent import PlatformAnalysisInputs, PlatformAnalysisOutputs
 

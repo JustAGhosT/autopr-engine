@@ -44,8 +44,7 @@ class LinearClient:
 
             if "errors" in result:
                 error_messages = [
-                    e.get("message", "Unknown error")
-                    for e in result.get("errors", [])
+                    e.get("message", "Unknown error") for e in result.get("errors", [])
                 ]
                 msg = f"Linear API error: {', '.join(error_messages)}"
                 raise Exception(msg)

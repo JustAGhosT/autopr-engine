@@ -458,7 +458,13 @@ class QualityGateValidator:
         for node in ast.walk(tree):
             if isinstance(
                 node,
-                ast.If | ast.While | ast.For | ast.AsyncFor | ast.ExceptHandler | ast.And | ast.Or,
+                ast.If
+                | ast.While
+                | ast.For
+                | ast.AsyncFor
+                | ast.ExceptHandler
+                | ast.And
+                | ast.Or,
             ):
                 complexity += 1
 

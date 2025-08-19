@@ -10,26 +10,26 @@ from autopr.security.authorization.audit import AuthorizationAuditLogger
 from autopr.security.authorization.cache import PermissionCache
 from autopr.security.authorization.decorators import AuthorizationDecorator, require_permission
 from autopr.security.authorization.managers import (
-    AuditedAuthorizationManager,
-    BaseAuthorizationManager,
-    CachedAuthorizationManager,
-    EnterpriseAuthorizationManager,
+                                                      AuditedAuthorizationManager,
+                                                      BaseAuthorizationManager,
+                                                      CachedAuthorizationManager,
+                                                      EnterpriseAuthorizationManager,
 )
 from autopr.security.authorization.middleware import AuthorizationMiddleware
 from autopr.security.authorization.models import (
-    AuthorizationContext,
-    Permission,
-    ResourcePermission,
-    ResourceType,
+                                                      AuthorizationContext,
+                                                      Permission,
+                                                      ResourcePermission,
+                                                      ResourceType,
 )
 from autopr.security.authorization.utils import (
-    authorize_request,
-    create_project_authorization_context,
-    create_repository_authorization_context,
-    create_template_authorization_context,
-    create_workflow_authorization_context,
-    get_access_logger,
-    get_authorization_manager,
+                                                      authorize_request,
+                                                      create_project_authorization_context,
+                                                      create_repository_authorization_context,
+                                                      create_template_authorization_context,
+                                                      create_workflow_authorization_context,
+                                                      get_access_logger,
+                                                      get_authorization_manager,
 )
 
 __all__ = [
