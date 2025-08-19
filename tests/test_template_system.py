@@ -5,8 +5,8 @@ Test script for the AutoPR template system with provider support.
 
 import logging
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -83,7 +83,8 @@ def test_autoweave_provider():
 def test_provider_fallback():
     """Test provider fallback mechanism."""
     try:
-        from autopr.templates import AutoWeaveProvider, Jinja2TemplateProvider, TemplateSystem
+        from autopr.templates import (AutoWeaveProvider,
+                                      Jinja2TemplateProvider, TemplateSystem)
 
         # Initialize providers
         template_dirs = [project_root / "autopr" / "templates" / "examples"]

@@ -9,15 +9,16 @@ This module provides a comprehensive configuration system with:
 - Hot reloading capabilities
 """
 
-from enum import StrEnum
 import json
 import logging
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, SecretStr, field_validator
-from pydantic import Field as _Field
 import yaml  # type: ignore[import-untyped]
+from pydantic import BaseModel
+from pydantic import Field as _Field
+from pydantic import SecretStr, field_validator
 
 try:
     # Pydantic 2.0+ (preferred)

@@ -11,13 +11,9 @@ import os
 from pathlib import Path
 from typing import Any, Self, TypeVar
 
-from autopr.templates.models import (
-    TemplateMetadata,
-    TemplateType,
-    TemplateVariable,
-    TemplateVariableType,
-    TemplateVariant,
-)
+from autopr.templates.models import (TemplateMetadata, TemplateType,
+                                     TemplateVariable, TemplateVariableType,
+                                     TemplateVariant)
 
 logger = logging.getLogger(__name__)
 

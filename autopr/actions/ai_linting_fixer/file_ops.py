@@ -6,13 +6,13 @@ and atomic operations for the AI linting system.
 """
 
 import ast
+import logging
+import shutil
+import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
-import logging
 from pathlib import Path
-import shutil
-import tempfile
 from typing import Any
 
 logger = logging.getLogger(__name__)

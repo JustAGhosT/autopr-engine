@@ -9,7 +9,6 @@ This module provides the AutoPRCrew class for orchestrating code analysis agents
 # Import the main crew implementation
 from autopr.actions.llm import get_llm_provider_manager
 from autopr.agents.code_quality_agent import CodeQualityAgent
-
 # Import tasks sub-module for convenient star-imports
 from autopr.agents.crew import tasks
 from autopr.agents.crew.main import AutoPRCrew

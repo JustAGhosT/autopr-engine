@@ -12,7 +12,8 @@ utility functions.
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from autopr.quality.template_metrics.validation_types import ValidationIssue, ValidationSeverity
+from autopr.quality.template_metrics.validation_types import (
+    ValidationIssue, ValidationSeverity)
 
 
 @dataclass

@@ -5,10 +5,11 @@ import time
 from unittest import TestCase
 from unittest.mock import AsyncMock, patch
 
-from aiohttp import ClientError, ClientResponseError, ClientSession
 import pytest
+from aiohttp import ClientError, ClientResponseError, ClientSession
 
-from autopr.clients.github_client import GitHubClient, GitHubConfig, GitHubError
+from autopr.clients.github_client import (GitHubClient, GitHubConfig,
+                                          GitHubError)
 
 
 class TestGitHubClient(TestCase):

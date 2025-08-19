@@ -12,7 +12,8 @@ from typing import Any
 # Import action classes with error handling for optional dependencies
 PlatformDetector: type[Any] | None = None
 try:
-    from autopr.actions.platform_detector_enhanced import PlatformDetector as _RealPlatformDetector
+    from autopr.actions.platform_detector_enhanced import \
+        PlatformDetector as _RealPlatformDetector
 
     PlatformDetector = _RealPlatformDetector
 except ImportError:
@@ -20,7 +21,8 @@ except ImportError:
 
 PrototypeEnhancer: type[Any] | None = None
 try:
-    from autopr.actions.prototype_enhancer import PrototypeEnhancer as _RealPrototypeEnhancer
+    from autopr.actions.prototype_enhancer import \
+        PrototypeEnhancer as _RealPrototypeEnhancer
 
     PrototypeEnhancer = _RealPrototypeEnhancer
 except ImportError:
@@ -28,7 +30,8 @@ except ImportError:
 
 PlatformDetector: type[Any] | None = None
 try:
-    from autopr.actions.platform_detector import PlatformDetector as _RealPlatformDetector
+    from autopr.actions.platform_detector import \
+        PlatformDetector as _RealPlatformDetector
 
     PlatformDetector = _RealPlatformDetector
 except ImportError:
@@ -36,9 +39,8 @@ except ImportError:
 
 AutoGenImplementation: type[Any] | None = None
 try:
-    from autopr.actions.autogen_implementation import (
-        AutoGenImplementation as _RealAutoGenImplementation,
-    )
+    from autopr.actions.autogen_implementation import \
+        AutoGenImplementation as _RealAutoGenImplementation
 
     AutoGenImplementation = _RealAutoGenImplementation
 except ImportError:
@@ -54,7 +56,8 @@ except ImportError:
 
 LLMProviderManager: type[Any] | None = None
 try:
-    from autopr.actions.llm import LLMProviderManager as _RealLLMProviderManager
+    from autopr.actions.llm import \
+        LLMProviderManager as _RealLLMProviderManager
 
     LLMProviderManager = _RealLLMProviderManager
 except ImportError:
@@ -62,7 +65,8 @@ except ImportError:
 
 AutoGenAgentSystem: type[Any] | None = None
 try:
-    from autopr.actions.autogen_multi_agent import AutoGenAgentSystem as _RealAutoGenAgentSystem
+    from autopr.actions.autogen_multi_agent import \
+        AutoGenAgentSystem as _RealAutoGenAgentSystem
 
     AutoGenAgentSystem = _RealAutoGenAgentSystem
 except ImportError:
@@ -70,7 +74,8 @@ except ImportError:
 
 Mem0MemoryManager: type[Any] | None = None
 try:
-    from autopr.actions.mem0_memory_integration import Mem0MemoryManager as _RealMem0MemoryManager
+    from autopr.actions.mem0_memory_integration import \
+        Mem0MemoryManager as _RealMem0MemoryManager
 
     Mem0MemoryManager = _RealMem0MemoryManager
 except ImportError:
@@ -86,9 +91,8 @@ except ImportError:
 
 LearningMemorySystem: type[Any] | None = None
 try:
-    from autopr.actions.learning_memory_system import (
-        LearningMemorySystem as _RealLearningMemorySystem,
-    )
+    from autopr.actions.learning_memory_system import \
+        LearningMemorySystem as _RealLearningMemorySystem
 
     LearningMemorySystem = _RealLearningMemorySystem
 except ImportError:
@@ -96,9 +100,8 @@ except ImportError:
 
 MultiPlatformIntegrator: type[Any] | None = None
 try:
-    from autopr.actions.multi_platform_integrator import (
-        MultiPlatformIntegrator as _RealMultiPlatformIntegrator,
-    )
+    from autopr.actions.multi_platform_integrator import \
+        MultiPlatformIntegrator as _RealMultiPlatformIntegrator
 
     MultiPlatformIntegrator = _RealMultiPlatformIntegrator
 except ImportError:
@@ -106,7 +109,8 @@ except ImportError:
 
 AICommentAnalyzer: type[Any] | None = None
 try:
-    from autopr.actions.ai_comment_analyzer import AICommentAnalyzer as _RealAICommentAnalyzer
+    from autopr.actions.ai_comment_analyzer import \
+        AICommentAnalyzer as _RealAICommentAnalyzer
 
     AICommentAnalyzer = _RealAICommentAnalyzer
 except ImportError:
@@ -114,7 +118,8 @@ except ImportError:
 
 PRCommentHandler: type[Any] | None = None
 try:
-    from autopr.actions.handle_pr_comment import PRCommentHandler as _RealPRCommentHandler
+    from autopr.actions.handle_pr_comment import \
+        PRCommentHandler as _RealPRCommentHandler
 
     PRCommentHandler = _RealPRCommentHandler
 except ImportError:
@@ -139,9 +144,8 @@ except ImportError:
 
 CreateOrUpdateIssue: type[Any] | None = None
 try:
-    from autopr.actions.create_or_update_issue import (
-        CreateOrUpdateIssue as _RealCreateOrUpdateIssue,
-    )
+    from autopr.actions.create_or_update_issue import \
+        CreateOrUpdateIssue as _RealCreateOrUpdateIssue
 
     CreateOrUpdateIssue = _RealCreateOrUpdateIssue
 except ImportError:
@@ -149,7 +153,8 @@ except ImportError:
 
 ApplyGitPatch: type[Any] | None = None
 try:
-    from autopr.actions.apply_git_patch import ApplyGitPatch as _RealApplyGitPatch
+    from autopr.actions.apply_git_patch import \
+        ApplyGitPatch as _RealApplyGitPatch
 
     ApplyGitPatch = _RealApplyGitPatch
 except ImportError:
@@ -157,7 +162,8 @@ except ImportError:
 
 RunSecurityAudit: type[Any] | None = None
 try:
-    from autopr.actions.run_security_audit import RunSecurityAudit as _RealRunSecurityAudit
+    from autopr.actions.run_security_audit import \
+        RunSecurityAudit as _RealRunSecurityAudit
 
     RunSecurityAudit = _RealRunSecurityAudit
 except ImportError:
@@ -165,9 +171,8 @@ except ImportError:
 
 CheckPerformanceBudget: type[Any] | None = None
 try:
-    from autopr.actions.check_performance_budget import (
-        CheckPerformanceBudget as _RealCheckPerformanceBudget,
-    )
+    from autopr.actions.check_performance_budget import \
+        CheckPerformanceBudget as _RealCheckPerformanceBudget
 
     CheckPerformanceBudget = _RealCheckPerformanceBudget
 except ImportError:
@@ -175,9 +180,8 @@ except ImportError:
 
 VisualRegressionTest: type[Any] | None = None
 try:
-    from autopr.actions.visual_regression_test import (
-        VisualRegressionTest as _RealVisualRegressionTest,
-    )
+    from autopr.actions.visual_regression_test import \
+        VisualRegressionTest as _RealVisualRegressionTest
 
     VisualRegressionTest = _RealVisualRegressionTest
 except ImportError:
@@ -185,9 +189,8 @@ except ImportError:
 
 GenerateReleaseNotes: type[Any] | None = None
 try:
-    from autopr.actions.generate_release_notes import (
-        GenerateReleaseNotes as _RealGenerateReleaseNotes,
-    )
+    from autopr.actions.generate_release_notes import \
+        GenerateReleaseNotes as _RealGenerateReleaseNotes
 
     GenerateReleaseNotes = _RealGenerateReleaseNotes
 except ImportError:
@@ -195,7 +198,8 @@ except ImportError:
 
 AIImplementationRoadmap: type[Any] | None = None
 try:
-    from autopr.actions.ai_implementation_roadmap import AIImplementationRoadmap
+    from autopr.actions.ai_implementation_roadmap import \
+        AIImplementationRoadmap
 except ImportError:
     AIImplementationRoadmap = None
 

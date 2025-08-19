@@ -5,8 +5,8 @@ This module provides the CodeQualityAgent class which is responsible for analyzi
 and improving code quality based on various metrics and best practices.
 """
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from json import JSONDecodeError
 from typing import Any
 

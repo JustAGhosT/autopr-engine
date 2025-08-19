@@ -6,8 +6,8 @@ Creates GitHub issues and Linear tickets based on AI analysis
 import os
 from typing import Any
 
-from pydantic import BaseModel, Field
 import requests
+from pydantic import BaseModel, Field
 
 
 class IssueCreatorInputs(BaseModel):

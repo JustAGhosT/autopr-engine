@@ -9,10 +9,10 @@ Author: AutoPR AI Systems
 """
 
 import asyncio
-from datetime import timedelta
 import logging
 import os
 import pathlib
+from datetime import timedelta
 from typing import Any
 
 from temporalio import activity, workflow
@@ -20,12 +20,9 @@ from temporalio.client import Client, TLSConfig
 from temporalio.common import RetryPolicy
 from temporalio.worker import Worker
 
-from autopr.actions.ai_linting_fixer import (
-    AILintingFixerInputs,
-    WorkflowContext,
-    WorkflowResult,
-    ai_linting_fixer,
-)
+from autopr.actions.ai_linting_fixer import (AILintingFixerInputs,
+                                             WorkflowContext, WorkflowResult,
+                                             ai_linting_fixer)
 
 logger = logging.getLogger(__name__)
 

@@ -12,17 +12,15 @@ Key Principles:
 - Easy to test and modify
 """
 
-from dataclasses import dataclass
-from enum import Enum
 import logging
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from typing import Any, TextIO
 
-from autopr.actions.ai_linting_fixer.models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    LintingIssue,
-)
+from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
+                                                    AILintingFixerOutputs,
+                                                    LintingIssue)
 
 logger = logging.getLogger(__name__)
 

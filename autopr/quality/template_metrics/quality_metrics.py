@@ -11,11 +11,8 @@ while importing from the new modular components.
 
 from autopr.quality.template_metrics.quality_analyzer import QualityAnalyzer
 from autopr.quality.template_metrics.quality_models import (
-    DEFAULT_CATEGORY_WEIGHTS,
-    DEFAULT_SEVERITY_WEIGHTS,
-    QUALITY_GRADES,
-    QualityMetrics,
-)
+    DEFAULT_CATEGORY_WEIGHTS, DEFAULT_SEVERITY_WEIGHTS, QUALITY_GRADES,
+    QualityMetrics)
 from autopr.quality.template_metrics.quality_scorer import QualityScorer
 
 # Global instances for backward compatibility
