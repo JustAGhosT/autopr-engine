@@ -61,7 +61,16 @@ def test_validate_config_passes_when_all_comprehensive_tools_exist():
             "radon": ToolConfig(enabled=True, config={}),
             "pytest": ToolConfig(enabled=True, config={}),
         },
-        modes={"comprehensive": ["ruff", "mypy", "bandit", "interrogate", "radon", "pytest"]},
+        modes={
+            "comprehensive": [
+                "ruff",
+                "mypy",
+                "bandit",
+                "interrogate",
+                "radon",
+                "pytest",
+            ]
+        },
     )
 
     # Should not raise any exception

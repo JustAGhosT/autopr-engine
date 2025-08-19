@@ -9,28 +9,19 @@ Centralized configuration management system with:
 - Backward compatibility
 """
 
-from dataclasses import dataclass, field
 import os
 import pathlib
-from typing import Any, Dict, Optional
 import warnings
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
 
 import yaml
 
 # Import new centralized configuration system
-from .settings import (
-    AutoPRSettings,
-    Environment,
-    LLMProvider,
-    get_settings,
-    reload_settings,
-    set_settings,
-)
-from .validation import (
-    check_environment_variables,
-    generate_config_report,
-    validate_configuration,
-)
+from .settings import (AutoPRSettings, Environment, LLMProvider, get_settings,
+                       reload_settings, set_settings)
+from .validation import (check_environment_variables, generate_config_report,
+                         validate_configuration)
 
 
 @dataclass
@@ -94,7 +85,9 @@ class AutoPRConfig:
                 if attr_name in {"max_concurrent_workflows", "workflow_timeout"}:
                     setattr(self, attr_name, int(env_value))
                 elif attr_name == "enable_debug_logging":
-                    setattr(self, attr_name, env_value.lower() in {"true", "1", "yes", "on"})
+                    setattr(
+                        self, attr_name, env_value.lower() in {"true", "1", "yes", "on"}
+                    )
                 else:
                     setattr(self, attr_name, env_value)
 

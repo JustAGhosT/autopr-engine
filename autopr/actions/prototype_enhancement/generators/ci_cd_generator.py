@@ -42,8 +42,12 @@ class CICDGenerator(BaseGenerator):
         template_vars = {
             "ci_provider": ci_provider,
             "language": language,
-            "test_command": kwargs.get("test_command", self._get_default_test_command(language)),
-            "build_command": kwargs.get("build_command", self._get_default_build_command(language)),
+            "test_command": kwargs.get(
+                "test_command", self._get_default_test_command(language)
+            ),
+            "build_command": kwargs.get(
+                "build_command", self._get_default_build_command(language)
+            ),
             "deploy_command": kwargs.get(
                 "deploy_command", self._get_default_deploy_command(language)
             ),
@@ -59,7 +63,9 @@ class CICDGenerator(BaseGenerator):
 
         # Generate CI/CD configuration based on provider
         if ci_provider == "github":
-            generated_files.extend(self._generate_github_actions(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_github_actions(output_dir, template_vars)
+            )
         elif ci_provider == "gitlab":
             generated_files.extend(self._generate_gitlab_ci(output_dir, template_vars))
         elif ci_provider == "circleci":
@@ -67,11 +73,15 @@ class CICDGenerator(BaseGenerator):
         elif ci_provider == "jenkins":
             generated_files.extend(self._generate_jenkins(output_dir, template_vars))
         elif ci_provider == "azure":
-            generated_files.extend(self._generate_azure_pipelines(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_azure_pipelines(output_dir, template_vars)
+            )
 
         # Generate deployment configurations if needed
         if kwargs.get("generate_deployment"):
-            generated_files.extend(self._generate_deployment_configs(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_deployment_configs(output_dir, template_vars)
+            )
 
         return generated_files
 
@@ -117,7 +127,9 @@ class CICDGenerator(BaseGenerator):
             "rust": "cargo install --path .",
         }.get(language, 'echo "No deploy command specified"')
 
-    def _generate_github_actions(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_github_actions(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate GitHub Actions workflow files."""
         generated_files = []
         workflows_dir = Path(output_dir) / ".github" / "workflows"
@@ -149,17 +161,25 @@ class CICDGenerator(BaseGenerator):
         issue_template_dir = Path(output_dir) / ".github" / "ISSUE_TEMPLATE"
         issue_template_dir.mkdir(parents=True, exist_ok=True)
 
-        issue_templates = ["bug_report.md", "feature_request.md", "security_vulnerability.md"]
+        issue_templates = [
+            "bug_report.md",
+            "feature_request.md",
+            "security_vulnerability.md",
+        ]
 
         for template in issue_templates:
-            content = self._render_template(f"ci/github/ISSUE_TEMPLATE/{template}", variables)
+            content = self._render_template(
+                f"ci/github/ISSUE_TEMPLATE/{template}", variables
+            )
             if content:
                 file_path = issue_template_dir / template
                 self._write_file(str(file_path), content)
                 generated_files.append(str(file_path))
 
         # Pull request template
-        pr_template = self._render_template("ci/github/pull_request_template.md", variables)
+        pr_template = self._render_template(
+            "ci/github/pull_request_template.md", variables
+        )
         if pr_template:
             pr_path = Path(output_dir) / ".github" / "pull_request_template.md"
             self._write_file(str(pr_path), pr_template)
@@ -167,7 +187,9 @@ class CICDGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_gitlab_ci(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_gitlab_ci(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate GitLab CI configuration."""
         generated_files = []
 
@@ -194,16 +216,22 @@ class CICDGenerator(BaseGenerator):
                 generated_files.append(str(config_path))
 
         # Merge request template
-        mr_template = self._render_template("ci/gitlab/merge_request_template.md", variables)
+        mr_template = self._render_template(
+            "ci/gitlab/merge_request_template.md", variables
+        )
         if mr_template:
-            mr_path = Path(output_dir) / ".gitlab" / "merge_request_templates" / "Default.md"
+            mr_path = (
+                Path(output_dir) / ".gitlab" / "merge_request_templates" / "Default.md"
+            )
             mr_path.parent.mkdir(parents=True, exist_ok=True)
             self._write_file(str(mr_path), mr_template)
             generated_files.append(str(mr_path))
 
         return generated_files
 
-    def _generate_circleci(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_circleci(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate CircleCI configuration."""
         generated_files = []
         circleci_dir = Path(output_dir) / ".circleci"
@@ -228,7 +256,9 @@ class CICDGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_jenkins(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_jenkins(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate Jenkins pipeline configuration."""
         generated_files = []
         jenkins_dir = Path(output_dir) / "jenkins"
@@ -251,7 +281,9 @@ class CICDGenerator(BaseGenerator):
             generated_files.append(str(shared_lib_path))
 
         # Pipeline configuration
-        pipeline_config = self._render_template("ci/jenkins/pipeline-config.yaml", variables)
+        pipeline_config = self._render_template(
+            "ci/jenkins/pipeline-config.yaml", variables
+        )
         if pipeline_config:
             config_path = jenkins_dir / "pipeline-config.yaml"
             self._write_file(str(config_path), pipeline_config)
@@ -259,7 +291,9 @@ class CICDGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_azure_pipelines(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_azure_pipelines(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate Azure Pipelines configuration."""
         generated_files = []
 
@@ -293,14 +327,18 @@ class CICDGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_deployment_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_deployment_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate deployment configuration files."""
         generated_files = []
         deploy_dir = Path(output_dir) / "deploy"
         deploy_dir.mkdir(exist_ok=True)
 
         # Docker Compose for production
-        docker_compose = self._render_template("deploy/docker-compose.prod.yml", variables)
+        docker_compose = self._render_template(
+            "deploy/docker-compose.prod.yml", variables
+        )
         if docker_compose:
             docker_compose_path = deploy_dir / "docker-compose.prod.yml"
             self._write_file(str(docker_compose_path), docker_compose)
@@ -338,7 +376,9 @@ class CICDGenerator(BaseGenerator):
         if variables.get("generate_terraform"):
             terraform_dir = deploy_dir / "terraform"
             self._generate_terraform_config(terraform_dir, variables)
-            generated_files.extend([str(p) for p in terraform_dir.rglob("*") if p.is_file()])
+            generated_files.extend(
+                [str(p) for p in terraform_dir.rglob("*") if p.is_file()]
+            )
 
         return generated_files
 
@@ -372,11 +412,15 @@ class CICDGenerator(BaseGenerator):
         ]
 
         for template in template_files:
-            content = self._render_template(f"deploy/helm/templates/{template}", variables)
+            content = self._render_template(
+                f"deploy/helm/templates/{template}", variables
+            )
             if content:
                 (templates_dir / template).write_text(content)
 
-    def _generate_terraform_config(self, output_dir: Path, variables: dict[str, Any]) -> None:
+    def _generate_terraform_config(
+        self, output_dir: Path, variables: dict[str, Any]
+    ) -> None:
         """Generate Terraform configuration for infrastructure as code."""
         # Main configuration files
         main_tf = self._render_template("deploy/terraform/main.tf", variables)

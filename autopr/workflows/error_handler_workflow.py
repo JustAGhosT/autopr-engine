@@ -6,8 +6,8 @@ This workflow integrates with the existing workflow system and provides comprehe
 error tracking, categorization, and recovery capabilities.
 """
 
-from datetime import datetime
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -15,11 +15,7 @@ from pydantic import BaseModel, Field
 
 from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode
 from autopr.actions.ai_linting_fixer.error_handler import (
-    ErrorHandler,
-    ErrorInfo,
-    ErrorRecoveryStrategy,
-    create_error_context,
-)
+    ErrorHandler, ErrorInfo, ErrorRecoveryStrategy, create_error_context)
 
 from .base import Workflow
 
@@ -116,7 +112,11 @@ class ErrorHandlerWorkflow(Workflow):
         try:
             # Create display configuration
             self.display_config = DisplayConfig(
-                mode=OutputMode.VERBOSE if self.config.get("verbose", False) else OutputMode.NORMAL,
+                mode=(
+                    OutputMode.VERBOSE
+                    if self.config.get("verbose", False)
+                    else OutputMode.NORMAL
+                ),
                 use_colors=self.config.get("use_colors", True),
                 use_emojis=self.config.get("use_emojis", True),
             )
@@ -154,9 +154,13 @@ class ErrorHandlerWorkflow(Workflow):
                 },
             )
 
-        def on_recovery_callback(error_info: ErrorInfo, strategy: ErrorRecoveryStrategy) -> None:
+        def on_recovery_callback(
+            error_info: ErrorInfo, strategy: ErrorRecoveryStrategy
+        ) -> None:
             """Callback for recovery attempts."""
-            logger.info(f"Recovery callback: {strategy.value} for {error_info.error_type}")
+            logger.info(
+                f"Recovery callback: {strategy.value} for {error_info.error_type}"
+            )
 
             # Emit workflow event
             self.emit_event(
@@ -224,7 +228,10 @@ class ErrorHandlerWorkflow(Workflow):
         if inputs.exception:
             # Process exception
             error_info = self.error_handler.log_error(
-                inputs.exception, context, inputs.additional_info, display=inputs.enable_display
+                inputs.exception,
+                context,
+                inputs.additional_info,
+                display=inputs.enable_display,
             )
         elif inputs.error_message:
             # Create synthetic exception for error message
@@ -233,7 +240,10 @@ class ErrorHandlerWorkflow(Workflow):
 
             synthetic_exception = SyntheticError(inputs.error_message)
             error_info = self.error_handler.log_error(
-                synthetic_exception, context, inputs.additional_info, display=inputs.enable_display
+                synthetic_exception,
+                context,
+                inputs.additional_info,
+                display=inputs.enable_display,
             )
         else:
             # No error to process

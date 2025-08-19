@@ -5,9 +5,9 @@ Handles workflow contexts, events, and results for integration with
 orchestration systems and enterprise workflow platforms.
 """
 
+import logging
 from collections.abc import Callable
 from datetime import UTC, datetime
-import logging
 from typing import Any
 from uuid import uuid4
 
@@ -29,7 +29,11 @@ class WorkflowContext(BaseModel):
     priority: int = 5  # 1-10, higher = more priority
     timeout_seconds: int = 300
     retry_config: dict[str, Any] = Field(
-        default_factory=lambda: {"max_retries": 3, "retry_delay": 1.0, "exponential_backoff": True}
+        default_factory=lambda: {
+            "max_retries": 3,
+            "retry_delay": 1.0,
+            "exponential_backoff": True,
+        }
     )
 
     # Resource management

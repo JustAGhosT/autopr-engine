@@ -1,18 +1,14 @@
+import unittest
 from dataclasses import dataclass
 from pathlib import Path
-import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from autopr.actions.platform_detection.schema import (
-    PlatformCategory,
-    PlatformConfig,
-    PlatformStatus,
-    PlatformType,
-)
-from autopr.agents.platform_analysis_agent import (
-    PlatformAnalysisAgent,
-    PlatformAnalysisInputs,
-)
+from autopr.actions.platform_detection.schema import (PlatformCategory,
+                                                      PlatformConfig,
+                                                      PlatformStatus,
+                                                      PlatformType)
+from autopr.agents.platform_analysis_agent import (PlatformAnalysisAgent,
+                                                   PlatformAnalysisInputs)
 
 
 @dataclass
@@ -50,7 +46,9 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         self.agent = PlatformAnalysisAgent()
 
     @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
-    def test_get_platform_info_returns_none_for_unknown_platform(self, mock_config_manager):
+    def test_get_platform_info_returns_none_for_unknown_platform(
+        self, mock_config_manager
+    ):
         """Test that None is returned for unknown platform types."""
         # Setup mock to return None for unknown platform
         mock_manager = MagicMock()
@@ -142,7 +140,11 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Verify project config
         assert "project_config" in result
-        assert result["project_config"] == {"build_command": "npm run build", "start_command": "npm start", "output_directory": "dist"}
+        assert result["project_config"] == {
+            "build_command": "npm run build",
+            "start_command": "npm start",
+            "output_directory": "dist",
+        }
 
         # Verify the config manager was called correctly
         mock_manager.get_platform.assert_called_once_with(PlatformType.REACT.value)
@@ -153,7 +155,9 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
     def test_get_platform_info_unknown_platform(self):
         """Test getting platform info for an unknown platform value."""
         # Ensure the manager returns None for unknown platforms
-        with patch("autopr.agents.platform_analysis_agent.PlatformConfigManager") as MockMgr:
+        with patch(
+            "autopr.agents.platform_analysis_agent.PlatformConfigManager"
+        ) as MockMgr:
             instance = MockMgr.return_value
             instance.get_platform.return_value = None
 
@@ -171,7 +175,10 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Mock the detector's analyze method to return a mock analysis
         mock_analysis_instance = MagicMock()
-        mock_analysis_instance.platforms = [(PlatformType.REACT, 0.9), (PlatformType.NEXT_JS, 0.8)]
+        mock_analysis_instance.platforms = [
+            (PlatformType.REACT, 0.9),
+            (PlatformType.NEXT_JS, 0.8),
+        ]
         mock_analysis_instance.tools = ["npm", "yarn"]
         mock_analysis_instance.frameworks = ["React", "Next.js"]
         mock_analysis_instance.languages = ["TypeScript", "JavaScript"]

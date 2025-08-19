@@ -22,12 +22,17 @@ class AuthorizationAuditLogger:
 
             file_handler = logging.FileHandler(log_file)
             file_handler.setFormatter(
-                logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+                logging.Formatter(
+                    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                )
             )
             self.audit_logger.addHandler(file_handler)
 
     def log_authorization_check(
-        self, context: AuthorizationContext, result: bool, duration_ms: float | None = None
+        self,
+        context: AuthorizationContext,
+        result: bool,
+        duration_ms: float | None = None,
     ):
         """Log authorization check."""
         self.audit_logger.info(
@@ -89,7 +94,9 @@ class AuthorizationAuditLogger:
             timestamp=datetime.utcnow().isoformat(),
         )
 
-    def log_security_event(self, event_type: str, user_id: str, details: dict[str, Any]):
+    def log_security_event(
+        self, event_type: str, user_id: str, details: dict[str, Any]
+    ):
         """Log security events."""
         self.audit_logger.warning(
             "security_event",

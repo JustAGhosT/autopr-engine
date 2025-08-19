@@ -1,9 +1,9 @@
 """Minimal test for VolumeConfig validation."""
 
 import logging
-from pathlib import Path
 import sys
 import traceback
+from pathlib import Path
 
 # Set up debug logging to file
 log_file = Path("volume_config_test.log")
@@ -46,7 +46,9 @@ try:
     config = VolumeConfig()
     logger.info(f"✅ Default config: {config}")
     logger.info(f"✅ Volume: {config.volume}")
-    logger.info(f"✅ Quality Mode: {type(config.quality_mode).__name__} = {config.quality_mode}")
+    logger.info(
+        f"✅ Quality Mode: {type(config.quality_mode).__name__} = {config.quality_mode}"
+    )
     logger.info(f"✅ Config: {config.config}")
 
     # Test 2: Custom volume

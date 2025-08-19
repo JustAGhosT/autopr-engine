@@ -40,7 +40,9 @@ class SemgrepTool(Tool):
         """Get the required command for this tool."""
         return "semgrep"
 
-    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def run(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Run Semgrep on the specified files.
         """
@@ -48,7 +50,7 @@ class SemgrepTool(Tool):
             return []
 
         # Limit the number of files to prevent timeouts
-        files_to_check = files[:self.max_files_per_run]
+        files_to_check = files[: self.max_files_per_run]
 
         # Build the command
         command = ["semgrep", "--json", "--quiet", *files_to_check]
@@ -168,7 +170,13 @@ class SemgrepTool(Tool):
             return "security"
 
         # Check for performance patterns
-        performance_keywords = ["performance", "efficiency", "complexity", "memory", "cpu"]
+        performance_keywords = [
+            "performance",
+            "efficiency",
+            "complexity",
+            "memory",
+            "cpu",
+        ]
 
         if any(keyword in rule_id.lower() for keyword in performance_keywords):
             return "performance"

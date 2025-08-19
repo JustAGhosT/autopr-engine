@@ -28,7 +28,9 @@ async def run_tool(
 
         # Use the enhanced run_with_timeout method if available
         if hasattr(tool_instance, "run_with_timeout"):
-            result: ToolExecutionResult = await tool_instance.run_with_timeout(files, tool_config)
+            result: ToolExecutionResult = await tool_instance.run_with_timeout(
+                files, tool_config
+            )
 
             # Extract issues and handle errors
             issues = result["issues"]
@@ -93,7 +95,9 @@ async def run_tool(
                 handler_registry.handle_results(issues, result_type)
             except Exception as handler_error:
                 logger.warning(
-                    "Error handling tool results", tool=tool_name, error=str(handler_error)
+                    "Error handling tool results",
+                    tool=tool_name,
+                    error=str(handler_error),
                 )
 
         # Extract files with issues for the result

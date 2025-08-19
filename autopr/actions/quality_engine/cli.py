@@ -14,7 +14,11 @@ def ask_windows_confirmation() -> bool:
     """Ask user for confirmation to continue on Windows."""
 
     while True:
-        response = input("Continue with Windows-adapted quality analysis? (y/n): ").lower().strip()
+        response = (
+            input("Continue with Windows-adapted quality analysis? (y/n): ")
+            .lower()
+            .strip()
+        )
         if response in ["y", "yes"]:
             return True
         if response in ["n", "no"]:
@@ -93,7 +97,6 @@ def main(args: list[str] | None = None) -> int:
         if result.issues_by_tool:
             for _tool, _issues in result.issues_by_tool.items():
                 pass
-
 
         return 0 if result.success else 1
 

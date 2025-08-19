@@ -12,17 +12,14 @@ Key Principles:
 - Easy to test and modify
 """
 
-from dataclasses import dataclass
-from enum import Enum
 import logging
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from typing import Any, TextIO
 
 from .models import (  # SessionMetrics, # Removed; ProcessingMode, # Removed
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    LintingIssue,
-)
+    AILintingFixerInputs, AILintingFixerOutputs, LintingIssue)
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +189,9 @@ class SystemStatusDisplay:
                     successes = stats.get("successes", 0)
                     self._print(
                         self.formatter.metric(
-                            agent_name, f"{successes}/{attempts} ({success_rate:.1f}%)", "agent"
+                            agent_name,
+                            f"{successes}/{attempts} ({success_rate:.1f}%)",
+                            "agent",
                         )
                     )
 
@@ -205,14 +204,18 @@ class SystemStatusDisplay:
 
         if providers:
             self._print(
-                self.formatter.metric(f"{len(providers)} provider(s) available", "", "success")
+                self.formatter.metric(
+                    f"{len(providers)} provider(s) available", "", "success"
+                )
             )
             for provider in providers:
                 self._print(self.formatter.item(provider))
         else:
             self._print(
                 self.formatter.metric(
-                    "No providers available", "Configure API keys in environment", "warning"
+                    "No providers available",
+                    "Configure API keys in environment",
+                    "warning",
                 )
             )
 
@@ -230,9 +233,13 @@ class SystemStatusDisplay:
             self._print(self.formatter.metric(feature_name, status_text, emoji))
 
         # Show installation suggestions for missing features
-        missing_features = [name for name, available in features.items() if not available]
+        missing_features = [
+            name for name, available in features.items() if not available
+        ]
         if missing_features and not self.config.is_quiet():
-            self._print(self.formatter.section("💡 To enable missing features", "suggestion"))
+            self._print(
+                self.formatter.section("💡 To enable missing features", "suggestion")
+            )
 
             suggestions = {
                 "temporal_integration": "pip install temporalio",
@@ -243,7 +250,9 @@ class SystemStatusDisplay:
 
             for feature in missing_features:
                 if feature in suggestions:
-                    self._print(self.formatter.item(f"{feature}: {suggestions[feature]}"))
+                    self._print(
+                        self.formatter.item(f"{feature}: {suggestions[feature]}")
+                    )
 
     def _print(self, text: str):
         """Print to the configured output stream."""
@@ -262,7 +271,11 @@ class OperationDisplay:
         if self.config.is_quiet():
             return
 
-        self._print(self.formatter.header(f"🎯 AI Linting Fixer v2.0 - Session: {session_id[:8]}"))
+        self._print(
+            self.formatter.header(
+                f"🎯 AI Linting Fixer v2.0 - Session: {session_id[:8]}"
+            )
+        )
 
         # Configuration summary
         self._print(self.formatter.section("Configuration", "config"))
@@ -287,7 +300,10 @@ class OperationDisplay:
             )
 
     def show_detection_results(
-        self, filtered_count: int, total_count: int, unique_files_count: int | None = None
+        self,
+        filtered_count: int,
+        total_count: int,
+        unique_files_count: int | None = None,
     ):
         """Display detection results."""
         if self.config.is_quiet():
@@ -315,7 +331,9 @@ class OperationDisplay:
         """Show queueing results."""
         if not self.config.is_quiet():
             if queued_count == total_count:
-                self._print(f"{self.formatter.emoji('success')}Queued {queued_count} issues")
+                self._print(
+                    f"{self.formatter.emoji('success')}Queued {queued_count} issues"
+                )
             else:
                 self._print(
                     f"{self.formatter.emoji('success')}Queued {queued_count} new issues (duplicates skipped)"
@@ -327,7 +345,9 @@ class OperationDisplay:
             return
         self._print(f"\n🔄 Processing {issue_count} issues with AI agents...")
 
-    def show_processing_progress(self, current: int, total: int, issue: "LintingIssue") -> None:
+    def show_processing_progress(
+        self, current: int, total: int, issue: "LintingIssue"
+    ) -> None:
         """Show progress for processing individual issues."""
         if self.config.is_quiet():
             return
@@ -391,7 +411,9 @@ class ResultsDisplay:
             display_name = agent_name.replace("_", " ").title()
             self._print(
                 self.formatter.metric(
-                    display_name, f"{successes}/{attempts} ({success_rate:.1f}%)", "agent"
+                    display_name,
+                    f"{successes}/{attempts} ({success_rate:.1f}%)",
+                    "agent",
                 )
             )
 
@@ -507,7 +529,9 @@ class ErrorDisplay:
             for _error_type, _count in error_counts.items():
                 pass
 
-    def show_error_recovery_attempt(self, error_type: str, attempt: int, max_attempts: int):
+    def show_error_recovery_attempt(
+        self, error_type: str, attempt: int, max_attempts: int
+    ):
         """Display information about error recovery attempts."""
         if self.config.is_quiet():
             return

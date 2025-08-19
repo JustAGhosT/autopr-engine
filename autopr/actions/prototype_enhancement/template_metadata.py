@@ -109,7 +109,9 @@ class TemplateRegistry:
         """Get metadata for a specific template."""
         return self.metadata_cache.get(template_key)
 
-    def list_templates(self, platform: str | None = None, category: str | None = None) -> list[str]:
+    def list_templates(
+        self, platform: str | None = None, category: str | None = None
+    ) -> list[str]:
         """List available templates, optionally filtered."""
         templates = []
         for key, metadata in self.metadata_cache.items():
@@ -184,7 +186,9 @@ class TemplateRegistry:
 
         return content
 
-    def _apply_variants(self, content: str, metadata: TemplateMetadata, variants: list[str]) -> str:
+    def _apply_variants(
+        self, content: str, metadata: TemplateMetadata, variants: list[str]
+    ) -> str:
         """Apply variant modifications to template content."""
         lines = content.split("\n")
 
@@ -217,7 +221,13 @@ class TemplateRegistry:
 
     def validate_template_structure(self, template_data: dict[str, Any]) -> None:
         """Validate template structure."""
-        required_keys = ["name", "description", "category", "platforms", "file_extension"]
+        required_keys = [
+            "name",
+            "description",
+            "category",
+            "platforms",
+            "file_extension",
+        ]
         for key in required_keys:
             if key not in template_data:
                 msg = f"Missing required key: {key}"

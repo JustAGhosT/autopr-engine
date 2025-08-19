@@ -5,9 +5,9 @@ This module provides specialized AI agents that are experts in fixing specific
 types of linting issues, with tailored prompts and strategies for each issue type.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-import logging
 from typing import Any
 
 from pydantic import BaseModel
@@ -74,7 +74,9 @@ class SpecializedAgent(ABC):
         base_confidence = self.success_rates.get(issue_code, 0.7)
 
         # Agent-specific confidence adjustments
-        return min(0.95, base_confidence * self._get_agent_confidence_multiplier(issue_code))
+        return min(
+            0.95, base_confidence * self._get_agent_confidence_multiplier(issue_code)
+        )
 
     def _get_agent_confidence_multiplier(self, _issue_code: str) -> float:
         """Get agent-specific confidence multiplier."""
@@ -135,7 +137,9 @@ AVOID:
 Focus on making clean, readable fixes that improve code quality."""
 
     def get_user_prompt(self, file_content: str, issues: list[dict[str, Any]]) -> str:
-        issue_lines = [f"Line {issue['line_number']}: {issue['message']}" for issue in issues]
+        issue_lines = [
+            f"Line {issue['line_number']}: {issue['message']}" for issue in issues
+        ]
 
         return f"""Fix the following line length issues in this Python code:
 
@@ -207,7 +211,9 @@ IMPORT ORGANIZATION:
 BE EXTREMELY CAREFUL: Only remove imports you are 100% certain are unused."""
 
     def get_user_prompt(self, file_content: str, issues: list[dict[str, Any]]) -> str:
-        issue_details = [f"Line {issue['line_number']}: {issue['message']}" for issue in issues]
+        issue_details = [
+            f"Line {issue['line_number']}: {issue['message']}" for issue in issues
+        ]
 
         return f"""Fix the following import issues in this Python code:
 
@@ -286,7 +292,9 @@ CRITICAL CONSIDERATIONS:
 - Maintain code readability and intent"""
 
     def get_user_prompt(self, file_content: str, issues: list[dict[str, Any]]) -> str:
-        variable_issues = [f"Line {issue['line_number']}: {issue['message']}" for issue in issues]
+        variable_issues = [
+            f"Line {issue['line_number']}: {issue['message']}" for issue in issues
+        ]
 
         return f"""Fix the following unused variable issues in this Python code:
 
@@ -362,7 +370,9 @@ FIX STRATEGIES:
 AVOID catching BaseException unless specifically needed for system events."""
 
     def get_user_prompt(self, file_content: str, issues: list[dict[str, Any]]) -> str:
-        exception_issues = [f"Line {issue['line_number']}: {issue['message']}" for issue in issues]
+        exception_issues = [
+            f"Line {issue['line_number']}: {issue['message']}" for issue in issues
+        ]
 
         return f"""Fix the following exception handling issues in this Python code:
 
@@ -430,7 +440,9 @@ VARIABLE NAMING:
 BE CONSERVATIVE: Only make changes that clearly improve code quality."""
 
     def get_user_prompt(self, file_content: str, issues: list[dict[str, Any]]) -> str:
-        style_issues = [f"Line {issue['line_number']}: {issue['message']}" for issue in issues]
+        style_issues = [
+            f"Line {issue['line_number']}: {issue['message']}" for issue in issues
+        ]
 
         return f"""Fix the following style issues in this Python code:
 
@@ -541,7 +553,9 @@ class AgentManager:
             error_code = issue.get("error_code", "")
             for agent_type, agent in self.agents.items():
                 if agent.can_handle(error_code):
-                    issue_type_counts[agent_type] = issue_type_counts.get(agent_type, 0) + 1
+                    issue_type_counts[agent_type] = (
+                        issue_type_counts.get(agent_type, 0) + 1
+                    )
                     break
 
         if not issue_type_counts:

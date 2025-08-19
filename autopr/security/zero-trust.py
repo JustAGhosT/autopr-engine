@@ -29,7 +29,9 @@ class SecurityValidator(ABC):
     """Abstract base class for security validation"""
 
     @abstractmethod
-    async def validate(self, context: SecurityContext, resource: str, action: str) -> bool:
+    async def validate(
+        self, context: SecurityContext, resource: str, action: str
+    ) -> bool:
         """Validate security context for resource access"""
 
 
@@ -45,7 +47,9 @@ class ZeroTrustSecurityManager:
         self.validators[name] = validator
         logger.info("Security validator registered", validator=name)
 
-    async def validate_access(self, context: SecurityContext, resource: str, action: str) -> bool:
+    async def validate_access(
+        self, context: SecurityContext, resource: str, action: str
+    ) -> bool:
         """Validate access using all registered validators"""
         try:
             # Log access attempt
@@ -70,7 +74,10 @@ class ZeroTrustSecurityManager:
                     return False
 
             self.audit_logger.info(
-                "Access granted", user_id=context.user_id, resource=resource, action=action
+                "Access granted",
+                user_id=context.user_id,
+                resource=resource,
+                action=action,
             )
             return True
 

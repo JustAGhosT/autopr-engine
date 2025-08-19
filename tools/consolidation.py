@@ -4,8 +4,8 @@ AutoPR Consolidation Tool
 Handles all cleanup, migration, and optimization tasks
 """
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 class Consolidator:
@@ -97,7 +97,6 @@ class Consolidator:
         """Print consolidation summary"""
         for _log_entry in self.operations_log:
             pass
-
 
     def _safe_remove(self, path: Path):
         """Safely remove a file or directory"""

@@ -9,19 +9,20 @@ import logging
 import os
 from typing import Any
 
-from .models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    OrchestrationConfig,
-    WorkflowResult,
-)
+from .models import (AILintingFixerInputs, AILintingFixerOutputs,
+                     OrchestrationConfig, WorkflowResult)
 
 logger = logging.getLogger(__name__)
 
 
 def detect_available_orchestrators() -> dict[str, bool]:
     """Detect which orchestration systems are available."""
-    availability = {"temporal": False, "celery": False, "prefect": False, "airflow": False}
+    availability = {
+        "temporal": False,
+        "celery": False,
+        "prefect": False,
+        "airflow": False,
+    }
 
     # Check Temporal.io
     try:
@@ -82,7 +83,9 @@ def execute_with_orchestration(
             return _execute_with_celery(inputs, orchestration_config)
         if orchestration_config.orchestrator_type == "prefect":
             return _execute_with_prefect(inputs, orchestration_config)
-        logger.warning(f"Unknown orchestrator type: {orchestration_config.orchestrator_type}")
+        logger.warning(
+            f"Unknown orchestrator type: {orchestration_config.orchestrator_type}"
+        )
         return _execute_standalone(inputs)
 
     except Exception as e:
@@ -104,7 +107,6 @@ def _execute_standalone(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
         # Run the AI linting fixer
         return fixer.run(inputs)
 
-
     except Exception as e:
         logger.exception(f"Standalone execution failed: {e}")
         return AILintingFixerOutputs(
@@ -124,16 +126,19 @@ def _execute_with_temporal(
         from datetime import timedelta
 
         from temporalio import (  # type: ignore[import-not-found]  # type: ignore
-            activity,
-            workflow,
-        )
+            activity, workflow)
 
         @activity.defn
         async def ai_linting_activity(input_data: dict[str, Any]) -> dict[str, Any]:
             """Temporal activity for AI linting."""
             # This would contain the actual AI linting logic
             # For now, return a placeholder result
-            return {"success": True, "issues_found": 0, "issues_fixed": 0, "files_modified": []}
+            return {
+                "success": True,
+                "issues_found": 0,
+                "issues_fixed": 0,
+                "files_modified": [],
+            }
 
         @workflow.defn
         class AILintingWorkflow:
@@ -142,7 +147,9 @@ def _execute_with_temporal(
                 """Run the AI linting workflow."""
                 # Execute the activity
                 return await workflow.execute_activity(
-                    ai_linting_activity, input_data, start_to_close_timeout=timedelta(minutes=30)
+                    ai_linting_activity,
+                    input_data,
+                    start_to_close_timeout=timedelta(minutes=30),
                 )
 
         # Convert inputs to dict for Temporal
@@ -180,7 +187,8 @@ def _execute_with_celery(
 ) -> WorkflowResult:
     """Execute with Celery orchestration."""
     try:
-        from celery import Celery  # type: ignore[import-not-found]  # type: ignore
+        from celery import \
+            Celery  # type: ignore[import-not-found]  # type: ignore
 
         # Initialize Celery app
         app = Celery(
@@ -193,7 +201,12 @@ def _execute_with_celery(
         def ai_linting_task(input_data: dict[str, Any]) -> dict[str, Any]:
             """Celery task for AI linting."""
             # This would contain the actual AI linting logic
-            return {"success": True, "issues_found": 0, "issues_fixed": 0, "files_modified": []}
+            return {
+                "success": True,
+                "issues_found": 0,
+                "issues_fixed": 0,
+                "files_modified": [],
+            }
 
         # Convert inputs to dict for Celery
         input_data = inputs.model_dump()
@@ -232,13 +245,19 @@ def _execute_with_prefect(
 ) -> WorkflowResult:
     """Execute with Prefect orchestration."""
     try:
-        from prefect import flow, task  # type: ignore[import-not-found]  # type: ignore
+        from prefect import (  # type: ignore[import-not-found]  # type: ignore
+            flow, task)
 
         @task
         def ai_linting_task(input_data: dict[str, Any]) -> dict[str, Any]:
             """Prefect task for AI linting."""
             # This would contain the actual AI linting logic
-            return {"success": True, "issues_found": 0, "issues_fixed": 0, "files_modified": []}
+            return {
+                "success": True,
+                "issues_found": 0,
+                "issues_fixed": 0,
+                "files_modified": [],
+            }
 
         @flow(name=orchestration_config.prefect["flow_name"])
         def ai_linting_flow(input_data: dict[str, Any]) -> dict[str, Any]:

@@ -6,16 +6,14 @@ New code should use the modular analyzer in autopr.actions.platform_detection.an
 """
 
 import json
-from pathlib import Path
 import re
-from typing import Any
 import warnings
+from pathlib import Path
+from typing import Any
 
 from autopr.actions.platform_detection.analysis import create_file_analyzer
 from autopr.actions.platform_detection.analysis.patterns import (
-    ContentPattern,
-    FilePattern,
-)
+    ContentPattern, FilePattern)
 
 
 class FileAnalyzer:
@@ -170,7 +168,8 @@ class FileAnalyzer:
             # Analyze file contents for additional confidence
             for file_path in results[platform]["files"]:
                 content_results = self.analyze_file_content(
-                    str(self.workspace_path / file_path), {platform: platform_configs[platform]}
+                    str(self.workspace_path / file_path),
+                    {platform: platform_configs[platform]},
                 )
                 if platform in content_results:
                     confidence = min(1.0, confidence + content_results[platform])
@@ -287,7 +286,9 @@ class FileAnalyzer:
         try:
             if "*" in pattern or "?" in pattern:
                 # Use glob for wildcard patterns
-                matches.extend([str(p) for p in self.workspace_path.glob(pattern) if p.is_dir()])
+                matches.extend(
+                    [str(p) for p in self.workspace_path.glob(pattern) if p.is_dir()]
+                )
             else:
                 # Direct folder check
                 folder_path = self.workspace_path / pattern
@@ -308,7 +309,9 @@ class FileAnalyzer:
                     try:
                         with open(file_path, encoding="utf-8", errors="ignore") as f:
                             content = f.read()
-                            match_count += len(re.findall(pattern, content, re.IGNORECASE))
+                            match_count += len(
+                                re.findall(pattern, content, re.IGNORECASE)
+                            )
                     except Exception:
                         continue
         except Exception:
@@ -349,11 +352,15 @@ class FileAnalyzer:
             ".gitignore",
         }
 
-        return file_path.suffix.lower() in text_extensions or file_path.name.lower() in {
-            "dockerfile",
-            "makefile",
-            "readme",
-        }
+        return (
+            file_path.suffix.lower() in text_extensions
+            or file_path.name.lower()
+            in {
+                "dockerfile",
+                "makefile",
+                "readme",
+            }
+        )
 
     def _extract_base_images(self, dockerfile_content: str) -> list[str]:
         """Extract base images from Dockerfile."""

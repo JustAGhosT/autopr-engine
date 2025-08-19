@@ -2,8 +2,8 @@
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 from .linter import YAMLLinter
@@ -173,7 +173,9 @@ def format_output_text(reports: dict[Path, Any], args: argparse.Namespace) -> st
 
         # Filter issues by severity
         filtered_issues = [
-            issue for issue in report.issues if issue.severity.value <= severity_threshold.value
+            issue
+            for issue in report.issues
+            if issue.severity.value <= severity_threshold.value
         ]
 
         if not filtered_issues:
@@ -184,7 +186,9 @@ def format_output_text(reports: dict[Path, Any], args: argparse.Namespace) -> st
 
         lines.append(f"\n{file_path}:")
 
-        lines.extend(format_issue_text(issue, file_path, use_color) for issue in filtered_issues)
+        lines.extend(
+            format_issue_text(issue, file_path, use_color) for issue in filtered_issues
+        )
 
     if total_issues > 0:
         lines.append(f"\nFound {total_issues} issue(s) in {total_files} file(s)")
@@ -205,7 +209,9 @@ def format_output_json(reports: dict[Path, Any], args: argparse.Namespace) -> st
 
         # Filter issues by severity
         filtered_issues = [
-            issue for issue in report.issues if issue.severity.value <= severity_threshold.value
+            issue
+            for issue in report.issues
+            if issue.severity.value <= severity_threshold.value
         ]
 
         if not filtered_issues:

@@ -3,7 +3,8 @@ from typing import Any
 # mypy: disable-error-code=misc
 import structlog
 
-from autopr.security.validation_models import ValidationResult, ValidationSeverity
+from autopr.security.validation_models import (ValidationResult,
+                                               ValidationSeverity)
 
 from .array_validator import ArrayValidator
 from .file_validator import FileValidator
@@ -49,7 +50,9 @@ class EnterpriseInputValidator(
             r"(>|>>|<|\|)",
         ]
 
-    def validate_input(self, data: dict[str, Any], schema: type | None = None) -> ValidationResult:
+    def validate_input(
+        self, data: dict[str, Any], schema: type | None = None
+    ) -> ValidationResult:
         """Comprehensive input validation."""
         result = ValidationResult(is_valid=True)
         sanitized_data = {}
@@ -79,10 +82,14 @@ class EnterpriseInputValidator(
                         and result.severity != ValidationSeverity.CRITICAL
                     ):
                         result.severity = ValidationSeverity.HIGH
-                    elif validation_result.severity.value == "medium" and result.severity not in [
-                        ValidationSeverity.CRITICAL,
-                        ValidationSeverity.HIGH,
-                    ]:
+                    elif (
+                        validation_result.severity.value == "medium"
+                        and result.severity
+                        not in [
+                            ValidationSeverity.CRITICAL,
+                            ValidationSeverity.HIGH,
+                        ]
+                    ):
                         result.severity = ValidationSeverity.MEDIUM
                 else:
                     sanitized_data[key] = validation_result.sanitized_data
@@ -137,6 +144,8 @@ class EnterpriseInputValidator(
         elif isinstance(value, (int, float)):
             result = self._validate_number(key, value)
         else:
-            result.sanitized_data = {"value": value}  # Wrap in dict to satisfy type constraints
+            result.sanitized_data = {
+                "value": value
+            }  # Wrap in dict to satisfy type constraints
 
         return result

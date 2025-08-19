@@ -21,7 +21,8 @@ def find_build_files(directory: str) -> dict[str, list[str]]:
         dirs[:] = [
             d
             for d in dirs
-            if not d.startswith(".") and d not in ["__pycache__", "node_modules", ".venv"]
+            if not d.startswith(".")
+            and d not in ["__pycache__", "node_modules", ".venv"]
         ]
 
         for file in files:
@@ -67,7 +68,10 @@ def validate_pyproject_toml(file_path: str) -> tuple[bool, str]:
                 missing_fields.append(field)
 
         if missing_fields:
-            return False, f"Missing required project fields: {', '.join(missing_fields)}"
+            return (
+                False,
+                f"Missing required project fields: {', '.join(missing_fields)}",
+            )
 
         # Check dependencies
         if "dependencies" not in project:
@@ -84,7 +88,9 @@ def check_build_artifacts(build_files: dict[str, list[str]]) -> list[str]:
 
     # Check for build artifacts in wrong locations
     for cache_file in build_files["cache"]:
-        if "build-artifacts" not in cache_file and os.path.basename(cache_file).startswith("."):
+        if "build-artifacts" not in cache_file and os.path.basename(
+            cache_file
+        ).startswith("."):
             issues.append(f"Build artifact in wrong location: {cache_file}")
 
     # Check for missing build-artifacts directory
@@ -99,7 +105,12 @@ def check_package_management(build_files: dict[str, list[str]]) -> list[str]:
     issues = []
 
     # Check for redundant requirements files
-    redundant_files = ["requirements.txt", "requirements-dev.txt", "setup.py", "setup.cfg"]
+    redundant_files = [
+        "requirements.txt",
+        "requirements-dev.txt",
+        "setup.py",
+        "setup.cfg",
+    ]
     for file in redundant_files:
         if os.path.exists(file):
             issues.append(f"Redundant package management file: {file}")
@@ -158,7 +169,9 @@ def generate_build_report(results: dict[str, Any]) -> str:
 
     # Build artifact issues
     if results["build_artifact_issues"]:
-        report.append(f"🔍 Build Artifact Issues ({len(results['build_artifact_issues'])}):")
+        report.append(
+            f"🔍 Build Artifact Issues ({len(results['build_artifact_issues'])}):"
+        )
         for issue in results["build_artifact_issues"]:
             report.append(f"  - {issue}")
         report.append("")
@@ -188,7 +201,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-
     # Find build files
     build_files = find_build_files(project_root)
 
@@ -205,7 +217,6 @@ def main():
     report_file = os.path.join(project_root, "build_system_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     # Return appropriate exit code
     if (

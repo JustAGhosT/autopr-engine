@@ -19,37 +19,26 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from autopr.quality.template_metrics import (
-    QualityMetrics,
-    get_quality_analyzer,
-    get_quality_scorer,
-)
-from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue
-from autopr.quality.template_metrics.validation_types import (
-    ValidationSeverity as QMValidationSeverity,
-)
+from autopr.quality.template_metrics import (QualityMetrics,
+                                             get_quality_analyzer,
+                                             get_quality_scorer)
+from autopr.quality.template_metrics.validation_types import \
+    ValidationIssue as QMValidationIssue
+from autopr.quality.template_metrics.validation_types import \
+    ValidationSeverity as QMValidationSeverity
 
-from .report_generators import (
-    ReportGeneratorFactory,
-    generate_batch_report,
-    generate_report,
-    save_report,
-)
-from .template_validators import (
-    ValidationIssue as LocalValidationIssue,
-)
-from .template_validators import (
-    ValidationSeverity as LocalValidationSeverity,
-)
-from .template_validators import (
-    get_validator_registry,
-)
-
+from .report_generators import (ReportGeneratorFactory, generate_batch_report,
+                                generate_report, save_report)
+from .template_validators import ValidationIssue as LocalValidationIssue
+from .template_validators import ValidationSeverity as LocalValidationSeverity
+from .template_validators import get_validator_registry
 # Import modular components
 from .validation_rules import get_validation_rules
 
 
-def convert_validation_issue(local_issue: LocalValidationIssue, template_path: str) -> QMValidationIssue:
+def convert_validation_issue(
+    local_issue: LocalValidationIssue, template_path: str
+) -> QMValidationIssue:
     """Convert a local ValidationIssue to a canonical QualityMetrics ValidationIssue."""
     # Convert severity enum
     severity_map = {
@@ -108,7 +97,7 @@ class TemplateValidator:
                                 "Template file is empty or invalid",
                                 str(template_file),
                             ),
-                            str(template_file)
+                            str(template_file),
                         )
                     ],
                     template_path=str(template_file),
@@ -124,7 +113,7 @@ class TemplateValidator:
                             f"Failed to parse template: {e}",
                             str(template_file),
                         ),
-                        str(template_file)
+                        str(template_file),
                     )
                 ],
                 template_path=str(template_file),
@@ -143,13 +132,20 @@ class TemplateValidator:
                 rule.check_function, template_data, template_file, rule
             )
             # Convert local issues to canonical issues
-            canonical_issues = [convert_validation_issue(issue, str(template_file)) for issue in local_issues]
+            canonical_issues = [
+                convert_validation_issue(issue, str(template_file))
+                for issue in local_issues
+            ]
             all_issues.extend(canonical_issues)
 
         # Calculate quality metrics using modular scorer
-        return self.quality_scorer.calculate_metrics(all_issues, total_checks, str(template_file))
+        return self.quality_scorer.calculate_metrics(
+            all_issues, total_checks, str(template_file)
+        )
 
-    def validate_templates_batch(self, template_files: list[Path]) -> list[QualityMetrics]:
+    def validate_templates_batch(
+        self, template_files: list[Path]
+    ) -> list[QualityMetrics]:
         """Validate multiple template files in batch."""
         results = []
 
@@ -168,7 +164,7 @@ class TemplateValidator:
                                 f"Validation failed: {e}",
                                 str(template_file),
                             ),
-                            str(template_file)
+                            str(template_file),
                         )
                     ],
                     template_path=str(template_file),
@@ -224,7 +220,11 @@ class QualityAssuranceFramework:
                 raise ValueError(msg)
 
         if not template_files:
-            return {"error": "No template files found", "template_count": 0, "results": []}
+            return {
+                "error": "No template files found",
+                "template_count": 0,
+                "results": [],
+            }
 
         # Validate templates using modular validator
         template_metrics = self.validator.validate_templates_batch(template_files)
@@ -236,17 +236,24 @@ class QualityAssuranceFramework:
         report_content = ""
         if len(template_metrics) == 1:
             # Single template report
-            analysis = self.quality_analyzer.analyze_template_quality(template_metrics[0])
-            report_content = generate_report(template_metrics[0], output_format, analysis)
+            analysis = self.quality_analyzer.analyze_template_quality(
+                template_metrics[0]
+            )
+            report_content = generate_report(
+                template_metrics[0], output_format, analysis
+            )
         else:
             # Batch report
-            report_content = generate_batch_report(template_metrics, output_format, batch_analysis)
+            report_content = generate_batch_report(
+                template_metrics, output_format, batch_analysis
+            )
 
         # Save report if requested
         if save_report_flag and report_content:
             if report_path is None:
                 report_path = str(
-                    self.templates_root / f"qa_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    self.templates_root
+                    / f"qa_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 )
 
             save_report(report_content, Path(report_path), output_format)
@@ -257,7 +264,9 @@ class QualityAssuranceFramework:
             "average_score": batch_analysis.get("average_score", 0.0),
             "total_issues": sum(len(m.issues) for m in template_metrics),
             "critical_issues": sum(m.errors_count for m in template_metrics),
-            "templates_with_errors": sum(1 for m in template_metrics if m.has_critical_issues),
+            "templates_with_errors": sum(
+                1 for m in template_metrics if m.has_critical_issues
+            ),
             "quality_distribution": batch_analysis.get("quality_distribution", {}),
             "report_content": report_content,
             "batch_analysis": batch_analysis,
@@ -366,7 +375,9 @@ if __name__ == "__main__":
         template_path = sys.argv[1]
 
         try:
-            results = qa.run_qa_suite(template_path=template_path, save_report_flag=False)
+            results = qa.run_qa_suite(
+                template_path=template_path, save_report_flag=False
+            )
 
             if results["critical_issues"] > 0:
                 pass
@@ -411,8 +422,12 @@ def main() -> None:
         default="markdown",
         help="Output format",
     )
-    parser.add_argument("--no-save", action="store_true", help="Don't save report to file")
-    parser.add_argument("--report-path", "-r", type=str, help="Custom report output path")
+    parser.add_argument(
+        "--no-save", action="store_true", help="Don't save report to file"
+    )
+    parser.add_argument(
+        "--report-path", "-r", type=str, help="Custom report output path"
+    )
 
     args = parser.parse_args()
 
@@ -434,8 +449,13 @@ def main() -> None:
             for _grade, _count in results["quality_distribution"].items():
                 pass
 
-        if "batch_analysis" in results and "category_analysis" in results["batch_analysis"]:
-            for _category, _analysis in results["batch_analysis"]["category_analysis"].items():
+        if (
+            "batch_analysis" in results
+            and "category_analysis" in results["batch_analysis"]
+        ):
+            for _category, _analysis in results["batch_analysis"][
+                "category_analysis"
+            ].items():
                 pass
 
         for _i, _rec in enumerate(results.get("recommendations", []), 1):

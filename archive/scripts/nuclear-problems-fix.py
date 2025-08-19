@@ -40,7 +40,11 @@ def update_vscode_settings():
         "ms-vscode.powershell.enable": False,
         "github.vscode-github-actions.enable": False,
         # Workspace validation - Disable
-        "files.associations": {"*.yml": "plaintext", "*.yaml": "plaintext", "*.ps1": "plaintext"},
+        "files.associations": {
+            "*.yml": "plaintext",
+            "*.yaml": "plaintext",
+            "*.ps1": "plaintext",
+        },
         # Extension-specific disables
         "workbench.enableExperiments": False,
         "telemetry.telemetryLevel": "off",
@@ -69,7 +73,6 @@ def update_vscode_settings():
         json.dump(settings, f, indent=2)
 
 
-
 def create_ignore_files():
     """Create ignore files for problematic validations"""
 
@@ -82,13 +85,10 @@ def create_ignore_files():
     gh_ignore.write_text(".github/workflows/*.yml\n.github/workflows/*.yaml\n")
 
 
-
 def main():
 
     update_vscode_settings()
     create_ignore_files()
-
-
 
 
 if __name__ == "__main__":

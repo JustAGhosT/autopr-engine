@@ -5,14 +5,14 @@ This module provides comprehensive error handling, categorization, and display
 capabilities that integrate with the existing display system.
 """
 
+import logging
+import operator
+import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-import logging
-import operator
 from pathlib import Path
-import traceback
 from typing import Any
 from uuid import uuid4
 
@@ -172,7 +172,9 @@ class ErrorHandler:
 
         # Error callbacks
         self.on_error_callbacks: list[Callable[[ErrorInfo], None]] = []
-        self.on_recovery_callbacks: list[Callable[[ErrorInfo, ErrorRecoveryStrategy], None]] = []
+        self.on_recovery_callbacks: list[
+            Callable[[ErrorInfo, ErrorRecoveryStrategy], None]
+        ] = []
 
     def register_error_callback(self, callback: Callable[[ErrorInfo], None]) -> None:
         """Register a callback to be called when errors occur."""
@@ -226,7 +228,9 @@ class ErrorHandler:
                     return category
                 continue
 
-            if any(k in error_message for k in keywords) or any(k in error_type for k in keywords):
+            if any(k in error_message for k in keywords) or any(
+                k in error_type for k in keywords
+            ):
                 return category
 
         return ErrorCategory.UNKNOWN_ERROR
@@ -253,7 +257,9 @@ class ErrorHandler:
             ErrorCategory.CONFIGURATION_ERROR: "Check configuration files and environment variables",
         }
 
-        return suggestions.get(category, "Review the error details and take appropriate action")
+        return suggestions.get(
+            category, "Review the error details and take appropriate action"
+        )
 
     def create_error_info(
         self,
@@ -301,7 +307,9 @@ class ErrorHandler:
 
         # Track error
         self.errors_logged.append(error_info)
-        self.error_counts[error_info.category] = self.error_counts.get(error_info.category, 0) + 1
+        self.error_counts[error_info.category] = (
+            self.error_counts.get(error_info.category, 0) + 1
+        )
 
         # Display error if requested
         if display:
@@ -340,11 +348,15 @@ class ErrorHandler:
 
         # Show suggested action if available
         if error_info.suggested_action and self.display_config.is_verbose():
-            self.error_display.show_info(f"💡 Suggested action: {error_info.suggested_action}")
+            self.error_display.show_info(
+                f"💡 Suggested action: {error_info.suggested_action}"
+            )
 
     def get_recovery_strategy(self, error_info: ErrorInfo) -> ErrorRecoveryStrategy:
         """Get the recovery strategy for an error."""
-        return self.recovery_strategies.get(error_info.category, ErrorRecoveryStrategy.SKIP)
+        return self.recovery_strategies.get(
+            error_info.category, ErrorRecoveryStrategy.SKIP
+        )
 
     def attempt_recovery(self, error_info: ErrorInfo) -> bool:
         """Attempt to recover from an error."""
@@ -379,7 +391,9 @@ class ErrorHandler:
             "total_errors": len(self.errors_logged),
             "error_counts_by_category": self.error_counts,
             "error_counts_by_severity": {
-                severity.value: len([e for e in self.errors_logged if e.severity == severity])
+                severity.value: len(
+                    [e for e in self.errors_logged if e.severity == severity]
+                )
                 for severity in ErrorSeverity
             },
             "recovery_attempts": self.recovery_attempts,
@@ -448,6 +462,8 @@ def create_error_context(
     )
 
 
-def get_default_error_handler(display_config: DisplayConfig | None = None) -> ErrorHandler:
+def get_default_error_handler(
+    display_config: DisplayConfig | None = None,
+) -> ErrorHandler:
     """Get a default error handler instance."""
     return ErrorHandler(display_config)

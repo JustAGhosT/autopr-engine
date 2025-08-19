@@ -12,17 +12,17 @@ Features:
 - Rich formatting and styling
 """
 
+import json
 from abc import ABC, abstractmethod
 from datetime import datetime
-import json
 from pathlib import Path
 from typing import Any
 
 from autopr.quality.template_metrics import QualityMetrics
-from autopr.quality.template_metrics.validation_enricher import enrich_quality_metrics_issues
-from autopr.quality.template_metrics.validation_types import (
-    ValidationSeverity as QMValidationSeverity,
-)
+from autopr.quality.template_metrics.validation_enricher import \
+    enrich_quality_metrics_issues
+from autopr.quality.template_metrics.validation_types import \
+    ValidationSeverity as QMValidationSeverity
 
 
 class ReportGenerator(ABC):
@@ -60,7 +60,9 @@ class JSONReportGenerator(ReportGenerator):
         report_data = {
             "template_path": enriched_metrics.template_path,
             "analysis_timestamp": (
-                enriched_metrics.analysis_timestamp.isoformat() if enriched_metrics.analysis_timestamp else None
+                enriched_metrics.analysis_timestamp.isoformat()
+                if enriched_metrics.analysis_timestamp
+                else None
             ),
             "quality_metrics": {
                 "overall_score": enriched_metrics.overall_score,
@@ -78,7 +80,11 @@ class JSONReportGenerator(ReportGenerator):
             },
             "issues": [
                 {
-                    "severity": issue.severity.value if getattr(issue, "severity", None) else None,
+                    "severity": (
+                        issue.severity.value
+                        if getattr(issue, "severity", None)
+                        else None
+                    ),
                     "category": getattr(issue, "category", None),
                     "message": getattr(issue, "message", None),
                     "line": getattr(issue, "line", None),
@@ -109,7 +115,8 @@ class JSONReportGenerator(ReportGenerator):
             "summary": {
                 "total_templates": len(enriched_metrics),
                 "average_score": (
-                    sum(m.overall_score for m in enriched_metrics) / len(enriched_metrics)
+                    sum(m.overall_score for m in enriched_metrics)
+                    / len(enriched_metrics)
                     if enriched_metrics
                     else 0
                 ),
@@ -148,7 +155,11 @@ class MarkdownReportGenerator(ReportGenerator):
         lines: list[str] = []
 
         # Header
-        template_name = Path(enriched_metrics.template_path).name if enriched_metrics.template_path else "Template"
+        template_name = (
+            Path(enriched_metrics.template_path).name
+            if enriched_metrics.template_path
+            else "Template"
+        )
         lines.extend((f"# Quality Assurance Report: {template_name}", ""))
 
         # Metadata
@@ -183,7 +194,11 @@ class MarkdownReportGenerator(ReportGenerator):
             )
 
             for category, score in enriched_metrics.category_scores.items():
-                status = "✅ Good" if score >= 80 else "🟡 Fair" if score >= 60 else "🔴 Poor"
+                status = (
+                    "✅ Good"
+                    if score >= 80
+                    else "🟡 Fair" if score >= 60 else "🔴 Poor"
+                )
                 lines.append(f"| {category.title()} | {score:.1f}/100 | {status} |")
             lines.append("")
 
@@ -193,8 +208,12 @@ class MarkdownReportGenerator(ReportGenerator):
 
             # Group issues by severity
             errors = enriched_metrics.get_issues_by_severity(QMValidationSeverity.ERROR)
-            warnings = enriched_metrics.get_issues_by_severity(QMValidationSeverity.WARNING)
-            info_issues = enriched_metrics.get_issues_by_severity(QMValidationSeverity.INFO)
+            warnings = enriched_metrics.get_issues_by_severity(
+                QMValidationSeverity.WARNING
+            )
+            info_issues = enriched_metrics.get_issues_by_severity(
+                QMValidationSeverity.INFO
+            )
 
             for severity_name, issues_list, icon in [
                 ("Errors", errors, "🔴"),
@@ -202,7 +221,9 @@ class MarkdownReportGenerator(ReportGenerator):
                 ("Information", info_issues, "🔵"),
             ]:
                 if issues_list:
-                    lines.extend((f"### {icon} {severity_name} ({len(issues_list)})", ""))
+                    lines.extend(
+                        (f"### {icon} {severity_name} ({len(issues_list)})", "")
+                    )
                     for i, issue in enumerate(issues_list, 1):
                         lines.extend(
                             (
@@ -252,7 +273,9 @@ class MarkdownReportGenerator(ReportGenerator):
 
         # Summary Statistics
         if enriched_metrics:
-            avg_score = sum(m.overall_score for m in enriched_metrics) / len(enriched_metrics)
+            avg_score = sum(m.overall_score for m in enriched_metrics) / len(
+                enriched_metrics
+            )
             total_issues = sum(len(m.issues) for m in enriched_metrics)
 
             lines.extend(
@@ -276,8 +299,12 @@ class MarkdownReportGenerator(ReportGenerator):
             )
         )
 
-        for metrics in sorted(enriched_metrics, key=lambda m: m.overall_score, reverse=True):
-            template_name = Path(metrics.template_path).name if metrics.template_path else "Unknown"
+        for metrics in sorted(
+            enriched_metrics, key=lambda m: m.overall_score, reverse=True
+        ):
+            template_name = (
+                Path(metrics.template_path).name if metrics.template_path else "Unknown"
+            )
             status = (
                 "🔴 Critical"
                 if metrics.has_critical_issues
@@ -303,7 +330,11 @@ class HTMLReportGenerator(ReportGenerator):
         # Enrich the metrics with additional attributes for reporting
         enriched_metrics = enrich_quality_metrics_issues(metrics)
 
-        template_name = Path(enriched_metrics.template_path).name if enriched_metrics.template_path else "Template"
+        template_name = (
+            Path(enriched_metrics.template_path).name
+            if enriched_metrics.template_path
+            else "Template"
+        )
         extra_css = """
 .summary { margin: 20px 0; }
 .metric { display: inline-block; margin: 10px; padding: 10px; background: #e9ecef; border-radius: 3px; }
@@ -352,7 +383,12 @@ class HTMLReportGenerator(ReportGenerator):
                 else None
             ),
         )
-        return build_basic_page(header=header, generated_at=None, content_html=content_html, extra_css=extra_css)
+        return build_basic_page(
+            header=header,
+            generated_at=None,
+            content_html=content_html,
+            extra_css=extra_css,
+        )
 
     def generate_batch_report(
         self,
@@ -379,8 +415,12 @@ class HTMLReportGenerator(ReportGenerator):
 
         content_html = "<h2>Template Overview</h2>"
 
-        for metrics in sorted(enriched_metrics, key=lambda m: m.overall_score, reverse=True):
-            template_name = Path(metrics.template_path).name if metrics.template_path else "Unknown"
+        for metrics in sorted(
+            enriched_metrics, key=lambda m: m.overall_score, reverse=True
+        ):
+            template_name = (
+                Path(metrics.template_path).name if metrics.template_path else "Unknown"
+            )
             status_class = (
                 "critical"
                 if metrics.has_critical_issues

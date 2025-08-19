@@ -14,7 +14,10 @@ class CachedAuthorizationManager(EnterpriseAuthorizationManager):
 
     def authorize(self, context: AuthorizationContext) -> bool:
         cached_result = self.cache.get(
-            context.user_id, context.resource_type.value, context.resource_id, context.action.value
+            context.user_id,
+            context.resource_type.value,
+            context.resource_id,
+            context.action.value,
         )
 
         if cached_result is not None:

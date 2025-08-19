@@ -38,7 +38,11 @@ class GenerateTodoReport(Action[Inputs, Outputs]):
                             match = todo_pattern.search(line)
                             if match:
                                 todos.append(
-                                    {"file": filepath, "line": i, "task": match.group(1).strip()}
+                                    {
+                                        "file": filepath,
+                                        "line": i,
+                                        "task": match.group(1).strip(),
+                                    }
                                 )
                 except Exception:
                     continue

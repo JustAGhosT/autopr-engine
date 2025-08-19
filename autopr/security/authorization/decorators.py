@@ -48,9 +48,7 @@ class AuthorizationDecorator:
 
             if not user_id or not resource_id:
                 msg = f"Missing required authorization parameters: user_id={user_id}, {self.resource_id_param}={resource_id}"
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
 
             # Create authorization context
             context = AuthorizationContext(
@@ -73,9 +71,7 @@ class AuthorizationDecorator:
                     f"Access denied for user {user_id} performing {self.action.value} "
                     f"on {self.resource_type.value}:{resource_id}"
                 )
-                raise PermissionError(
-                    msg
-                )
+                raise PermissionError(msg)
 
             return func(*args, **kwargs)
 
@@ -83,7 +79,9 @@ class AuthorizationDecorator:
 
 
 def require_permission(
-    resource_type: ResourceType, action: Permission, resource_id_param: str = "resource_id"
+    resource_type: ResourceType,
+    action: Permission,
+    resource_id_param: str = "resource_id",
 ) -> Any:
     """
     Function decorator to require permission for a specific resource action
@@ -99,7 +97,11 @@ def require_permission(
         def wrapper(*args, **kwargs):
             # Extract user info
             user_id = kwargs.get("user_id")
-            if user_id is None and len(args) > 0 and hasattr(args[0], "current_user_id"):
+            if (
+                user_id is None
+                and len(args) > 0
+                and hasattr(args[0], "current_user_id")
+            ):
                 user_id = args[0].current_user_id
 
             # Get user roles (list)
@@ -117,9 +119,7 @@ def require_permission(
                     f"Missing required authorization parameters: user_id={user_id}, "
                     f"{resource_id_param}={resource_id}"
                 )
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
 
             # Create authorization context with proper parameters
             context = AuthorizationContext(
@@ -132,7 +132,11 @@ def require_permission(
 
             # Get authorization manager
             auth_manager = kwargs.get("auth_manager")
-            if auth_manager is None and len(args) > 0 and hasattr(args[0], "auth_manager"):
+            if (
+                auth_manager is None
+                and len(args) > 0
+                and hasattr(args[0], "auth_manager")
+            ):
                 auth_manager = args[0].auth_manager
             if auth_manager is None:
                 auth_manager = get_authorization_manager()
@@ -143,9 +147,7 @@ def require_permission(
                     f"Access denied for user {user_id} performing {action.value} "
                     f"on {resource_type.value}:{resource_id}"
                 )
-                raise PermissionError(
-                    msg
-                )
+                raise PermissionError(msg)
 
             return func(*args, **kwargs)
 

@@ -67,7 +67,10 @@ def main(argv: list[str]) -> int:
         description="Decide whether a CI job should run based on volume."
     )
     parser.add_argument(
-        "--min-volume", type=int, required=True, help="Minimum volume required to run (0-1000)"
+        "--min-volume",
+        type=int,
+        required=True,
+        help="Minimum volume required to run (0-1000)",
     )
     parser.add_argument(
         "--context",

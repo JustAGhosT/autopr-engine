@@ -2,10 +2,10 @@ import base64
 import os
 from pathlib import Path
 
+import structlog
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import structlog
 
 logger = structlog.get_logger(__name__)
 
@@ -22,7 +22,9 @@ class EnterpriseEncryptionManager:
         self.cipher_suite = Fernet(self.key)
         logger.info("Encryption manager initialized with secure key derivation")
 
-    def _derive_key_from_password(self, password: bytes, salt: bytes | None = None) -> bytes:
+    def _derive_key_from_password(
+        self, password: bytes, salt: bytes | None = None
+    ) -> bytes:
         """Derive encryption key from password using PBKDF2"""
         if salt is None:
             salt = os.urandom(16)
@@ -72,12 +74,16 @@ class EnterpriseEncryptionManager:
             with output_path.open("wb") as encrypted_file:
                 encrypted_file.write(encrypted_data)
 
-            logger.info("File encrypted successfully", source=file_path, destination=output_path)
+            logger.info(
+                "File encrypted successfully", source=file_path, destination=output_path
+            )
         except Exception:
             logger.exception("File encryption failed", file_path=str(file_path))
             raise
 
-    def decrypt_file(self, encrypted_file_path: str | Path, output_path: str | Path) -> None:
+    def decrypt_file(
+        self, encrypted_file_path: str | Path, output_path: str | Path
+    ) -> None:
         """Decrypt file contents"""
         try:
             encrypted_file_path = Path(encrypted_file_path)
@@ -91,8 +97,12 @@ class EnterpriseEncryptionManager:
                 file.write(decrypted_data)
 
             logger.info(
-                "File decrypted successfully", source=encrypted_file_path, destination=output_path
+                "File decrypted successfully",
+                source=encrypted_file_path,
+                destination=output_path,
             )
         except Exception:
-            logger.exception("File decryption failed", file_path=str(encrypted_file_path))
+            logger.exception(
+                "File decryption failed", file_path=str(encrypted_file_path)
+            )
             raise

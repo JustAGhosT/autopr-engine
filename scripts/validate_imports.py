@@ -17,7 +17,9 @@ def find_python_files(directory: str) -> list[str]:
     for root, dirs, files in os.walk(directory):
         # Skip virtual environments and cache directories
         dirs[:] = [
-            d for d in dirs if not d.startswith(".") and d not in ["__pycache__", ".venv", "venv"]
+            d
+            for d in dirs
+            if not d.startswith(".") and d not in ["__pycache__", ".venv", "venv"]
         ]
 
         for file in files:
@@ -173,7 +175,10 @@ def check_import_validity(import_statement: str, file_path: str) -> bool:
     ]
 
     for module in stdlib_modules:
-        if f"import {module}" in import_statement or f"from {module} import" in import_statement:
+        if (
+            f"import {module}" in import_statement
+            or f"from {module} import" in import_statement
+        ):
             return True
 
     # Check for specific standard library submodules
@@ -233,7 +238,6 @@ def validate_imports(project_root: str) -> dict[str, list[tuple[str, int, str]]]
     python_files = find_python_files(project_root)
     broken_imports = {}
 
-
     for file_path in python_files:
         imports = extract_imports(file_path)
         file_broken_imports = []
@@ -248,7 +252,9 @@ def validate_imports(project_root: str) -> dict[str, list[tuple[str, int, str]]]
     return broken_imports
 
 
-def generate_import_report(broken_imports: dict[str, list[tuple[str, int, str]]]) -> str:
+def generate_import_report(
+    broken_imports: dict[str, list[tuple[str, int, str]]]
+) -> str:
     """Generate a report of broken imports."""
     if not broken_imports:
         return "✅ No broken imports found!"
@@ -268,7 +274,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-
     # Validate imports
     broken_imports = validate_imports(project_root)
 
@@ -279,7 +284,6 @@ def main():
     report_file = os.path.join(project_root, "import_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     if broken_imports:
         return 1

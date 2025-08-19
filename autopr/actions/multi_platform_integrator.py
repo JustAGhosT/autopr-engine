@@ -6,8 +6,8 @@ Integrates with various platforms for enhanced workflow coordination.
 import os
 from typing import Any
 
-from pydantic import BaseModel
 import requests
+from pydantic import BaseModel
 
 from .base import Action
 
@@ -172,7 +172,9 @@ def send_slack_notification(inputs: MultiPlatformInputs) -> MultiPlatformOutputs
                 }
             )
 
-        response: requests.Response = requests.post(webhook_url, json=message, timeout=30)
+        response: requests.Response = requests.post(
+            webhook_url, json=message, timeout=30
+        )
 
         if response.status_code == 200:
             return MultiPlatformOutputs(
@@ -210,7 +212,9 @@ def send_discord_message(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
 
         message: dict[str, Any] = {"embeds": [embed]}
 
-        response: requests.Response = requests.post(webhook_url, json=message, timeout=30)
+        response: requests.Response = requests.post(
+            webhook_url, json=message, timeout=30
+        )
 
         if response.status_code == 204:
             return MultiPlatformOutputs(
@@ -239,21 +243,28 @@ def create_notion_page(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
                 "Title": {"title": [{"text": {"content": inputs.title}}]},
                 "Priority": {"select": {"name": inputs.priority}},
                 "Status": {"select": {"name": "Todo"}},
-                "Labels": {"multi_select": [{"name": label} for label in inputs.labels]},
+                "Labels": {
+                    "multi_select": [{"name": label} for label in inputs.labels]
+                },
             },
             "children": [
                 {
                     "object": "block",
                     "type": "paragraph",
                     "paragraph": {
-                        "rich_text": [{"type": "text", "text": {"content": inputs.description}}]
+                        "rich_text": [
+                            {"type": "text", "text": {"content": inputs.description}}
+                        ]
                     },
                 }
             ],
         }
 
         response: requests.Response = requests.post(
-            "https://api.notion.com/v1/pages", headers=headers, json=page_data, timeout=30
+            "https://api.notion.com/v1/pages",
+            headers=headers,
+            json=page_data,
+            timeout=30,
         )
 
         if response.status_code == 200:

@@ -6,13 +6,13 @@ and atomic operations for the AI linting system.
 """
 
 import ast
+import logging
+import shutil
+import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
-import logging
 from pathlib import Path
-import shutil
-import tempfile
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -117,7 +117,9 @@ class BackupManager:
         self.backup_dir.mkdir(exist_ok=True)
         self.active_backups: dict[str, FileBackup] = {}
 
-    def create_backup(self, file_path: str, reason: str = "ai_linting_fix") -> FileBackup:
+    def create_backup(
+        self, file_path: str, reason: str = "ai_linting_fix"
+    ) -> FileBackup:
         """Create a backup of the specified file."""
         try:
             source_path = Path(file_path)
@@ -127,7 +129,9 @@ class BackupManager:
 
             # Generate backup filename with timestamp
             timestamp = datetime.now()
-            backup_name = f"{source_path.name}.{timestamp.strftime('%Y%m%d_%H%M%S')}.backup"
+            backup_name = (
+                f"{source_path.name}.{timestamp.strftime('%Y%m%d_%H%M%S')}.backup"
+            )
             backup_path = self.backup_dir / backup_name
 
             # Copy file
@@ -272,7 +276,11 @@ class SafeFileOperations:
             raise
 
     def write_file_safely(
-        self, file_path: str, content: str, validate_syntax: bool = True, create_backup: bool = True
+        self,
+        file_path: str,
+        content: str,
+        validate_syntax: bool = True,
+        create_backup: bool = True,
     ) -> bool:
         """Write content to a file safely with validation and backup."""
         try:
@@ -299,7 +307,10 @@ class SafeFileOperations:
             return False
 
     def apply_fixes_to_file(
-        self, file_path: str, fixes: list[dict[str, Any]], validate_each_fix: bool = True
+        self,
+        file_path: str,
+        fixes: list[dict[str, Any]],
+        validate_each_fix: bool = True,
     ) -> tuple[bool, list[str]]:
         """Apply multiple fixes to a file safely."""
         try:
@@ -318,13 +329,19 @@ class SafeFileOperations:
 
                         # Validate intermediate result if requested
                         if validate_each_fix:
-                            is_valid, error = self.validator.validate_python_syntax(new_content)
+                            is_valid, error = self.validator.validate_python_syntax(
+                                new_content
+                            )
                             if not is_valid:
-                                logger.warning(f"Fix {i + 1} introduces syntax error: {error}")
+                                logger.warning(
+                                    f"Fix {i + 1} introduces syntax error: {error}"
+                                )
                                 continue  # Skip this fix
 
                         current_content = new_content
-                        applied_fixes.append(f"Fix {i + 1}: {fix.get('description', 'Applied')}")
+                        applied_fixes.append(
+                            f"Fix {i + 1}: {fix.get('description', 'Applied')}"
+                        )
 
                     except Exception as e:
                         logger.warning(f"Failed to apply fix {i + 1}: {e}")
@@ -435,11 +452,16 @@ class SafeFileOperations:
             total_lines = len(non_empty_lines)
             function_count = sum(1 for line in lines if line.strip().startswith("def "))
             class_count = sum(1 for line in lines if line.strip().startswith("class "))
-            import_count = sum(1 for line in lines if line.strip().startswith(("import ", "from ")))
+            import_count = sum(
+                1 for line in lines if line.strip().startswith(("import ", "from "))
+            )
 
             # Calculate score (arbitrary formula)
             complexity = (
-                total_lines * 0.1 + function_count * 2 + class_count * 3 + import_count * 0.5
+                total_lines * 0.1
+                + function_count * 2
+                + class_count * 3
+                + import_count * 0.5
             )
 
             return round(complexity, 2)
@@ -483,7 +505,9 @@ class DryRunOperations:
         self.planned_operations.append(operation)
         return operation
 
-    def plan_backup_creation(self, file_path: str, reason: str = "safety") -> dict[str, Any]:
+    def plan_backup_creation(
+        self, file_path: str, reason: str = "safety"
+    ) -> dict[str, Any]:
         """Plan a backup creation for dry-run mode."""
         operation = {
             "type": "backup_creation",

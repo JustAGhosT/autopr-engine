@@ -50,10 +50,8 @@ def test_import(module_name):
                         pass
             return None
 
-
         # Try to import the module
         return importlib.import_module(module_name)
-
 
     except Exception:
         import traceback

@@ -50,7 +50,14 @@ def test_provider_availability() -> None:
 
         manager = get_llm_provider_manager()
 
-        for provider_name in ["openai", "anthropic", "groq", "mistral", "perplexity", "together"]:
+        for provider_name in [
+            "openai",
+            "anthropic",
+            "groq",
+            "mistral",
+            "perplexity",
+            "together",
+        ]:
             provider = manager.get_provider(provider_name)
             if provider:
                 pass
@@ -146,7 +153,9 @@ def test_api_calls() -> None:
         from autopr.actions.llm import MessageRole, complete_chat
 
         # Simple test message
-        test_messages = [{"role": MessageRole.USER.value, "content": "Say 'Hello from AutoPR!'"}]
+        test_messages = [
+            {"role": MessageRole.USER.value, "content": "Say 'Hello from AutoPR!'"}
+        ]
 
         # Try each provider
         successful_calls = 0

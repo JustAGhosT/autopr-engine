@@ -20,9 +20,7 @@ except Exception:  # pragma: no cover
 
     def get_engine() -> QualityEngine:  # type: ignore[misc]
         msg = "QualityEngine DI container is unavailable. Optional dependencies may be missing (e.g., toml/yaml)."
-        raise RuntimeError(
-            msg
-        )
+        raise RuntimeError(msg)
 
 
 __all__ = [

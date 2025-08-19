@@ -4,17 +4,12 @@ AutoPR LLM Provider Manager
 Manages multiple LLM providers and provides unified access.
 """
 
-from collections.abc import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
 from typing import Any
 
-from ..base import (
-    AnthropicProvider,
-    LLMMessage,
-    LLMProvider,
-    LLMResponse,
-    OpenAIProvider,
-)
+from ..base import (AnthropicProvider, LLMMessage, LLMProvider, LLMResponse,
+                    OpenAIProvider)
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +59,9 @@ class LLMProviderManager:
         # Initialize OpenAI if configured
         if hasattr(self.config, "openai_api_key") and self.config.openai_api_key:
             try:
-                await self.providers["openai"].initialize({"api_key": self.config.openai_api_key})
+                await self.providers["openai"].initialize(
+                    {"api_key": self.config.openai_api_key}
+                )
                 if not self.default_provider:
                     self.default_provider = "openai"
                 logger.info("OpenAI provider initialized")
@@ -84,7 +81,10 @@ class LLMProviderManager:
                 logger.exception(f"Failed to initialize Anthropic provider: {e}")
 
         # Set default provider from config
-        if hasattr(self.config, "default_llm_provider") and self.config.default_llm_provider:
+        if (
+            hasattr(self.config, "default_llm_provider")
+            and self.config.default_llm_provider
+        ):
             if self.config.default_llm_provider in self.providers:
                 provider = self.providers[self.config.default_llm_provider]
                 if hasattr(provider, "is_initialized") and provider.is_initialized:
@@ -169,7 +169,9 @@ class LLMProviderManager:
             return response
 
         except Exception as e:
-            logger.exception(f"Failed to generate completion with provider '{provider.name}': {e}")
+            logger.exception(
+                f"Failed to generate completion with provider '{provider.name}': {e}"
+            )
             return None
 
     async def generate_stream_completion(
@@ -271,6 +273,7 @@ class LLMProviderManager:
             "initialized_providers": len(self.get_available_providers()),
             "default_provider": self.default_provider,
             "providers": {
-                name: provider.get_metadata() for name, provider in self.providers.items()
+                name: provider.get_metadata()
+                for name, provider in self.providers.items()
             },
         }

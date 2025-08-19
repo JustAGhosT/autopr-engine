@@ -26,7 +26,9 @@ class ExtractPRCommentDataOutputs(BaseModel):
     pr_url: str
 
 
-def extract_pr_comment_data(inputs: ExtractPRCommentDataInputs) -> ExtractPRCommentDataOutputs:
+def extract_pr_comment_data(
+    inputs: ExtractPRCommentDataInputs,
+) -> ExtractPRCommentDataOutputs:
     """
     Extracts and structures PR comment data from GitHub event context.
 

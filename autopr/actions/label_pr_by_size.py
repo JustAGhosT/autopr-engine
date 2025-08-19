@@ -24,7 +24,10 @@ class LabelPRBySize(Action[Inputs, Outputs]):
     async def run(self, inputs: Inputs) -> Outputs:
         try:
             diff_process = subprocess.run(
-                ["git", "diff", "--shortstat", "HEAD~1"], capture_output=True, text=True, check=True
+                ["git", "diff", "--shortstat", "HEAD~1"],
+                capture_output=True,
+                text=True,
+                check=True,
             )
             stats = diff_process.stdout
             # Example output: " 1 file changed, 10 insertions(+), 5 deletions(-)"

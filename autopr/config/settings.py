@@ -9,15 +9,16 @@ This module provides a comprehensive configuration system with:
 - Hot reloading capabilities
 """
 
-from enum import StrEnum
 import json
 import logging
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, cast
 
-from pydantic import BaseModel, SecretStr, field_validator
-from pydantic import Field as _Field
 import yaml  # type: ignore[import-untyped]
+from pydantic import BaseModel
+from pydantic import Field as _Field
+from pydantic import SecretStr, field_validator
 
 try:
     # Pydantic 2.0+ (preferred)
@@ -95,9 +96,15 @@ class GitHubConfig(BaseModel):
 class LLMConfig(BaseModel):
     """LLM provider configuration."""
 
-    default_provider: LLMProvider = Field(LLMProvider.OPENAI, env="DEFAULT_LLM_PROVIDER")
+    default_provider: LLMProvider = Field(
+        LLMProvider.OPENAI, env="DEFAULT_LLM_PROVIDER"
+    )
     fallback_order: list[LLMProvider] = Field(
-        default_factory=lambda: [LLMProvider.OPENAI, LLMProvider.ANTHROPIC, LLMProvider.MISTRAL]
+        default_factory=lambda: [
+            LLMProvider.OPENAI,
+            LLMProvider.ANTHROPIC,
+            LLMProvider.MISTRAL,
+        ]
     )
 
     # Provider-specific configurations
@@ -107,11 +114,15 @@ class LLMConfig(BaseModel):
 
     anthropic_api_key: SecretStr | None = Field(None, env="ANTHROPIC_API_KEY")
     anthropic_base_url: str | None = Field(None, env="ANTHROPIC_BASE_URL")
-    anthropic_default_model: str = Field("claude-3-sonnet-20240229", env="ANTHROPIC_DEFAULT_MODEL")
+    anthropic_default_model: str = Field(
+        "claude-3-sonnet-20240229", env="ANTHROPIC_DEFAULT_MODEL"
+    )
 
     mistral_api_key: SecretStr | None = Field(None, env="MISTRAL_API_KEY")
     mistral_base_url: str | None = Field(None, env="MISTRAL_BASE_URL")
-    mistral_default_model: str = Field("mistral-large-latest", env="MISTRAL_DEFAULT_MODEL")
+    mistral_default_model: str = Field(
+        "mistral-large-latest", env="MISTRAL_DEFAULT_MODEL"
+    )
 
     groq_api_key: SecretStr | None = Field(None, env="GROQ_API_KEY")
     groq_base_url: str | None = Field(None, env="GROQ_BASE_URL")
@@ -175,7 +186,9 @@ class WorkflowConfig(BaseModel):
     timeout: int = Field(default=300, env="WORKFLOW_TIMEOUT")
     retry_attempts: int = Field(default=3, env="WORKFLOW_RETRY_ATTEMPTS")
     retry_delay: int = Field(default=5, env="WORKFLOW_RETRY_DELAY")
-    enable_parallel_execution: bool = Field(default=True, env="ENABLE_PARALLEL_EXECUTION")
+    enable_parallel_execution: bool = Field(
+        default=True, env="ENABLE_PARALLEL_EXECUTION"
+    )
 
 
 class MonitoringConfig(BaseModel):
@@ -221,13 +234,17 @@ class ErrorHandlerConfig(BaseModel):
 
     # Error categorization
     auto_categorize: bool = Field(default=True, env="ERROR_HANDLER_AUTO_CATEGORIZE")
-    severity_threshold: str = Field(default="LOW", env="ERROR_HANDLER_SEVERITY_THRESHOLD")
+    severity_threshold: str = Field(
+        default="LOW", env="ERROR_HANDLER_SEVERITY_THRESHOLD"
+    )
 
     # Recovery settings
     enable_recovery: bool = Field(default=True, env="ERROR_HANDLER_ENABLE_RECOVERY")
     max_retry_attempts: int = Field(default=3, env="ERROR_HANDLER_MAX_RETRIES")
     retry_delay_seconds: float = Field(default=1.0, env="ERROR_HANDLER_RETRY_DELAY")
-    exponential_backoff: bool = Field(default=True, env="ERROR_HANDLER_EXPONENTIAL_BACKOFF")
+    exponential_backoff: bool = Field(
+        default=True, env="ERROR_HANDLER_EXPONENTIAL_BACKOFF"
+    )
 
     # Display settings
     use_colors: bool = Field(default=True, env="ERROR_HANDLER_USE_COLORS")
@@ -241,20 +258,32 @@ class ErrorHandlerConfig(BaseModel):
 
     # Callback settings
     enable_callbacks: bool = Field(default=True, env="ERROR_HANDLER_ENABLE_CALLBACKS")
-    external_notifications: bool = Field(default=False, env="ERROR_HANDLER_EXTERNAL_NOTIFICATIONS")
+    external_notifications: bool = Field(
+        default=False, env="ERROR_HANDLER_EXTERNAL_NOTIFICATIONS"
+    )
 
     # Integration settings
-    integrate_with_logging: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_LOGGING")
-    integrate_with_metrics: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_METRICS")
-    integrate_with_workflows: bool = Field(default=True, env="ERROR_HANDLER_INTEGRATE_WORKFLOWS")
+    integrate_with_logging: bool = Field(
+        default=True, env="ERROR_HANDLER_INTEGRATE_LOGGING"
+    )
+    integrate_with_metrics: bool = Field(
+        default=True, env="ERROR_HANDLER_INTEGRATE_METRICS"
+    )
+    integrate_with_workflows: bool = Field(
+        default=True, env="ERROR_HANDLER_INTEGRATE_WORKFLOWS"
+    )
 
 
 class ReportBuilderConfig(BaseModel):
     """Configuration for report builder summary and platform defaults."""
 
     # Volume thresholds for summary messages
-    thorough_min_volume: int = Field(default=800, env="REPORT_BUILDER_THOROUGH_MIN_VOLUME")
-    standard_min_volume: int = Field(default=400, env="REPORT_BUILDER_STANDARD_MIN_VOLUME")
+    thorough_min_volume: int = Field(
+        default=800, env="REPORT_BUILDER_THOROUGH_MIN_VOLUME"
+    )
+    standard_min_volume: int = Field(
+        default=400, env="REPORT_BUILDER_STANDARD_MIN_VOLUME"
+    )
 
     # Summary messages by level
     summary_message_thorough: str = Field(
@@ -268,7 +297,9 @@ class ReportBuilderConfig(BaseModel):
     )
 
     # Label to use when platform is not detected
-    unknown_platform_label: str = Field(default="unknown", env="REPORT_BUILDER_UNKNOWN_LABEL")
+    unknown_platform_label: str = Field(
+        default="unknown", env="REPORT_BUILDER_UNKNOWN_LABEL"
+    )
 
     # Simple repo-scanning rules to guess platform when unknown
     python_file_extensions: list[str] = Field(
@@ -278,7 +309,9 @@ class ReportBuilderConfig(BaseModel):
         default_factory=lambda: ["package.json"], env="REPORT_BUILDER_JS_MARKERS"
     )
     python_platform_name: str = Field(default="Python", env="REPORT_BUILDER_PY_NAME")
-    javascript_platform_name: str = Field(default="JavaScript", env="REPORT_BUILDER_JS_NAME")
+    javascript_platform_name: str = Field(
+        default="JavaScript", env="REPORT_BUILDER_JS_NAME"
+    )
 
 
 class AILintingConfig(BaseModel):
@@ -301,7 +334,9 @@ class AILintingConfig(BaseModel):
     )
 
     # Quality settings
-    confidence_threshold: float = Field(default=0.7, env="AI_LINTING_CONFIDENCE_THRESHOLD")
+    confidence_threshold: float = Field(
+        default=0.7, env="AI_LINTING_CONFIDENCE_THRESHOLD"
+    )
     syntax_validation: bool = Field(default=True, env="AI_LINTING_SYNTAX_VALIDATION")
     create_backups: bool = Field(default=True, env="AI_LINTING_CREATE_BACKUPS")
 
@@ -323,7 +358,9 @@ class AutoPRSettings(BaseSettings):
     """
 
     # Environment and basic settings
-    environment: Environment = Field(default=Environment.DEVELOPMENT, env="AUTOPR_ENVIRONMENT")
+    environment: Environment = Field(
+        default=Environment.DEVELOPMENT, env="AUTOPR_ENVIRONMENT"
+    )
     debug: bool = Field(default=False, env="DEBUG")
     version: str = Field(default="1.0.0", env="AUTOPR_VERSION")
 
@@ -368,7 +405,9 @@ class AutoPRSettings(BaseSettings):
                 if env_config:
                     self._apply_config_overrides(env_config)
             except Exception as e:
-                logging.warning(f"Failed to load environment config from {env_config_file}: {e}")
+                logging.warning(
+                    f"Failed to load environment config from {env_config_file}: {e}"
+                )
 
     def _load_custom_config(self) -> None:
         """Load custom configuration from various sources."""
@@ -391,7 +430,9 @@ class AutoPRSettings(BaseSettings):
                         self._apply_config_overrides(custom_config)
                         break
                 except Exception as e:
-                    logging.warning(f"Failed to load custom config from {config_path}: {e}")
+                    logging.warning(
+                        f"Failed to load custom config from {config_path}: {e}"
+                    )
 
     def _apply_config_overrides(self, overrides: dict[str, Any]) -> None:
         """Apply configuration overrides."""

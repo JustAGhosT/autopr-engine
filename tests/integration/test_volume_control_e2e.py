@@ -5,8 +5,8 @@ These tests verify the complete flow of volume control from the CrewAI orchestra
 down to individual agent tasks and quality inputs.
 """
 
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -60,13 +60,23 @@ class TestVolumeControlE2E:
             (0, QualityMode.ULTRA_FAST, "Silent"),
             (100, QualityMode.FAST, "Quiet"),
             (300, QualityMode.FAST, "Moderate"),  # 300 < VOLUME_STANDARD (400)
-            (450, QualityMode.SMART, "Balanced"),  # 450 >= VOLUME_STANDARD (400) but < VOLUME_HIGH (700)
+            (
+                450,
+                QualityMode.SMART,
+                "Balanced",
+            ),  # 450 >= VOLUME_STANDARD (400) but < VOLUME_HIGH (700)
             (700, QualityMode.AI_ENHANCED, "Thorough"),  # 700 >= VOLUME_HIGH (700)
             (900, QualityMode.AI_ENHANCED, "Maximum"),  # 900 >= VOLUME_HIGH (700)
         ],
     )
     def test_volume_propagation(
-        self, test_repo, mock_llm_provider, mock_agents, volume, expected_mode, expected_level
+        self,
+        test_repo,
+        mock_llm_provider,
+        mock_agents,
+        volume,
+        expected_mode,
+        expected_level,
     ):
         """Test that volume settings propagate correctly through the entire pipeline."""
         # Arrange
@@ -76,13 +86,17 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
 
         # Configure mock agent responses
-        mock_agents["code_quality"].analyze_code.return_value = []  # No code quality issues
-        mock_agents["platform_analysis"].analyze_platform.return_value = PlatformAnalysis(
-            platform="python", components=[], confidence=0.9, metadata={}
+        mock_agents["code_quality"].analyze_code.return_value = (
+            []
+        )  # No code quality issues
+        mock_agents["platform_analysis"].analyze_platform.return_value = (
+            PlatformAnalysis(
+                platform="python", components=[], confidence=0.9, metadata={}
+            )
         )
         mock_agents["linting"].analyze_code.return_value = []  # No linting issues
 
@@ -92,7 +106,10 @@ class TestVolumeControlE2E:
         # Assert - Verify volume context is passed to agents
         # Only check the code quality agent's backstory since that's the only one updated by the crew
         code_quality_agent = mock_agents["code_quality"]
-        assert f"volume level {volume} ({expected_level.lower()})" in code_quality_agent.backstory.lower()
+        assert (
+            f"volume level {volume} ({expected_level.lower()})"
+            in code_quality_agent.backstory.lower()
+        )
 
         # Verify quality inputs are created with correct mode
         assert report["quality_inputs"]["mode"] == expected_mode
@@ -101,7 +118,9 @@ class TestVolumeControlE2E:
         assert report["current_volume"] == volume
         # Note: volume_level is not included in the report, so we'll skip that assertion
 
-    def test_volume_affects_analysis_depth(self, test_repo, mock_llm_provider, mock_agents):
+    def test_volume_affects_analysis_depth(
+        self, test_repo, mock_llm_provider, mock_agents
+    ):
         """Test that volume affects the depth and thoroughness of analysis."""
         # Test with low volume (fast mode)
         crew_low = AutoPRCrew(
@@ -110,7 +129,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
 
         # Test with high volume (comprehensive mode)
@@ -120,7 +139,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
 
         # Configure mock agent responses
@@ -156,7 +175,9 @@ class TestVolumeControlE2E:
                     len(volume_contexts) > 0
                 ), f"Expected volume context in analyze_code calls for {agent_name}"
 
-    def test_volume_affects_auto_fix_behavior(self, test_repo, mock_llm_provider, mock_agents):
+    def test_volume_affects_auto_fix_behavior(
+        self, test_repo, mock_llm_provider, mock_agents
+    ):
         """Test that volume affects whether auto-fixes are applied."""
         # Create a linting issue that could be auto-fixed
         lint_issue = CodeIssue(
@@ -180,7 +201,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
         report_low = crew_low.analyze_repository(test_repo, auto_fix=False)
 
@@ -191,14 +212,18 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
         report_high = crew_high.analyze_repository(test_repo, auto_fix=True)
 
         # Verify that auto-fix behavior is controlled by the auto_fix parameter
         # and that volume affects the agent's behavior
-        assert not report_low["applied_fixes"], "Expected no fixes to be applied with auto_fix=False"
-        assert report_high["applied_fixes"], "Expected fixes to be applied with auto_fix=True"
+        assert not report_low[
+            "applied_fixes"
+        ], "Expected no fixes to be applied with auto_fix=False"
+        assert report_high[
+            "applied_fixes"
+        ], "Expected fixes to be applied with auto_fix=True"
 
         # Verify that the linting agent was called with the correct parameters
         # Note: The actual implementation may not call analyze_code if the task context is not properly set up

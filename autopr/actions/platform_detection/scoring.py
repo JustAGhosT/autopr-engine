@@ -22,7 +22,9 @@ class PlatformScoringEngine:
         }
 
     def calculate_platform_scores(
-        self, platform_configs: dict[str, dict[str, Any]], detection_results: dict[str, Any]
+        self,
+        platform_configs: dict[str, dict[str, Any]],
+        detection_results: dict[str, Any],
     ) -> dict[str, float]:
         """Calculate confidence scores for all platforms."""
         scores = {}
@@ -47,7 +49,9 @@ class PlatformScoringEngine:
             return "unknown", []
 
         # Sort by score descending
-        sorted_platforms = sorted(valid_platforms.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_platforms = sorted(
+            valid_platforms.items(), key=operator.itemgetter(1), reverse=True
+        )
 
         primary_platform = sorted_platforms[0][0]
         secondary_platforms = [platform for platform, _ in sorted_platforms[1:]]
@@ -56,14 +60,22 @@ class PlatformScoringEngine:
 
     def determine_workflow_type(self, scores: dict[str, float]) -> str:
         """Determine the type of workflow based on platform scores."""
-        high_confidence_platforms = [platform for platform, score in scores.items() if score >= 0.7]
+        high_confidence_platforms = [
+            platform for platform, score in scores.items() if score >= 0.7
+        ]
         medium_confidence_platforms = [
             platform for platform, score in scores.items() if 0.3 <= score < 0.7
         ]
 
-        if len(high_confidence_platforms) == 1 and len(medium_confidence_platforms) == 0:
+        if (
+            len(high_confidence_platforms) == 1
+            and len(medium_confidence_platforms) == 0
+        ):
             return "single_platform"
-        if len(high_confidence_platforms) >= 1 and len(medium_confidence_platforms) >= 1:
+        if (
+            len(high_confidence_platforms) >= 1
+            and len(medium_confidence_platforms) >= 1
+        ):
             return "hybrid_workflow"
         if len(high_confidence_platforms) + len(medium_confidence_platforms) >= 2:
             return "multi_platform"
@@ -187,15 +199,22 @@ class PlatformScoringEngine:
 
         # Check for platform synergies
         if "replit" in scores and scores["replit"] > 0.5 and "vercel" not in scores:
-            opportunities.append("Consider Vercel for production deployment from Replit")
+            opportunities.append(
+                "Consider Vercel for production deployment from Replit"
+            )
 
         if "github_copilot" in scores and "cursor" not in scores:
-            opportunities.append("Consider Cursor IDE for enhanced AI-assisted development")
+            opportunities.append(
+                "Consider Cursor IDE for enhanced AI-assisted development"
+            )
 
         return opportunities
 
     def _calculate_single_platform_score(
-        self, platform: str, platform_config: dict[str, Any], detection_results: dict[str, Any]
+        self,
+        platform: str,
+        platform_config: dict[str, Any],
+        detection_results: dict[str, Any],
     ) -> float:
         """Calculate confidence score for a single platform.
 
@@ -213,22 +232,29 @@ class PlatformScoringEngine:
         # File-based scoring
         if platform in detection_results.get("found_files", {}):
             file_matches = len(detection_results["found_files"][platform])
-            score += self.scoring_weights["files"] * min(file_matches, 3)  # Cap at 3 files
+            score += self.scoring_weights["files"] * min(
+                file_matches, 3
+            )  # Cap at 3 files
             max_possible += self.scoring_weights["files"] * 3
 
         # Folder-based scoring
         if platform in detection_results.get("found_folders", {}):
             folder_matches = len(detection_results["found_folders"][platform])
-            score += self.scoring_weights["folders"] * min(folder_matches, 2)  # Cap at 2 folders
+            score += self.scoring_weights["folders"] * min(
+                folder_matches, 2
+            )  # Cap at 2 folders
             max_possible += self.scoring_weights["folders"] * 2
 
         # Dependency-based scoring
         platform_deps = set(
-            platform_config.get("dependencies", []) + platform_config.get("devDependencies", [])
+            platform_config.get("dependencies", [])
+            + platform_config.get("devDependencies", [])
         )
         found_deps = set(detection_results.get("dependencies", []))
         matching_deps = platform_deps.intersection(found_deps)
-        score += self.scoring_weights["dependencies"] * min(len(matching_deps), 3)  # Cap at 3 deps
+        score += self.scoring_weights["dependencies"] * min(
+            len(matching_deps), 3
+        )  # Cap at 3 deps
         max_possible += self.scoring_weights["dependencies"] * 3
 
         # Script-based scoring
@@ -237,19 +263,25 @@ class PlatformScoringEngine:
         matching_scripts = sum(
             1 for script in platform_scripts if any(script in s for s in found_scripts)
         )
-        score += self.scoring_weights["scripts"] * min(matching_scripts, 2)  # Cap at 2 scripts
+        score += self.scoring_weights["scripts"] * min(
+            matching_scripts, 2
+        )  # Cap at 2 scripts
         max_possible += self.scoring_weights["scripts"] * 2
 
         # Content-based scoring
         if platform in detection_results.get("content_matches", {}):
             content_matches = len(detection_results["content_matches"][platform])
-            score += self.scoring_weights["content"] * min(content_matches, 5)  # Cap at 5 matches
+            score += self.scoring_weights["content"] * min(
+                content_matches, 5
+            )  # Cap at 5 matches
             max_possible += self.scoring_weights["content"] * 5
 
         # Commit message scoring
         if platform in detection_results.get("commit_matches", {}):
             commit_matches = detection_results["commit_matches"][platform]
-            score += self.scoring_weights["commits"] * min(commit_matches, 5)  # Cap at 5 commits
+            score += self.scoring_weights["commits"] * min(
+                commit_matches, 5
+            )  # Cap at 5 commits
             max_possible += self.scoring_weights["commits"] * 5
 
         # Apply any custom scoring rules from the platform config
@@ -282,7 +314,9 @@ class PlatformScoringEngine:
 
         return normalized
 
-    def _identify_integration_opportunities(self, detected_categories: dict[str, Any]) -> list[str]:
+    def _identify_integration_opportunities(
+        self, detected_categories: dict[str, Any]
+    ) -> list[str]:
         """Identify integration opportunities between detected platforms."""
         opportunities = []
 
@@ -295,6 +329,8 @@ class PlatformScoringEngine:
             opportunities.append("Enhance AI assistance in prototyping workflow")
 
         if len(categories) >= 3:
-            opportunities.append("Create unified development pipeline across all platforms")
+            opportunities.append(
+                "Create unified development pipeline across all platforms"
+            )
 
         return opportunities

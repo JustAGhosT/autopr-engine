@@ -43,24 +43,36 @@ class ConfigGenerator(BaseGenerator):
 
         # Generate framework-specific configs
         if framework == "react":
-            generated_files.extend(self._generate_react_configs(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_react_configs(output_dir, template_vars)
+            )
         elif framework == "express":
-            generated_files.extend(self._generate_express_configs(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_express_configs(output_dir, template_vars)
+            )
         elif framework == "flask":
-            generated_files.extend(self._generate_flask_configs(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_flask_configs(output_dir, template_vars)
+            )
 
         # Generate language-specific configs
         if language == "typescript":
-            generated_files.extend(self._generate_typescript_configs(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_typescript_configs(output_dir, template_vars)
+            )
         elif language == "python":
-            generated_files.extend(self._generate_python_configs(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_python_configs(output_dir, template_vars)
+            )
 
         # Generate common config files
         generated_files.extend(self._generate_common_configs(output_dir, template_vars))
 
         return generated_files
 
-    def _generate_react_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_react_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate React-specific configuration files."""
         generated_files = []
         templates = [
@@ -80,7 +92,9 @@ class ConfigGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_express_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_express_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate Express.js-specific configuration files."""
         generated_files = []
         templates = ["package.json", "tsconfig.json", ".eslintrc.js", ".prettierrc"]
@@ -94,7 +108,9 @@ class ConfigGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_flask_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_flask_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate Flask-specific configuration files."""
         generated_files = []
         templates = ["requirements.txt", "config.py", ".flaskenv", ".env.example"]
@@ -108,7 +124,9 @@ class ConfigGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_typescript_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_typescript_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate TypeScript-specific configuration files."""
         generated_files = []
         templates = ["tsconfig.json", ".eslintrc.js", ".prettierrc"]
@@ -122,10 +140,18 @@ class ConfigGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_python_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_python_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate Python-specific configuration files."""
         generated_files = []
-        templates = ["requirements.txt", "setup.py", ".pylintrc", ".flake8", ".env.example"]
+        templates = [
+            "requirements.txt",
+            "setup.py",
+            ".pylintrc",
+            ".flake8",
+            ".env.example",
+        ]
 
         for template in templates:
             content = self._render_template(f"python/{template}", variables)
@@ -136,7 +162,9 @@ class ConfigGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_common_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_common_configs(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate common configuration files for all projects."""
         generated_files = []
         templates = [".gitignore", "README.md", "LICENSE", ".editorconfig"]

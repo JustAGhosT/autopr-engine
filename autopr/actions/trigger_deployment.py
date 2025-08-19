@@ -30,7 +30,9 @@ class TriggerDeployment(Action[Inputs, Outputs]):
                     inputs.webhook_url, json=inputs.client_payload, headers=headers
                 )
             return Outputs(
-                success=response.is_success, status_code=response.status_code, text=response.text
+                success=response.is_success,
+                status_code=response.status_code,
+                text=response.text,
             )
         except httpx.RequestError as e:
             return Outputs(success=False, status_code=0, text=str(e))
@@ -46,6 +48,8 @@ if __name__ == "__main__":
     asyncio.run(
         run_action_manually(
             action=TriggerDeployment,
-            inputs=Inputs(webhook_url="https://httpbin.org/post", client_payload={"ref": "main"}),
+            inputs=Inputs(
+                webhook_url="https://httpbin.org/post", client_payload={"ref": "main"}
+            ),
         )
     )

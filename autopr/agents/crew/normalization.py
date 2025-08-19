@@ -1,4 +1,5 @@
 """Normalization helpers for crew analysis results."""
+
 from typing import Any
 
 from autopr.agents.models import CodeIssue, PlatformAnalysis
@@ -8,9 +9,17 @@ def normalize_code_quality_result(result: Any) -> dict[str, Any]:
     if isinstance(result, dict):
         if "metrics" not in result:
             # Provide default metrics and surface that this was a degraded path
-            return {"metrics": {"score": 85}, "issues": result.get("issues", []), "error": "code_quality_task_missing_metrics"}
+            return {
+                "metrics": {"score": 85},
+                "issues": result.get("issues", []),
+                "error": "code_quality_task_missing_metrics",
+            }
         return result
-    return {"metrics": {"score": 85}, "issues": [], "error": "code_quality_unexpected_type"}
+    return {
+        "metrics": {"score": 85},
+        "issues": [],
+        "error": "code_quality_unexpected_type",
+    }
 
 
 def normalize_platform_result(result: Any) -> PlatformAnalysis | None:
@@ -88,7 +97,17 @@ def normalize_linting_result(result: Any) -> list[CodeIssue]:
                 )
             ]
         except Exception:
-            return _coerce_lint_list([
-                {"file_path": "unknown", "line_number": 1, "column": 0, "message": "linting issue", "severity": "low", "rule_id": "auto", "category": "style"}
-            ])
+            return _coerce_lint_list(
+                [
+                    {
+                        "file_path": "unknown",
+                        "line_number": 1,
+                        "column": 0,
+                        "message": "linting issue",
+                        "severity": "low",
+                        "rule_id": "auto",
+                        "category": "style",
+                    }
+                ]
+            )
     return []

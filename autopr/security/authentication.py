@@ -1,7 +1,7 @@
+import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-import secrets
 from typing import Any
 
 import bcrypt
@@ -58,7 +58,9 @@ class UserCredentials:
 class EnterpriseAuthenticationManager:
     "Enterprise-grade authentication and authorization"
 
-    def __init__(self, secret_key: str, encryption_manager: EnterpriseEncryptionManager):
+    def __init__(
+        self, secret_key: str, encryption_manager: EnterpriseEncryptionManager
+    ):
         self.secret_key = secret_key
         self.encryption_manager = encryption_manager
         self.max_failed_attempts = 5
@@ -79,7 +81,9 @@ class EnterpriseAuthenticationManager:
         """Create a new user with secure password hashing"""
         try:
             if username in self.users:
-                logger.warning("User creation failed - username exists", username=username)
+                logger.warning(
+                    "User creation failed - username exists", username=username
+                )
                 return False
 
             # Generate salt and hash password
@@ -110,8 +114,12 @@ class EnterpriseAuthenticationManager:
         try:
             user = self.users.get(username)
             if not user:
-                logger.warning("Authentication failed - user not found", username=username)
-                return AuthenticationResult(success=False, error_message="Invalid credentials")
+                logger.warning(
+                    "Authentication failed - user not found", username=username
+                )
+                return AuthenticationResult(
+                    success=False, error_message="Invalid credentials"
+                )
 
             # Check if account is locked
             if user.locked_until and datetime.utcnow() < user.locked_until:
@@ -126,11 +134,17 @@ class EnterpriseAuthenticationManager:
 
             # Check if account is active
             if not user.is_active:
-                logger.warning("Authentication failed - account inactive", username=username)
-                return AuthenticationResult(success=False, error_message="Account inactive")
+                logger.warning(
+                    "Authentication failed - account inactive", username=username
+                )
+                return AuthenticationResult(
+                    success=False, error_message="Account inactive"
+                )
 
             # Verify password
-            if not bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
+            if not bcrypt.checkpw(
+                password.encode("utf-8"), user.password_hash.encode("utf-8")
+            ):
                 # Increment failed attempts
                 user.failed_login_attempts += 1
 
@@ -148,7 +162,9 @@ class EnterpriseAuthenticationManager:
                     username=username,
                     failed_attempts=user.failed_login_attempts,
                 )
-                return AuthenticationResult(success=False, error_message="Invalid credentials")
+                return AuthenticationResult(
+                    success=False, error_message="Invalid credentials"
+                )
 
             # Reset failed login attempts on successful login
             user.failed_login_attempts = 0
@@ -186,7 +202,9 @@ class EnterpriseAuthenticationManager:
 
         except Exception as e:
             logger.exception("Authentication failed", username=username, error=str(e))
-            return AuthenticationResult(success=False, error_message="An unexpected error occurred")
+            return AuthenticationResult(
+                success=False, error_message="An unexpected error occurred"
+            )
 
     def validate_token(self, token: str) -> AuthenticationResult:
         "Validate JWT token"
@@ -195,7 +213,9 @@ class EnterpriseAuthenticationManager:
             username = payload.get("sub")
 
             if not username:
-                return AuthenticationResult(success=False, error_message="Invalid token format")
+                return AuthenticationResult(
+                    success=False, error_message="Invalid token format"
+                )
 
             user = self.users.get(username)
             if not user or not user.is_active:
@@ -220,16 +240,24 @@ class EnterpriseAuthenticationManager:
             return AuthenticationResult(success=False, error_message="Invalid token")
         except Exception as e:
             logger.exception("Token validation error", error=str(e))
-            return AuthenticationResult(success=False, error_message="Token validation failed")
+            return AuthenticationResult(
+                success=False, error_message="Token validation failed"
+            )
 
     def create_api_key(
-        self, username: str, name: str, permissions: list[str], expires_in_days: int = 365
+        self,
+        username: str,
+        name: str,
+        permissions: list[str],
+        expires_in_days: int = 365,
     ) -> str | None:
         "Create API key for user"
         try:
             user = self.users.get(username)
             if not user:
-                logger.warning("API key creation failed - user not found", username=username)
+                logger.warning(
+                    "API key creation failed - user not found", username=username
+                )
                 return None
 
             api_key = f"ak_{secrets.token_urlsafe(32)}"
@@ -245,7 +273,10 @@ class EnterpriseAuthenticationManager:
             }
 
             logger.info(
-                "API key created", username=username, key_name=name, permissions=permissions
+                "API key created",
+                username=username,
+                key_name=name,
+                permissions=permissions,
             )
             return api_key
 
@@ -258,15 +289,21 @@ class EnterpriseAuthenticationManager:
         try:
             key_data = self.api_keys.get(api_key)
             if not key_data:
-                return AuthenticationResult(success=False, error_message="Invalid API key")
+                return AuthenticationResult(
+                    success=False, error_message="Invalid API key"
+                )
 
             # Check if key is active
             if not key_data["is_active"]:
-                return AuthenticationResult(success=False, error_message="API key inactive")
+                return AuthenticationResult(
+                    success=False, error_message="API key inactive"
+                )
 
             # Check if key is expired
             if datetime.utcnow() > key_data["expires_at"]:
-                return AuthenticationResult(success=False, error_message="API key expired")
+                return AuthenticationResult(
+                    success=False, error_message="API key expired"
+                )
 
             # Update last used timestamp
             key_data["last_used"] = datetime.utcnow()
@@ -289,7 +326,9 @@ class EnterpriseAuthenticationManager:
 
         except Exception as e:
             logger.exception("API key validation failed", error=str(e))
-            return AuthenticationResult(success=False, error_message="API key validation failed")
+            return AuthenticationResult(
+                success=False, error_message="API key validation failed"
+            )
 
     def revoke_api_key(self, api_key: str) -> bool:
         "Revoke API key"
@@ -303,13 +342,21 @@ class EnterpriseAuthenticationManager:
             logger.exception("API key revocation failed", error=str(e))
             return False
 
-    def check_permission(self, user_permissions: list[str], required_permission: str) -> bool:
+    def check_permission(
+        self, user_permissions: list[str], required_permission: str
+    ) -> bool:
         "Check if user has required permission"
         return required_permission in user_permissions or "admin" in user_permissions
 
     def check_role(self, user_roles: list[str], required_role: str) -> bool:
         "Check if user has required role"
-        role_hierarchy = {"guest": 0, "user": 1, "admin": 2, "super_admin": 3, "service_account": 1}
+        role_hierarchy = {
+            "guest": 0,
+            "user": 1,
+            "admin": 2,
+            "super_admin": 3,
+            "service_account": 1,
+        }
 
         user_level = max([role_hierarchy.get(role, 0) for role in user_roles])
         required_level = role_hierarchy.get(required_role, 0)
@@ -381,10 +428,14 @@ class EnterpriseAuthenticationManager:
                 del self.active_sessions[session_id]
 
             logger.info(
-                "Revoked all user sessions", username=username, count=len(sessions_to_remove)
+                "Revoked all user sessions",
+                username=username,
+                count=len(sessions_to_remove),
             )
             return len(sessions_to_remove)
 
         except Exception as e:
-            logger.exception("Session revocation failed", username=username, error=str(e))
+            logger.exception(
+                "Session revocation failed", username=username, error=str(e)
+            )
             return 0

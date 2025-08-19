@@ -21,7 +21,9 @@ def find_template_files(directory: str) -> dict[str, list[str]]:
     for root, dirs, files in os.walk(directory):
         # Skip hidden directories and cache
         dirs[:] = [
-            d for d in dirs if not d.startswith(".") and d not in ["__pycache__", "node_modules"]
+            d
+            for d in dirs
+            if not d.startswith(".") and d not in ["__pycache__", "node_modules"]
         ]
 
         for file in files:
@@ -101,7 +103,9 @@ def check_template_organization(template_files: dict[str, list[str]]) -> list[st
                         content = yaml.safe_load(f)
                     if content and isinstance(content, dict):
                         if "platform" not in content and "type" not in content:
-                            issues.append(f"Platform template missing platform info: {yaml_file}")
+                            issues.append(
+                                f"Platform template missing platform info: {yaml_file}"
+                            )
                 except Exception:
                     pass
 
@@ -174,7 +178,9 @@ def generate_template_report(results: dict[str, Any]) -> str:
 
     # Organization issues
     if results["organization_issues"]:
-        report.append(f"🔍 Organization Issues ({len(results['organization_issues'])}):")
+        report.append(
+            f"🔍 Organization Issues ({len(results['organization_issues'])}):"
+        )
         for issue in results["organization_issues"]:
             report.append(f"  - {issue}")
         report.append("")
@@ -187,7 +193,11 @@ def generate_template_report(results: dict[str, Any]) -> str:
         report.append("")
 
     if not any(
-        [results["invalid_files"], results["organization_issues"], results["consistency_issues"]]
+        [
+            results["invalid_files"],
+            results["organization_issues"],
+            results["consistency_issues"],
+        ]
     ):
         report.append("🎉 All templates are valid and well-organized!")
 
@@ -198,7 +208,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
     templates_dir = os.path.join(project_root, "templates")
-
 
     # Find template files
     template_files = find_template_files(templates_dir)
@@ -217,9 +226,12 @@ def main():
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
 
-
     # Return appropriate exit code
-    if results["invalid_files"] or results["organization_issues"] or results["consistency_issues"]:
+    if (
+        results["invalid_files"]
+        or results["organization_issues"]
+        or results["consistency_issues"]
+    ):
         return 1
     return 0
 

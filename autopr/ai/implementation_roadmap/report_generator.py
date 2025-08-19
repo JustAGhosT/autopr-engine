@@ -3,8 +3,8 @@ Report Generator for Implementation Roadmap
 Handles analytics, reporting, and progress visualization
 """
 
-from datetime import datetime, timedelta
 import operator
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +17,10 @@ class ReportGenerator:
     """Generates comprehensive reports for implementation progress"""
 
     def __init__(
-        self, task_registry: TaskRegistry, task_executor: TaskExecutor, phase_manager: PhaseManager
+        self,
+        task_registry: TaskRegistry,
+        task_executor: TaskExecutor,
+        phase_manager: PhaseManager,
     ) -> None:
         self.task_registry = task_registry
         self.task_executor = task_executor
@@ -39,7 +42,9 @@ class ReportGenerator:
             "overall_health_score": health_scores["overall"],
             "progress_percentage": overall_progress["overall_progress_percentage"],
             "phases_completed": sum(
-                1 for phase in overall_progress["phases"].values() if phase["status"] == "completed"
+                1
+                for phase in overall_progress["phases"].values()
+                if phase["status"] == "completed"
             ),
             "total_phases": len(overall_progress["phases"]),
             "tasks_completed": overall_progress["completed_tasks"],
@@ -112,10 +117,12 @@ class ReportGenerator:
 
         # Determine health color via shared utility
         from autopr.reporting.html_utils import health_color_from_score
+
         health_score = exec_summary["overall_health_score"]
         health_color = health_color_from_score(health_score)
 
         from autopr.reporting.html_page import PageHeader, build_basic_page
+
         extra_css = """
 .metric-card { background: #f8f9fa; border-radius: 6px; padding: 20px; margin: 10px 0; border-left: 4px solid #667eea; }
 .progress-bar { background: #e9ecef; border-radius: 10px; height: 20px; overflow: hidden; margin: 10px 0; }
@@ -210,10 +217,17 @@ th { background: #f8f9fa; font-weight: 600; }
         # Quality health (0-10 points) - based on error rate
         quality_health = max(
             0,
-            10 - (overall_progress["failed_tasks"] / max(1, overall_progress["total_tasks"]) * 10),
+            10
+            - (
+                overall_progress["failed_tasks"]
+                / max(1, overall_progress["total_tasks"])
+                * 10
+            ),
         )
 
-        overall_health = progress_health + success_health + velocity_health + quality_health
+        overall_health = (
+            progress_health + success_health + velocity_health + quality_health
+        )
 
         return {
             "overall": round(overall_health, 1),
@@ -227,7 +241,9 @@ th { background: #f8f9fa; font-weight: 600; }
         """Estimate completion timeline based on current progress"""
         overall_progress = self.phase_manager.get_overall_progress()
 
-        remaining_tasks = overall_progress["total_tasks"] - overall_progress["completed_tasks"]
+        remaining_tasks = (
+            overall_progress["total_tasks"] - overall_progress["completed_tasks"]
+        )
         velocity = self._calculate_velocity()
 
         if velocity > 0:
@@ -257,8 +273,12 @@ th { background: #f8f9fa; font-weight: 600; }
         if not completed_executions:
             return 0.0
 
-        total_hours = sum(exec.duration for exec in completed_executions) / 3600  # Convert to hours
-        return len(completed_executions) / max(total_hours, 0.1)  # Avoid division by zero
+        total_hours = (
+            sum(exec.duration for exec in completed_executions) / 3600
+        )  # Convert to hours
+        return len(completed_executions) / max(
+            total_hours, 0.1
+        )  # Avoid division by zero
 
     def _calculate_quality_score(self) -> float:
         """Calculate overall quality score based on success rates and error patterns"""
@@ -321,7 +341,9 @@ th { background: #f8f9fa; font-weight: 600; }
                         "name": f"{phase_name.title()} Phase Start",
                         "type": "phase_start",
                         "priority": "high" if phase_name == "immediate" else "medium",
-                        "estimated_date": self._estimate_milestone_date(phase_name, "start"),
+                        "estimated_date": self._estimate_milestone_date(
+                            phase_name, "start"
+                        ),
                     }
                 )
             elif phase_progress["status"] == "running":
@@ -331,13 +353,17 @@ th { background: #f8f9fa; font-weight: 600; }
                         "type": "phase_completion",
                         "priority": "high" if phase_name == "immediate" else "medium",
                         "progress": phase_progress["progress_percentage"],
-                        "estimated_date": self._estimate_milestone_date(phase_name, "completion"),
+                        "estimated_date": self._estimate_milestone_date(
+                            phase_name, "completion"
+                        ),
                     }
                 )
 
         return milestones[:5]  # Return top 5 milestones
 
-    def _estimate_milestone_date(self, phase_name: str, milestone_type: str) -> str | None:
+    def _estimate_milestone_date(
+        self, phase_name: str, milestone_type: str
+    ) -> str | None:
         """Estimate date for a specific milestone"""
         velocity = self._calculate_velocity()
         if velocity <= 0:
@@ -352,7 +378,9 @@ th { background: #f8f9fa; font-weight: 600; }
             return datetime.now().isoformat()
         if milestone_type == "completion":
             phase_progress = self.phase_manager.get_phase_progress(phase_name)
-            remaining_tasks = phase_progress["total_tasks"] - phase_progress["completed_tasks"]
+            remaining_tasks = (
+                phase_progress["total_tasks"] - phase_progress["completed_tasks"]
+            )
             hours_to_completion = remaining_tasks / velocity
             completion_date = datetime.now() + timedelta(hours=hours_to_completion)
             return completion_date.isoformat()
@@ -400,9 +428,9 @@ th { background: #f8f9fa; font-weight: 600; }
 
                 # Calculate phase-specific metrics
                 if task_performance:
-                    avg_duration = sum(t["duration"] or 0 for t in task_performance) / len(
-                        task_performance
-                    )
+                    avg_duration = sum(
+                        t["duration"] or 0 for t in task_performance
+                    ) / len(task_performance)
                     analysis["average_task_duration"] = avg_duration
 
                     complexity_breakdown = {}
@@ -505,7 +533,9 @@ th { background: #f8f9fa; font-weight: 600; }
             },
             "efficiency_metrics": {
                 "resource_utilization": 85.0,  # Placeholder
-                "time_to_completion": self._estimate_completion_timeline()["time_remaining_hours"],
+                "time_to_completion": self._estimate_completion_timeline()[
+                    "time_remaining_hours"
+                ],
                 "cost_efficiency": "good",  # Placeholder
             },
         }
@@ -537,11 +567,15 @@ th { background: #f8f9fa; font-weight: 600; }
 
         # Velocity-based recommendations
         if velocity < 1.0:
-            recommendations.append("Consider parallelizing independent tasks to improve velocity")
+            recommendations.append(
+                "Consider parallelizing independent tasks to improve velocity"
+            )
 
         # Quality-based recommendations
         if quality_score < 70:
-            recommendations.append("Review failed tasks and implement better error handling")
+            recommendations.append(
+                "Review failed tasks and implement better error handling"
+            )
 
         # Phase-specific recommendations
         immediate_phase = overall_progress["phases"].get("immediate", {})
@@ -624,7 +658,9 @@ th { background: #f8f9fa; font-weight: 600; }
             if execution.duration:
                 task = self.task_registry.get_task(execution.task_name)
                 category = task.category if task else "unknown"
-                time_allocation[category] = time_allocation.get(category, 0) + execution.duration
+                time_allocation[category] = (
+                    time_allocation.get(category, 0) + execution.duration
+                )
 
         return time_allocation
 
@@ -636,7 +672,9 @@ th { background: #f8f9fa; font-weight: 600; }
         for task_name in self.task_registry.get_all_task_names():
             task = self.task_registry.get_task(task_name)
             if task and len(task.dependencies) > 2:
-                bottlenecks.append(f"Task '{task_name}' has {len(task.dependencies)} dependencies")
+                bottlenecks.append(
+                    f"Task '{task_name}' has {len(task.dependencies)} dependencies"
+                )
 
         # Failed critical tasks
         immediate_phase = self.phase_manager.phase_executions.get("immediate")
@@ -674,6 +712,8 @@ th { background: #f8f9fa; font-weight: 600; }
         repetitive_categories = self._analyze_task_distribution()
         for category, count in repetitive_categories.items():
             if count > 3:
-                opportunities.append(f"Consider automating {category} tasks ({count} instances)")
+                opportunities.append(
+                    f"Consider automating {category} tasks ({count} instances)"
+                )
 
         return opportunities

@@ -28,7 +28,9 @@ class PerformanceAnalyzerTool(Tool):
         """Get the required command for this tool."""
         return "python"
 
-    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def run(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Run performance analysis checks.
         For Python, we'll use scalene if available.
@@ -48,7 +50,9 @@ class PerformanceAnalyzerTool(Tool):
 
         return issues
 
-    async def _run_scalene_analysis(self, python_files: list[str]) -> list[dict[str, Any]]:
+    async def _run_scalene_analysis(
+        self, python_files: list[str]
+    ) -> list[dict[str, Any]]:
         """Run Scalene performance analysis on Python files."""
         issues = []
 
@@ -66,7 +70,9 @@ class PerformanceAnalyzerTool(Tool):
             scalene_installed = process.returncode == 0
 
             if scalene_installed:
-                for py_file in python_files[:5]:  # Limit to 5 files for quicker profiling
+                for py_file in python_files[
+                    :5
+                ]:  # Limit to 5 files for quicker profiling
                     scalene_issues = await self._analyze_file_with_scalene(py_file)
                     issues.extend(scalene_issues)
         except Exception:
@@ -141,6 +147,7 @@ class PerformanceAnalyzerTool(Tool):
             try:
                 # Check if it's actually a file
                 import os
+
                 if os.path.isfile(f):
                     actual_files.append(f)
             except (OSError, PermissionError):
@@ -167,7 +174,9 @@ class PerformanceAnalyzerTool(Tool):
 
         return issues
 
-    def _analyze_python_performance(self, file: str, content: str) -> list[dict[str, Any]]:
+    def _analyze_python_performance(
+        self, file: str, content: str
+    ) -> list[dict[str, Any]]:
         """Analyze Python file for performance patterns."""
         issues = []
 

@@ -13,11 +13,11 @@ Features:
 """
 
 import ast
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-import re
 from typing import TYPE_CHECKING, Any
 
 # Forward reference types to avoid circular imports
@@ -25,7 +25,9 @@ if TYPE_CHECKING:
     from .validation_rules import ValidationRule
 
 # Type variable for validator functions
-ValidatorFunc = Callable[[dict[str, Any], Path, "ValidationRule"], list["ValidationIssue"]]
+ValidatorFunc = Callable[
+    [dict[str, Any], Path, "ValidationRule"], list["ValidationIssue"]
+]
 
 
 class ValidationSeverity(Enum):
@@ -81,7 +83,9 @@ class StructureValidator:
         field_types = (rule.parameters or {}).get("field_types", {})
 
         for field, expected_type in field_types.items():
-            if field in data and not isinstance(data[field], ast.literal_eval(expected_type)):
+            if field in data and not isinstance(
+                data[field], ast.literal_eval(expected_type)
+            ):
                 issues.append(
                     ValidationIssue(
                         severity=ValidationSeverity.ERROR,
@@ -556,7 +560,11 @@ class ValidatorRegistry:
         return self._validators.get(check_function)
 
     def run_validation(
-        self, check_function: str, data: dict[str, Any], file_path: Path, rule: "ValidationRule"
+        self,
+        check_function: str,
+        data: dict[str, Any],
+        file_path: Path,
+        rule: "ValidationRule",
     ) -> list[ValidationIssue]:
         """Run a specific validation check."""
         validator = self.get_validator(check_function)

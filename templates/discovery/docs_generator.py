@@ -23,7 +23,6 @@ from pathlib import Path
 
 from .content_analyzer import ContentAnalyzer, TemplateAnalysis
 from .format_generators import DocumentationConfig, FormatGeneratorFactory
-
 # Import modular components
 from .template_loader import TemplateLoader
 
@@ -32,7 +31,9 @@ class TemplateDocumentationGenerator:
     """Generates comprehensive documentation for templates using modular architecture."""
 
     def __init__(
-        self, templates_root: str | None = None, config: DocumentationConfig | None = None
+        self,
+        templates_root: str | None = None,
+        config: DocumentationConfig | None = None,
     ) -> None:
         """Initialize the documentation generator."""
         if templates_root is None:
@@ -62,7 +63,9 @@ class TemplateDocumentationGenerator:
             template_files.extend(self.templates_root.glob(pattern))
 
         # Exclude platform-categories.yml
-        template_files = [f for f in template_files if f.name != "platform-categories.yml"]
+        template_files = [
+            f for f in template_files if f.name != "platform-categories.yml"
+        ]
 
         # Analyze all templates
         analyses = self.content_analyzer.analyze_multiple_templates(template_files)
@@ -83,7 +86,9 @@ class TemplateDocumentationGenerator:
         # Group analyses by category
         platform_analyses = [a for a in template_analyses if a.category == "platform"]
         use_case_analyses = [a for a in template_analyses if a.category == "use_case"]
-        integration_analyses = [a for a in template_analyses if a.category == "integration"]
+        integration_analyses = [
+            a for a in template_analyses if a.category == "integration"
+        ]
 
         # Generate platform guides
         if platform_analyses:
@@ -117,13 +122,15 @@ class TemplateDocumentationGenerator:
 
         except Exception as e:
             # Fallback content if template loading fails
-            fallback_content = self._generate_header("No-Code Platform Templates Documentation")
-            fallback_content += (
-                f"\n\nError loading template: {e}\n\nPlease check the template files and try again."
+            fallback_content = self._generate_header(
+                "No-Code Platform Templates Documentation"
             )
+            fallback_content += f"\n\nError loading template: {e}\n\nPlease check the template files and try again."
             return self._save_file("index.md", fallback_content)
 
-    def generate_platform_guides(self, analyses: list[TemplateAnalysis]) -> dict[str, str]:
+    def generate_platform_guides(
+        self, analyses: list[TemplateAnalysis]
+    ) -> dict[str, str]:
         """Generate documentation for all platform templates using modular approach."""
         generated_files: dict[str, str] = {}
 
@@ -141,10 +148,10 @@ class TemplateDocumentationGenerator:
                 except Exception as e:
                     # Generate error content for failed templates
                     template_name = analysis.name
-                    error_content = (
-                        f"# {template_name.title()} Platform Guide\n\nError generating guide: {e}"
+                    error_content = f"# {template_name.title()} Platform Guide\n\nError generating guide: {e}"
+                    doc_file = self._save_file(
+                        f"platforms/{template_name}.md", error_content
                     )
-                    doc_file = self._save_file(f"platforms/{template_name}.md", error_content)
                     generated_files[f"platform_{template_name}"] = doc_file
 
             return generated_files
@@ -153,7 +160,9 @@ class TemplateDocumentationGenerator:
             # Return empty dict if discovery fails
             return generated_files
 
-    def generate_use_case_guides(self, analyses: list[TemplateAnalysis]) -> dict[str, str]:
+    def generate_use_case_guides(
+        self, analyses: list[TemplateAnalysis]
+    ) -> dict[str, str]:
         """Generate documentation for use case templates using modular approach."""
         generated_files: dict[str, str] = {}
 
@@ -171,10 +180,10 @@ class TemplateDocumentationGenerator:
                 except Exception as e:
                     # Generate error content for failed templates
                     template_name = analysis.name
-                    error_content = (
-                        f"# {template_name.title()} Use Case Guide\n\nError generating guide: {e}"
+                    error_content = f"# {template_name.title()} Use Case Guide\n\nError generating guide: {e}"
+                    doc_file = self._save_file(
+                        f"use-cases/{template_name}.md", error_content
                     )
-                    doc_file = self._save_file(f"use-cases/{template_name}.md", error_content)
                     generated_files[f"use_case_{template_name}"] = doc_file
 
             return generated_files
@@ -183,7 +192,9 @@ class TemplateDocumentationGenerator:
             # Return empty dict if discovery fails
             return generated_files
 
-    def generate_integration_guides(self, analyses: list[TemplateAnalysis]) -> dict[str, str]:
+    def generate_integration_guides(
+        self, analyses: list[TemplateAnalysis]
+    ) -> dict[str, str]:
         """Generate documentation for integration templates using modular approach."""
         generated_files: dict[str, str] = {}
 
@@ -195,14 +206,18 @@ class TemplateDocumentationGenerator:
 
                     # Save the generated documentation
                     template_name = analysis.name
-                    doc_file = self._save_file(f"integrations/{template_name}.md", content)
+                    doc_file = self._save_file(
+                        f"integrations/{template_name}.md", content
+                    )
                     generated_files[f"integration_{template_name}"] = doc_file
 
                 except Exception as e:
                     # Generate error content for failed templates
                     template_name = analysis.name
                     error_content = f"# {template_name.title()} Integration Guide\n\nError generating guide: {e}"
-                    doc_file = self._save_file(f"integrations/{template_name}.md", error_content)
+                    doc_file = self._save_file(
+                        f"integrations/{template_name}.md", error_content
+                    )
                     generated_files[f"integration_{template_name}"] = doc_file
 
             return generated_files
@@ -211,7 +226,9 @@ class TemplateDocumentationGenerator:
             # Return empty dict if discovery fails
             return generated_files
 
-    def generate_comparison_guide(self, platform_analyses: list[TemplateAnalysis]) -> str:
+    def generate_comparison_guide(
+        self, platform_analyses: list[TemplateAnalysis]
+    ) -> str:
         """Generate platform comparison documentation using modular approach."""
         try:
             # Use format generator to create comparison guide
@@ -238,7 +255,9 @@ class TemplateDocumentationGenerator:
             }
 
             # Use format generator to render content
-            content = self.format_generator.generate_content("getting_started", **template_vars)
+            content = self.format_generator.generate_content(
+                "getting_started", **template_vars
+            )
 
             return self._save_file("getting_started.md", content)
 
@@ -247,9 +266,7 @@ class TemplateDocumentationGenerator:
             fallback_content = self._generate_header(
                 "Getting Started with No-Code Platform Templates"
             )
-            fallback_content += (
-                f"\n\nError loading template: {e}\n\nPlease check the template files and try again."
-            )
+            fallback_content += f"\n\nError loading template: {e}\n\nPlease check the template files and try again."
             return self._save_file("getting_started.md", fallback_content)
 
     def _generate_header(self, title: str) -> str:

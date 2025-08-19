@@ -22,7 +22,13 @@ class PageHeader:
     subtitle: str | None = None
 
 
-def build_basic_page(*, header: PageHeader, generated_at: str | None, content_html: str, extra_css: str | None = None) -> str:
+def build_basic_page(
+    *,
+    header: PageHeader,
+    generated_at: str | None,
+    content_html: str,
+    extra_css: str | None = None,
+) -> str:
     css = BASE_CSS + (extra_css or "")
     subtitle_html = f"<p>{header.subtitle}</p>" if header.subtitle else ""
     generated_html = f"<p>Generated on {generated_at}</p>" if generated_at else ""

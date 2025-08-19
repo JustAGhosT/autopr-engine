@@ -11,9 +11,7 @@ from typing import Any
 
 from autopr.actions.platform_detection.config import PlatformConfigManager
 from autopr.actions.platform_detection.detector import (
-    PlatformDetector,
-    PlatformDetectorOutputs,
-)
+    PlatformDetector, PlatformDetectorOutputs)
 from autopr.actions.platform_detection.schema import PlatformType
 from autopr.agents.agents import BaseAgent
 
@@ -213,7 +211,9 @@ class PlatformAnalysisAgent(BaseAgent):
             return max(analysis.confidence_scores.items(), key=lambda x: x[1])[0]
         return PlatformType.UNKNOWN.value
 
-    def _get_platform_info(self, platform_id: str | PlatformType) -> dict[str, Any] | None:
+    def _get_platform_info(
+        self, platform_id: str | PlatformType
+    ) -> dict[str, Any] | None:
         """Get information about a specific platform by ID.
 
         Args:
@@ -224,7 +224,11 @@ class PlatformAnalysisAgent(BaseAgent):
         """
         # Normalize input to a string platform ID, ensuring the manager is invoked once
         try:
-            platform_id_str = platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
+            platform_id_str = (
+                platform_id.value
+                if isinstance(platform_id, PlatformType)
+                else str(platform_id)
+            )
         except Exception:
             platform_id_str = str(platform_id)
 
@@ -236,8 +240,11 @@ class PlatformAnalysisAgent(BaseAgent):
         # Use dynamically resolved manager so test patches apply in all orders
         try:  # pragma: no cover - relies on test patching behavior
             import sys as _sys
+
             current_mod = _sys.modules.get(__name__)
-            ManagerCls = getattr(current_mod, "PlatformConfigManager", PlatformConfigManager)
+            ManagerCls = getattr(
+                current_mod, "PlatformConfigManager", PlatformConfigManager
+            )
         except Exception:
             ManagerCls = PlatformConfigManager
         config_manager = ManagerCls()
@@ -266,7 +273,9 @@ class PlatformAnalysisAgent(BaseAgent):
                 "id": getattr(platform_config, "id", None),
                 "name": getattr(platform_config, "name", None),
                 "display_name": getattr(
-                    platform_config, "display_name", getattr(platform_config, "name", None)
+                    platform_config,
+                    "display_name",
+                    getattr(platform_config, "name", None),
                 ),
                 "description": getattr(platform_config, "description", None),
                 "type": get_enum_value(getattr(platform_config, "type", None)),
@@ -275,14 +284,22 @@ class PlatformAnalysisAgent(BaseAgent):
                 "subcategory": getattr(platform_config, "subcategory", None),
                 "tags": getattr(platform_config, "tags", []) or [],
                 "status": get_enum_value(getattr(platform_config, "status", None)),
-                "documentation_url": getattr(platform_config, "documentation_url", None),
+                "documentation_url": getattr(
+                    platform_config, "documentation_url", None
+                ),
                 "is_active": getattr(platform_config, "is_active", True),
                 "is_beta": getattr(platform_config, "is_beta", False),
                 "is_deprecated": getattr(platform_config, "is_deprecated", False),
                 "version": getattr(platform_config, "version", None),
                 "last_updated": getattr(platform_config, "last_updated", None),
-                "supported_languages": getattr(platform_config, "supported_languages", []) or [],
-                "supported_frameworks": getattr(platform_config, "supported_frameworks", []) or [],
+                "supported_languages": getattr(
+                    platform_config, "supported_languages", []
+                )
+                or [],
+                "supported_frameworks": getattr(
+                    platform_config, "supported_frameworks", []
+                )
+                or [],
                 "integrations": getattr(platform_config, "integrations", []) or [],
                 "detection_rules": detection_rules,
                 "project_config": getattr(platform_config, "project_config", {}) or {},

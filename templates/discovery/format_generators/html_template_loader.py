@@ -6,8 +6,8 @@ that follow the YAML template format structure, similar to the existing
 YAML templates but for HTML generation.
 """
 
-from pathlib import Path
 import re
+from pathlib import Path
 from re import Match
 from typing import Any
 
@@ -57,7 +57,9 @@ class YAMLHTMLTemplateLoader:
 
         # Merge template variables with provided variables
         template_vars = template_data.get("variables", {})
-        render_context = self._prepare_render_context(template_data, template_vars, variables)
+        render_context = self._prepare_render_context(
+            template_data, template_vars, variables
+        )
 
         # Render the template with variables
         return self._render_template_content(html_content, render_context)
@@ -188,7 +190,9 @@ class YAMLHTMLTemplateLoader:
     def list_available_templates(self) -> list[str]:
         """List all available YAML HTML templates."""
 
-        templates = [template_file.stem for template_file in self.templates_path.glob("*.yml")]
+        templates = [
+            template_file.stem for template_file in self.templates_path.glob("*.yml")
+        ]
 
         for template_file in self.templates_path.glob("*.yaml"):
             if template_file.stem not in templates:  # Avoid duplicates

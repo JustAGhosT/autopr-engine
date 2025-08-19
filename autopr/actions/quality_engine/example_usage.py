@@ -33,7 +33,10 @@ async def run_quality_analysis(files: list[str]) -> None:
             "fix": False,
         }
         await engine.run_and_handle(
-            tool_name="eslint", files=js_files, config=eslint_config, result_type=LintIssue
+            tool_name="eslint",
+            files=js_files,
+            config=eslint_config,
+            result_type=LintIssue,
         )
 
     # Run all linting tools
@@ -50,7 +53,10 @@ async def run_quality_analysis(files: list[str]) -> None:
     }
 
     all_results = await engine.run_category(
-        category="linting", files=files, configs=linting_configs, result_types=result_types
+        category="linting",
+        files=files,
+        configs=linting_configs,
+        result_types=result_types,
     )
 
     # Summarize results

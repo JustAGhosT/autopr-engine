@@ -3,8 +3,8 @@
 Super Nuclear Fix - Temporarily disable problematic files that cause IDE validation
 """
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def disable_problematic_files():
@@ -32,8 +32,6 @@ def main():
 
     disable_problematic_files()
     create_volume_0_marker()
-
-
 
 
 if __name__ == "__main__":

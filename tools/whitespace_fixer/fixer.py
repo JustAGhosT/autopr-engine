@@ -10,8 +10,8 @@ Automatically fixes:
 """
 
 import argparse
-from pathlib import Path
 import re
+from pathlib import Path
 
 
 class WhitespaceFixer:
@@ -159,7 +159,13 @@ class WhitespaceFixer:
         # Check if extension is in our list (or no extension filtering)
         if self.extensions and file_path.suffix.lower() not in self.extensions:
             # Also check files without extensions but with specific names
-            if file_path.name not in {"Dockerfile", "Makefile", "README", "LICENSE", "CHANGELOG"}:
+            if file_path.name not in {
+                "Dockerfile",
+                "Makefile",
+                "README",
+                "LICENSE",
+                "CHANGELOG",
+            }:
                 return False
 
         # Try to detect if file is binary by reading a small chunk
@@ -264,7 +270,9 @@ class WhitespaceFixer:
 
         return fixed_content, issues_fixed
 
-    def fix_file(self, file_path: Path, dry_run: bool = False) -> tuple[bool, list[str]]:
+    def fix_file(
+        self, file_path: Path, dry_run: bool = False
+    ) -> tuple[bool, list[str]]:
         """
         Fix whitespace issues in a single file.
 
@@ -310,7 +318,10 @@ class WhitespaceFixer:
         return True, issues_fixed
 
     def fix_directory(
-        self, directory: Path, dry_run: bool = False, exclude_patterns: list[str] | None = None
+        self,
+        directory: Path,
+        dry_run: bool = False,
+        exclude_patterns: list[str] | None = None,
     ) -> dict:
         """
         Fix whitespace issues in all files in a directory recursively.
@@ -348,7 +359,9 @@ class WhitespaceFixer:
                 results["files_with_issues"][str(relative_path)] = issues
                 results["total_issues"] += len(issues)
             elif issues:  # Errors
-                results["errors"].extend([f"{relative_path}: {issue}" for issue in issues])
+                results["errors"].extend(
+                    [f"{relative_path}: {issue}" for issue in issues]
+                )
 
         return results
 
@@ -371,7 +384,9 @@ Examples:
 
     parser.add_argument("paths", nargs="+", help="Files or directories to process")
     parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would be changed without modifying files"
+        "--dry-run",
+        action="store_true",
+        help="Show what would be changed without modifying files",
     )
     parser.add_argument(
         "--line-ending",
@@ -388,9 +403,13 @@ Examples:
     parser.add_argument(
         "--tab-size", type=int, default=4, help="Tab size for conversion (default: 4)"
     )
-    parser.add_argument("--convert-tabs", action="store_true", help="Convert tabs to spaces")
     parser.add_argument(
-        "--extensions", nargs="*", help="File extensions to process (default: common text files)"
+        "--convert-tabs", action="store_true", help="Convert tabs to spaces"
+    )
+    parser.add_argument(
+        "--extensions",
+        nargs="*",
+        help="File extensions to process (default: common text files)",
     )
     parser.add_argument(
         "--exclude",
@@ -405,7 +424,9 @@ Examples:
     # Set up extensions
     extensions = None
     if args.extensions is not None:
-        extensions = {ext if ext.startswith(".") else f".{ext}" for ext in args.extensions}
+        extensions = {
+            ext if ext.startswith(".") else f".{ext}" for ext in args.extensions
+        }
 
     # Create fixer
     fixer = WhitespaceFixer(

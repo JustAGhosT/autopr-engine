@@ -121,7 +121,9 @@ class PlatformDetector:
         content_matches = file_analyzer.scan_content_for_patterns(platform_configs)
 
         # Commit message analysis
-        commit_matches = self._analyze_commit_messages(inputs.commit_messages, platform_configs)
+        commit_matches = self._analyze_commit_messages(
+            inputs.commit_messages, platform_configs
+        )
 
         # Combine all dependencies
         all_dependencies = []
@@ -177,21 +179,29 @@ class PlatformDetector:
 
             # Add found files
             if platform in detection_results.get("found_files", {}):
-                platform_config["config_files"] = detection_results["found_files"][platform]
+                platform_config["config_files"] = detection_results["found_files"][
+                    platform
+                ]
 
             # Add found folders
             if platform in detection_results.get("found_folders", {}):
-                platform_config["platform_folders"] = detection_results["found_folders"][platform]
+                platform_config["platform_folders"] = detection_results[
+                    "found_folders"
+                ][platform]
 
             # Add relevant dependencies
             platform_deps = []
             all_deps = detection_results.get("dependencies", [])
             platform_patterns = (
-                self.config.get_all_platforms().get(platform, {}).get("dependencies", [])
+                self.config.get_all_platforms()
+                .get(platform, {})
+                .get("dependencies", [])
             )
 
             for dep in all_deps:
-                platform_deps.extend(dep for pattern in platform_patterns if pattern in dep)
+                platform_deps.extend(
+                    dep for pattern in platform_patterns if pattern in dep
+                )
 
             if platform_deps:
                 platform_config["dependencies"] = platform_deps
@@ -200,7 +210,9 @@ class PlatformDetector:
             platform_scripts = {}
             all_scripts = detection_results.get("scripts", {})
             script_patterns = (
-                self.config.get_all_platforms().get(platform, {}).get("package_scripts", [])
+                self.config.get_all_platforms()
+                .get(platform, {})
+                .get("package_scripts", [])
             )
 
             for script_name, script_value in all_scripts.items():

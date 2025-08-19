@@ -72,7 +72,10 @@ class IssueFixer:
             for file_path, file_issues in issues_by_file.items():
                 try:
                     file_result = self._fix_file_issues(
-                        file_path=file_path, issues=file_issues, provider=provider, model=model
+                        file_path=file_path,
+                        issues=file_issues,
+                        provider=provider,
+                        model=model,
                     )
 
                     if file_result["success"]:
@@ -80,7 +83,9 @@ class IssueFixer:
                         if file_result["modified"]:
                             modified_files.append(file_path)
                     else:
-                        remaining_issues.extend([issue.error_code for issue in file_issues])
+                        remaining_issues.extend(
+                            [issue.error_code for issue in file_issues]
+                        )
 
                 except Exception as e:
                     # Handle file-specific errors
@@ -106,7 +111,9 @@ class IssueFixer:
                         # Could implement retry logic here
                     else:
                         logger.exception(f"Failed to process {file_path}: {e}")
-                        remaining_issues.extend([issue.error_code for issue in file_issues])
+                        remaining_issues.extend(
+                            [issue.error_code for issue in file_issues]
+                        )
 
             # Create result
             result = LintingFixResult(
@@ -124,7 +131,10 @@ class IssueFixer:
         except Exception as e:
             # Handle general errors
             self.error_handler.log_error(
-                e, context, {"issue_count": len(issues), "max_fixes": max_fixes}, display=True
+                e,
+                context,
+                {"issue_count": len(issues), "max_fixes": max_fixes},
+                display=True,
             )
 
             logger.exception(f"AI fixing failed: {e}")
@@ -257,10 +267,18 @@ class IssueFixer:
         except Exception as e:
             # Handle general file processing errors
             self.error_handler.log_error(
-                e, context, {"file_path": file_path, "issue_count": len(issues)}, display=True
+                e,
+                context,
+                {"file_path": file_path, "issue_count": len(issues)},
+                display=True,
             )
 
-            return {"success": False, "error": str(e), "fixed_issues": [], "modified": False}
+            return {
+                "success": False,
+                "error": str(e),
+                "fixed_issues": [],
+                "modified": False,
+            }
 
     def _fix_single_issue(
         self,
@@ -278,8 +296,12 @@ class IssueFixer:
             agent_type = self.ai_agent_manager.select_agent_for_issues([issue])
 
             # Get prompts
-            system_prompt = self.ai_agent_manager.get_specialized_system_prompt(agent_type, [issue])
-            user_prompt = self.ai_agent_manager.get_user_prompt(file_path, content, [issue])
+            system_prompt = self.ai_agent_manager.get_specialized_system_prompt(
+                agent_type, [issue]
+            )
+            user_prompt = self.ai_agent_manager.get_user_prompt(
+                file_path, content, [issue]
+            )
 
             # Call AI
             response = self.ai_agent_manager.llm_manager.complete(
@@ -299,7 +321,9 @@ class IssueFixer:
 
             if not parsed_response.get("success", False):
                 error_msg = parsed_response.get("error", "Unknown error")
-                logger.warning(f"AI fix failed for {issue.error_code} in {file_path}: {error_msg}")
+                logger.warning(
+                    f"AI fix failed for {issue.error_code} in {file_path}: {error_msg}"
+                )
 
                 # Log interaction to database if available
                 if self.database:
@@ -335,7 +359,9 @@ class IssueFixer:
                         }
                         self.database.log_interaction(interaction_data)
                     except Exception as e:
-                        logger.warning(f"Failed to log failed interaction to database: {e}")
+                        logger.warning(
+                            f"Failed to log failed interaction to database: {e}"
+                        )
 
                 return {
                     "success": False,
@@ -354,7 +380,9 @@ class IssueFixer:
 
             # Log confidence score to performance tracker
             if hasattr(self.ai_agent_manager, "performance_tracker"):
-                self.ai_agent_manager.performance_tracker.log_confidence_score(confidence)
+                self.ai_agent_manager.performance_tracker.log_confidence_score(
+                    confidence
+                )
 
             # Log interaction to database if available
             if self.database:
@@ -368,7 +396,9 @@ class IssueFixer:
                         "model_used": model or "gpt-4.1",
                         "system_prompt": system_prompt[:1000],  # Truncate for database
                         "user_prompt": user_prompt[:1000],  # Truncate for database
-                        "ai_response": str(response.content)[:1000],  # Truncate for database
+                        "ai_response": str(response.content)[
+                            :1000
+                        ],  # Truncate for database
                         "fix_successful": True,
                         "confidence_score": confidence,
                         "fixed_codes": str(parsed_response.get("changes_made", [])),
@@ -402,7 +432,9 @@ class IssueFixer:
             }
 
         except Exception as e:
-            logger.exception(f"Error fixing issue {issue.error_code} in {file_path}: {e}")
+            logger.exception(
+                f"Error fixing issue {issue.error_code} in {file_path}: {e}"
+            )
             return {"success": False, "error": str(e), "agent_type": "unknown"}
 
     def fix_issues_sync_fallback(

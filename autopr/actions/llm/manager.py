@@ -6,14 +6,8 @@ import logging
 from typing import Any
 
 from .base import BaseLLMProvider
-from .providers import (
-    AnthropicProvider,
-    GroqProvider,
-    MistralProvider,
-    OpenAIProvider,
-    PerplexityProvider,
-    TogetherAIProvider,
-)
+from .providers import (AnthropicProvider, GroqProvider, MistralProvider,
+                        OpenAIProvider, PerplexityProvider, TogetherAIProvider)
 from .providers.azure_openai import AzureOpenAIProvider
 from .types import LLMResponse
 
@@ -101,14 +95,19 @@ class LLMProviderManager:
                 logger.debug(f"Failed to initialize {provider_name} provider: {e}")
 
                 # Only show warning if this provider is in the fallback order or is the default
-                if provider_name in self.fallback_order or provider_name == self.default_provider:
+                if (
+                    provider_name in self.fallback_order
+                    or provider_name == self.default_provider
+                ):
                     if self.display:
                         self.display.error.show_warning(
                             f"Provider {provider_name} not available: {e!s}"
                         )
                     else:
                         # Fallback to logger if no display is available
-                        logger.warning(f"Failed to initialize {provider_name} provider: {e}")
+                        logger.warning(
+                            f"Failed to initialize {provider_name} provider: {e}"
+                        )
 
     def get_provider(self, provider_name: str) -> BaseLLMProvider | None:
         """
@@ -177,7 +176,8 @@ class LLMProviderManager:
         # Ensure required fields are present
         if "messages" not in request:
             return LLMResponse.from_error(
-                "Missing required field 'messages' in request", request.get("model") or "unknown"
+                "Missing required field 'messages' in request",
+                request.get("model") or "unknown",
             )
 
         # Set default model if not specified
@@ -194,7 +194,9 @@ class LLMProviderManager:
 
     def get_available_providers(self) -> list[str]:
         """Get list of available providers."""
-        return [name for name, provider in self.providers.items() if provider.is_available()]
+        return [
+            name for name, provider in self.providers.items() if provider.is_available()
+        ]
 
     def get_provider_info(self) -> dict[str, Any]:
         """Get information about all providers."""

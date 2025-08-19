@@ -5,10 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from autopr.agents.models import CodeIssue, PlatformAnalysis
-from autopr.utils.volume_utils import (
-    VolumeLevel,
-    get_volume_level_name,
-)
+from autopr.utils.volume_utils import VolumeLevel, get_volume_level_name
 
 
 class _SimpleTask:
@@ -20,7 +17,9 @@ class _SimpleTask:
         self.output_json = kwargs.get("output_json")
         self.context = kwargs.get("context", {})
 
-    async def execute(self, *args, **kwargs):  # pragma: no cover - exercised via higher-level tests
+    async def execute(
+        self, *args, **kwargs
+    ):  # pragma: no cover - exercised via higher-level tests
         try:
             agent = getattr(self, "agent", None)
             import asyncio as _asyncio
@@ -36,7 +35,9 @@ class _SimpleTask:
             # 1) analyze_code(repo_path, context=...)
             analyze_code = getattr(agent, "analyze_code", None)
             if callable(analyze_code):
-                result = analyze_code(repo_path=repo_path, context=getattr(self, "context", {}))
+                result = analyze_code(
+                    repo_path=repo_path, context=getattr(self, "context", {})
+                )
                 if _asyncio.iscoroutine(result):
                     return await result
                 return result
@@ -77,6 +78,7 @@ def _select_task_class(agent: Any):
     # Use simple task when tests pass MagicMock agents that CrewAI Task rejects
     try:
         from unittest.mock import Mock as _Mock
+
         if isinstance(agent, _Mock):
             return _SimpleTask
     except Exception:
@@ -86,6 +88,7 @@ def _select_task_class(agent: Any):
     try:
         from autopr.agents.agents import BaseAgent as AgentsBaseAgent
         from autopr.agents.base import BaseAgent
+
         if isinstance(agent, (BaseAgent, AgentsBaseAgent)):
             return _SimpleTask
     except Exception:
@@ -104,7 +107,9 @@ VOLUME_EXHAUSTIVE_THRESHOLD = 800
 VOLUME_DETAILED_THRESHOLD = VolumeLevel.BALANCED.value  # 500
 
 
-def create_code_quality_task(repo_path: str | Path, context: dict[str, Any], agent: Any):
+def create_code_quality_task(
+    repo_path: str | Path, context: dict[str, Any], agent: Any
+):
     """Create a task for code quality analysis."""
     volume = context.get("volume", 500)
     volume_level = get_volume_level_name(volume)
@@ -141,7 +146,9 @@ def create_platform_analysis_task(
     repo_path: str | Path, context: dict[str, Any], agent: Any
 ):
     """Create a task for platform/tech stack analysis."""
-    volume = context.get("volume", VolumeLevel.BALANCED.value)  # Default to balanced (500)
+    volume = context.get(
+        "volume", VolumeLevel.BALANCED.value
+    )  # Default to balanced (500)
     volume_level = get_volume_level_name(volume)
 
     # Use consistent volume thresholds for determining analysis depth
@@ -189,7 +196,9 @@ def create_linting_task(repo_path: str | Path, context: dict[str, Any], agent: A
     try:
         analyze_code = getattr(agent, "analyze_code", None)
         if callable(analyze_code):
-            _ = analyze_code(repo_path=context.get("repo_path", repo_path), context=task_context)
+            _ = analyze_code(
+                repo_path=context.get("repo_path", repo_path), context=task_context
+            )
     except Exception:
         pass
     return TaskClass(
@@ -241,9 +250,14 @@ def generate_analysis_summary(
             [
                 "\n## Platform Analysis",
                 f"- Platform: {platform_name} (confidence: {confidence:.1%})",
-                "- Components:" + ("\n  - " + "\n  - ".join(components) if components else " None"),
+                "- Components:"
+                + ("\n  - " + "\n  - ".join(components) if components else " None"),
                 "- Recommendations:"
-                + ("\n  - " + "\n  - ".join(recommendations) if recommendations else " None"),
+                + (
+                    "\n  - " + "\n  - ".join(recommendations)
+                    if recommendations
+                    else " None"
+                ),
             ]
         )
 
@@ -267,16 +281,22 @@ def generate_analysis_summary(
     # Prepare platform analysis data with safe attribute access
     platform_data = {
         "platform": (
-            getattr(platform_analysis, "platform", "unknown") if platform_analysis else "unknown"
+            getattr(platform_analysis, "platform", "unknown")
+            if platform_analysis
+            else "unknown"
         ),
         "confidence": (
-            float(getattr(platform_analysis, "confidence", 0.0)) if platform_analysis else 0.0
+            float(getattr(platform_analysis, "confidence", 0.0))
+            if platform_analysis
+            else 0.0
         ),
         "components": list(
             getattr(platform_analysis, "components", []) if platform_analysis else []
         ),
         "recommendations": list(
-            getattr(platform_analysis, "recommendations", []) if platform_analysis else []
+            getattr(platform_analysis, "recommendations", [])
+            if platform_analysis
+            else []
         ),
     }
 
@@ -313,7 +333,8 @@ def _count_issues_by_severity(issues: list[CodeIssue]) -> str:
 
     severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "WARNING", "UNKNOWN"]
     sorted_counts = sorted(
-        counts.items(), key=lambda x: severity_order.index(x[0]) if x[0] in severity_order else 99
+        counts.items(),
+        key=lambda x: severity_order.index(x[0]) if x[0] in severity_order else 99,
     )
 
     return ", ".join(f"{count} {sev}" for sev, count in sorted_counts)

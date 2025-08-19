@@ -5,7 +5,8 @@ from datetime import datetime
 import structlog
 
 from .base_manager import BaseAuthorizationManager
-from .models import AuthorizationContext, Permission, ResourcePermission, ResourceType
+from .models import (AuthorizationContext, Permission, ResourcePermission,
+                     ResourceType)
 
 logger = structlog.get_logger(__name__)
 
@@ -91,7 +92,11 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
                 Permission.CREATE,
                 Permission.UPDATE,
             },
-            ResourceType.WORKFLOW: {Permission.READ, Permission.WRITE, Permission.EXECUTE},
+            ResourceType.WORKFLOW: {
+                Permission.READ,
+                Permission.WRITE,
+                Permission.EXECUTE,
+            },
             ResourceType.TEMPLATE: {
                 Permission.READ,
                 Permission.WRITE,
@@ -145,7 +150,9 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
 
     def authorize(self, context: AuthorizationContext) -> bool:
         try:
-            if self._is_resource_owner(context.user_id, context.resource_type, context.resource_id):
+            if self._is_resource_owner(
+                context.user_id, context.resource_type, context.resource_id
+            ):
                 return True
 
             if self._check_role_permissions(context):
@@ -176,7 +183,10 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
             self.user_resource_permissions[user_id] = [
                 perm
                 for perm in self.user_resource_permissions[user_id]
-                if not (perm.resource_type == resource_type and perm.resource_id == resource_id)
+                if not (
+                    perm.resource_type == resource_type
+                    and perm.resource_id == resource_id
+                )
             ]
 
             # Create new permission
@@ -222,7 +232,10 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
             self.user_resource_permissions[user_id] = [
                 perm
                 for perm in self.user_resource_permissions[user_id]
-                if not (perm.resource_type == resource_type and perm.resource_id == resource_id)
+                if not (
+                    perm.resource_type == resource_type
+                    and perm.resource_id == resource_id
+                )
             ]
 
             # Check if any permissions were removed
@@ -289,4 +302,7 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
     def _check_explicit_permissions(self, context: AuthorizationContext) -> bool:
         """Check for explicit permissions granted for specific actions"""
         # Check the explicit_permissions attribute in the context
-        return bool(context.explicit_permissions and context.action in context.explicit_permissions)
+        return bool(
+            context.explicit_permissions
+            and context.action in context.explicit_permissions
+        )

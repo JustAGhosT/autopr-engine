@@ -95,7 +95,6 @@ def validate_links(project_root: str) -> dict[str, list[tuple[str, int, str]]]:
     markdown_files = find_markdown_files(project_root)
     broken_links = {}
 
-
     for file_path in markdown_files:
         links = extract_links(file_path)
         file_broken_links = []
@@ -131,7 +130,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-
     # Validate links
     broken_links = validate_links(project_root)
 
@@ -142,7 +140,6 @@ def main():
     report_file = os.path.join(project_root, "link_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     if broken_links:
         return 1

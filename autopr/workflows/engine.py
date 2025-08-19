@@ -5,8 +5,8 @@ Orchestrates workflow execution and manages workflow lifecycle.
 """
 
 import asyncio
-from datetime import datetime
 import logging
+from datetime import datetime
 from typing import Any
 
 from autopr.config import AutoPRConfig
@@ -82,7 +82,10 @@ class WorkflowEngine:
             logger.info(f"Unregistered workflow: {workflow_name}")
 
     async def execute_workflow(
-        self, workflow_name: str, context: dict[str, Any], workflow_id: str | None = None
+        self,
+        workflow_name: str,
+        context: dict[str, Any],
+        workflow_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Execute a workflow by name.
@@ -110,7 +113,9 @@ class WorkflowEngine:
             logger.info("Starting workflow execution: %s", execution_id)
 
             # Create execution task
-            task = asyncio.create_task(self._execute_workflow_task(workflow, context, execution_id))
+            task = asyncio.create_task(
+                self._execute_workflow_task(workflow, context, execution_id)
+            )
 
             # Track running workflow
             self.running_workflows[execution_id] = task
@@ -127,13 +132,17 @@ class WorkflowEngine:
         except TimeoutError:
             error_msg = f"Workflow execution timed out: {execution_id}"
             logger.exception("Workflow execution timed out: %s", execution_id)
-            self._record_execution(execution_id, workflow_name, "timeout", {"error": error_msg})
+            self._record_execution(
+                execution_id, workflow_name, "timeout", {"error": error_msg}
+            )
             raise WorkflowError(error_msg, workflow_name)
 
         except Exception as e:
             error_msg = f"Workflow execution failed: {e}"
             logger.exception("Workflow execution failed: %s - %s", execution_id, e)
-            self._record_execution(execution_id, workflow_name, "failed", {"error": str(e)})
+            self._record_execution(
+                execution_id, workflow_name, "failed", {"error": str(e)}
+            )
             raise WorkflowError(error_msg, workflow_name)
 
         finally:
@@ -171,7 +180,9 @@ class WorkflowEngine:
             logger.exception("Workflow task execution failed: %s - %s", execution_id, e)
             raise
 
-    async def process_event(self, event_type: str, event_data: dict[str, Any]) -> dict[str, Any]:
+    async def process_event(
+        self, event_type: str, event_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Process an event and trigger appropriate workflows.
 
@@ -189,10 +200,15 @@ class WorkflowEngine:
             if workflow.handles_event(event_type):
                 try:
                     result = await self.execute_workflow(
-                        workflow_name, {"event_type": event_type, "event_data": event_data}
+                        workflow_name,
+                        {"event_type": event_type, "event_data": event_data},
                     )
                     results.append(
-                        {"workflow": workflow_name, "status": "success", "result": result}
+                        {
+                            "workflow": workflow_name,
+                            "status": "success",
+                            "result": result,
+                        }
                     )
                 except Exception as e:
                     logger.exception(
@@ -201,9 +217,15 @@ class WorkflowEngine:
                         event_type,
                         e,
                     )
-                    results.append({"workflow": workflow_name, "status": "error", "error": str(e)})
+                    results.append(
+                        {"workflow": workflow_name, "status": "error", "error": str(e)}
+                    )
 
-        return {"event_type": event_type, "processed_workflows": len(results), "results": results}
+        return {
+            "event_type": event_type,
+            "processed_workflows": len(results),
+            "results": results,
+        }
 
     def _record_execution(
         self, execution_id: str, workflow_name: str, status: str, result: dict[str, Any]

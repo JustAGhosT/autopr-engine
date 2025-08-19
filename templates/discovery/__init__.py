@@ -19,26 +19,20 @@ Main Components:
 
 from .content_analyzer import ContentAnalyzer
 from .docs_generator import TemplateDocumentationGenerator
-from .format_generators import (
-    BaseFormatGenerator,
-    FormatGeneratorFactory,
-    HTMLGenerator,
-    JSONGenerator,
-    MarkdownGenerator,
-)
+from .format_generators import (BaseFormatGenerator, FormatGeneratorFactory,
+                                HTMLGenerator, JSONGenerator,
+                                MarkdownGenerator)
 from .qa_framework import QualityAssuranceFramework
-
 # Quality metrics have been moved to autopr.quality.template_metrics
 # Import them directly from there when needed
-from .report_generators import (
-    HTMLReportGenerator,
-    JSONReportGenerator,
-    MarkdownReportGenerator,
-)
-from .report_generators import ReportGeneratorFactory as QAReportGeneratorFactory
+from .report_generators import (HTMLReportGenerator, JSONReportGenerator,
+                                MarkdownReportGenerator)
+from .report_generators import \
+    ReportGeneratorFactory as QAReportGeneratorFactory
 from .template_browser import TemplateBrowser, TemplateInfo
 from .template_loader import TemplateLoader
-from .template_validators import ValidationIssue, ValidationSeverity, ValidatorRegistry
+from .template_validators import (ValidationIssue, ValidationSeverity,
+                                  ValidatorRegistry)
 from .validation_rules import ValidationRuleLoader
 
 __all__ = [

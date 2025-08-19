@@ -33,7 +33,11 @@ class FormatGeneratorFactory:
         Returns:
             Format generator instance
         """
-        generators = {"markdown": MarkdownGenerator, "html": HTMLGenerator, "json": JSONGenerator}
+        generators = {
+            "markdown": MarkdownGenerator,
+            "html": HTMLGenerator,
+            "json": JSONGenerator,
+        }
 
         generator_class = generators.get(format_type.lower(), MarkdownGenerator)
         return generator_class(config, template_loader)  # type: ignore
@@ -52,7 +56,9 @@ def generate_platform_guide(
     if template_loader is None:
         template_loader = TemplateLoader()
 
-    generator = FormatGeneratorFactory.create_generator(format_type, config, template_loader)
+    generator = FormatGeneratorFactory.create_generator(
+        format_type, config, template_loader
+    )
     return generator.generate_platform_guide(analysis)
 
 
@@ -68,7 +74,9 @@ def generate_documentation_index(
     if template_loader is None:
         template_loader = TemplateLoader()
 
-    generator = FormatGeneratorFactory.create_generator(format_type, config, template_loader)
+    generator = FormatGeneratorFactory.create_generator(
+        format_type, config, template_loader
+    )
 
     # Handle JSON format specially for summary data
     if format_type.lower() == "json" and hasattr(generator, "generate_summary_data"):

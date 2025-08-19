@@ -13,13 +13,9 @@ from typing import Any
 from .platform_recommendations import PlatformRecommendationEngine
 from .template_combinations import TemplateCombinationEngine
 from .template_file_loader import TemplateFileLoader
-from .template_models import (
-    PlatformRecommendation,
-    PlatformRequirements,
-    TemplateCombination,
-    TemplateInfo,
-    TemplateReport,
-)
+from .template_models import (PlatformRecommendation, PlatformRequirements,
+                              TemplateCombination, TemplateInfo,
+                              TemplateReport)
 from .template_reports import TemplateReportGenerator
 from .template_search import TemplateSearchEngine
 
@@ -58,7 +54,9 @@ class TemplateBrowser:
             self.templates, self.platform_categories
         )
         self.combination_engine = TemplateCombinationEngine(self.templates)
-        self.report_generator = TemplateReportGenerator(self.templates, self.platform_categories)
+        self.report_generator = TemplateReportGenerator(
+            self.templates, self.platform_categories
+        )
 
     def search_templates(
         self,
@@ -95,7 +93,9 @@ class TemplateBrowser:
         """Get recommended template combinations for a specific use case."""
         return self.combination_engine.get_template_combinations(use_case)
 
-    def get_integration_recommendations(self, template: TemplateInfo) -> list[TemplateInfo]:
+    def get_integration_recommendations(
+        self, template: TemplateInfo
+    ) -> list[TemplateInfo]:
         """Get integration recommendations for a specific template."""
         return self.combination_engine.get_integration_recommendations(template)
 
@@ -103,7 +103,9 @@ class TemplateBrowser:
         """Get workflow templates that complement the main template."""
         return self.combination_engine.get_workflow_templates(main_template)
 
-    def find_similar_templates(self, template: TemplateInfo, limit: int = 5) -> list[TemplateInfo]:
+    def find_similar_templates(
+        self, template: TemplateInfo, limit: int = 5
+    ) -> list[TemplateInfo]:
         """Find templates similar to the given template."""
         return self.search_engine.find_similar_templates(template, limit)
 
@@ -154,7 +156,9 @@ class TemplateBrowser:
             self.templates, self.platform_categories
         )
         self.combination_engine = TemplateCombinationEngine(self.templates)
-        self.report_generator = TemplateReportGenerator(self.templates, self.platform_categories)
+        self.report_generator = TemplateReportGenerator(
+            self.templates, self.platform_categories
+        )
 
     def get_template_count(self) -> int:
         """Get total number of loaded templates."""

@@ -36,6 +36,7 @@ class WindowsSecurityTool(Tool):
         """Check if Windows security tools are available."""
         # Check if we're on Windows and basic tools are available
         import platform
+
         if platform.system() != "Windows":
             return False
         return self.check_command_availability("bandit")
@@ -44,7 +45,9 @@ class WindowsSecurityTool(Tool):
         """Get the required command for this tool."""
         return "bandit"
 
-    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def run(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Run comprehensive security scanning using multiple tools.
         """
@@ -68,7 +71,9 @@ class WindowsSecurityTool(Tool):
 
         return all_issues
 
-    async def _run_bandit(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def _run_bandit(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Run Bandit security scanner with improved error handling."""
         try:
             # Filter for Python files
@@ -183,10 +188,14 @@ class WindowsSecurityTool(Tool):
         for file in files_to_check:
             if file.endswith(".py"):
                 try:
-                    file_issues = await self._check_python_security_patterns(file, config)
+                    file_issues = await self._check_python_security_patterns(
+                        file, config
+                    )
                     issues.extend(file_issues)
                 except Exception as e:
-                    issues.append({"error": f"Error checking security patterns in {file}: {e!s}"})
+                    issues.append(
+                        {"error": f"Error checking security patterns in {file}: {e!s}"}
+                    )
 
         return issues
 
@@ -254,4 +263,6 @@ class WindowsSecurityTool(Tool):
             return issues
 
         except Exception as e:
-            return [{"error": f"Error checking security patterns in {file_path}: {e!s}"}]
+            return [
+                {"error": f"Error checking security patterns in {file_path}: {e!s}"}
+            ]

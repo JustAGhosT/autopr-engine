@@ -5,14 +5,13 @@ and fixing code style and quality issues in a codebase.
 """
 
 import asyncio
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from autopr.actions.ai_linting_fixer import (
-    create_ai_linting_fixer as _create_ai_linting_fixer,
-)
+from autopr.actions.ai_linting_fixer import \
+    create_ai_linting_fixer as _create_ai_linting_fixer
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.agents.base import BaseAgent
 
@@ -116,9 +115,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         # Initialize the AI linting fixer (constructor manages its own LLM manager)
         if _create_ai_linting_fixer is None:
             msg = "AILintingFixer factory is not available. Ensure optional AI components are installed."
-            raise ImportError(
-                msg
-            )
+            raise ImportError(msg)
         self.linting_fixer = _create_ai_linting_fixer()
 
         # Register fixer agents
@@ -157,12 +154,16 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                         logger.exception("%s", error_msg)
                     raise FileNotFoundError(error_msg) from e
                 except PermissionError as e:
-                    error_msg = f"Permission denied when reading file: {inputs.file_path}"
+                    error_msg = (
+                        f"Permission denied when reading file: {inputs.file_path}"
+                    )
                     if self.verbose:
                         logger.exception("%s", error_msg)
                     raise PermissionError(error_msg) from e
                 except UnicodeDecodeError as e:
-                    error_msg = f"Could not decode file {inputs.file_path} as UTF-8: {e!s}"
+                    error_msg = (
+                        f"Could not decode file {inputs.file_path} as UTF-8: {e!s}"
+                    )
                     if self.verbose:
                         logger.exception("%s", error_msg)
                     # Preserve the original exception details while adding context

@@ -20,28 +20,18 @@ Note: This is the updated agent framework. Legacy agent imports have been remove
 
 import warnings
 
-from autopr.agents.agents import (
-    BaseAgent,
-    LintingAgent,
-    VolumeConfig,
-)
-
+from autopr.agents.agents import BaseAgent, LintingAgent, VolumeConfig
 # Import models
-from autopr.agents.models import (
-    CodeAnalysisReport,
-    CodeIssue,
-    IssueSeverity,
-    PlatformAnalysis,
-    PlatformComponent,
-)
+from autopr.agents.models import (CodeAnalysisReport, CodeIssue, IssueSeverity,
+                                  PlatformAnalysis, PlatformComponent)
 
 # Import modular agent IO types
 from .code_quality_agent import CodeQualityInputs, CodeQualityOutputs
-
 # Import crew from the crew module
 from .crew.main import AutoPRCrew
 from .linting_agent import LintingInputs, LintingOutputs
-from .platform_analysis_agent import PlatformAnalysisInputs, PlatformAnalysisOutputs
+from .platform_analysis_agent import (PlatformAnalysisInputs,
+                                      PlatformAnalysisOutputs)
 
 # Show deprecation warning for old import path
 warnings.warn(

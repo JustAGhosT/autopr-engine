@@ -36,6 +36,11 @@ async def create_axolo_integration() -> AxoloIntegration:
 def is_axolo_available() -> bool:
     """Check if Axolo integration is properly configured"""
 
-    required_vars = ["AXOLO_API_KEY", "AXOLO_WORKSPACE_URL", "SLACK_BOT_TOKEN", "GITHUB_TOKEN"]
+    required_vars = [
+        "AXOLO_API_KEY",
+        "AXOLO_WORKSPACE_URL",
+        "SLACK_BOT_TOKEN",
+        "GITHUB_TOKEN",
+    ]
 
     return all(os.getenv(var) for var in required_vars)

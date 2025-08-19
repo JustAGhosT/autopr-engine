@@ -5,11 +5,11 @@ This is the core module that orchestrates all the modular components
 to provide AI-powered linting fixes. Much cleaner and focused!
 """
 
+import logging
+import random
 from contextlib import suppress
 from datetime import UTC, datetime
-import logging
 from pathlib import Path
-import random
 from typing import Any
 
 from autopr.actions.llm.manager import LLMProviderManager
@@ -18,18 +18,14 @@ from autopr.config.settings import AutoPRConfig  # type: ignore[attr-defined]
 from .agents import AgentType, agent_manager
 from .database import AIInteractionDB, IssueQueueManager
 from .detection import issue_detector
-from .display import DisplayConfig, OutputMode, get_display
+from .display import DisplayConfig, OutputMode
 from .display import display_provider_status as display_show_provider_status
+from .display import get_display
 from .display import print_feature_status as display_print_feature_status
 from .file_ops import dry_run_ops, safe_file_ops
 from .metrics import MetricsCollector
-from .models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    LintingFixResult,
-    LintingIssue,
-    create_empty_outputs,
-)
+from .models import (AILintingFixerInputs, AILintingFixerOutputs,
+                     LintingFixResult, LintingIssue, create_empty_outputs)
 from .workflow import WorkflowContext, WorkflowIntegrationMixin
 
 # Optional Redis support
@@ -283,7 +279,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 "issues_addressed": 0,
             }
 
-    def queue_detected_issues(self, issues: list[LintingIssue], *, quiet: bool = False) -> int:
+    def queue_detected_issues(
+        self, issues: list[LintingIssue], *, quiet: bool = False
+    ) -> int:
         """Queue detected linting issues for database-first processing."""
         if not quiet:
             logger.info("Queueing %d issues for processing", len(issues))
@@ -393,7 +391,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
         - FileOperations for safe file handling
         - Database module for logging
         """
-        self.emit_event("started", {"total_issues": len(issues), "max_fixes": max_fixes})
+        self.emit_event(
+            "started", {"total_issues": len(issues), "max_fixes": max_fixes}
+        )
 
         # Simplified implementation for demonstration
         # In full version, this would use the agent manager
@@ -424,14 +424,16 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 self.metrics.end_operation(f"fix_issue_{i}")
 
         self.emit_event(
-            "completed", {"issues_fixed": len(fixed_issues), "files_modified": len(modified_files)}
+            "completed",
+            {"issues_fixed": len(fixed_issues), "files_modified": len(modified_files)},
         )
 
         return LintingFixResult(
             success=len(fixed_issues) > 0,
             fixed_issues=fixed_issues,
             remaining_issues=[
-                f"{issue.error_code}:{issue.line_number}" for issue in issues[max_fixes:]
+                f"{issue.error_code}:{issue.line_number}"
+                for issue in issues[max_fixes:]
             ],
             modified_files=modified_files,
         )
@@ -586,7 +588,8 @@ class AILintingFixer(WorkflowIntegrationMixin):
 
         # Create comprehensive results
         return AILintingFixerOutputs(
-            success=metrics_summary.get("success_rate", 0.0) > DEFAULT_SUCCESS_RATE_THRESHOLD,
+            success=metrics_summary.get("success_rate", 0.0)
+            > DEFAULT_SUCCESS_RATE_THRESHOLD,
             total_issues_found=metrics_summary.get("total_issues", 0),
             issues_fixed=metrics_summary.get("issues_fixed", 0),
             files_modified=metrics_summary.get("modified_files", []),
@@ -791,7 +794,9 @@ def print_feature_status() -> None:
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())
-        features["temporal_integration"] = available_orchestrators.get("temporal", False)
+        features["temporal_integration"] = available_orchestrators.get(
+            "temporal", False
+        )
         features["celery_integration"] = available_orchestrators.get("celery", False)
         features["prefect_integration"] = available_orchestrators.get("prefect", False)
     except Exception:

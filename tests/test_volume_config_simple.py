@@ -1,7 +1,7 @@
 """Comprehensive pytest tests for VolumeConfig validation."""
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Any
 
 import pytest  # type: ignore[import-not-found]
@@ -37,7 +37,10 @@ TEST_CASES = [
 ]
 
 
-@pytest.mark.parametrize(("test_name", "volume", "config_dict", "expected_ai_agents", "should_pass"), TEST_CASES)
+@pytest.mark.parametrize(
+    ("test_name", "volume", "config_dict", "expected_ai_agents", "should_pass"),
+    TEST_CASES,
+)
 def test_volume_config_initialization(
     test_name: str,
     volume: int,
@@ -55,7 +58,10 @@ def test_volume_config_initialization(
     # Should pass validation
     if test_name == "invalid string":
         # Expect a specific conversion warning and capture it
-        with pytest.warns(UserWarning, match="Could not convert value 'invalid' to boolean, defaulting to False"):
+        with pytest.warns(
+            UserWarning,
+            match="Could not convert value 'invalid' to boolean, defaulting to False",
+        ):
             config = VolumeConfig(volume=volume, config=config_dict)
     else:
         config = VolumeConfig(volume=volume, config=config_dict)

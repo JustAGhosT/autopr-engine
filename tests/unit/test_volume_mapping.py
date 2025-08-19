@@ -5,12 +5,9 @@ Tests for volume mapping functionality in AutoPR Engine.
 import pytest
 
 from autopr.enums import QualityMode
-from autopr.utils.volume_utils import (
-    VolumeLevel,
-    get_volume_config,
-    get_volume_level_name,
-    volume_to_quality_mode,
-)
+from autopr.utils.volume_utils import (VolumeLevel, get_volume_config,
+                                       get_volume_level_name,
+                                       volume_to_quality_mode)
 
 
 class TestVolumeMapping:
@@ -20,15 +17,27 @@ class TestVolumeMapping:
         ("volume", "expected_mode", "expected_config_keys"),
         [
             # Test minimum volume (0)
-            (0, QualityMode.ULTRA_FAST, {"enable_ai_agents", "max_fixes", "max_issues"}),
+            (
+                0,
+                QualityMode.ULTRA_FAST,
+                {"enable_ai_agents", "max_fixes", "max_issues"},
+            ),
             # Test quiet volume (250)
             (250, QualityMode.FAST, {"enable_ai_agents", "max_fixes", "max_issues"}),
             # Test moderate volume (500)
             (500, QualityMode.SMART, {"enable_ai_agents", "max_fixes", "max_issues"}),
             # Test high volume (750)
-            (750, QualityMode.COMPREHENSIVE, {"enable_ai_agents", "max_fixes", "max_issues"}),
+            (
+                750,
+                QualityMode.COMPREHENSIVE,
+                {"enable_ai_agents", "max_fixes", "max_issues"},
+            ),
             # Test maximum volume (1000)
-            (1000, QualityMode.AI_ENHANCED, {"enable_ai_agents", "max_fixes", "max_issues"}),
+            (
+                1000,
+                QualityMode.AI_ENHANCED,
+                {"enable_ai_agents", "max_fixes", "max_issues"},
+            ),
         ],
     )
     def test_volume_to_quality_mode(self, volume, expected_mode, expected_config_keys):
@@ -96,7 +105,9 @@ class TestVolumeMapping:
     def test_volume_level_enum(self):
         """Test VolumeLevel enum values."""
         assert VolumeLevel.SILENT.value == 0
-        assert VolumeLevel.QUIET.value == 100  # Matches actual implementation (1-199 range)
+        assert (
+            VolumeLevel.QUIET.value == 100
+        )  # Matches actual implementation (1-199 range)
         assert VolumeLevel.MODERATE.value == 300  # 200-399 range
         assert VolumeLevel.BALANCED.value == 500  # 400-599 range
         assert VolumeLevel.THOROUGH.value == 700  # 600-799 range

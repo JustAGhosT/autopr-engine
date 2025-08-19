@@ -158,7 +158,10 @@ class TaskRegistry:
                 category="ai",
                 complexity="high",
                 estimated_hours=12,
-                dependencies=["setup_redis_caching", "implement_basic_circuit_breakers"],
+                dependencies=[
+                    "setup_redis_caching",
+                    "implement_basic_circuit_breakers",
+                ],
                 files_created=[
                     "autopr/ai/routing/llm_router.py",
                     "autopr/ai/routing/load_balancer.py",
@@ -193,7 +196,10 @@ class TaskRegistry:
                 category="ai",
                 complexity="high",
                 estimated_hours=20,
-                dependencies=["setup_postgresql_integration", "implement_advanced_llm_routing"],
+                dependencies=[
+                    "setup_postgresql_integration",
+                    "implement_advanced_llm_routing",
+                ],
                 files_created=[
                     "autopr/ai/rag/vector_store.py",
                     "autopr/ai/rag/document_processor.py",
@@ -208,7 +214,10 @@ class TaskRegistry:
                 category="analytics",
                 complexity="high",
                 estimated_hours=25,
-                dependencies=["implement_prometheus_metrics", "setup_postgresql_integration"],
+                dependencies=[
+                    "implement_prometheus_metrics",
+                    "setup_postgresql_integration",
+                ],
                 files_created=[
                     "autopr/dashboard/analytics.py",
                     "autopr/dashboard/templates/",
@@ -250,7 +259,11 @@ class TaskRegistry:
                     "deployment/kubernetes/",
                     "docker-compose.prod.yml",
                 ],
-                packages_required=["boto3>=1.28.0", "google-cloud>=0.34.0", "azure-mgmt>=4.0.0"],
+                packages_required=[
+                    "boto3>=1.28.0",
+                    "google-cloud>=0.34.0",
+                    "azure-mgmt>=4.0.0",
+                ],
             ),
         }
 
@@ -362,7 +375,9 @@ class ImplementationPhases:
         phase = self.get_phase(phase_name)
 
         return [
-            dep_phase for dep_phase in phase.depends_on if not self._is_phase_completed(dep_phase)
+            dep_phase
+            for dep_phase in phase.depends_on
+            if not self._is_phase_completed(dep_phase)
         ]
 
     def _is_phase_completed(self, phase_name: str) -> bool:

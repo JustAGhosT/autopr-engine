@@ -9,9 +9,8 @@ import pytest
 
 from autopr.actions.quality_engine.tools.semgrep_tool import SemgrepTool
 from autopr.actions.quality_engine.tools.tool_base import Tool
-from autopr.actions.quality_engine.tools.windows_security_tool import (
-    WindowsSecurityTool,
-)
+from autopr.actions.quality_engine.tools.windows_security_tool import \
+    WindowsSecurityTool
 
 
 class TestTool:
@@ -295,7 +294,9 @@ class TestWindowsSecurityTool:
         """
 
         with patch("builtins.open", create=True) as mock_open:
-            mock_open.return_value.__enter__.return_value.read.return_value = test_content
+            mock_open.return_value.__enter__.return_value.read.return_value = (
+                test_content
+            )
 
             issues = await tool._check_python_security_patterns("test.py", {})
 

@@ -113,7 +113,9 @@ class AuthorizationMiddleware:
                     msg = "Request object not found"
                     raise ValueError(msg)
 
-                if not self.check_authorization(request, resource_type, resource_id, action):
+                if not self.check_authorization(
+                    request, resource_type, resource_id, action
+                ):
                     msg = "Access denied"
                     raise PermissionError(msg)
 
@@ -177,9 +179,7 @@ class AuthorizationMiddleware:
                         request, perm["resource_type"], resource_id, perm["action"]
                     ):
                         msg = f"Access denied - missing {perm['action']} permission on {perm['resource_type']}"
-                        raise PermissionError(
-                            msg
-                        )
+                        raise PermissionError(msg)
 
                 return func(*args, **kwargs)
 

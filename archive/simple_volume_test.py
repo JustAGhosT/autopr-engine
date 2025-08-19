@@ -1,7 +1,7 @@
 """Simple test for VolumeConfig validation."""
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add project root to path
 project_root = str(Path(__file__).parent.absolute())
@@ -10,7 +10,6 @@ if project_root not in sys.path:
 
 try:
     from autopr.agents.agents import VolumeConfig
-
 
     try:
         config = VolumeConfig(volume=500, config={"enable_ai_agents": True})

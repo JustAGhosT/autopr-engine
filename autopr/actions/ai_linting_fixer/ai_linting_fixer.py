@@ -55,9 +55,13 @@ class AILintingFixer:
         # Initialize specialized components
         self.issue_detector = IssueDetector()
         self.code_analyzer = CodeAnalyzer()
-        self.ai_agent_manager = AIAgentManager(self.llm_manager, self.performance_tracker)
+        self.ai_agent_manager = AIAgentManager(
+            self.llm_manager, self.performance_tracker
+        )
         self.file_manager = FileManager()
-        self.issue_fixer = IssueFixer(self.ai_agent_manager, self.file_manager, self.error_handler)
+        self.issue_fixer = IssueFixer(
+            self.ai_agent_manager, self.file_manager, self.error_handler
+        )
 
         # Initialize database for logging interactions
         try:
@@ -131,7 +135,9 @@ class AILintingFixer:
         """Get a formatted stack trace for the error."""
         import traceback
 
-        return "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        return "".join(
+            traceback.format_exception(type(error), error, error.__traceback__)
+        )
 
     def _analyze_validation_error(self, error: Exception) -> dict[str, Any]:
         """Analyze validation errors specifically."""
@@ -185,7 +191,9 @@ class AILintingFixer:
             ],
         }
 
-    def _get_error_recovery_suggestions(self, error_details: dict[str, Any]) -> list[str]:
+    def _get_error_recovery_suggestions(
+        self, error_details: dict[str, Any]
+    ) -> list[str]:
         """Get specific recovery suggestions based on error analysis."""
         suggestions = []
 
@@ -239,13 +247,17 @@ class AILintingFixer:
             if hasattr(inputs, "verbose") and inputs.verbose:
                 self.display.set_verbose(True)
                 # Set logging to DEBUG for verbose mode
-                logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(logging.DEBUG)
+                logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(
+                    logging.DEBUG
+                )
                 logging.getLogger("autopr.actions.llm").setLevel(logging.DEBUG)
                 logging.getLogger("httpx").setLevel(logging.DEBUG)
             elif hasattr(inputs, "quiet") and inputs.quiet:
                 self.display.set_quiet(True)
                 # Set logging to ERROR only for quiet mode
-                logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(logging.ERROR)
+                logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(
+                    logging.ERROR
+                )
                 logging.getLogger("autopr.actions.llm").setLevel(logging.ERROR)
                 logging.getLogger("httpx").setLevel(logging.ERROR)
 
@@ -321,13 +333,17 @@ class AILintingFixer:
             files_modified = set()
 
             for i, issue in enumerate(issues_to_process, 1):
-                self.display.operation.show_processing_progress(i, len(issues_to_process), issue)
+                self.display.operation.show_processing_progress(
+                    i, len(issues_to_process), issue
+                )
 
                 try:
                     # Read current file content
                     content = self.file_manager.read_file(issue.file_path)
                     if content is None:
-                        self.display.error.show_warning(f"Could not read file: {issue.file_path}")
+                        self.display.error.show_warning(
+                            f"Could not read file: {issue.file_path}"
+                        )
                         failed_issues.append(issue)
                         continue
 
@@ -372,7 +388,9 @@ class AILintingFixer:
 
                 except Exception as e:
                     failed_issues.append(issue)
-                    self.display.error.show_error(f"Error processing {issue.error_code}: {e!s}")
+                    self.display.error.show_error(
+                        f"Error processing {issue.error_code}: {e!s}"
+                    )
 
             # Show processing results
             self.display.operation.show_processing_results(
@@ -388,8 +406,12 @@ class AILintingFixer:
             # Create suggestions
             suggestions: list[str] = []
             if failed_issues:
-                suggestions.append("Try increasing --max-fixes if you want to process more issues")
-            suggestions.append("Check if the specified fix types match available issues")
+                suggestions.append(
+                    "Try increasing --max-fixes if you want to process more issues"
+                )
+            suggestions.append(
+                "Check if the specified fix types match available issues"
+            )
             if hasattr(inputs, "verbose") and not inputs.verbose:
                 suggestions.append("Use --verbose for detailed performance metrics")
             suggestions.append("Use --db-stats to view database statistics")
@@ -444,7 +466,10 @@ class AILintingFixer:
         return self
 
     def __exit__(
-        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
     ) -> None:
         """Context manager exit."""
         try:
@@ -468,7 +493,9 @@ class AILintingFixer:
 
 
 # Convenience functions for backward compatibility
-def create_ai_linting_fixer(display_config: DisplayConfig | None = None) -> AILintingFixer:
+def create_ai_linting_fixer(
+    display_config: DisplayConfig | None = None,
+) -> AILintingFixer:
     """Create an AI linting fixer with default configuration."""
     return AILintingFixer(display_config=display_config)
 

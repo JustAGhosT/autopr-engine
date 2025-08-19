@@ -37,7 +37,9 @@ class SvgToComponent(Action[Inputs, Outputs]):
         svg_code = svg_code.replace("<svg", "<svg {{...props}}")
         # Naive camelCase conversion for attributes like 'stroke-width'
         return re.sub(
-            r"(\w+)-(\w+)=", lambda m: f"{m.group(1)}{m.group(2).capitalize()}=", svg_code
+            r"(\w+)-(\w+)=",
+            lambda m: f"{m.group(1)}{m.group(2).capitalize()}=",
+            svg_code,
         )
 
     async def run(self, inputs: Inputs) -> Outputs:

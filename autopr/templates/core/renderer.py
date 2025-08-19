@@ -5,12 +5,13 @@ Handles rendering of templates with variables and variants.
 """
 
 import logging
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 import jinja2
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateError
+from jinja2 import (Environment, FileSystemLoader, StrictUndefined,
+                    TemplateError)
 
 from autopr.templates.models import TemplateMetadata, TemplateVariant
 
@@ -124,7 +125,9 @@ class TemplateRenderer:
             if strict:
                 msg = f"Template not found: {template_path}"
                 raise FileNotFoundError(msg) from e
-            logger.warning("Template not found, using empty template: %s", template_path)
+            logger.warning(
+                "Template not found, using empty template: %s", template_path
+            )
             return ""
 
         # Apply variant modifications if specified
@@ -144,7 +147,9 @@ class TemplateRenderer:
             msg = f"Failed to render template {template_path}: {e}"
             raise TemplateError(msg) from e
 
-    def _apply_variant(self, variant: TemplateVariant, variables: dict[str, Any]) -> dict[str, Any]:
+    def _apply_variant(
+        self, variant: TemplateVariant, variables: dict[str, Any]
+    ) -> dict[str, Any]:
         """Apply variant modifications to the variables.
 
         Args:
@@ -189,9 +194,9 @@ class TemplateRenderer:
             elif op == "append" and isinstance(target.get(last_part), list):
                 target[last_part].extend(value if isinstance(value, list) else [value])
             elif op == "prepend" and isinstance(target.get(last_part), list):
-                target[last_part] = (value if isinstance(value, list) else [value]) + target[
-                    last_part
-                ]
+                target[last_part] = (
+                    value if isinstance(value, list) else [value]
+                ) + target[last_part]
             elif op == "delete" and last_part in target:
                 del target[last_part]
 

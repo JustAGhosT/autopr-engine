@@ -62,9 +62,7 @@ class VolumeConfig:
                 mode, default_config = volume_to_quality_mode(self.volume)
             except Exception as e:
                 msg = f"Failed to get default mode and config for volume {self.volume}"
-                raise ValueError(
-                    msg
-                ) from e
+                raise ValueError(msg) from e
 
             # Initialize with default values
             self.quality_mode = mode

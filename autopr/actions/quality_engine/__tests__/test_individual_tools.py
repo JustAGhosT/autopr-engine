@@ -7,15 +7,14 @@ from unittest.mock import patch
 import pytest
 
 from autopr.actions.quality_engine.tools.bandit_tool import BanditTool
-from autopr.actions.quality_engine.tools.dependency_scanner_tool import (
-    DependencyScannerTool,
-)
+from autopr.actions.quality_engine.tools.dependency_scanner_tool import \
+    DependencyScannerTool
 from autopr.actions.quality_engine.tools.eslint_tool import ESLintTool
-from autopr.actions.quality_engine.tools.interrogate_tool import InterrogateTool
+from autopr.actions.quality_engine.tools.interrogate_tool import \
+    InterrogateTool
 from autopr.actions.quality_engine.tools.mypy_tool import MyPyTool
-from autopr.actions.quality_engine.tools.performance_analyzer_tool import (
-    PerformanceAnalyzerTool,
-)
+from autopr.actions.quality_engine.tools.performance_analyzer_tool import \
+    PerformanceAnalyzerTool
 from autopr.actions.quality_engine.tools.pytest_tool import PyTestTool
 from autopr.actions.quality_engine.tools.radon_tool import RadonTool
 from autopr.actions.quality_engine.tools.ruff_tool import RuffTool
@@ -129,7 +128,11 @@ class TestBanditTool:
     async def test_bandit_with_security_issues(self):
         """Test Bandit with security issues."""
         with patch.object(self.tool, "_run_command") as mock_run:
-            mock_run.return_value = (1, ">> Issue: [B101:assert_used] Use of assert detected.", "")
+            mock_run.return_value = (
+                1,
+                ">> Issue: [B101:assert_used] Use of assert detected.",
+                "",
+            )
 
             result = await self.tool.execute(self.test_files)
 
@@ -293,7 +296,11 @@ class TestESLintTool:
     async def test_eslint_with_linting_errors(self):
         """Test ESLint with linting errors."""
         with patch.object(self.tool, "_run_command") as mock_run:
-            mock_run.return_value = (1, "test.js:5:10 error 'x' is defined but never used", "")
+            mock_run.return_value = (
+                1,
+                "test.js:5:10 error 'x' is defined but never used",
+                "",
+            )
 
             result = await self.tool.execute(self.test_files)
 
@@ -325,7 +332,11 @@ class TestDependencyScannerTool:
     async def test_dependency_scanner_with_vulnerabilities(self):
         """Test Dependency Scanner with vulnerabilities."""
         with patch.object(self.tool, "_run_command") as mock_run:
-            mock_run.return_value = (1, "Vulnerability found in package: CVE-2023-1234", "")
+            mock_run.return_value = (
+                1,
+                "Vulnerability found in package: CVE-2023-1234",
+                "",
+            )
 
             result = await self.tool.execute(self.test_files)
 

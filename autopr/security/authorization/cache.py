@@ -21,9 +21,13 @@ class PermissionCache:
         """Generate cache key for permission check."""
         return f"{user_id}:{resource_type}:{resource_id}:{action}"
 
-    def get(self, user_id: str, resource_type: str, resource_id: str, action: str) -> bool | None:
+    def get(
+        self, user_id: str, resource_type: str, resource_id: str, action: str
+    ) -> bool | None:
         """Get cached permission result."""
-        cache_key = self._generate_cache_key(user_id, resource_type, resource_id, action)
+        cache_key = self._generate_cache_key(
+            user_id, resource_type, resource_id, action
+        )
 
         if cache_key in self.cache:
             result, timestamp = self.cache[cache_key]
@@ -38,9 +42,18 @@ class PermissionCache:
 
         return None
 
-    def set(self, user_id: str, resource_type: str, resource_id: str, action: str, result: bool):
+    def set(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        action: str,
+        result: bool,
+    ):
         """Cache permission result."""
-        cache_key = self._generate_cache_key(user_id, resource_type, resource_id, action)
+        cache_key = self._generate_cache_key(
+            user_id, resource_type, resource_id, action
+        )
         self.cache[cache_key] = (result, datetime.utcnow().timestamp())
         logger.debug("Permission cached", cache_key=cache_key, result=result)
 
@@ -50,7 +63,9 @@ class PermissionCache:
         for key in keys_to_remove:
             del self.cache[key]
         logger.debug(
-            "User permission cache invalidated", user_id=user_id, count=len(keys_to_remove)
+            "User permission cache invalidated",
+            user_id=user_id,
+            count=len(keys_to_remove),
         )
 
     def invalidate_resource(self, resource_type: str, resource_id: str):
@@ -76,7 +91,9 @@ class PermissionCache:
         """Get cache statistics."""
         now = datetime.utcnow().timestamp()
         valid_entries = sum(
-            1 for _, timestamp in self.cache.values() if now - timestamp < self.ttl_seconds
+            1
+            for _, timestamp in self.cache.values()
+            if now - timestamp < self.ttl_seconds
         )
 
         return {

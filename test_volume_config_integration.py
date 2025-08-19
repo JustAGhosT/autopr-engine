@@ -1,7 +1,7 @@
 """Integration test for VolumeConfig and QualityMode."""
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -60,7 +60,6 @@ def test_volume_config():
     assert config.config["allow_updates"] is True
     assert config.config["is_verified"] is True
     assert config.config["has_issues"] is False
-
 
 
 if __name__ == "__main__":

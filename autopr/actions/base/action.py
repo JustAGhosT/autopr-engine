@@ -2,8 +2,8 @@
 Base Action class for AutoPR.
 """
 
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)

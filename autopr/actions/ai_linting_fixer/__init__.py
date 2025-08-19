@@ -17,37 +17,20 @@ except Exception:
     CODE_ANALYZER_AVAILABLE = False
 from .detection import IssueDetector
 from .display import DisplayConfig, DisplayFormatter, ErrorDisplay, OutputMode
-from .error_handler import (
-    ErrorCategory,
-    ErrorContext,
-    ErrorHandler,
-    ErrorInfo,
-    ErrorRecoveryStrategy,
-    ErrorSeverity,
-    create_error_context,
-    get_default_error_handler,
-)
+from .error_handler import (ErrorCategory, ErrorContext, ErrorHandler,
+                            ErrorInfo, ErrorRecoveryStrategy, ErrorSeverity,
+                            create_error_context, get_default_error_handler)
 from .file_manager import FileManager
 from .issue_fixer import IssueFixer
-from .models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    FixAttemptLog,
-    LintingFixResult,
-    LintingIssue,
-    OrchestrationConfig,
-    PerformanceMetrics,
-    WorkflowContext,
-    WorkflowEvent,
-    WorkflowResult,
-)
-from .orchestration import (
-    create_workflow_context,
-    detect_available_orchestrators,
-    execute_with_orchestration,
-    get_orchestration_config,
-    validate_orchestration_config,
-)
+from .models import (AILintingFixerInputs, AILintingFixerOutputs,
+                     FixAttemptLog, LintingFixResult, LintingIssue,
+                     OrchestrationConfig, PerformanceMetrics, WorkflowContext,
+                     WorkflowEvent, WorkflowResult)
+from .orchestration import (create_workflow_context,
+                            detect_available_orchestrators,
+                            execute_with_orchestration,
+                            get_orchestration_config,
+                            validate_orchestration_config)
 from .performance_tracker import PerformanceTracker
 
 # Optional symbols (pre-declared as variables)
@@ -68,7 +51,8 @@ except ImportError:
 # Main class (optional AI imports)
 try:
     from .ai_linting_fixer import AILintingFixer as _AILintingFixer
-    from .ai_linting_fixer import create_ai_linting_fixer as _create_ai_linting_fixer
+    from .ai_linting_fixer import \
+        create_ai_linting_fixer as _create_ai_linting_fixer
     from .ai_linting_fixer import run_ai_linting_fixer as _run_ai_linting_fixer
 
     AILintingFixer = _AILintingFixer
@@ -125,7 +109,8 @@ if not AI_LINTING_FIXER_AVAILABLE:
     __all__ = [
         item
         for item in __all__
-        if item not in ["AILintingFixer", "create_ai_linting_fixer", "run_ai_linting_fixer"]
+        if item
+        not in ["AILintingFixer", "create_ai_linting_fixer", "run_ai_linting_fixer"]
     ]
 
 if not CODE_ANALYZER_AVAILABLE:

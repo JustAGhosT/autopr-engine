@@ -28,9 +28,7 @@ def validate_config(config: QualityEngineConfig) -> None:
         for tool in tools:
             if tool not in config.tools:
                 msg = f"Tool '{tool}' in mode '{mode}' is not defined in the tools section."
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
 
 
 def _merge_quality_from_dict(
@@ -43,8 +41,12 @@ def _merge_quality_from_dict(
 
     # Merge tools
     if isinstance(quality_config.get("tools"), dict):
-        merged_tools: dict[str, Any] = dict(cast("dict[str, Any]", default_config.get("tools", {})))
-        for tool, tool_config in cast("dict[str, Any]", quality_config["tools"]).items():
+        merged_tools: dict[str, Any] = dict(
+            cast("dict[str, Any]", default_config.get("tools", {}))
+        )
+        for tool, tool_config in cast(
+            "dict[str, Any]", quality_config["tools"]
+        ).items():
             merged_tools[cast("str", tool)] = cast("dict[str, Any]", tool_config)
         default_config["tools"] = merged_tools
 
@@ -141,7 +143,8 @@ def load_config(config_path: str = "pyproject.toml") -> QualityEngineConfig:
                     and "quality" in autopr_section
                 ):
                     _merge_quality_from_dict(
-                        cast("dict[str, Any]", autopr_section["quality"]), default_config
+                        cast("dict[str, Any]", autopr_section["quality"]),
+                        default_config,
                     )
 
             elif config_path.endswith((".yaml", ".yml")):

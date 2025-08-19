@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 class AxoloMessaging:
     """Handles message formatting and posting to Slack via Axolo."""
 
-    def __init__(self, config: AxoloConfig, session: aiohttp.ClientSession | None = None):
+    def __init__(
+        self, config: AxoloConfig, session: aiohttp.ClientSession | None = None
+    ):
         self.config = config
         self.session = session
 
@@ -25,7 +27,9 @@ class AxoloMessaging:
             summary_parts.append(f"Platform: {analysis_result['platform_detected']}")
 
         if analysis_result.get("confidence_score"):
-            summary_parts.append(f"Confidence: {analysis_result['confidence_score']:.0%}")
+            summary_parts.append(
+                f"Confidence: {analysis_result['confidence_score']:.0%}"
+            )
 
         issues_count = len(analysis_result.get("issues_found", []))
         summary_parts.append(f"Issues Found: {issues_count}")
@@ -45,7 +49,10 @@ class AxoloMessaging:
 
         return {
             "type": "section",
-            "text": {"type": "mrkdwn", "text": "*Issues Found:*\n" + "\n".join(issues_text)},
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Issues Found:*\n" + "\n".join(issues_text),
+            },
         }
 
     def create_next_steps_block(self, next_steps: list[str]) -> dict[str, Any]:
@@ -67,9 +74,13 @@ class AxoloMessaging:
 
         try:
             if self.session and self.config.slack_webhook:
-                async with self.session.post(self.config.slack_webhook, json=message) as response:
+                async with self.session.post(
+                    self.config.slack_webhook, json=message
+                ) as response:
                     if response.status != 200:
-                        logger.error(f"Failed to post Slack message - status: {response.status}")
+                        logger.error(
+                            f"Failed to post Slack message - status: {response.status}"
+                        )
         except Exception as e:
             logger.exception(f"Error posting Slack message: {e!s}")
 

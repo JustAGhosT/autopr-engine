@@ -27,7 +27,8 @@ class SeedDatabase(Action[Inputs, Outputs]):
     async def run(self, inputs: Inputs) -> Outputs:
         if not pathlib.Path(inputs.seed_file_path).is_file():
             return Outputs(
-                success=False, log=f"Error: Seed file '{inputs.seed_file_path}' not found."
+                success=False,
+                log=f"Error: Seed file '{inputs.seed_file_path}' not found.",
             )
 
         # Simulating with a command: psql -d <conn_string> -f <file>
@@ -61,7 +62,8 @@ if __name__ == "__main__":
         run_action_manually(
             action=SeedDatabase,
             inputs=Inputs(
-                database_connection_string="dummy_connection_string", seed_file_path="seed-test.sql"
+                database_connection_string="dummy_connection_string",
+                seed_file_path="seed-test.sql",
             ),
         )
     )

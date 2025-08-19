@@ -3,18 +3,20 @@ AutoPR Action: Learning & Memory System
 Tracks patterns, user preferences, and project context to improve decision-making over time.
 """
 
-from datetime import datetime
 import hashlib
 import os
 import pathlib
 import sqlite3
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel
 
 
 class MemoryInputs(BaseModel):
-    action_type: str  # "record_fix", "record_preference", "get_patterns", "get_recommendations"
+    action_type: (
+        str  # "record_fix", "record_preference", "get_patterns", "get_recommendations"
+    )
     user_id: str | None = None
     file_path: str | None = None
     comment_type: str | None = None
@@ -111,7 +113,9 @@ class LearningMemorySystem:
         cursor = conn.cursor()
 
         try:
-            file_ext = os.path.splitext(inputs.file_path or "")[1] if inputs.file_path else ""
+            file_ext = (
+                os.path.splitext(inputs.file_path or "")[1] if inputs.file_path else ""
+            )
 
             # Check if pattern exists
             cursor.execute(
@@ -328,7 +332,9 @@ class LearningMemorySystem:
                 else "double"
             ),
             "indentation": (
-                "spaces" if style_indicators["spaces"] > style_indicators["tabs"] else "tabs"
+                "spaces"
+                if style_indicators["spaces"] > style_indicators["tabs"]
+                else "tabs"
             ),
         }
 
@@ -372,7 +378,9 @@ class LearningMemorySystem:
 
         return patterns
 
-    def _store_project_context(self, project_hash: str, patterns: dict[str, Any]) -> None:
+    def _store_project_context(
+        self, project_hash: str, patterns: dict[str, Any]
+    ) -> None:
         """Store project context in database."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -422,7 +430,9 @@ def learning_memory_action(inputs: MemoryInputs) -> MemoryOutputs:
         recommendations = memory_system.get_fix_recommendations(
             inputs.comment_type, inputs.file_path
         )
-        confidence_scores = {rec["fix_type"]: rec["confidence"] for rec in recommendations}
+        confidence_scores = {
+            rec["fix_type"]: rec["confidence"] for rec in recommendations
+        }
         return MemoryOutputs(
             success=True,
             recommendations=[rec["fix_type"] for rec in recommendations],

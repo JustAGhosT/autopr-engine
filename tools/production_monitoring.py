@@ -1,7 +1,7 @@
 # production_monitoring.py
 import asyncio
-from datetime import UTC, datetime, timedelta
 import logging
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -46,7 +46,10 @@ class ProductionMonitor:
             self.logger.info(
                 "Continue request - Model: %s, User: %s, "
                 "Response time: %.2fs, Cost: $%.4f",
-                model, user_id, response_time, calculated_cost
+                model,
+                user_id,
+                response_time,
+                calculated_cost,
             )
 
             return {

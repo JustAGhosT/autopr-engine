@@ -2,8 +2,8 @@
 Tests for Quality Engine core functionality.
 """
 
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -36,7 +36,9 @@ class TestQualityEngine:
             )
             mock_run_tools.return_value = mock_result
 
-            result = await self.engine.execute(files=self.test_files, mode=QualityMode.FAST)
+            result = await self.engine.execute(
+                files=self.test_files, mode=QualityMode.FAST
+            )
 
             assert result.success is True
             assert result.total_issues == 2
@@ -51,7 +53,10 @@ class TestQualityEngine:
                 total_issues_found=5,
                 total_issues_fixed=0,
                 files_modified=[],
-                issues_by_tool={"ruff": [{"issue": "test"}], "bandit": [{"issue": "test"}]},
+                issues_by_tool={
+                    "ruff": [{"issue": "test"}],
+                    "bandit": [{"issue": "test"}],
+                },
                 files_by_tool={"ruff": ["test.py"], "bandit": ["test.py"]},
                 summary="Test summary",
             )
@@ -109,7 +114,9 @@ class TestQualityEngine:
                 )
                 mock_run_tools.return_value = mock_result
 
-                result = await self.engine.execute(files=self.test_files, mode=QualityMode.SMART)
+                result = await self.engine.execute(
+                    files=self.test_files, mode=QualityMode.SMART
+                )
 
                 assert result.success is True
                 mock_select.assert_called_once_with(self.test_files)
@@ -152,7 +159,9 @@ class TestQualityEngine:
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
             mock_run_tools.side_effect = Exception("Tool execution failed")
 
-            result = await self.engine.execute(files=self.test_files, mode=QualityMode.FAST)
+            result = await self.engine.execute(
+                files=self.test_files, mode=QualityMode.FAST
+            )
 
             assert result.success is False
             assert "Tool execution failed" in result.error_message
@@ -179,7 +188,9 @@ class TestQualityEngine:
     def test_validate_configuration(self):
         """Test configuration validation."""
         # Test valid configuration
-        valid_config = {"tools": {"ruff": {"enabled": True}, "bandit": {"enabled": True}}}
+        valid_config = {
+            "tools": {"ruff": {"enabled": True}, "bandit": {"enabled": True}}
+        }
         assert self.engine._validate_configuration(valid_config) is True
 
         # Test invalid configuration (missing required fields)
@@ -205,7 +216,9 @@ class TestQualityEngine:
         fast_tools = self.engine._get_available_tools(QualityMode.FAST)
         assert "ruff" in fast_tools
 
-        comprehensive_tools = self.engine._get_available_tools(QualityMode.COMPREHENSIVE)
+        comprehensive_tools = self.engine._get_available_tools(
+            QualityMode.COMPREHENSIVE
+        )
         assert "ruff" in comprehensive_tools
         assert "bandit" in comprehensive_tools
         assert "mypy" in comprehensive_tools
@@ -233,7 +246,10 @@ class TestQualityEngine:
 
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
             mock_result = QualityResult(
-                success=True, total_issues=1, files_with_issues=1, issues_by_tool={"ruff": 1}
+                success=True,
+                total_issues=1,
+                files_with_issues=1,
+                issues_by_tool={"ruff": 1},
             )
             mock_run_tools.return_value = mock_result
 
@@ -278,11 +294,17 @@ class TestQualityEngine:
     def test_merge_results(self):
         """Test merging multiple tool results."""
         result1 = QualityResult(
-            success=True, total_issues=2, files_with_issues=1, issues_by_tool={"ruff": 2}
+            success=True,
+            total_issues=2,
+            files_with_issues=1,
+            issues_by_tool={"ruff": 2},
         )
 
         result2 = QualityResult(
-            success=True, total_issues=3, files_with_issues=2, issues_by_tool={"bandit": 3}
+            success=True,
+            total_issues=3,
+            files_with_issues=2,
+            issues_by_tool={"bandit": 3},
         )
 
         merged = self.engine._merge_results([result1, result2])
@@ -318,12 +340,17 @@ class TestQualityEngineIntegration:
     async def test_end_to_end_fast_mode(self):
         """Test end-to-end Quality Engine execution in fast mode."""
         # Create test files
-        test_file1 = self.create_test_file("test1.py", "def test_function():\n    pass\n")
+        test_file1 = self.create_test_file(
+            "test1.py", "def test_function():\n    pass\n"
+        )
         test_file2 = self.create_test_file("test2.py", "import os\nprint('hello')\n")
 
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
             mock_result = QualityResult(
-                success=True, total_issues=1, files_with_issues=1, issues_by_tool={"ruff": 1}
+                success=True,
+                total_issues=1,
+                files_with_issues=1,
+                issues_by_tool={"ruff": 1},
             )
             mock_run_tools.return_value = mock_result
 
@@ -363,7 +390,9 @@ def complex_function():
             )
             mock_run_tools.return_value = mock_result
 
-            result = await self.engine.execute(files=[test_file], mode=QualityMode.COMPREHENSIVE)
+            result = await self.engine.execute(
+                files=[test_file], mode=QualityMode.COMPREHENSIVE
+            )
 
             assert result.success is True
             assert result.total_issues == 3

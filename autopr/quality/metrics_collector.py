@@ -3,11 +3,11 @@ AutoPR Evaluation: Metrics Collector
 Comprehensive system for tracking performance, accuracy, and user satisfaction metrics.
 """
 
-from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
 import json
 import sqlite3
 import statistics
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from pydantic import BaseModel
@@ -267,7 +267,9 @@ class MetricsCollector:
 
         # Calculate accuracy metrics
         fix_success_rate = self._calculate_fix_success_rate(cursor, start_time)
-        classification_accuracy = self._calculate_classification_accuracy(cursor, start_time)
+        classification_accuracy = self._calculate_classification_accuracy(
+            cursor, start_time
+        )
         false_positive_rate = self._calculate_false_positive_rate(cursor, start_time)
         user_satisfaction = self._calculate_user_satisfaction(cursor, start_time)
 
@@ -281,7 +283,9 @@ class MetricsCollector:
         code_quality_score = self._calculate_code_quality_score(cursor, start_time)
         test_pass_rate = self._calculate_test_pass_rate(cursor, start_time)
         security_score = self._calculate_security_score(cursor, start_time)
-        maintainability_index = self._calculate_maintainability_index(cursor, start_time)
+        maintainability_index = self._calculate_maintainability_index(
+            cursor, start_time
+        )
 
         # Calculate system metrics
         uptime = self._calculate_uptime(cursor, start_time)
@@ -353,7 +357,9 @@ class MetricsCollector:
         conn.close()
         return benchmark_data
 
-    def get_trend_analysis(self, metric_name: str, timeframe: str = "30d") -> dict[str, Any]:
+    def get_trend_analysis(
+        self, metric_name: str, timeframe: str = "30d"
+    ) -> dict[str, Any]:
         """Get trend analysis for a specific metric."""
         start_time = self._get_start_time(timeframe)
 
@@ -381,9 +387,13 @@ class MetricsCollector:
 
         # Calculate trend
         if len(values) >= 2:
-            recent_avg = statistics.mean(values[-7:]) if len(values) >= 7 else values[-1]
+            recent_avg = (
+                statistics.mean(values[-7:]) if len(values) >= 7 else values[-1]
+            )
             older_avg = statistics.mean(values[:7]) if len(values) >= 14 else values[0]
-            change_percent = ((recent_avg - older_avg) / older_avg * 100) if older_avg != 0 else 0
+            change_percent = (
+                ((recent_avg - older_avg) / older_avg * 100) if older_avg != 0 else 0
+            )
 
             if change_percent > 5:
                 trend = "improving"
@@ -452,7 +462,9 @@ class MetricsCollector:
             return now - timedelta(minutes=minutes)
         return now - timedelta(days=7)  # Default to 7 days
 
-    def _calculate_fix_success_rate(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_fix_success_rate(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate the rate of successful automated fixes."""
         cursor.execute(
             """
@@ -483,7 +495,9 @@ class MetricsCollector:
         result = cursor.fetchone()
         return result[0] or 0.0
 
-    def _calculate_false_positive_rate(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_false_positive_rate(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate false positive rate for automated actions."""
         cursor.execute(
             """
@@ -499,7 +513,9 @@ class MetricsCollector:
         total, rejected = result
         return (rejected / total) if total > 0 else 0.0
 
-    def _calculate_user_satisfaction(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_user_satisfaction(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate average user satisfaction score."""
         cursor.execute(
             """
@@ -512,7 +528,9 @@ class MetricsCollector:
         result = cursor.fetchone()
         return result[0] or 0.0
 
-    def _calculate_avg_response_time(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_avg_response_time(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate average response time in seconds."""
         cursor.execute(
             """
@@ -526,7 +544,9 @@ class MetricsCollector:
         avg_ms = result[0] or 0
         return avg_ms / 1000.0  # Convert to seconds
 
-    def _calculate_avg_resolution_time(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_avg_resolution_time(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate average time to resolve issues."""
         cursor.execute(
             """
@@ -540,7 +560,9 @@ class MetricsCollector:
         avg_ms = result[0] or 0
         return avg_ms / 1000.0  # Convert to seconds
 
-    def _calculate_api_cost(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_api_cost(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate average API cost per comment."""
         cursor.execute(
             """
@@ -553,7 +575,9 @@ class MetricsCollector:
         result = cursor.fetchone()
         return result[0] or 0.0
 
-    def _calculate_coverage_rate(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_coverage_rate(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate percentage of comments handled automatically."""
         cursor.execute(
             """
@@ -570,7 +594,9 @@ class MetricsCollector:
         total, automated = result
         return (automated / total) if total > 0 else 0.0
 
-    def _calculate_code_quality_score(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_code_quality_score(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate average code quality score."""
         cursor.execute(
             """
@@ -583,7 +609,9 @@ class MetricsCollector:
         result = cursor.fetchone()
         return result[0] or 0.0
 
-    def _calculate_test_pass_rate(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_test_pass_rate(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate test pass rate for automated fixes."""
         cursor.execute(
             """
@@ -599,7 +627,9 @@ class MetricsCollector:
         total, passed = result
         return (passed / total) if total > 0 else 0.0
 
-    def _calculate_security_score(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_security_score(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate security score."""
         cursor.execute(
             """
@@ -643,7 +673,9 @@ class MetricsCollector:
         total, successful = result
         return (successful / total) if total > 0 else 1.0
 
-    def _calculate_error_rate(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_error_rate(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate system error rate."""
         cursor.execute(
             """
@@ -659,7 +691,9 @@ class MetricsCollector:
         total, errors = result
         return (errors / total) if total > 0 else 0.0
 
-    def _calculate_throughput(self, cursor: sqlite3.Cursor, start_time: datetime) -> float:
+    def _calculate_throughput(
+        self, cursor: sqlite3.Cursor, start_time: datetime
+    ) -> float:
         """Calculate comments processed per hour."""
         cursor.execute(
             """
@@ -725,11 +759,15 @@ class MetricsCollector:
 
         # Fix success rate recommendations
         if metrics.fix_success_rate < 0.8:
-            recommendations.append("Consider improving fix success rate by enhancing quality gates")
+            recommendations.append(
+                "Consider improving fix success rate by enhancing quality gates"
+            )
 
         # User satisfaction recommendations
         if metrics.user_satisfaction_score < 3.5:
-            recommendations.append("User satisfaction is low - review comment handling strategies")
+            recommendations.append(
+                "User satisfaction is low - review comment handling strategies"
+            )
 
         # Response time recommendations
         if metrics.avg_response_time > 5.0:
@@ -739,7 +777,9 @@ class MetricsCollector:
 
         # Error rate recommendations
         if metrics.error_rate > 0.1:
-            recommendations.append("Error rate is elevated - investigate system stability issues")
+            recommendations.append(
+                "Error rate is elevated - investigate system stability issues"
+            )
 
         # Trend-based recommendations
         for metric, trend_data in trends.items():

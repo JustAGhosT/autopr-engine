@@ -5,9 +5,9 @@ Automatically fixes markdown issues and re-stages files
 """
 
 import hashlib
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def get_file_hash(file_path):
@@ -37,7 +37,9 @@ def main():
 
     for file_path in files:
         # Resolve the full path relative to repo root
-        full_path = Path(file_path) if Path(file_path).is_absolute() else repo_root / file_path
+        full_path = (
+            Path(file_path) if Path(file_path).is_absolute() else repo_root / file_path
+        )
 
         if not full_path.exists():
             continue

@@ -36,7 +36,10 @@ class TestAIAnalyzer:
 
             result = await self.analyzer.analyze_code_quality(self.test_files)
 
-            assert result["suggestions"] == ["Consider adding type hints", "Add docstring"]
+            assert result["suggestions"] == [
+                "Consider adding type hints",
+                "Add docstring",
+            ]
             assert result["score"] == 0.85
             assert result["issues"] == ["Missing type hints", "No docstring"]
             mock_provider.analyze.assert_called_once()
@@ -48,16 +51,25 @@ class TestAIAnalyzer:
             mock_provider = MagicMock()
             mock_provider.analyze = AsyncMock(
                 return_value={
-                    "security_issues": ["Potential SQL injection", "Hardcoded credentials"],
+                    "security_issues": [
+                        "Potential SQL injection",
+                        "Hardcoded credentials",
+                    ],
                     "risk_level": "medium",
-                    "recommendations": ["Use parameterized queries", "Use environment variables"],
+                    "recommendations": [
+                        "Use parameterized queries",
+                        "Use environment variables",
+                    ],
                 }
             )
             mock_get_provider.return_value = mock_provider
 
             result = await self.analyzer.analyze_security_issues(self.test_files)
 
-            assert result["security_issues"] == ["Potential SQL injection", "Hardcoded credentials"]
+            assert result["security_issues"] == [
+                "Potential SQL injection",
+                "Hardcoded credentials",
+            ]
             assert result["risk_level"] == "medium"
             assert result["recommendations"] == [
                 "Use parameterized queries",
@@ -103,7 +115,10 @@ class TestAIAnalyzer:
 
             result = await self.analyzer.analyze_best_practices(self.test_files)
 
-            assert result["best_practices"] == ["Follow PEP 8", "Use meaningful variable names"]
+            assert result["best_practices"] == [
+                "Follow PEP 8",
+                "Use meaningful variable names",
+            ]
             assert result["violations"] == ["Line too long", "Unused import"]
 
     @pytest.mark.asyncio
@@ -148,7 +163,9 @@ class TestAIAnalyzer:
         """Test AI analysis when provider fails."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
             mock_provider = MagicMock()
-            mock_provider.analyze = AsyncMock(side_effect=Exception("AI provider error"))
+            mock_provider.analyze = AsyncMock(
+                side_effect=Exception("AI provider error")
+            )
             mock_get_provider.return_value = mock_provider
 
             result = await self.analyzer.analyze_code_quality(self.test_files)
@@ -379,10 +396,15 @@ class TestAIEnhancementIntegration:
                 mock_run_tools.return_value = mock_tool_result
 
                 # Mock AI analysis
-                mock_ai_analysis.return_value = {"suggestions": ["Add type hints"], "score": 0.85}
+                mock_ai_analysis.return_value = {
+                    "suggestions": ["Add type hints"],
+                    "score": 0.85,
+                }
 
                 # Execute AI-enhanced mode
-                result = await engine.execute(files=self.test_files, mode=QualityMode.AI_ENHANCED)
+                result = await engine.execute(
+                    files=self.test_files, mode=QualityMode.AI_ENHANCED
+                )
 
                 assert result.success is True
                 assert result.total_issues == 2

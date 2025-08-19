@@ -1,7 +1,8 @@
 import html
 import re
 
-from autopr.security.validation_models import ValidationResult, ValidationSeverity
+from autopr.security.validation_models import (ValidationResult,
+                                               ValidationSeverity)
 
 # Constants
 MAX_KEY_LENGTH = 100
@@ -99,7 +100,9 @@ class StringValidator:
 
         return result
 
-    def _check_format_validation(self, key: str, sanitized_value: str) -> ValidationResult:
+    def _check_format_validation(
+        self, key: str, sanitized_value: str
+    ) -> ValidationResult:
         """Check format validation for specific contexts."""
         result = ValidationResult(is_valid=True)
 
