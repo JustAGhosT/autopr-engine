@@ -34,7 +34,9 @@ class TestVolumeIntegration(unittest.TestCase):
         )
 
         # Patch the tool runner to avoid actual execution
-        self.tool_runner_patcher = patch("autopr.actions.quality_engine.engine.run_tool")
+        self.tool_runner_patcher = patch(
+            "autopr.actions.quality_engine.engine.run_tool"
+        )
         self.mock_run_tool = self.tool_runner_patcher.start()
         self.mock_run_tool.return_value = MagicMock(
             issues=[],
@@ -73,7 +75,7 @@ class TestVolumeIntegration(unittest.TestCase):
         # Test volume 1000 (max)
         config = get_volume_config(1000)
         assert config["mode"] == QualityMode.AI_ENHANCED
-        assert config["max_fixes"] == 100  # Capped at 100
+        assert config["max_fixes"] == 500  # Capped at 500 (MAX_FIXES)
 
     async def test_volume_based_tool_selection(self):
         """Test that tool selection is influenced by volume level."""
@@ -125,7 +127,7 @@ class TestVolumeIntegration(unittest.TestCase):
 
         # Verify inputs were updated
         assert inputs.mode == QualityMode.AI_ENHANCED
-        assert inputs.max_fixes == 100
+        assert inputs.max_fixes == 500  # MAX_FIXES is 500
         assert inputs.enable_ai_agents
 
     async def test_volume_in_execute_method(self):

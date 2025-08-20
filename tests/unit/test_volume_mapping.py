@@ -23,23 +23,66 @@ class TestVolumeMapping:
             (
                 0,
                 QualityMode.ULTRA_FAST,
-                {"enable_ai_agents", "max_fixes", "max_issues"},
+                {
+                    "enable_ai_agents",
+                    "max_fixes",
+                    "max_issues",
+                    "ai_fixer_enabled",
+                    "ai_fixer_max_fixes",
+                    "ai_fixer_issue_types",
+                },
             ),
             # Test quiet volume (250)
-            (250, QualityMode.FAST, {"enable_ai_agents", "max_fixes", "max_issues"}),
+            (
+                250,
+                QualityMode.FAST,
+                {
+                    "enable_ai_agents",
+                    "max_fixes",
+                    "max_issues",
+                    "ai_fixer_enabled",
+                    "ai_fixer_max_fixes",
+                    "ai_fixer_issue_types",
+                },
+            ),
             # Test moderate volume (500)
-            (500, QualityMode.SMART, {"enable_ai_agents", "max_fixes", "max_issues"}),
+            (
+                500,
+                QualityMode.SMART,
+                {
+                    "enable_ai_agents",
+                    "max_fixes",
+                    "max_issues",
+                    "ai_fixer_enabled",
+                    "ai_fixer_max_fixes",
+                    "ai_fixer_issue_types",
+                },
+            ),
             # Test high volume (750)
             (
                 750,
                 QualityMode.COMPREHENSIVE,
-                {"enable_ai_agents", "max_fixes", "max_issues"},
+                {
+                    "enable_ai_agents",
+                    "max_fixes",
+                    "max_issues",
+                    "ai_fixer_enabled",
+                    "ai_fixer_max_fixes",
+                    "ai_fixer_issue_types",
+                },
             ),
             # Test maximum volume (1000)
             (
                 1000,
                 QualityMode.AI_ENHANCED,
-                {"enable_ai_agents", "max_fixes", "max_issues"},
+                {
+                    "enable_ai_agents",
+                    "max_fixes",
+                    "max_issues",
+                    "ai_fixer_enabled",
+                    "ai_fixer_max_fixes",
+                    "ai_fixer_issue_types",
+                },
             ),
         ],
     )
@@ -108,7 +151,9 @@ class TestVolumeMapping:
     def test_volume_level_enum(self):
         """Test VolumeLevel enum values."""
         assert VolumeLevel.SILENT.value == 0
-        assert VolumeLevel.QUIET.value == 100  # Matches actual implementation (1-199 range)
+        assert (
+            VolumeLevel.QUIET.value == 100
+        )  # Matches actual implementation (1-199 range)
         assert VolumeLevel.MODERATE.value == 300  # 200-399 range
         assert VolumeLevel.BALANCED.value == 500  # 400-599 range
         assert VolumeLevel.THOROUGH.value == 700  # 600-799 range
