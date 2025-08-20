@@ -9,6 +9,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+
 try:
     from autogen import ConversableAgent, GroupChat, GroupChatManager
 
@@ -135,10 +136,10 @@ class AutoGenAgentSystem:
             PR Comment Analysis Task:
 
             Comment: {inputs.comment_body}
-            File: {inputs.file_path or 'N/A'}
+            File: {inputs.file_path or "N/A"}
 
             File Content Preview:
-            {inputs.file_content[:500] if inputs.file_content else 'No content provided'}
+            {inputs.file_content[:500] if inputs.file_content else "No content provided"}
 
             PR Context: {json.dumps(inputs.pr_context, indent=2)}
 
@@ -197,7 +198,7 @@ class AutoGenAgentSystem:
             Security Audit Task:
 
             Comment: {inputs.comment_body}
-            File: {inputs.file_path or 'N/A'}
+            File: {inputs.file_path or "N/A"}
 
             Please perform a comprehensive security audit focusing on:
             1. Identifying potential vulnerabilities
@@ -233,7 +234,7 @@ class AutoGenAgentSystem:
             Code Review Task:
 
             Comment: {inputs.comment_body}
-            File: {inputs.file_path or 'N/A'}
+            File: {inputs.file_path or "N/A"}
 
             Please conduct a thorough code review covering:
             1. Code quality and maintainability

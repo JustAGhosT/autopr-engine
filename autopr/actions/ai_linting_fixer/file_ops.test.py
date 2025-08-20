@@ -4,8 +4,13 @@ from pathlib import Path
 import tempfile
 import unittest
 
+
 try:
-    from .file_ops import BackupManager, FileValidator, SafeFileOperations
+    from autopr.actions.ai_linting_fixer.file_ops import (
+        BackupManager,
+        FileValidator,
+        SafeFileOperations,
+    )
 except ImportError:
     from file_ops import BackupManager, SafeFileOperations
 

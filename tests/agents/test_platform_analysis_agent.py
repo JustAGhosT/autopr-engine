@@ -142,7 +142,11 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Verify project config
         assert "project_config" in result
-        assert result["project_config"] == {"build_command": "npm run build", "start_command": "npm start", "output_directory": "dist"}
+        assert result["project_config"] == {
+            "build_command": "npm run build",
+            "start_command": "npm start",
+            "output_directory": "dist",
+        }
 
         # Verify the config manager was called correctly
         mock_manager.get_platform.assert_called_once_with(PlatformType.REACT.value)
@@ -171,7 +175,10 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
 
         # Mock the detector's analyze method to return a mock analysis
         mock_analysis_instance = MagicMock()
-        mock_analysis_instance.platforms = [(PlatformType.REACT, 0.9), (PlatformType.NEXT_JS, 0.8)]
+        mock_analysis_instance.platforms = [
+            (PlatformType.REACT, 0.9),
+            (PlatformType.NEXT_JS, 0.8),
+        ]
         mock_analysis_instance.tools = ["npm", "yarn"]
         mock_analysis_instance.frameworks = ["React", "Next.js"]
         mock_analysis_instance.languages = ["TypeScript", "JavaScript"]

@@ -10,6 +10,7 @@ from typing import Any, TypedDict, TypeVar
 
 import structlog
 
+
 # Change the bound to Any to allow TypedDict
 TConfig = TypeVar("TConfig", bound=Any)
 TIssue = TypeVar("TIssue")
@@ -251,7 +252,7 @@ class Tool[TConfig: Any, TIssue](ABC):
         # Check timeout
         if "timeout" in config:
             timeout = config["timeout"]
-            if not isinstance(timeout, (int, float)) or timeout <= 0:
+            if not isinstance(timeout, int | float) or timeout <= 0:
                 errors.append("Timeout must be a positive number")
 
         # Check max_files

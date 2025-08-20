@@ -22,7 +22,9 @@ class PlatformScoringEngine:
         }
 
     def calculate_platform_scores(
-        self, platform_configs: dict[str, dict[str, Any]], detection_results: dict[str, Any]
+        self,
+        platform_configs: dict[str, dict[str, Any]],
+        detection_results: dict[str, Any],
     ) -> dict[str, float]:
         """Calculate confidence scores for all platforms."""
         scores = {}
@@ -195,7 +197,10 @@ class PlatformScoringEngine:
         return opportunities
 
     def _calculate_single_platform_score(
-        self, platform: str, platform_config: dict[str, Any], detection_results: dict[str, Any]
+        self,
+        platform: str,
+        platform_config: dict[str, Any],
+        detection_results: dict[str, Any],
     ) -> float:
         """Calculate confidence score for a single platform.
 

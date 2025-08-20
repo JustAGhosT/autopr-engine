@@ -16,8 +16,9 @@ except ImportError:
     fixed_count = linter.fix_files()
 """
 
-from .linter import YAMLLinter
-from .models import FileReport, IssueSeverity, LintIssue
+from tools.yaml_lint.linter import YAMLLinter
+from tools.yaml_lint.models import FileReport, IssueSeverity, LintIssue
+
 
 __version__ = "0.1.0"
 __all__ = ["FileReport", "IssueSeverity", "LintIssue", "YAMLLinter"]

@@ -131,7 +131,11 @@ def _run_ruff_black(py_files: list[str], volume: int, apply_fixes: bool) -> int:
 
 def _run_prettier(text_files: list[str]) -> int:
     """Run Prettier on text files if available and not disabled."""
-    if not text_files or os.getenv("PRECOMMIT_DISABLE_PRETTIER", "0") in {"1", "true", "True"}:
+    if not text_files or os.getenv("PRECOMMIT_DISABLE_PRETTIER", "0") in {
+        "1",
+        "true",
+        "True",
+    }:
         return 0
     prettier = shutil.which("prettier") or shutil.which("npx")
     if prettier:
@@ -194,10 +198,12 @@ def _persist_ruff_findings(py_files: list[str]) -> int:
         import json
 
         from autopr.actions.ai_linting_fixer.database import (
-            AIInteractionDB,  # type: ignore
+            AIInteractionDB,
         )
+
+        # type: ignore
         from autopr.actions.ai_linting_fixer.queue_manager import (
-            IssueQueueManager,  # type: ignore
+            IssueQueueManager,
         )
 
         findings = json.loads(out_json)
@@ -235,7 +241,15 @@ def _collect_ruff_findings(targets: list[str]) -> list[dict]:
         # Prefer python -m ruff if available; otherwise fall back to CLI
         cmd: list[str]
         if importlib.util.find_spec("ruff") is not None:
-            cmd = [sys.executable, "-m", "ruff", "check", "--output-format", "json", *targets]
+            cmd = [
+                sys.executable,
+                "-m",
+                "ruff",
+                "check",
+                "--output-format",
+                "json",
+                *targets,
+            ]
         elif shutil.which("ruff"):
             ruff_bin = shutil.which("ruff")  # type: ignore[assignment]
             cmd = [str(ruff_bin), "check", "--output-format", "json", *targets]
@@ -257,10 +271,12 @@ def _persist_findings(findings: list[dict]) -> int:
         return 0
     try:
         from autopr.actions.ai_linting_fixer.database import (
-            AIInteractionDB,  # type: ignore
+            AIInteractionDB,
         )
+
+        # type: ignore
         from autopr.actions.ai_linting_fixer.queue_manager import (
-            IssueQueueManager,  # type: ignore
+            IssueQueueManager,
         )
 
         issues: list[dict[str, object]] = []
@@ -293,9 +309,58 @@ def _persist_findings(findings: list[dict]) -> int:
 
 def _run_quality_engine(files: list[str]) -> int:
     """Run comprehensive quality engine (blocking)."""
-    cmd = [sys.executable, "-m", "autopr.actions.quality_engine", "--mode", "comprehensive"]
+    cmd = [
+        sys.executable,
+        "-m",
+        "autopr.actions.quality_engine",
+        "--mode",
+        "comprehensive",
+    ]
     if files:
         cmd.extend(["--files", *files])
+    return _run(cmd)
+
+
+def _run_ai_fixer(files: list[str], volume: int) -> int:
+    """Run AI fixer based on volume level."""
+    if not files:
+        return 0
+
+    # Determine max fixes based on volume
+    if volume >= 800:
+        max_fixes = 50
+    elif volume >= 600:
+        max_fixes = 30
+    elif volume >= 400:
+        max_fixes = 20
+    else:  # volume >= 300
+        max_fixes = 10
+
+    # Determine issue types based on volume
+    if volume >= 700:
+        fix_types = ["E501", "F401", "F841", "UP006", "TID252", "E722", "B001"]
+    elif volume >= 500:
+        fix_types = ["E501", "F401", "F841", "UP006", "TID252"]
+    else:  # volume >= 300
+        fix_types = ["E501", "F401", "F841"]
+
+    cmd = (
+        [
+            sys.executable,
+            "-m",
+            "autopr.actions.ai_linting_fixer.ai_linting_fixer",
+            "--target",
+            "--max-fixes",
+            str(max_fixes),
+            "--provider=azure_openai",
+            "--model=gpt-35-turbo",
+            "--fix-types",
+        ]
+        + fix_types
+        + files
+    )
+
+    print(f"🤖 Running AI Fixer (volume {volume}): max_fixes={max_fixes}, types={fix_types}")
     return _run(cmd)
 
 
@@ -411,7 +476,15 @@ def main(argv: list[str]) -> int:
     if volume >= 600:
         rc |= _run_quality_engine(files)
 
-    if volume < 300 and os.getenv("AUTOPR_PRECOMMIT_AI_SUGGEST", "0") in {"1", "true", "True"}:
+    # AI Fixer integration - runs at volume >= 300
+    if volume >= 300:
+        rc |= _run_ai_fixer(py_files, volume)
+
+    if volume < 300 and os.getenv("AUTOPR_PRECOMMIT_AI_SUGGEST", "0") in {
+        "1",
+        "true",
+        "True",
+    }:
         _run_ai_suggestions(py_files)
 
     if volume <= 300:
@@ -421,12 +494,17 @@ def main(argv: list[str]) -> int:
                 ", ".join([f"{code}:{count}" for code, count in rule_counts.most_common(5)])
             if file_counts:
                 from pathlib import Path as _P
+
                 ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
         _print_low_volume_note()
         return 0
 
     # Final concise summary
-    "all files (repo)" if repo_scope else (f"{len(py_files)} Python files" if py_files else "no python files")
+    (
+        "all files (repo)"
+        if repo_scope
+        else (f"{len(py_files)} Python files" if py_files else "no python files")
+    )
     if text_files:
         pass
     if 200 <= volume < 600 and os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {
@@ -438,6 +516,7 @@ def main(argv: list[str]) -> int:
             ", ".join([f"{code}:{count}" for code, count in rule_counts.most_common(5)])
         if file_counts:
             from pathlib import Path as _P
+
             ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
         next_hint = os.getenv("AUTOPR_BG_FIX", "0")
         if next_hint in {"1", "true", "True"}:

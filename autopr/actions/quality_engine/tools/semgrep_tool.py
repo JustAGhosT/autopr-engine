@@ -6,7 +6,7 @@ import asyncio
 import json
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class SemgrepTool(Tool):
@@ -48,7 +48,7 @@ class SemgrepTool(Tool):
             return []
 
         # Limit the number of files to prevent timeouts
-        files_to_check = files[:self.max_files_per_run]
+        files_to_check = files[: self.max_files_per_run]
 
         # Build the command
         command = ["semgrep", "--json", "--quiet", *files_to_check]
@@ -168,7 +168,13 @@ class SemgrepTool(Tool):
             return "security"
 
         # Check for performance patterns
-        performance_keywords = ["performance", "efficiency", "complexity", "memory", "cpu"]
+        performance_keywords = [
+            "performance",
+            "efficiency",
+            "complexity",
+            "memory",
+            "cpu",
+        ]
 
         if any(keyword in rule_id.lower() for keyword in performance_keywords):
             return "performance"

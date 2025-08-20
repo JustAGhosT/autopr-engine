@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import structlog
 
+
 logger = structlog.get_logger(__name__)
 
 
@@ -91,7 +92,9 @@ class EnterpriseEncryptionManager:
                 file.write(decrypted_data)
 
             logger.info(
-                "File decrypted successfully", source=encrypted_file_path, destination=output_path
+                "File decrypted successfully",
+                source=encrypted_file_path,
+                destination=output_path,
             )
         except Exception:
             logger.exception("File decryption failed", file_path=str(encrypted_file_path))

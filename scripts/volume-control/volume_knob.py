@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+
 try:
     from .config_loader import VolumeConfigLoader
 except ImportError:
@@ -21,30 +22,27 @@ class VolumeKnob:
 
     def __init__(self, knob_name: str):
         self.knob_name = knob_name
-        self.config_file = Path(f"volume_{knob_name}.json")
+        self.config_file = f".volume-{knob_name}.json"
         self.current_volume = self.load_volume()
         self.config_loader = VolumeConfigLoader()
         self.vscode_settings_file = Path(".vscode/settings.json")
 
     def load_volume(self) -> int:
         """Load current volume setting"""
-        try:
-            with self.config_file.open() as f:
+        if os.path.exists(self.config_file):
+            with open(self.config_file) as f:
                 config = json.load(f)
                 return config.get("volume", 0)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return 0
+        return 0
 
     def save_volume(self, volume: int):
-        """Save volume setting with current timestamp"""
-        from datetime import datetime
-
+        """Save volume setting"""
         config = {
             "knob_name": self.knob_name,
             "volume": volume,
-            "last_updated": datetime.utcnow().isoformat() + "Z",  # ISO 8601 with UTC timezone
+            "last_updated": str(Path().absolute()),
         }
-        with self.config_file.open("w") as f:
+        with open(self.config_file, "w") as f:
             json.dump(config, f, indent=2)
 
     def apply_settings_for_volume(self, volume: int):
@@ -53,10 +51,10 @@ class VolumeKnob:
         volume_settings = self.config_loader.get_settings_for_volume(volume)
 
         # Load existing VS Code settings
-        try:
-            with self.vscode_settings_file.open() as f:
+        if self.vscode_settings_file.exists():
+            with open(self.vscode_settings_file) as f:
                 current_settings = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
+        else:
             current_settings = {}
 
         # Apply volume-specific settings
@@ -66,29 +64,28 @@ class VolumeKnob:
         self.vscode_settings_file.parent.mkdir(exist_ok=True)
 
         # Write updated settings
-        with self.vscode_settings_file.open("w") as f:
+        with open(self.vscode_settings_file, "w") as f:
             json.dump(current_settings, f, indent=2)
 
         # Show what's active
         active_tools = self.config_loader.get_active_tools(volume)
         if active_tools:
-            pass
+            print(f"Active tools: {', '.join(active_tools)}")
         else:
-            pass
+            print("All tools disabled (Volume 0)")
 
     def set_volume(self, volume: int):
         """Set volume (0-1000, must be multiple of 5)"""
         if not 0 <= volume <= 1000:
-            msg = f"Volume must be between 0 and 1000, got {volume}"
-            raise ValueError(msg)
+            raise ValueError(f"Volume must be between 0 and 1000, got {volume}")
 
         if volume % 5 != 0:
-            msg = f"Volume must be multiple of 5, got {volume}"
-            raise ValueError(msg)
+            raise ValueError(f"Volume must be multiple of 5, got {volume}")
 
         self.current_volume = volume
         self.save_volume(volume)
         self.apply_settings_for_volume(volume)
+        print(f"Volume {self.knob_name} set to {volume}/1000")
 
     def get_volume(self) -> int:
         """Get current volume"""
@@ -171,7 +168,12 @@ class DevVolumeKnob(VolumeKnob):
         """Apply the current volume settings to the development environment"""
         volume = self.current_volume
 
+    def apply_volume_settings(self):
+        """Apply the current volume settings to the development environment"""
+        volume = self.current_volume
+
         # Plain text message without emoji
+        print(f"Applying Commit Volume {volume}/1000: {self.get_volume_description()}")
 
         # Use JSON migration system
         from json_migrations import json_migrations
@@ -186,22 +188,31 @@ class DevVolumeKnob(VolumeKnob):
         self._refresh_environment()
 
         # Plain text success message
+        print(f"Commit Volume {volume}/1000 applied successfully")
+        print(f"Checks enabled: {', '.join(config.get('checks', []))}")
 
     def _apply_pre_commit_config(self, pre_commit_config: dict[str, Any]):
         """Apply pre-commit configuration linked to Quality Engine modes."""
         # Message adjusted for plain text
+        print("Updated pre-commit configuration")
+        print(f"Config: {pre_commit_config}")
 
     def _refresh_environment(self):
         """Refresh the development environment after applying settings."""
 
         # Plain text refresh message
+        print("Refreshing environment...")
 
         # Rest of the logic remains unchanged
-        touch_file = Path(".volume-refresh")
-        with touch_file.open("w") as f:
+        touch_file = ".volume-refresh"
+        with open(touch_file, "w") as f:
             f.write(f"Volume changed at {__import__('datetime').datetime.now()}")
 
         # Substitute potential errors
+        print("Environment refresh triggered")
+        print(
+            "If using VS Code or Cursor, consider manually reloading the window and restarting the language server."
+        )
 
         # Use JSON migration system
         from json_migrations import json_migrations
@@ -218,15 +229,17 @@ class DevVolumeKnob(VolumeKnob):
         # Refresh environment
         self._refresh_environment()
 
+        print(f"✅ Dev Volume {volume}/1000 applied successfully")
+        print(f"   Checks enabled: {', '.join(config.get('checks', []))}")
 
     def _apply_vscode_settings(self, settings: dict[str, Any]):
         """Apply VS Code settings"""
         os.makedirs(".vscode", exist_ok=True)
 
         # Load existing settings
-        settings_path = Path(".vscode/settings.json")
-        if settings_path.exists():
-            with settings_path.open() as f:
+        settings_path = ".vscode/settings.json"
+        if os.path.exists(settings_path):
+            with open(settings_path) as f:
                 existing_settings = json.load(f)
         else:
             existing_settings = {}
@@ -235,15 +248,17 @@ class DevVolumeKnob(VolumeKnob):
         existing_settings.update(settings)
 
         # Save settings
-        with settings_path.open("w") as f:
+        with open(settings_path, "w") as f:
             json.dump(existing_settings, f, indent=4)
 
+        print("✅ Applied VS Code settings")
 
     def _apply_config_files(self, config_files: dict[str, str]):
         """Apply configuration files"""
         for filename, content in config_files.items():
-            with Path(filename).open("w") as f:
+            with open(filename, "w") as f:
                 f.write(content)
+            print(f"✅ Created {filename}")
 
     def _apply_config_files_from_json(self, config: dict[str, Any]):
         """Apply configuration files from JSON migration config"""
@@ -254,18 +269,22 @@ class DevVolumeKnob(VolumeKnob):
         # Apply Ruff config
         ruff_config = json_migrations.get_ruff_config(volume)
         if ruff_config:
-            with Path(".ruff.toml").open("w") as f:
+            with open(".ruff.toml", "w") as f:
                 f.write(ruff_config)
-        elif Path(".ruff.toml").exists():
-            Path(".ruff.toml").unlink()
+            print("✅ Created .ruff.toml")
+        elif os.path.exists(".ruff.toml"):
+            os.remove(".ruff.toml")
+            print("✅ Removed .ruff.toml")
 
         # Apply Pyright config
         pyright_config = json_migrations.get_pyright_config(volume)
         if pyright_config:
-            with Path("pyrightconfig.json").open("w") as f:
+            with open("pyrightconfig.json", "w") as f:
                 f.write(pyright_config)
-        elif Path("pyrightconfig.json").exists():
-            Path("pyrightconfig.json").unlink()
+            print("✅ Created pyrightconfig.json")
+        elif os.path.exists("pyrightconfig.json"):
+            os.remove("pyrightconfig.json")
+            print("✅ Removed pyrightconfig.json")
 
         # Apply pyproject.toml configuration
         self._apply_pyproject_config(volume)
@@ -275,14 +294,16 @@ class DevVolumeKnob(VolumeKnob):
         import toml
 
         # Load existing pyproject.toml
-        pyproject_path = Path("pyproject.toml")
-        if not pyproject_path.exists():
+        pyproject_path = "pyproject.toml"
+        if not os.path.exists(pyproject_path):
+            print("⚠️  pyproject.toml not found")
             return
 
         try:
-            with pyproject_path.open() as f:
+            with open(pyproject_path) as f:
                 pyproject_data = toml.load(f)
-        except Exception:
+        except Exception as e:
+            print(f"⚠️  Error reading pyproject.toml: {e}")
             return
 
         # Update based on volume level
@@ -293,7 +314,13 @@ class DevVolumeKnob(VolumeKnob):
                     pyproject_data["tool"]["ruff"] = {
                         "line-length": 120,
                         "target-version": "py312",
-                        "exclude": [".*", "*/venv/*", "*/__pycache__/*", "*/build/*", "*/dist/*"],
+                        "exclude": [
+                            ".*",
+                            "*/venv/*",
+                            "*/__pycache__/*",
+                            "*/build/*",
+                            "*/dist/*",
+                        ],
                     }
                     if "lint" not in pyproject_data["tool"]["ruff"]:
                         pyproject_data["tool"]["ruff"]["lint"] = {}
@@ -382,7 +409,10 @@ class DevVolumeKnob(VolumeKnob):
                     }
 
                 if "bandit" in pyproject_data["tool"]:
-                    pyproject_data["tool"]["bandit"] = {"skips": ["ALL"], "exclude_dirs": ["*"]}
+                    pyproject_data["tool"]["bandit"] = {
+                        "skips": ["ALL"],
+                        "exclude_dirs": ["*"],
+                    }
 
                 if "pydocstyle" in pyproject_data["tool"]:
                     pyproject_data["tool"]["pydocstyle"] = {
@@ -394,28 +424,30 @@ class DevVolumeKnob(VolumeKnob):
 
         # Save updated pyproject.toml
         try:
-            with pyproject_path.open("w") as f:
+            with open(pyproject_path, "w") as f:
                 toml.dump(pyproject_data, f)
-        except Exception:
-            pass
+            print("✅ Updated pyproject.toml for level 0")
+        except Exception as e:
+            print(f"⚠️  Error writing pyproject.toml: {e}")
 
     def _refresh_environment(self):
         """Refresh the development environment after applying settings"""
         import platform
         import subprocess
 
+        print("🔄 Refreshing environment...")
 
         # Create a touch file to trigger IDE refresh
-        touch_file = Path(".volume-refresh")
-        with touch_file.open("w") as f:
+        touch_file = ".volume-refresh"
+        with open(touch_file, "w") as f:
             f.write(f"Volume changed at {__import__('datetime').datetime.now()}")
 
         # Remove the touch file after a short delay
         import time
 
         time.sleep(0.1)
-        if touch_file.exists():
-            touch_file.unlink()
+        if os.path.exists(touch_file):
+            os.remove(touch_file)
 
         # Try to reload VS Code window if possible
         try:
@@ -423,21 +455,30 @@ class DevVolumeKnob(VolumeKnob):
                 # On Windows, try to reload VS Code window
                 subprocess.run(
                     ["code", "--command", "workbench.action.reloadWindow"],
+                    check=False,
                     capture_output=True,
                     timeout=5,
-                    check=False,
                 )
             else:
                 # On other platforms, try to reload VS Code window
                 subprocess.run(
                     ["code", "--command", "workbench.action.reloadWindow"],
+                    check=False,
                     capture_output=True,
                     timeout=5,
-                    check=False,
                 )
-        except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
+        except (
+            subprocess.TimeoutExpired,
+            FileNotFoundError,
+            subprocess.SubprocessError,
+        ):
             # If VS Code command fails, just continue
             pass
+        print("✅ Environment refresh triggered")
+        print("💡 If using VS Code/Cursor, you may need to:")
+        print("   - Reload the window (Ctrl+Shift+P -> 'Developer: Reload Window')")
+        print("   - Or restart the Python language server")
+        print("   - Or restart your IDE")
 
         # Removed invalid or unintended code fragment at line 214.
 
@@ -455,6 +496,7 @@ class CommitVolumeKnob(VolumeKnob):
         """Apply the current volume settings to commit checks"""
         volume = self.current_volume
 
+        print(f"🎛️ Applying Commit Volume {volume}/1000: {self.get_volume_description()}")
 
         # Use JSON migration system
         from json_migrations import json_migrations
@@ -468,169 +510,115 @@ class CommitVolumeKnob(VolumeKnob):
         # Refresh environment
         self._refresh_environment()
 
+        print(f"Commit Volume {volume}/1000 applied successfully")
+        print(f"Checks enabled: {', '.join(config.get('checks', []))}")
 
     def _apply_pre_commit_config(self, pre_commit_config: dict[str, Any]):
         """Apply pre-commit configuration"""
         # Adjusted print statements
+        print("Updated pre-commit configuration")
+        print(f"Config: {pre_commit_config}")
 
         # Make sure this is applied only as a direct substitution for the respective portion of the code. Everything else in the file remains unmodified.
+        print(f"   Config: {pre_commit_config}")
 
-
-class VolumeController:
-    """Controller for managing volume across different environments."""
-
-    def __init__(self):
-        """Initialize the volume controller."""
-        self.dev_knob = VolumeKnob("dev")
-        self.commit_knob = VolumeKnob("commit")
-
-    def apply_volume_settings(self) -> None:
-        """Apply volume settings for both environments."""
-        self.dev_knob.apply_settings_for_volume(self.dev_knob.current_volume)
-        self.commit_knob.apply_settings_for_volume(self.commit_knob.current_volume)
-
-    def apply_volume_settings(self) -> None:
-        """Apply volume settings for both environments."""
-        self.dev_knob.apply_settings_for_volume(self.dev_knob.current_volume)
-        self.commit_knob.apply_settings_for_volume(self.commit_knob.current_volume)
-
-    def _apply_pre_commit_config(self, pre_commit_config: dict[str, Any]) -> None:
-        """Apply pre-commit configuration based on volume."""
-        # Create touch file to trigger pre-commit refresh
-        touch_file = Path(".pre-commit-config.yaml.touch")
-        with touch_file.open("w") as f:
-            f.write(f"# Volume: {self.commit_knob.current_volume}\n")
-
-    def _refresh_environment(self) -> None:
-        """Refresh the development environment."""
-        # Create touch files to trigger various refreshes
-        touch_files = [
-            Path(".vscode/settings.json.touch"),
-            Path("pyproject.toml.touch"),
-            Path(".ruff.toml.touch"),
-        ]
-
-        for touch_file in touch_files:
-            with touch_file.open("w") as f:
-                f.write(f"# Volume: {self.dev_knob.current_volume}\n")
-
-    def _apply_vscode_settings(self, settings: dict[str, Any]) -> None:
-        """Apply VS Code settings."""
-        settings_path = Path(".vscode/settings.json")
-        settings_path.parent.mkdir(exist_ok=True)
-
-        try:
-            with settings_path.open() as f:
-                current_settings = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            current_settings = {}
-
-        # Merge settings
-        current_settings.update(settings)
-
-        with settings_path.open("w") as f:
-            json.dump(current_settings, f, indent=2)
-
-    def _create_touch_file(self, filename: str) -> None:
-        """Create a touch file to trigger refreshes."""
-        with Path(filename).open("w") as f:
-            f.write(f"# Volume: {self.dev_knob.current_volume}\n")
-
-    def _update_ruff_config(self) -> None:
-        """Update Ruff configuration based on volume."""
-        config_content = f"""# AutoPR Volume: {self.dev_knob.current_volume}
-[tool.ruff]
-target-version = "py39"
-line-length = 88
-"""
-        with Path(".ruff.toml").open("w") as f:
-            f.write(config_content)
-
-    def _update_pyright_config(self) -> None:
-        """Update Pyright configuration based on volume."""
-        config_content = f"""// AutoPR Volume: {self.dev_knob.current_volume}
-{
-  "include": ["autopr", "tests", "tools"],
-  "exclude": ["**/node_modules", "**/__pycache__"],
-  "reportMissingImports": true,
-  "reportMissingTypeStubs": false
-}
-"""
-        with Path("pyrightconfig.json").open("w") as f:
-            f.write(config_content)
-
-    def _update_pyproject_toml(self) -> None:
-        """Update pyproject.toml based on volume."""
-        pyproject_path = Path("pyproject.toml")
-
-        try:
-            with pyproject_path.open() as f:
-                content = f.read()
-        except FileNotFoundError:
-            content = """[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "autopr-engine"
-version = "0.1.0"
-description = "AutoPR Engine"
-requires-python = ">=3.9"
-"""
-
-        # Add volume comment
-        if f"# AutoPR Volume: {self.dev_knob.current_volume}" not in content:
-            content = f"# AutoPR Volume: {self.dev_knob.current_volume}\n{content}"
-
-        with pyproject_path.open("w") as f:
-            f.write(content)
-
-    def _create_volume_touch_file(self) -> None:
-        """Create a touch file to indicate volume change."""
-        touch_file = Path(f"volume_changed_{self.dev_knob.current_volume}.touch")
-        with touch_file.open("w") as f:
-            f.write(f"Volume changed to {self.dev_knob.current_volume}\n")
+    def _refresh_environment(self):
+        """Refresh environment variables for pre-commit"""
+        # Set environment variable for volume-aware pre-commit
+        os.environ["AUTOPR_PRECOMMIT_VOLUME"] = str(self.get_volume())
+        print(f"Environment refreshed: AUTOPR_PRECOMMIT_VOLUME={self.get_volume()}")
 
 
 def main():
-    """Main function for volume control."""
+    """Main function for testing"""
+    import sys
+
     if len(sys.argv) < 2:
+        print("Usage:")
+        print("  python volume_knob.py dev <0-1000>")
+        print("  python volume_knob.py commit <0-1000>")
+        print("  python volume_knob.py dev up [steps]")
+        print("  python volume_knob.py dev down [steps]")
         return
 
-    controller = VolumeController()
-    command = sys.argv[1]
+    knob_type = sys.argv[1].lower()
 
-    if command == "dev":
-        if len(sys.argv) < 3:
-            return
-        volume = int(sys.argv[2])
-        controller.dev_knob.set_volume(volume)
-
-    elif command == "commit":
-        if len(sys.argv) < 3:
-            return
-        volume = int(sys.argv[2])
-        controller.commit_knob.set_volume(volume)
-
-    elif command == "dev-up":
-        steps = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        controller.dev_knob.volume_up(steps)
-
-    elif command == "dev-down":
-        steps = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        controller.dev_knob.volume_down(steps)
-
-    elif command == "commit-up":
-        steps = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        controller.commit_knob.volume_up(steps)
-
-    elif command == "commit-down":
-        steps = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-        controller.commit_knob.volume_down(steps)
-
+    if knob_type == "dev":
+        knob = DevVolumeKnob()
+    elif knob_type == "commit":
+        knob = CommitVolumeKnob()
     else:
+        print(f"Unknown knob type: {knob_type}")
         return
 
+    if len(sys.argv) >= 3:
+        command = sys.argv[2].lower()
+
+        if command == "up":
+            steps = int(sys.argv[3]) if len(sys.argv) >= 4 else 1
+            knob.volume_up(steps)
+        elif command == "down":
+            steps = int(sys.argv[3]) if len(sys.argv) >= 4 else 1
+            knob.volume_down(steps)
+        else:
+            try:
+                volume = int(command)
+                knob.set_volume(volume)
+            except ValueError:
+                print(f"Invalid volume: {command}")
+                return
+
+    # Apply the settings
+    knob.apply_volume_settings()
+
+
+def main():
+    """Entry point for volume control knob operations"""
+    import sys
+
+    if len(sys.argv) < 2:
+        print("Usage examples:")
+        print("  python volume_knob.py dev 100  # Set dev volume to 100")
+        print("  python volume_knob.py commit up 5  # Increase commit volume by 5 ticks")
+        return
+
+    knob_type = sys.argv[1].lower()
+
+    # Create and validate knob instance
+    knob = None
+    if knob_type == "dev":
+        knob = DevVolumeKnob()
+    elif knob_type == "commit":
+        knob = CommitVolumeKnob()
+    else:
+        print("Error: Unknown knob type. Use 'dev' or 'commit'.")
+        return
+
+    # Verify the knob was created correctly
+    if not knob:
+        raise RuntimeError("Failed to initialize the volume knob")
+
+    # Accept commands like setting a volume, increasing or decreasing
+    if len(sys.argv) > 2:
+        command = sys.argv[2]
+        try:
+            if command == "up":
+                steps = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+                knob.volume_up(steps)
+            elif command == "down":
+                steps = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+                knob.volume_down(steps)
+            else:
+                volume = int(command)
+                knob.set_volume(volume)
+        except (ValueError, IndexError):
+            print("Invalid command or parameters. See usage examples.")
+            return
+
+        # Apply and confirm the settings
+        knob.apply_volume_settings()
+        print(f"Active Knob: {knob.knob_name.upper()}")
+        print(f"Current Volume: {knob.get_volume()} / 1000")
 
 
 if __name__ == "__main__":

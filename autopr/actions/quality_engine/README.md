@@ -209,7 +209,8 @@ Options:
 
 ### Auto-Fix Features
 
-The Quality Engine now includes **AI-powered auto-fix capabilities** that can automatically resolve common code quality issues:
+The Quality Engine now includes **AI-powered auto-fix capabilities** that can automatically resolve
+common code quality issues:
 
 #### Supported Fix Types
 

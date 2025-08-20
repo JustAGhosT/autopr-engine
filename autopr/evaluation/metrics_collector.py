@@ -7,6 +7,7 @@ from autopr.quality.metrics_collector import (
     collect_autopr_metrics,
 )
 
+
 __all__ = [
     "EvaluationMetrics",
     "MetricPoint",

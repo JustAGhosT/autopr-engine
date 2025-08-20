@@ -16,7 +16,11 @@ import traceback
 from typing import Any
 from uuid import uuid4
 
-from .display import DisplayConfig, DisplayFormatter, ErrorDisplay
+from autopr.actions.ai_linting_fixer.display import (
+    DisplayConfig,
+    DisplayFormatter,
+    ErrorDisplay,
+)
 
 
 class ErrorSeverity(Enum):
@@ -448,6 +452,8 @@ def create_error_context(
     )
 
 
-def get_default_error_handler(display_config: DisplayConfig | None = None) -> ErrorHandler:
+def get_default_error_handler(
+    display_config: DisplayConfig | None = None,
+) -> ErrorHandler:
     """Get a default error handler instance."""
     return ErrorHandler(display_config)

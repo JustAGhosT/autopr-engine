@@ -16,6 +16,7 @@ from ..base import (
     OpenAIProvider,
 )
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -84,11 +85,12 @@ class LLMProviderManager:
                 logger.exception(f"Failed to initialize Anthropic provider: {e}")
 
         # Set default provider from config
-        if hasattr(self.config, "default_llm_provider") and self.config.default_llm_provider:
-            if self.config.default_llm_provider in self.providers:
-                provider = self.providers[self.config.default_llm_provider]
-                if hasattr(provider, "is_initialized") and provider.is_initialized:
-                    self.default_provider = self.config.default_llm_provider
+        if (
+            hasattr(self.config, "default_llm_provider") and self.config.default_llm_provider
+        ) and self.config.default_llm_provider in self.providers:
+            provider = self.providers[self.config.default_llm_provider]
+            if hasattr(provider, "is_initialized") and provider.is_initialized:
+                self.default_provider = self.config.default_llm_provider
 
     async def cleanup(self) -> None:
         """Clean up all LLM providers."""

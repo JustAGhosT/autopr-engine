@@ -7,7 +7,7 @@ Handles generation of configuration files for different platforms and frameworks
 from pathlib import Path
 from typing import Any
 
-from .base_generator import BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class ConfigGenerator(BaseGenerator):
@@ -125,7 +125,13 @@ class ConfigGenerator(BaseGenerator):
     def _generate_python_configs(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate Python-specific configuration files."""
         generated_files = []
-        templates = ["requirements.txt", "setup.py", ".pylintrc", ".flake8", ".env.example"]
+        templates = [
+            "requirements.txt",
+            "setup.py",
+            ".pylintrc",
+            ".flake8",
+            ".env.example",
+        ]
 
         for template in templates:
             content = self._render_template(f"python/{template}", variables)

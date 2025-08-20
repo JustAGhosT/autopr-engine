@@ -20,9 +20,10 @@ from pathlib import Path
 import re
 from typing import TYPE_CHECKING, Any
 
+
 # Forward reference types to avoid circular imports
 if TYPE_CHECKING:
-    from .validation_rules import ValidationRule
+    from discovery.validation_rules import ValidationRule
 
 # Type variable for validator functions
 ValidatorFunc = Callable[[dict[str, Any], Path, "ValidationRule"], list["ValidationIssue"]]
@@ -556,7 +557,11 @@ class ValidatorRegistry:
         return self._validators.get(check_function)
 
     def run_validation(
-        self, check_function: str, data: dict[str, Any], file_path: Path, rule: "ValidationRule"
+        self,
+        check_function: str,
+        data: dict[str, Any],
+        file_path: Path,
+        rule: "ValidationRule",
     ) -> list[ValidationIssue]:
         """Run a specific validation check."""
         validator = self.get_validator(check_function)

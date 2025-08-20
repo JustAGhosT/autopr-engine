@@ -11,6 +11,7 @@ from typing import Any
 from autopr.actions.llm.base import BaseLLMProvider
 from autopr.actions.llm.types import LLMResponse
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +66,8 @@ class AzureOpenAIProvider(BaseLLMProvider):
         client = self._get_client()
         if not client:
             return LLMResponse.from_error(
-                "Azure OpenAI client not available", request.get("model", self.default_model)
+                "Azure OpenAI client not available",
+                request.get("model", self.default_model),
             )
 
         try:

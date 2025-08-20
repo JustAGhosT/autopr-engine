@@ -8,10 +8,14 @@ import logging
 import time
 from typing import Any
 
-from .ai_agent_manager import AIAgentManager
-from .error_handler import ErrorHandler, create_error_context
-from .file_manager import FileManager
-from .models import LintingFixResult, LintingIssue
+from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
+from autopr.actions.ai_linting_fixer.error_handler import (
+    ErrorHandler,
+    create_error_context,
+)
+from autopr.actions.ai_linting_fixer.file_manager import FileManager
+from autopr.actions.ai_linting_fixer.models import LintingFixResult, LintingIssue
+
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +76,10 @@ class IssueFixer:
             for file_path, file_issues in issues_by_file.items():
                 try:
                     file_result = self._fix_file_issues(
-                        file_path=file_path, issues=file_issues, provider=provider, model=model
+                        file_path=file_path,
+                        issues=file_issues,
+                        provider=provider,
+                        model=model,
                     )
 
                     if file_result["success"]:
@@ -124,7 +131,10 @@ class IssueFixer:
         except Exception as e:
             # Handle general errors
             self.error_handler.log_error(
-                e, context, {"issue_count": len(issues), "max_fixes": max_fixes}, display=True
+                e,
+                context,
+                {"issue_count": len(issues), "max_fixes": max_fixes},
+                display=True,
             )
 
             logger.exception(f"AI fixing failed: {e}")
@@ -163,7 +173,7 @@ class IssueFixer:
                 raise FileNotFoundError(msg)
 
             # Validate syntax before processing
-            from .code_analyzer import CodeAnalyzer
+            from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
 
             code_analyzer = CodeAnalyzer()
             syntax_valid_before = code_analyzer.validate_python_syntax(original_content)
@@ -257,10 +267,18 @@ class IssueFixer:
         except Exception as e:
             # Handle general file processing errors
             self.error_handler.log_error(
-                e, context, {"file_path": file_path, "issue_count": len(issues)}, display=True
+                e,
+                context,
+                {"file_path": file_path, "issue_count": len(issues)},
+                display=True,
             )
 
-            return {"success": False, "error": str(e), "fixed_issues": [], "modified": False}
+            return {
+                "success": False,
+                "error": str(e),
+                "fixed_issues": [],
+                "modified": False,
+            }
 
     def _fix_single_issue(
         self,
@@ -344,8 +362,19 @@ class IssueFixer:
                     "raw_response": parsed_response.get("raw_response", ""),
                 }
 
-            # Apply the fix
-            fixed_content = parsed_response.get("fixed_code", content)
+            # Apply the fix to the specific line
+            fixed_line = parsed_response.get("fixed_code", "")
+            if fixed_line and issue.line_number > 0:
+                # Split content into lines
+                lines = content.split("\n")
+                if 1 <= issue.line_number <= len(lines):
+                    # Replace the specific line (line_number is 1-indexed)
+                    lines[issue.line_number - 1] = fixed_line.strip()
+                    fixed_content = "\n".join(lines)
+                else:
+                    fixed_content = content
+            else:
+                fixed_content = content
 
             # Calculate confidence
             confidence = self.ai_agent_manager.calculate_confidence_score(

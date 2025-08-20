@@ -19,6 +19,7 @@ from autopr.templates.models import (
     TemplateVariant,
 )
 
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound="TemplateRegistry")

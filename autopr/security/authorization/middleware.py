@@ -6,8 +6,13 @@ from typing import Any
 
 import structlog
 
-from .managers import EnterpriseAuthorizationManager
-from .models import AuthorizationContext, Permission, ResourceType
+from autopr.security.authorization.managers import EnterpriseAuthorizationManager
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourceType,
+)
+
 
 logger = structlog.get_logger(__name__)
 
@@ -177,9 +182,7 @@ class AuthorizationMiddleware:
                         request, perm["resource_type"], resource_id, perm["action"]
                     ):
                         msg = f"Access denied - missing {perm['action']} permission on {perm['resource_type']}"
-                        raise PermissionError(
-                            msg
-                        )
+                        raise PermissionError(msg)
 
                 return func(*args, **kwargs)
 

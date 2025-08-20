@@ -13,6 +13,7 @@ from typing import Any
 
 import yaml
 
+
 try:
     from jinja2 import Environment, FileSystemLoader
     from jinja2 import Template as Jinja2Template
@@ -212,7 +213,7 @@ Review the configuration options and customize as needed for your specific requi
 
         return fallback_templates.get(
             template_name,
-            f"""# {template_name.replace('_', ' ').title()}
+            f"""# {template_name.replace("_", " ").title()}
 
 *Generated on {{{{ generation_date }}}}*
 

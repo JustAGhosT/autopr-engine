@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import sys
 
+
 # Set up debug logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ if project_root not in sys.path:
 
 from pydantic import ValidationError
 import pytest
+
 
 # Debug: Print Python path and current working directory
 logger.debug(f"Python path: {sys.path}")

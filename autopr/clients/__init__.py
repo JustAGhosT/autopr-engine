@@ -4,7 +4,8 @@ This package provides client implementations for external services like GitHub, 
 These clients are used throughout the AutoPR codebase to interact with external APIs.
 """
 
-from .github_client import GitHubClient
-from .linear_client import LinearClient
+from autopr.clients.github_client import GitHubClient
+from autopr.clients.linear_client import LinearClient
+
 
 __all__ = ["GitHubClient", "LinearClient"]

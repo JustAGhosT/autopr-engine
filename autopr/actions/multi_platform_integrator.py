@@ -9,7 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 import requests
 
-from .base import Action
+from autopr.actions.base import Action
 
 
 class MultiPlatformInputs(BaseModel):
@@ -253,7 +253,10 @@ def create_notion_page(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
         }
 
         response: requests.Response = requests.post(
-            "https://api.notion.com/v1/pages", headers=headers, json=page_data, timeout=30
+            "https://api.notion.com/v1/pages",
+            headers=headers,
+            json=page_data,
+            timeout=30,
         )
 
         if response.status_code == 200:

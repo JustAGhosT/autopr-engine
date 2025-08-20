@@ -38,7 +38,8 @@ class RunChangedTests(Action[Inputs, Outputs]):
 
         if not any(f.endswith((".ts", ".tsx", ".js", ".jsx")) for f in changed_files):
             return Outputs(
-                test_results="No relevant source files changed. Skipping tests.", passed=True
+                test_results="No relevant source files changed. Skipping tests.",
+                passed=True,
             )
 
         command = "pnpm vitest run --changed"

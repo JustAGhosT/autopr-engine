@@ -7,13 +7,12 @@ Factory for creating format generators and convenience functions.
 """
 
 from discovery.content_analyzer import TemplateAnalysis
+from discovery.format_generators.base import BaseFormatGenerator
+from discovery.format_generators.config import DocumentationConfig
+from discovery.format_generators.html import HTMLGenerator
+from discovery.format_generators.json_generator import JSONGenerator
+from discovery.format_generators.markdown import MarkdownGenerator
 from discovery.template_loader import TemplateLoader
-
-from .base import BaseFormatGenerator
-from .config import DocumentationConfig
-from .html import HTMLGenerator
-from .json_generator import JSONGenerator
-from .markdown import MarkdownGenerator
 
 
 class FormatGeneratorFactory:
@@ -33,7 +32,11 @@ class FormatGeneratorFactory:
         Returns:
             Format generator instance
         """
-        generators = {"markdown": MarkdownGenerator, "html": HTMLGenerator, "json": JSONGenerator}
+        generators = {
+            "markdown": MarkdownGenerator,
+            "html": HTMLGenerator,
+            "json": JSONGenerator,
+        }
 
         generator_class = generators.get(format_type.lower(), MarkdownGenerator)
         return generator_class(config, template_loader)  # type: ignore

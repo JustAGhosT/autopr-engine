@@ -5,6 +5,7 @@ Minimal test script to verify VolumeConfig boolean handling.
 from pathlib import Path
 import sys
 
+
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
 if project_root not in sys.path:
@@ -35,7 +36,6 @@ def test_volume_config():
     custom_config = {"enable_ai_agents": "true"}  # Should be converted to bool
     config = VolumeConfig(volume=500, config=custom_config)
     assert config.config["enable_ai_agents"] is True  # Should be converted to bool
-
 
 
 if __name__ == "__main__":

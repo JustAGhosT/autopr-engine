@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from autopr.agents.models import CodeIssue, PlatformAnalysis
 from autopr.config.settings import get_settings
 
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
@@ -32,7 +33,9 @@ def make_output_mock(
         summary_text = cfg.summary_message_quick
 
     if isinstance(platform_analysis, PlatformAnalysis):
-        plat_platform = platform_analysis.platform or (last_platform_str or cfg.unknown_platform_label)
+        plat_platform = platform_analysis.platform or (
+            last_platform_str or cfg.unknown_platform_label
+        )
         plat_dict = {
             "platform": plat_platform,
             "confidence": platform_analysis.confidence,
@@ -42,10 +45,24 @@ def make_output_mock(
     else:
         fallback_platform = last_platform_str
         plat_dict = {
-            "platform": getattr(platform_analysis, "platform", fallback_platform or cfg.unknown_platform_label) if platform_analysis else (fallback_platform or cfg.unknown_platform_label),
-            "confidence": float(getattr(platform_analysis, "confidence", 0.0)) if platform_analysis else 0.0,
-            "components": list(getattr(platform_analysis, "components", [])) if platform_analysis else [],
-            "recommendations": list(getattr(platform_analysis, "recommendations", [])) if platform_analysis else [],
+            "platform": (
+                getattr(
+                    platform_analysis,
+                    "platform",
+                    fallback_platform or cfg.unknown_platform_label,
+                )
+                if platform_analysis
+                else (fallback_platform or cfg.unknown_platform_label)
+            ),
+            "confidence": (
+                float(getattr(platform_analysis, "confidence", 0.0)) if platform_analysis else 0.0
+            ),
+            "components": (
+                list(getattr(platform_analysis, "components", [])) if platform_analysis else []
+            ),
+            "recommendations": (
+                list(getattr(platform_analysis, "recommendations", [])) if platform_analysis else []
+            ),
         }
 
     data = {
@@ -129,7 +146,9 @@ def prefer_platform_labels(
         pass
 
     try:
-        if plat_model.platform == cfg.unknown_platform_label and getattr(plat_model, "components", None):
+        if plat_model.platform == cfg.unknown_platform_label and getattr(
+            plat_model, "components", None
+        ):
             first_comp = plat_model.components[0]
             name = getattr(first_comp, "name", None)
             if name:

@@ -10,6 +10,7 @@ from typing import Any, Protocol, TypeVar
 
 from autopr.actions.base.action import Action
 
+
 T = TypeVar("T")
 ActionT = TypeVar("ActionT", bound=Action[Any, Any])  # Define ActionT with proper bounds
 
@@ -149,9 +150,10 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
 
         for action_name in self._actions:
             action = self.get_action(action_name)
-            if action:
-                if query_lower in action.name.lower() or query_lower in action.description.lower():
-                    matching_actions.append(action_name)
+            if action and (
+                query_lower in action.name.lower() or query_lower in action.description.lower()
+            ):
+                matching_actions.append(action_name)
 
         return matching_actions
 
@@ -159,9 +161,9 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
         """Register built-in actions."""
         try:
             # Import and register built-in actions
-            from .create_or_update_issue import CreateOrUpdateIssue
-            from .label_pr import LabelPR
-            from .post_comment import PostComment
+            from autopr.actions.create_or_update_issue import CreateOrUpdateIssue
+            from autopr.actions.label_pr import LabelPR
+            from autopr.actions.post_comment import PostComment
 
             # Register actions with proper typing
             self.register("post_comment", PostComment)  # type: ignore[arg-type]

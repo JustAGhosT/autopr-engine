@@ -16,6 +16,7 @@ from autopr.actions.platform_detection.analysis.patterns import (
     FilePattern,
 )
 
+
 if TYPE_CHECKING:
     from autopr.actions.platform_detection.analysis.base import FileAnalyzer
 

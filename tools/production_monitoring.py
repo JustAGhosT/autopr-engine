@@ -6,6 +6,7 @@ from typing import Any
 
 import aiohttp
 
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -44,9 +45,11 @@ class ProductionMonitor:
 
             # Log request
             self.logger.info(
-                "Continue request - Model: %s, User: %s, "
-                "Response time: %.2fs, Cost: $%.4f",
-                model, user_id, response_time, calculated_cost
+                "Continue request - Model: %s, User: %s, Response time: %.2fs, Cost: $%.4f",
+                model,
+                user_id,
+                response_time,
+                calculated_cost,
             )
 
             return {
@@ -72,11 +75,14 @@ class ProductionMonitor:
         for model_name in models:
             try:
                 # Simple health check - adjust based on actual API
-                async with aiohttp.ClientSession() as session, session.get(
-                    f"{self.base_url}/models",
-                    headers={"Authorization": f"Bearer {self.api_key}"},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as response:
+                async with (
+                    aiohttp.ClientSession() as session,
+                    session.get(
+                        f"{self.base_url}/models",
+                        headers={"Authorization": f"Bearer {self.api_key}"},
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as response,
+                ):
                     health_status[model_name] = response.status == 200
 
             except Exception:

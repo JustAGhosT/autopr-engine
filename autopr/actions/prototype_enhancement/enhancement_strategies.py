@@ -7,8 +7,11 @@ Handles platform-specific enhancement logic and package management for prototype
 from pathlib import Path
 from typing import Any
 
-from .file_generators import FileGenerator
-from .platform_configs import PlatformConfig, PlatformRegistry
+from autopr.actions.prototype_enhancement.file_generators import FileGenerator
+from autopr.actions.prototype_enhancement.platform_configs import (
+    PlatformConfig,
+    PlatformRegistry,
+)
 
 
 class EnhancementStrategy:
@@ -73,7 +76,14 @@ class ReplitEnhancementStrategy(EnhancementStrategy):
         files_created.extend(files.keys())
 
         # Production packages
-        packages = ["helmet", "cors", "express-rate-limit", "compression", "morgan", "pm2"]
+        packages = [
+            "helmet",
+            "cors",
+            "express-rate-limit",
+            "compression",
+            "morgan",
+            "pm2",
+        ]
         packages_added.extend(packages)
 
         config_updates.extend(
@@ -97,14 +107,22 @@ class ReplitEnhancementStrategy(EnhancementStrategy):
         files = self.file_generator.generate_testing_files("replit")
         packages = ["jest", "supertest", "mocha", "chai", "sinon"]
 
-        return {"files_created": list(files.keys()), "packages_added": packages, "files": files}
+        return {
+            "files_created": list(files.keys()),
+            "packages_added": packages,
+            "files": files,
+        }
 
     def _enhance_for_security(self, project_path: Path) -> dict[str, Any]:
         """Enhance Replit project for security."""
         files = self.file_generator.generate_security_files("replit")
         packages = ["helmet", "cors", "express-rate-limit", "bcryptjs", "jsonwebtoken"]
 
-        return {"files_created": list(files.keys()), "packages_added": packages, "files": files}
+        return {
+            "files_created": list(files.keys()),
+            "packages_added": packages,
+            "files": files,
+        }
 
     def _generate_pm2_config(self) -> str:
         """Generate PM2 ecosystem configuration."""
@@ -141,9 +159,15 @@ module.exports = {
                 "devDependencies": [],
             }
         if enhancement_type == "testing":
-            return {"dependencies": [], "devDependencies": packages["testing"]["common"]}
+            return {
+                "dependencies": [],
+                "devDependencies": packages["testing"]["common"],
+            }
         if enhancement_type == "security":
-            return {"dependencies": packages["security"]["common"], "devDependencies": []}
+            return {
+                "dependencies": packages["security"]["common"],
+                "devDependencies": [],
+            }
 
         return {"dependencies": [], "devDependencies": []}
 
@@ -196,7 +220,12 @@ class LovableEnhancementStrategy(EnhancementStrategy):
             "src/utils/errorBoundary.tsx": self._generate_error_boundary(),
         }
 
-        packages = ["@loadable/component", "react-window", "@sentry/react", "web-vitals"]
+        packages = [
+            "@loadable/component",
+            "react-window",
+            "@sentry/react",
+            "web-vitals",
+        ]
 
         return {
             "files_created": list(files.keys()),
@@ -214,16 +243,29 @@ class LovableEnhancementStrategy(EnhancementStrategy):
         files = self.file_generator.generate_testing_files("lovable")
         files.update(self.file_generator.generate_accessibility_testing())
 
-        packages = ["@testing-library/react", "@testing-library/jest-dom", "playwright", "jest-axe"]
+        packages = [
+            "@testing-library/react",
+            "@testing-library/jest-dom",
+            "playwright",
+            "jest-axe",
+        ]
 
-        return {"files_created": list(files.keys()), "packages_added": packages, "files": files}
+        return {
+            "files_created": list(files.keys()),
+            "packages_added": packages,
+            "files": files,
+        }
 
     def _enhance_for_security(self, project_path: Path) -> dict[str, Any]:
         """Enhance Lovable project for security."""
         files = self.file_generator.generate_security_files("lovable")
         packages = ["@types/bcryptjs", "@types/jsonwebtoken"]
 
-        return {"files_created": list(files.keys()), "packages_added": packages, "files": files}
+        return {
+            "files_created": list(files.keys()),
+            "packages_added": packages,
+            "files": files,
+        }
 
     def _generate_error_boundary(self) -> str:
         """Generate React error boundary component."""
@@ -284,7 +326,10 @@ export default ErrorBoundary;
         if enhancement_type == "testing":
             return {"dependencies": [], "devDependencies": packages["testing"]["react"]}
         if enhancement_type == "security":
-            return {"dependencies": [], "devDependencies": packages["security"]["react"]}
+            return {
+                "dependencies": [],
+                "devDependencies": packages["security"]["react"],
+            }
 
         return {"dependencies": [], "devDependencies": []}
 
@@ -359,14 +404,22 @@ class BoltEnhancementStrategy(EnhancementStrategy):
 
         packages = ["vitest", "@vitest/ui", "jsdom", "@testing-library/react"]
 
-        return {"files_created": list(files.keys()), "packages_added": packages, "files": files}
+        return {
+            "files_created": list(files.keys()),
+            "packages_added": packages,
+            "files": files,
+        }
 
     def _enhance_for_security(self, project_path: Path) -> dict[str, Any]:
         """Enhance Bolt project for security."""
         files = self.file_generator.generate_security_files("bolt")
         packages = ["@types/bcryptjs", "@types/jsonwebtoken"]
 
-        return {"files_created": list(files.keys()), "packages_added": packages, "files": files}
+        return {
+            "files_created": list(files.keys()),
+            "packages_added": packages,
+            "files": files,
+        }
 
     def _generate_vite_config(self) -> str:
         """Generate optimized Vite configuration."""
@@ -446,7 +499,11 @@ global.IntersectionObserver = vi.fn(() => ({
 
         if enhancement_type == "production_ready":
             return {
-                "dependencies": ["@vitejs/plugin-react", "vite-plugin-pwa", "@sentry/react"],
+                "dependencies": [
+                    "@vitejs/plugin-react",
+                    "vite-plugin-pwa",
+                    "@sentry/react",
+                ],
                 "devDependencies": packages["development"]["typescript"],
             }
         if enhancement_type == "testing":
@@ -455,7 +512,10 @@ global.IntersectionObserver = vi.fn(() => ({
                 "devDependencies": ["vitest", "@vitest/ui", "jsdom"] + packages["testing"]["react"],
             }
         if enhancement_type == "security":
-            return {"dependencies": [], "devDependencies": packages["security"]["react"]}
+            return {
+                "dependencies": [],
+                "devDependencies": packages["security"]["react"],
+            }
 
         return {"dependencies": [], "devDependencies": []}
 

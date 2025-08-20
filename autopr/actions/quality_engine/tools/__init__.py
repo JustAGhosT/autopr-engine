@@ -1,9 +1,8 @@
 import importlib
 import pkgutil
 import platform
-from typing import List, Type
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 def discover_tools() -> list[type[Tool]]:

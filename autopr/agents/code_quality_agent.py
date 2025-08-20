@@ -170,7 +170,7 @@ Code:
 {inputs.code}
 ```
 
-Context: {inputs.context or 'No additional context provided.'}
+Context: {inputs.context or "No additional context provided."}
 
 Please provide a detailed analysis including:
 1. A list of code quality issues with severity levels
@@ -240,7 +240,10 @@ Format your response as a JSON object with the following structure:
             # If JSON parsing fails, return a default response with the error
             return {
                 "issues": [
-                    {"message": f"Failed to parse LLM response: {e!s}", "severity": "error"}
+                    {
+                        "message": f"Failed to parse LLM response: {e!s}",
+                        "severity": "error",
+                    }
                 ],
                 "score": 0.0,
                 "metrics": {"error": "Response parsing failed"},

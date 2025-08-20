@@ -5,6 +5,7 @@ A HiFi-style volume control system with **JSON-based configuration** for precise
 ## 🎛️ Overview
 
 This system provides **two volume knobs**:
+
 - **Dev Volume**: Controls IDE linting (VS Code/Cursor)
 - **Commit Volume**: Controls pre-commit checks
 
@@ -13,18 +14,21 @@ Each volume level has **specific checks and configurations** stored in JSON file
 ## 🎯 Volume Levels
 
 ### Level 0: OFF
+
 - **Description**: No linting - pure coding experience
 - **Dev Checks**: None
 - **Commit Checks**: None
 - **Use Case**: When you want zero interference
 
 ### Level 100: QUIET
+
 - **Description**: Basic syntax only - minimal interference
 - **Dev Checks**: `syntax_errors`
 - **Commit Checks**: `syntax_check`
 - **Use Case**: When you want only critical errors
 
 ### Level 1000: MAXIMUM
+
 - **Description**: Nuclear mode - everything enabled
 - **Dev Checks**: `syntax_errors`, `type_checking`
 - **Commit Checks**: All checks enabled
@@ -33,6 +37,7 @@ Each volume level has **specific checks and configurations** stored in JSON file
 ## 🔧 Usage
 
 ### From Main Directory
+
 ```bash
 # Set dev volume to OFF
 python scripts/volume.py dev 0
@@ -56,6 +61,7 @@ python scripts/volume.py autofix
 ```
 
 ### From Volume Control Directory
+
 ```bash
 cd scripts/volume-control
 
@@ -68,12 +74,14 @@ python main.py dev 1000
 ## 🎛️ Volume Control Commands
 
 ### Set Volume
+
 ```bash
 python scripts/volume.py dev <0|100|1000>
 python scripts/volume.py commit <0|100|1000>
 ```
 
 ### Volume Up/Down
+
 ```bash
 python scripts/volume.py dev up [steps]
 python scripts/volume.py dev down [steps]
@@ -82,6 +90,7 @@ python scripts/volume.py commit down [steps]
 ```
 
 ### Status and Help
+
 ```bash
 python scripts/volume.py status
 python scripts/volume.py help
@@ -91,6 +100,7 @@ python scripts/volume.py autofix
 ## 🏗️ Architecture
 
 ### JSON-Based Configuration System
+
 Each tool has its own JSON configuration file with settings for each level:
 
 ```
@@ -102,6 +112,7 @@ scripts/volume-control/configs/
 ```
 
 ### File Structure
+
 ```
 scripts/volume-control/
 ├── __init__.py
@@ -124,6 +135,7 @@ scripts/volume-control/
 The system uses **JSON configuration files** for each tool:
 
 ### VS Code Configuration (`configs/vscode.json`)
+
 ```json
 {
   "0": {
@@ -146,6 +158,7 @@ The system uses **JSON configuration files** for each tool:
 ```
 
 ### Ruff Configuration (`configs/ruff.json`)
+
 ```json
 {
   "0": {
@@ -170,6 +183,7 @@ The system uses **JSON configuration files** for each tool:
 To add a new level (e.g., Level 500):
 
 1. **Add to VS Code config** (`configs/vscode.json`):
+
 ```json
 "500": {
   "name": "MEDIUM",
@@ -182,6 +196,7 @@ To add a new level (e.g., Level 500):
 ```
 
 2. **Add to Ruff config** (`configs/ruff.json`):
+
 ```json
 "500": {
   "name": "MEDIUM",
@@ -200,6 +215,7 @@ The system will automatically find the closest level for any volume setting.
 ## 🎛️ The "Yeah Right" Problem Solved
 
 This system solves the "yeah right" problem by:
+
 - **Level 0**: Guarantees zero linting errors
 - **JSON Configuration**: Easy to read and modify
 - **Tool-Specific Configs**: Each tool has its own settings
@@ -210,6 +226,7 @@ This system solves the "yeah right" problem by:
 ## 🚀 Quick Start
 
 1. **Start with Level 0** (no linting):
+
    ```bash
    python scripts/volume.py dev 0
    python scripts/volume.py commit 0
@@ -218,6 +235,7 @@ This system solves the "yeah right" problem by:
 2. **Environment refresh** happens automatically when changing levels
 
 3. **Gradually increase** as needed:
+
    ```bash
    python scripts/volume.py dev 100  # Basic syntax
    python scripts/volume.py autofix  # Fix issues
@@ -246,11 +264,13 @@ When you change volume levels, the system automatically:
 4. **Provides helpful instructions** for manual refresh if needed
 
 **Automatic refresh includes:**
+
 - Touch file creation to trigger IDE file watchers
 - VS Code window reload attempt (if `code` command is available)
 - Clear instructions for manual refresh if automatic fails
 
 **Manual refresh options:**
+
 - Reload VS Code window: `Ctrl+Shift+P` → "Developer: Reload Window"
 - Restart Python language server: `Ctrl+Shift+P` → "Python: Restart Language Server"
 - Restart your IDE completely
@@ -262,4 +282,4 @@ When you change volume levels, the system automatically:
 - [ ] Implement autofix for each level
 - [ ] Add pre-commit configuration updates
 - [ ] Add VS Code extension management
-- [ ] Add workspace-specific settings 
+- [ ] Add workspace-specific settings

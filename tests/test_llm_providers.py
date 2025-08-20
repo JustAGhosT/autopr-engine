@@ -9,6 +9,7 @@ import os
 import pathlib
 import sys
 
+
 # Add the autopr package to the path
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "."))
 
@@ -50,7 +51,14 @@ def test_provider_availability() -> None:
 
         manager = get_llm_provider_manager()
 
-        for provider_name in ["openai", "anthropic", "groq", "mistral", "perplexity", "together"]:
+        for provider_name in [
+            "openai",
+            "anthropic",
+            "groq",
+            "mistral",
+            "perplexity",
+            "together",
+        ]:
             provider = manager.get_provider(provider_name)
             if provider:
                 pass

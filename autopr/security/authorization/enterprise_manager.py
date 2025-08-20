@@ -4,8 +4,14 @@ from datetime import datetime
 
 import structlog
 
-from .base_manager import BaseAuthorizationManager
-from .models import AuthorizationContext, Permission, ResourcePermission, ResourceType
+from autopr.security.authorization.base_manager import BaseAuthorizationManager
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourcePermission,
+    ResourceType,
+)
+
 
 logger = structlog.get_logger(__name__)
 
@@ -91,7 +97,11 @@ class EnterpriseAuthorizationManager(BaseAuthorizationManager):
                 Permission.CREATE,
                 Permission.UPDATE,
             },
-            ResourceType.WORKFLOW: {Permission.READ, Permission.WRITE, Permission.EXECUTE},
+            ResourceType.WORKFLOW: {
+                Permission.READ,
+                Permission.WRITE,
+                Permission.EXECUTE,
+            },
             ResourceType.TEMPLATE: {
                 Permission.READ,
                 Permission.WRITE,

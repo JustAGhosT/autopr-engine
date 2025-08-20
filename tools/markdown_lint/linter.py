@@ -5,8 +5,9 @@ import operator
 from pathlib import Path
 import re
 
+
 try:
-    from .models import FileReport, IssueSeverity, LintIssue
+    from tools.markdown_lint.models import FileReport, IssueSeverity, LintIssue
 except ImportError:
     from models import FileReport, IssueSeverity, LintIssue
 
@@ -130,7 +131,11 @@ class MarkdownLinter:
                 # Check for trailing whitespace
                 if self.config["trim_trailing_whitespace"] and line.rstrip() != line:
                     self._add_issue(
-                        report, i, "Trim trailing whitespace", "MD009", fix=lambda l: l.rstrip()
+                        report,
+                        i,
+                        "Trim trailing whitespace",
+                        "MD009",
+                        fix=lambda l: l.rstrip(),
                     )
 
                 # Check for consistent line endings
@@ -216,7 +221,11 @@ class MarkdownLinter:
 
         except Exception as e:
             self._add_issue(
-                report, 0, f"Error processing file: {e!s}", "ERROR", severity=IssueSeverity.ERROR
+                report,
+                0,
+                f"Error processing file: {e!s}",
+                "ERROR",
+                severity=IssueSeverity.ERROR,
             )
 
         return report
@@ -367,7 +376,11 @@ class MarkdownLinter:
             )
 
     def _check_list_end_spacing(
-        self, report: FileReport, last_list_line: int, lines: list[str], list_start_line: int
+        self,
+        report: FileReport,
+        last_list_line: int,
+        lines: list[str],
+        list_start_line: int,
     ) -> None:
         """Check MD032: Lists should be surrounded by blank lines (end)."""
         # Check if there's a line after the list and it's not blank
@@ -388,7 +401,12 @@ class MarkdownLinter:
                         )
 
     def _check_ordered_list_numbering(
-        self, report: FileReport, line_num: int, line: str, actual_number: int, expected_number: int
+        self,
+        report: FileReport,
+        line_num: int,
+        line: str,
+        actual_number: int,
+        expected_number: int,
     ) -> None:
         """Check MD029: Ordered list item prefix should be sequential."""
         if actual_number != expected_number:
@@ -451,7 +469,11 @@ class MarkdownLinter:
             )
 
     def _check_fenced_code_block_end(
-        self, report: FileReport, line_num: int, lines: list[str], code_block_start_line: int
+        self,
+        report: FileReport,
+        line_num: int,
+        lines: list[str],
+        code_block_start_line: int,
     ) -> None:
         """Check MD031 for fenced code block end."""
         # MD031: Check blank line after code block
@@ -770,7 +792,13 @@ class MarkdownLinter:
         # Find all markdown files
         files = find_markdown_files(
             directory,
-            exclude_dirs={".git", "node_modules", "__pycache__", ".pytest_cache", ".mypy_cache"},
+            exclude_dirs={
+                ".git",
+                "node_modules",
+                "__pycache__",
+                ".pytest_cache",
+                ".mypy_cache",
+            },
             exclude_files=exclude,
         )
 

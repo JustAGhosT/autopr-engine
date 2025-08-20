@@ -5,7 +5,8 @@ from typing import Any
 
 import structlog
 
-from .models import AuthorizationContext
+from autopr.security.authorization.models import AuthorizationContext
+
 
 logger = structlog.get_logger(__name__)
 
@@ -27,7 +28,10 @@ class AuthorizationAuditLogger:
             self.audit_logger.addHandler(file_handler)
 
     def log_authorization_check(
-        self, context: AuthorizationContext, result: bool, duration_ms: float | None = None
+        self,
+        context: AuthorizationContext,
+        result: bool,
+        duration_ms: float | None = None,
     ):
         """Log authorization check."""
         self.audit_logger.info(

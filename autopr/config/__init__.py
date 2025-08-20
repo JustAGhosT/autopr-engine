@@ -12,13 +12,13 @@ Centralized configuration management system with:
 from dataclasses import dataclass, field
 import os
 import pathlib
-from typing import Any, Dict, Optional
+from typing import Any
 import warnings
 
 import yaml
 
 # Import new centralized configuration system
-from .settings import (
+from autopr.config.settings import (
     AutoPRSettings,
     Environment,
     LLMProvider,
@@ -26,7 +26,7 @@ from .settings import (
     reload_settings,
     set_settings,
 )
-from .validation import (
+from autopr.config.validation import (
     check_environment_variables,
     generate_config_report,
     validate_configuration,

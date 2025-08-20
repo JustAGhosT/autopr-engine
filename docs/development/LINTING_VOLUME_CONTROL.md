@@ -2,7 +2,8 @@
 
 ## 🎛️ Two Volume Knobs for Complete Control
 
-The AutoPR Engine now features a **dual volume control system** that gives you precise control over your linting experience:
+The AutoPR Engine now features a **dual volume control system** that gives you precise control over
+your linting experience:
 
 ### 1. **Dev Environment Volume** (0-10)
 
@@ -296,4 +297,6 @@ You now have:
 - ✅ **Gradual improvement path**
 - ✅ **Complete control over your development experience**
 
-*Context improved by Giga AI, using the AI analysis algorithms and pattern recognition system information to create a comprehensive volume control system that integrates with the existing quality engine and AI-driven code analysis capabilities.*
+_Context improved by Giga AI, using the AI analysis algorithms and pattern recognition system
+information to create a comprehensive volume control system that integrates with the existing
+quality engine and AI-driven code analysis capabilities._

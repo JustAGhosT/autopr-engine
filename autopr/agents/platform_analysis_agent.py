@@ -17,6 +17,7 @@ from autopr.actions.platform_detection.detector import (
 from autopr.actions.platform_detection.schema import PlatformType
 from autopr.agents.agents import BaseAgent
 
+
 # PlatformAnalysis is now imported from platform_detection.detector as PlatformDetectorOutputs
 
 
@@ -74,7 +75,7 @@ class PlatformAnalysisAgent(BaseAgent):
         allow_delegation: bool = False,
         max_iter: int = 3,
         max_rpm: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         """Initialize the PlatformAnalysisAgent.
 
@@ -101,7 +102,7 @@ class PlatformAnalysisAgent(BaseAgent):
             allow_delegation=allow_delegation,
             max_iter=max_iter,
             max_rpm=max_rpm,
-            **kwargs
+            **kwargs,
         )
 
         # Initialize the platform detector
@@ -224,7 +225,9 @@ class PlatformAnalysisAgent(BaseAgent):
         """
         # Normalize input to a string platform ID, ensuring the manager is invoked once
         try:
-            platform_id_str = platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
+            platform_id_str = (
+                platform_id.value if isinstance(platform_id, PlatformType) else str(platform_id)
+            )
         except Exception:
             platform_id_str = str(platform_id)
 
@@ -236,6 +239,7 @@ class PlatformAnalysisAgent(BaseAgent):
         # Use dynamically resolved manager so test patches apply in all orders
         try:  # pragma: no cover - relies on test patching behavior
             import sys as _sys
+
             current_mod = _sys.modules.get(__name__)
             ManagerCls = getattr(current_mod, "PlatformConfigManager", PlatformConfigManager)
         except Exception:
@@ -266,7 +270,9 @@ class PlatformAnalysisAgent(BaseAgent):
                 "id": getattr(platform_config, "id", None),
                 "name": getattr(platform_config, "name", None),
                 "display_name": getattr(
-                    platform_config, "display_name", getattr(platform_config, "name", None)
+                    platform_config,
+                    "display_name",
+                    getattr(platform_config, "name", None),
                 ),
                 "description": getattr(platform_config, "description", None),
                 "type": get_enum_value(getattr(platform_config, "type", None)),

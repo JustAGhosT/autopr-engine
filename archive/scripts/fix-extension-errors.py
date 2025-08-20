@@ -12,7 +12,6 @@ import subprocess
 
 
 def main():
-
     # Clear VS Code/Cursor caches
 
     # Get user home directory
@@ -92,9 +91,6 @@ def main():
     time.sleep(0.1)
     if os.path.exists(touch_file):
         os.remove(touch_file)
-
-
-
 
 
 if __name__ == "__main__":

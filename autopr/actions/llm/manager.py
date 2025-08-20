@@ -5,8 +5,8 @@ LLM Provider Manager - Manages multiple LLM providers with fallback support.
 import logging
 from typing import Any
 
-from .base import BaseLLMProvider
-from .providers import (
+from autopr.actions.llm.base import BaseLLMProvider
+from autopr.actions.llm.providers import (
     AnthropicProvider,
     GroqProvider,
     MistralProvider,
@@ -14,8 +14,9 @@ from .providers import (
     PerplexityProvider,
     TogetherAIProvider,
 )
-from .providers.azure_openai import AzureOpenAIProvider
-from .types import LLMResponse
+from autopr.actions.llm.providers.azure_openai import AzureOpenAIProvider
+from autopr.actions.llm.types import LLMResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +178,8 @@ class LLMProviderManager:
         # Ensure required fields are present
         if "messages" not in request:
             return LLMResponse.from_error(
-                "Missing required field 'messages' in request", request.get("model") or "unknown"
+                "Missing required field 'messages' in request",
+                request.get("model") or "unknown",
             )
 
         # Set default model if not specified

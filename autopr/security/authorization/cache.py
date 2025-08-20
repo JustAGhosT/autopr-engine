@@ -5,6 +5,7 @@ from typing import Any
 
 import structlog
 
+
 logger = structlog.get_logger(__name__)
 
 
@@ -38,7 +39,14 @@ class PermissionCache:
 
         return None
 
-    def set(self, user_id: str, resource_type: str, resource_id: str, action: str, result: bool):
+    def set(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        action: str,
+        result: bool,
+    ):
         """Cache permission result."""
         cache_key = self._generate_cache_key(user_id, resource_type, resource_id, action)
         self.cache[cache_key] = (result, datetime.utcnow().timestamp())
@@ -50,7 +58,9 @@ class PermissionCache:
         for key in keys_to_remove:
             del self.cache[key]
         logger.debug(
-            "User permission cache invalidated", user_id=user_id, count=len(keys_to_remove)
+            "User permission cache invalidated",
+            user_id=user_id,
+            count=len(keys_to_remove),
         )
 
     def invalidate_resource(self, resource_type: str, resource_id: str):

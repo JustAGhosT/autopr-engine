@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any
 
+
 try:
     from fastapi import HTTPException, status
 except Exception:  # pragma: no cover - type-checking fallback
@@ -18,6 +19,7 @@ except Exception:  # pragma: no cover - type-checking fallback
     status = _status()  # type: ignore
 import jwt  # type: ignore[import-untyped]
 
+
 try:
     from passlib.context import CryptContext  # type: ignore[import-untyped]
 except Exception:  # pragma: no cover - minimal runtime fallback for typing
@@ -34,6 +36,7 @@ except Exception:  # pragma: no cover - minimal runtime fallback for typing
 
 
 import structlog
+
 
 logger = structlog.get_logger(__name__)
 
@@ -62,7 +65,11 @@ class EnterpriseAuthManager:
 
         token = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
-        logger.info("Access token created", user_id=data.get("sub"), expires_at=expire.isoformat())
+        logger.info(
+            "Access token created",
+            user_id=data.get("sub"),
+            expires_at=expire.isoformat(),
+        )
 
         return token
 
@@ -72,7 +79,8 @@ class EnterpriseAuthManager:
             # Check if token is blacklisted
             if token in self.token_blacklist:
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked"
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has been revoked",
                 )
 
             # Decode and validate token
@@ -81,7 +89,8 @@ class EnterpriseAuthManager:
             # Validate token type
             if payload.get("type") != "access_token":
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type"
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token type",
                 )
 
             return payload
@@ -94,7 +103,8 @@ class EnterpriseAuthManager:
         except jwt.PyJWTError as e:
             logger.exception("JWT validation error", error=str(e))
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
             )
 
     def revoke_token(self, token: str) -> None:

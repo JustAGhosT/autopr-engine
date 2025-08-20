@@ -4,30 +4,34 @@ This directory contains the GitHub Actions workflows for AutoPR Engine.
 
 ## Workflow Architecture
 
-AutoPR uses a **volume-aware, multi-stage workflow system** designed to provide fast feedback while maintaining comprehensive quality checks.
+AutoPR uses a **volume-aware, multi-stage workflow system** designed to provide fast feedback while
+maintaining comprehensive quality checks.
 
 ### Workflow Overview
 
-| Workflow | Purpose | Triggers | Timeout | Key Features |
-|----------|---------|----------|---------|--------------|
-| **CI** | Volume-aware comprehensive checks | Push, PR, Manual | Variable | Volume-based execution, MyPy, full test suite |
-| **Quality Feedback** | PR-specific quality feedback | PR only | 15 min | Pre-commit hooks, detailed comments, security reports |
-| **PR-Checks** | Ultra-fast PR validation | PR only | 10 min | Draft PR handling, minimal checks |
-| **BG-Fix** | Background auto-fixing | Manual, Scheduled | 30 min | Scheduled fixes, auto-fix queue |
+| Workflow             | Purpose                           | Triggers          | Timeout  | Key Features                                          |
+| -------------------- | --------------------------------- | ----------------- | -------- | ----------------------------------------------------- |
+| **CI**               | Volume-aware comprehensive checks | Push, PR, Manual  | Variable | Volume-based execution, MyPy, full test suite         |
+| **Quality Feedback** | PR-specific quality feedback      | PR only           | 15 min   | Pre-commit hooks, detailed comments, security reports |
+| **PR-Checks**        | Ultra-fast PR validation          | PR only           | 10 min   | Draft PR handling, minimal checks                     |
+| **BG-Fix**           | Background auto-fixing            | Manual, Scheduled | 30 min   | Scheduled fixes, auto-fix queue                       |
 
 ## Workflow Details
 
 ### CI Workflow (`ci.yml`)
 
-**Purpose:** Volume-aware comprehensive quality checks with conditional execution based on repository volume settings.
+**Purpose:** Volume-aware comprehensive quality checks with conditional execution based on
+repository volume settings.
 
 **Key Features:**
+
 - **Volume-based execution:** Different checks run based on volume level (0-1000)
 - **Conditional jobs:** Tests (vol≥1), Lint (vol≥200), Typecheck (vol≥400), Security (vol≥600)
 - **Manual dispatch:** Supports manual volume override
 - **Full test suite:** Complete pytest coverage with Codecov integration
 
 **Volume Thresholds:**
+
 - **0-199:** Tests only
 - **200-399:** Tests + Linting (relaxed rules)
 - **400-599:** Tests + Linting + Type checking
@@ -38,12 +42,14 @@ AutoPR uses a **volume-aware, multi-stage workflow system** designed to provide 
 **Purpose:** PR-specific quality feedback and detailed reporting.
 
 **Key Features:**
+
 - **Pre-commit hooks:** Runs all pre-commit validations
 - **Detailed PR comments:** Provides comprehensive feedback
 - **Security reports:** Bandit and Safety scanning with artifact uploads
 - **Fork-aware:** Only runs on non-fork PRs
 
 **Jobs:**
+
 - `quality-feedback`: Pre-commit hooks and PR comments
 - `security-feedback`: Security scanning and reporting
 
@@ -52,12 +58,14 @@ AutoPR uses a **volume-aware, multi-stage workflow system** designed to provide 
 **Purpose:** Ultra-fast validation for PRs, especially draft PRs.
 
 **Key Features:**
+
 - **Fast execution:** 10-minute timeout for essential checks
 - **Draft PR support:** Special handling for draft PRs
 - **Changed files only:** Pre-commit runs only on modified files
 - **Minimal tests:** Reduced test scope for speed
 
 **Jobs:**
+
 - `essential-checks`: Fast pre-commit and minimal tests
 - `draft-validation`: Quick syntax check for draft PRs
 
@@ -66,6 +74,7 @@ AutoPR uses a **volume-aware, multi-stage workflow system** designed to provide 
 **Purpose:** Automated background code fixing and maintenance.
 
 **Key Features:**
+
 - **Scheduled execution:** Daily runs at 3 AM UTC
 - **Manual dispatch:** Supports volume override
 - **Auto-fix queue:** Processes fixable issues in batches
@@ -93,7 +102,7 @@ All workflows respect the AutoPR volume system:
 ```bash
 # Repository variables (set in GitHub settings)
 AUTOPR_VOLUME_PR=100      # PR volume
-AUTOPR_VOLUME_CHECKIN=50  # Push volume  
+AUTOPR_VOLUME_CHECKIN=50  # Push volume
 AUTOPR_VOLUME_DEV=200     # Development volume
 ```
 
@@ -112,16 +121,19 @@ Add these badges to your README:
 ### Common Issues
 
 **Workflow not running:**
+
 - Check branch protection rules
 - Verify workflow file syntax
 - Check repository permissions
 
 **Volume-based execution issues:**
+
 - Verify repository variables are set
 - Check volume calculation logic
 - Review conditional job logic
 
 **Pre-commit failures:**
+
 - Run `pre-commit install` locally
 - Check `.pre-commit-config.yaml` syntax
 - Verify hook dependencies
@@ -129,6 +141,7 @@ Add these badges to your README:
 ### Debugging
 
 **Enable debug logging:**
+
 ```yaml
 env:
   ACTIONS_STEP_DEBUG: true
@@ -136,6 +149,7 @@ env:
 ```
 
 **Check workflow runs:**
+
 - Go to Actions tab in GitHub
 - Select specific workflow
 - Review logs for errors
@@ -169,23 +183,24 @@ env:
 
 Set these in GitHub repository settings:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AUTOPR_VOLUME_PR` | Volume for pull requests | 100 |
-| `AUTOPR_VOLUME_CHECKIN` | Volume for pushes | 50 |
-| `AUTOPR_VOLUME_DEV` | Volume for development | 200 |
+| Variable                | Description              | Default |
+| ----------------------- | ------------------------ | ------- |
+| `AUTOPR_VOLUME_PR`      | Volume for pull requests | 100     |
+| `AUTOPR_VOLUME_CHECKIN` | Volume for pushes        | 50      |
+| `AUTOPR_VOLUME_DEV`     | Volume for development   | 200     |
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PYTHON_VERSION` | Python version to use | 3.13 |
-| `AUTOPR_PRECOMMIT_VOLUME` | Pre-commit volume | 100 |
-| `AUTOPR_BG_BATCH` | Background fix batch size | 30 |
+| Variable                  | Description               | Default |
+| ------------------------- | ------------------------- | ------- |
+| `PYTHON_VERSION`          | Python version to use     | 3.13    |
+| `AUTOPR_PRECOMMIT_VOLUME` | Pre-commit volume         | 100     |
+| `AUTOPR_BG_BATCH`         | Background fix batch size | 30      |
 
 ## Support
 
 For workflow issues:
+
 1. Check this documentation
 2. Review workflow logs
 3. Create an issue with workflow name and error details

@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 
 from autopr.actions.base.action import Action
 
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -122,7 +123,10 @@ class QualityGateValidator:
             elif file_ext in {".js", ".ts", ".tsx", ".jsx"}:
                 # JavaScript/TypeScript syntax check using node
                 result = subprocess.run(
-                    ["node", "--check", file_path], check=False, capture_output=True, text=True
+                    ["node", "--check", file_path],
+                    check=False,
+                    capture_output=True,
+                    text=True,
                 )
                 if result.returncode != 0:
                     errors.append(f"Syntax error: {result.stderr}")
@@ -424,7 +428,8 @@ class QualityGateValidator:
 
         for node in ast.walk(tree):
             if isinstance(
-                node, (ast.If, ast.While, ast.For, ast.AsyncFor, ast.ExceptHandler, ast.And, ast.Or)
+                node,
+                ast.If | ast.While | ast.For | ast.AsyncFor | ast.ExceptHandler | ast.And | ast.Or,
             ):
                 complexity += 1
 

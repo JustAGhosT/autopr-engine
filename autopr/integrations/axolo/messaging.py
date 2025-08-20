@@ -5,7 +5,8 @@ from typing import Any
 
 import aiohttp
 
-from .config import AxoloConfig
+from autopr.integrations.axolo.config import AxoloConfig
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,10 @@ class AxoloMessaging:
 
         return {
             "type": "section",
-            "text": {"type": "mrkdwn", "text": "*Issues Found:*\n" + "\n".join(issues_text)},
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Issues Found:*\n" + "\n".join(issues_text),
+            },
         }
 
     def create_next_steps_block(self, next_steps: list[str]) -> dict[str, Any]:

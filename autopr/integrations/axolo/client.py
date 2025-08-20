@@ -7,11 +7,12 @@ from typing import Any
 
 import aiohttp
 
-from .commands import AxoloCommandHandler
-from .config import AxoloConfig
-from .messaging import AxoloMessaging
-from .models import AxoloPRChannel
-from .reminders import AxoloReminderService
+from autopr.integrations.axolo.commands import AxoloCommandHandler
+from autopr.integrations.axolo.config import AxoloConfig
+from autopr.integrations.axolo.messaging import AxoloMessaging
+from autopr.integrations.axolo.models import AxoloPRChannel
+from autopr.integrations.axolo.reminders import AxoloReminderService
+
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ class AxoloIntegration:
 
             # Slack client (if using direct API)
             from slack_sdk.web.async_client import (
-                AsyncWebClient,  # type: ignore[import-not-found]
+                AsyncWebClient,
             )
 
             self.slack_client = AsyncWebClient(token=os.getenv("SLACK_BOT_TOKEN"))

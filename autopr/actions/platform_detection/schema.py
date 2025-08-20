@@ -16,6 +16,7 @@ from enum import StrEnum
 import json
 from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

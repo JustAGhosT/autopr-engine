@@ -15,8 +15,8 @@ import sys
 
 import click
 
-from .settings import AutoPRSettings, Environment, get_settings
-from .validation import (
+from autopr.config.settings import AutoPRSettings, Environment, get_settings
+from autopr.config.validation import (
     check_environment_variables,
     generate_config_report,
     validate_configuration,
@@ -32,7 +32,11 @@ def cli():
 @cli.command()
 @click.option("--config-file", "-c", type=click.Path(exists=True), help="Configuration file path")
 @click.option(
-    "--format", "-f", type=click.Choice(["text", "json"]), default="text", help="Output format"
+    "--format",
+    "-f",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format",
 )
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def validate(config_file: str | None, format: str, verbose: bool):
@@ -103,7 +107,11 @@ def report(config_file: str | None, output: str | None):
 
 @cli.command()
 @click.option(
-    "--format", "-f", type=click.Choice(["text", "json"]), default="text", help="Output format"
+    "--format",
+    "-f",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format",
 )
 def check_env(format: str):
     """Check environment variables and .env files."""

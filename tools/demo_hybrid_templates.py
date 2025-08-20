@@ -7,6 +7,7 @@ Shows how the enhanced FileGenerator works with metadata-driven templates.
 from pathlib import Path
 import sys
 
+
 # Add the autopr package to the path
 sys.path.insert(0, str(Path(__file__).parent))
 

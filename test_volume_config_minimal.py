@@ -3,6 +3,7 @@
 from pathlib import Path
 import sys
 
+
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
 if project_root not in sys.path:
@@ -10,7 +11,6 @@ if project_root not in sys.path:
 
 try:
     from autopr.agents.base.volume_config import VolumeConfig
-
 
     # Test basic functionality
     config = VolumeConfig()

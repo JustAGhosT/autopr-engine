@@ -50,6 +50,7 @@ class CodeIssue(BaseModel):
             data["column"] = data.pop("column_number")
         if "severity" in data and isinstance(data["severity"], str):
             from contextlib import suppress
+
             with suppress(Exception):
                 data["severity"] = IssueSeverity(data["severity"])  # type: ignore[arg-type]
         # Ignore unknown fix fields used in tests to create issues
@@ -106,7 +107,7 @@ class CodeAnalysisReport(BaseModel):
         by_alias: bool = False,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
-        exclude_none: bool = False
+        exclude_none: bool = False,
     ) -> dict[str, Any]:
         """Convert the report to a dictionary using Pydantic v2 serialization.
 

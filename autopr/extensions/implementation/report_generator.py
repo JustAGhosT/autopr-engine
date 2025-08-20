@@ -11,8 +11,9 @@ import operator
 from pathlib import Path
 from typing import Any
 
-from .phase_manager import PhaseManager
-from .task_executor import TaskExecution, TaskExecutor
+from implementation.phase_manager import PhaseManager
+from implementation.task_executor import TaskExecution, TaskExecutor
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,10 @@ class ReportGenerator:
     """Generates comprehensive reports for implementation progress."""
 
     def __init__(
-        self, phase_manager: PhaseManager, task_executor: TaskExecutor, project_root: Path
+        self,
+        phase_manager: PhaseManager,
+        task_executor: TaskExecutor,
+        project_root: Path,
     ) -> None:
         self.phase_manager = phase_manager
         self.task_executor = task_executor
@@ -110,7 +114,7 @@ class ReportGenerator:
         task_complexity_analysis = {}
 
         # Group tasks by category
-        from .task_definitions import TaskRegistry
+        from implementation.task_definitions import TaskRegistry
 
         categories = TaskRegistry.get_task_categories()
 
@@ -370,10 +374,10 @@ class ReportGenerator:
         recommendations_html = ""
         for rec in report.get("recommendations", []):
             recommendations_html += f"""
-            <div class="recommendation {rec['type']}">
-                <strong>{rec['title']}</strong><br>
-                {rec['description']}<br>
-                <em>Action: {rec['action']}</em>
+            <div class="recommendation {rec["type"]}">
+                <strong>{rec["title"]}</strong><br>
+                {rec["description"]}<br>
+                <em>Action: {rec["action"]}</em>
             </div>
             """
 
@@ -382,10 +386,10 @@ class ReportGenerator:
         for phase_id, phase_data in report.get("phase_details", {}).items():
             phases_html += f"""
             <div class="phase">
-                <h3>{phase_data.get('name', phase_id)}</h3>
-                <p>Status: {phase_data.get('status', 'unknown')}</p>
-                <p>Progress: {phase_data.get('progress_percentage', 0)}%</p>
-                <p>Tasks: {phase_data.get('completed_tasks', 0)}/{phase_data.get('total_tasks', 0)}</p>
+                <h3>{phase_data.get("name", phase_id)}</h3>
+                <p>Status: {phase_data.get("status", "unknown")}</p>
+                <p>Progress: {phase_data.get("progress_percentage", 0)}%</p>
+                <p>Tasks: {phase_data.get("completed_tasks", 0)}/{phase_data.get("total_tasks", 0)}</p>
             </div>
             """
 
@@ -393,13 +397,13 @@ class ReportGenerator:
 
         content_html = f"""
             <div>
-                <p class=\"status-{executive.get('status_color','red')}\">Health Score: {executive.get('overall_health_score',0)}%</p>
+                <p class=\"status-{executive.get("status_color", "red")}\">Health Score: {executive.get("overall_health_score", 0)}%</p>
             </div>
             <h2>Executive Summary</h2>
-            <div class=\"metric\">Progress: {executive.get('progress_percentage',0)}%</div>
-            <div class=\"metric\">Phases: {executive.get('phases_completed','0/0')}</div>
-            <div class=\"metric\">Tasks: {executive.get('tasks_completed','0/0')}</div>
-            <div class=\"metric\">Success Rate: {report.get('metrics', {}).get('success_rate_percentage', 0)}%</div>
+            <div class=\"metric\">Progress: {executive.get("progress_percentage", 0)}%</div>
+            <div class=\"metric\">Phases: {executive.get("phases_completed", "0/0")}</div>
+            <div class=\"metric\">Tasks: {executive.get("tasks_completed", "0/0")}</div>
+            <div class=\"metric\">Success Rate: {report.get("metrics", {}).get("success_rate_percentage", 0)}%</div>
 
             <h2>Recommendations</h2>
             {recommendations_html}
@@ -471,7 +475,8 @@ class ReportGenerator:
 
         # Sort by duration, handling None values
         completed_tasks.sort(
-            key=lambda x: x[1].duration.total_seconds() if x[1].duration else 0, reverse=True
+            key=lambda x: x[1].duration.total_seconds() if x[1].duration else 0,
+            reverse=True,
         )
 
         return [

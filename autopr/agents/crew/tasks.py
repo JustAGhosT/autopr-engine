@@ -5,10 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from autopr.agents.models import CodeIssue, PlatformAnalysis
-from autopr.utils.volume_utils import (
-    VolumeLevel,
-    get_volume_level_name,
-)
+from autopr.utils.volume_utils import VolumeLevel, get_volume_level_name
 
 
 class _SimpleTask:
@@ -77,6 +74,7 @@ def _select_task_class(agent: Any):
     # Use simple task when tests pass MagicMock agents that CrewAI Task rejects
     try:
         from unittest.mock import Mock as _Mock
+
         if isinstance(agent, _Mock):
             return _SimpleTask
     except Exception:
@@ -86,7 +84,8 @@ def _select_task_class(agent: Any):
     try:
         from autopr.agents.agents import BaseAgent as AgentsBaseAgent
         from autopr.agents.base import BaseAgent
-        if isinstance(agent, (BaseAgent, AgentsBaseAgent)):
+
+        if isinstance(agent, BaseAgent | AgentsBaseAgent):
             return _SimpleTask
     except Exception:
         pass
@@ -137,9 +136,7 @@ def create_code_quality_task(repo_path: str | Path, context: dict[str, Any], age
     )
 
 
-def create_platform_analysis_task(
-    repo_path: str | Path, context: dict[str, Any], agent: Any
-):
+def create_platform_analysis_task(repo_path: str | Path, context: dict[str, Any], agent: Any):
     """Create a task for platform/tech stack analysis."""
     volume = context.get("volume", VolumeLevel.BALANCED.value)  # Default to balanced (500)
     volume_level = get_volume_level_name(volume)
@@ -313,7 +310,8 @@ def _count_issues_by_severity(issues: list[CodeIssue]) -> str:
 
     severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "WARNING", "UNKNOWN"]
     sorted_counts = sorted(
-        counts.items(), key=lambda x: severity_order.index(x[0]) if x[0] in severity_order else 99
+        counts.items(),
+        key=lambda x: severity_order.index(x[0]) if x[0] in severity_order else 99,
     )
 
     return ", ".join(f"{count} {sev}" for sev, count in sorted_counts)

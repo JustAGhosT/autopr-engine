@@ -62,9 +62,7 @@ class VolumeConfig:
                 mode, default_config = volume_to_quality_mode(self.volume)
             except Exception as e:
                 msg = f"Failed to get default mode and config for volume {self.volume}"
-                raise ValueError(
-                    msg
-                ) from e
+                raise ValueError(msg) from e
 
             # Initialize with default values
             self.quality_mode = mode
@@ -91,7 +89,7 @@ class VolumeConfig:
                 # Convert to bool based on type
                 if isinstance(value, str):
                     self.config[key] = self._convert_to_bool(value)
-                elif isinstance(value, (int, bool)):
+                elif isinstance(value, int | bool):
                     self.config[key] = bool(value)
 
     @staticmethod
@@ -141,7 +139,7 @@ class VolumeConfig:
             VolumeConfig._warn_about_conversion(value)
             return False
 
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return bool(value)
 
         # For any other type, treat as False with a warning

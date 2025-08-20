@@ -6,9 +6,10 @@ Seamless GitHub ↔ Slack integration with ephemeral PR channels
 
 import os
 
-from .client import AxoloIntegration
-from .config import AxoloConfig
-from .models import AxoloPRChannel
+from autopr.integrations.axolo.client import AxoloIntegration
+from autopr.integrations.axolo.config import AxoloConfig
+from autopr.integrations.axolo.models import AxoloPRChannel
+
 
 __all__ = [
     "AxoloConfig",
@@ -36,6 +37,11 @@ async def create_axolo_integration() -> AxoloIntegration:
 def is_axolo_available() -> bool:
     """Check if Axolo integration is properly configured"""
 
-    required_vars = ["AXOLO_API_KEY", "AXOLO_WORKSPACE_URL", "SLACK_BOT_TOKEN", "GITHUB_TOKEN"]
+    required_vars = [
+        "AXOLO_API_KEY",
+        "AXOLO_WORKSPACE_URL",
+        "SLACK_BOT_TOKEN",
+        "GITHUB_TOKEN",
+    ]
 
     return all(os.getenv(var) for var in required_vars)

@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class DependencyScannerTool(Tool):
@@ -60,7 +60,9 @@ class DependencyScannerTool(Tool):
 
                 try:
                     process = await asyncio.create_subprocess_exec(
-                        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                        *cmd,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
                     )
                     stdout, stderr = await process.communicate()
 

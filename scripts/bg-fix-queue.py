@@ -21,6 +21,7 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING, Any
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
@@ -75,7 +76,15 @@ def _remaining_issues_for_file(file_path: str, codes: list[str]) -> int:
     # Ask Ruff if any selected codes remain in this file
     if not codes:
         return 0
-    ruff = [sys.executable, "-m", "ruff", "check", "--select", ",".join(codes), file_path]
+    ruff = [
+        sys.executable,
+        "-m",
+        "ruff",
+        "check",
+        "--select",
+        ",".join(codes),
+        file_path,
+    ]
     rc, _out, _err = _run(ruff)
     # Non-zero means issues remain
     return 1 if rc != 0 else 0
@@ -84,10 +93,12 @@ def _remaining_issues_for_file(file_path: str, codes: list[str]) -> int:
 def main() -> int:
     # Fast import inside function to avoid import cost when listing help
     from autopr.actions.ai_linting_fixer.database import (
-        AIInteractionDB,  # type: ignore[import-not-found]
+        AIInteractionDB,
     )
+
+    # type: ignore[import-not-found]
     from autopr.actions.ai_linting_fixer.queue_manager import (
-        IssueQueueManager,  # type: ignore[import-not-found]
+        IssueQueueManager,
     )
 
     db_path = os.getenv("AUTOPR_DB_PATH", ".autopr/ai_interactions.db")
@@ -159,7 +170,6 @@ def main() -> int:
             )
             fixed += 1 if success else 0
             failed += 0 if success else 1
-
 
     # Non-zero exit if failures occurred
     return 0 if failed == 0 else 1

@@ -7,12 +7,13 @@ The main AutoPR engine that orchestrates AI-powered GitHub automation.
 import logging
 from typing import Any
 
-from .actions.registry import ActionRegistry
-from .ai.providers.manager import LLMProviderManager
-from .config import AutoPRConfig
-from .exceptions import AutoPRException
-from .integrations.registry import IntegrationRegistry
-from .workflows.engine import WorkflowEngine
+from autopr.actions.registry import ActionRegistry
+from autopr.ai.providers.manager import LLMProviderManager
+from autopr.config import AutoPRConfig
+from autopr.exceptions import AutoPRException
+from autopr.integrations.registry import IntegrationRegistry
+from autopr.workflows.engine import WorkflowEngine
+
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +106,6 @@ class AutoPREngine:
 
     def get_version(self) -> str:
         """Get the AutoPR Engine version."""
-        from . import __version__
+        from autopr import __version__
 
         return __version__

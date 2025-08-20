@@ -11,8 +11,7 @@ import json
 from typing import Any
 
 from discovery.content_analyzer import TemplateAnalysis
-
-from .base import BaseFormatGenerator
+from discovery.format_generators.base import BaseFormatGenerator
 
 
 class JSONGenerator(BaseFormatGenerator):

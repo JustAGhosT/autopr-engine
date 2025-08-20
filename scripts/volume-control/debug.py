@@ -6,6 +6,7 @@ Debug script to show exactly what settings are applied at different volumes
 from pathlib import Path
 import sys
 
+
 # Add volume-control to path
 volume_control_path = Path(__file__).parent / "volume-control"
 sys.path.insert(0, str(volume_control_path))
@@ -14,16 +15,21 @@ from config_loader import VolumeConfigLoader
 
 
 def main():
+    print("VOLUME SETTINGS DEBUG")
+    print("=" * 50)
 
     loader = VolumeConfigLoader()
 
     volumes_to_test = [0, 50]
 
     for volume in volumes_to_test:
+        print(f"\n=== VOLUME {volume} SETTINGS ===")
 
         settings = loader.get_settings_for_volume(volume)
-        loader.get_active_tools(volume)
+        active_tools = loader.get_active_tools(volume)
 
+        print(f"Active tools: {', '.join(active_tools) if active_tools else 'None'}")
+        print(f"Total settings: {len(settings)}")
 
         # Show important settings
         important_settings = [
@@ -35,10 +41,12 @@ def main():
         ]
 
         for setting in important_settings:
-            settings.get(setting, "NOT SET")
+            value = settings.get(setting, "NOT SET")
+            print(f"  {setting}: {value}")
 
-        for _key, _value in sorted(settings.items()):
-            pass
+        print("\nAll settings:")
+        for key, value in sorted(settings.items()):
+            print(f"  {key}: {value}")
 
 
 if __name__ == "__main__":

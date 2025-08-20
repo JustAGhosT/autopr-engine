@@ -187,7 +187,11 @@ def generate_template_report(results: dict[str, Any]) -> str:
         report.append("")
 
     if not any(
-        [results["invalid_files"], results["organization_issues"], results["consistency_issues"]]
+        [
+            results["invalid_files"],
+            results["organization_issues"],
+            results["consistency_issues"],
+        ]
     ):
         report.append("🎉 All templates are valid and well-organized!")
 
@@ -198,7 +202,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
     templates_dir = os.path.join(project_root, "templates")
-
 
     # Find template files
     template_files = find_template_files(templates_dir)
@@ -216,7 +219,6 @@ def main():
     report_file = os.path.join(project_root, "template_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     # Return appropriate exit code
     if results["invalid_files"] or results["organization_issues"] or results["consistency_issues"]:

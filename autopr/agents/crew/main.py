@@ -15,6 +15,7 @@ from autopr.actions.quality_engine.models import QualityMode
 from autopr.config.settings import get_settings
 from autopr.utils.volume_utils import get_volume_level_name
 
+
 # Constants for volume thresholds
 VOLUME_HIGH = 700
 VOLUME_MEDIUM = 600
@@ -40,6 +41,7 @@ def get_llm_provider_manager():
     try:
         from autopr.ai.providers.manager import LLMProviderManager
         from autopr.config.settings import get_settings
+
         settings = get_settings()
         return LLMProviderManager(config=settings)
     except ImportError:
@@ -75,6 +77,7 @@ class AutoPRCrew:
         else:
             # Import from the correct location
             from autopr.agents.code_quality_agent import CodeQualityAgent
+
             self.code_quality_agent = CodeQualityAgent(**agent_kwargs)
 
         # Initialize platform analysis agent
@@ -83,6 +86,7 @@ class AutoPRCrew:
         else:
             # Import from the correct location
             from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+
             self.platform_agent = PlatformAnalysisAgent(**agent_kwargs)
 
         # Initialize linting agent
@@ -91,6 +95,7 @@ class AutoPRCrew:
         else:
             # Import from the correct location
             from autopr.agents.linting_agent import LintingAgent
+
             self.linting_agent = LintingAgent(**agent_kwargs)
 
         # Initialize LLM provider
@@ -114,6 +119,7 @@ class AutoPRCrew:
             # Import and initialize LLM provider
             try:
                 from autopr.ai.providers.manager import LLMProviderManager
+
                 self.llm_provider = LLMProviderManager(config=settings)
             except ImportError:
                 self.llm_provider = None
@@ -133,7 +139,9 @@ class AutoPRCrew:
         """Create code quality analysis task."""
         agent = self.code_quality_agent
         agent.role = "Senior Code Quality Engineer"
-        agent.goal = "Analyze code quality, maintainability, and technical debt with configurable depth"
+        agent.goal = (
+            "Analyze code quality, maintainability, and technical debt with configurable depth"
+        )
 
         # Determine analysis depth based on volume
         current_volume = context.get("volume", self.volume)
@@ -202,7 +210,9 @@ class AutoPRCrew:
             logger.exception("Task execution failed")
             return {"error": str(e)}
 
-    def analyze(self, repo_path: Path | str | None = None, volume: int | None = None, **kwargs) -> dict[str, Any]:
+    def analyze(
+        self, repo_path: Path | str | None = None, volume: int | None = None, **kwargs
+    ) -> dict[str, Any]:
         """Analyze repository with specified volume."""
         # Create coroutine and run it
         coro = self.analyze_async(repo_path, volume, **kwargs)
@@ -273,7 +283,9 @@ class AutoPRCrew:
         """Compute current volume level."""
         return volume if volume is not None else self.volume
 
-    def _build_context(self, repo_path: Path, current_volume: int, analysis_kwargs: dict[str, Any]) -> dict[str, Any]:
+    def _build_context(
+        self, repo_path: Path, current_volume: int, analysis_kwargs: dict[str, Any]
+    ) -> dict[str, Any]:
         """Build context for analysis."""
         repo_path = Path(repo_path) if isinstance(repo_path, str) else repo_path
         repo = Path(repo_path) if isinstance(repo_path, str) else repo_path
@@ -296,8 +308,12 @@ class AutoPRCrew:
         # Create task builders
         def _call_builder(builder, *args):
             sig = _inspect.signature(builder)
-            params = [p for p in sig.parameters.values() if p.name != "self" and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
-            return builder(*args[:len(params)])
+            params = [
+                p
+                for p in sig.parameters.values()
+                if p.name != "self" and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
+            ]
+            return builder(*args[: len(params)])
 
         code_quality_task = _call_builder(self._create_code_quality_task, repo_path, ctx)
         platform_task = _call_builder(self._create_platform_analysis_task, repo_path, ctx)
@@ -324,7 +340,12 @@ class AutoPRCrew:
                 results.append({"error": str(e)})
         return results
 
-    def _process_results(self, results: list[Any], context: dict[str, Any], analysis_kwargs: dict[str, Any]) -> dict[str, Any]:
+    def _process_results(
+        self,
+        results: list[Any],
+        context: dict[str, Any],
+        analysis_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Process and normalize task results."""
         if len(results) < EXPECTED_RESULTS_COUNT:
             return {"error": "Insufficient results from tasks"}
@@ -333,7 +354,11 @@ class AutoPRCrew:
 
         # Process code quality result
         if isinstance(code_quality_result, Exception):
-            code_quality = {"metrics": {"score": 85}, "issues": [], "error": str(code_quality_result)}
+            code_quality = {
+                "metrics": {"score": 85},
+                "issues": [],
+                "error": str(code_quality_result),
+            }
         elif code_quality_result is None:
             code_quality = {"metrics": {"score": 85}, "issues": []}
         else:
@@ -376,6 +401,7 @@ class AutoPRCrew:
 
     def _normalize_platform_result(self, result: Any) -> dict[str, Any]:
         """Normalize platform analysis result."""
+
         def _norm_plat(plat_result):
             if isinstance(plat_result, dict):
                 return plat_result
@@ -387,6 +413,7 @@ class AutoPRCrew:
 
     def _normalize_linting_result(self, result: Any) -> list[dict[str, Any]]:
         """Normalize linting result."""
+
         def _norm_lint(lint_result):
             if isinstance(lint_result, list):
                 items = lint_result
@@ -409,7 +436,13 @@ class AutoPRCrew:
 
         return _norm_lint(result)
 
-    def _generate_summary(self, code_quality: dict[str, Any], platform_analysis: dict[str, Any], linting_issues: list[dict[str, Any]], context: dict[str, Any]) -> str:
+    def _generate_summary(
+        self,
+        code_quality: dict[str, Any],
+        platform_analysis: dict[str, Any],
+        linting_issues: list[dict[str, Any]],
+        context: dict[str, Any],
+    ) -> str:
         """Generate analysis summary."""
         crew_tasks = _importlib.import_module("autopr.agents.crew.tasks")
 
@@ -435,9 +468,25 @@ class AutoPRCrew:
     def _create_quality_inputs(self, _volume: int) -> dict[str, Any]:
         """Create quality inputs based on volume."""
         if _volume <= VOLUME_MIN:
-            return {"mode": QualityMode.ULTRA_FAST, "max_fixes": 0, "enable_ai_agents": False}
+            return {
+                "mode": QualityMode.ULTRA_FAST,
+                "max_fixes": 0,
+                "enable_ai_agents": False,
+            }
         if _volume < VOLUME_STANDARD:
-            return {"mode": QualityMode.FAST, "max_fixes": _volume // 20, "enable_ai_agents": False}
+            return {
+                "mode": QualityMode.FAST,
+                "max_fixes": _volume // 20,
+                "enable_ai_agents": False,
+            }
         if _volume < VOLUME_HIGH:
-            return {"mode": QualityMode.SMART, "max_fixes": _volume // 20, "enable_ai_agents": True}
-        return {"mode": QualityMode.AI_ENHANCED, "max_fixes": 100, "enable_ai_agents": True}
+            return {
+                "mode": QualityMode.SMART,
+                "max_fixes": _volume // 20,
+                "enable_ai_agents": True,
+            }
+        return {
+            "mode": QualityMode.AI_ENHANCED,
+            "max_fixes": 100,
+            "enable_ai_agents": True,
+        }

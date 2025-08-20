@@ -8,11 +8,7 @@ import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.agents.crew.main import AutoPRCrew
-from autopr.agents.models import (
-    CodeIssue,
-    PlatformAnalysis,
-    PlatformComponent,
-)
+from autopr.agents.models import CodeIssue, PlatformAnalysis, PlatformComponent
 
 
 class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
@@ -26,12 +22,20 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
     }
 
     CODE_QUALITY_ISSUES = [
-        {"file": "test.py", "line": 1, "message": "Missing docstring", "severity": "low"}
+        {
+            "file": "test.py",
+            "line": 1,
+            "message": "Missing docstring",
+            "severity": "low",
+        }
     ]
 
     PLATFORM_COMPONENTS = [
         PlatformComponent(
-            name="Python", version="3.9", confidence=0.95, evidence=["File extensions: .py"]
+            name="Python",
+            version="3.9",
+            confidence=0.95,
+            evidence=["File extensions: .py"],
         )
     ]
 
@@ -61,7 +65,10 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
         """Create and return a mock code quality agent."""
         mock_agent = MagicMock()
         mock_agent.analyze_code_quality = AsyncMock(
-            return_value={"metrics": self.CODE_QUALITY_METRICS, "issues": self.CODE_QUALITY_ISSUES}
+            return_value={
+                "metrics": self.CODE_QUALITY_METRICS,
+                "issues": self.CODE_QUALITY_ISSUES,
+            }
         )
         return mock_agent
 
@@ -107,12 +114,15 @@ class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):
             # Mock the analyze method to return expected results
             def mock_analyze(self, repo_path=None, volume=None, **kwargs):
                 return {
-                    "code_quality": {"metrics": TestAutoPRCrew.CODE_QUALITY_METRICS, "issues": TestAutoPRCrew.CODE_QUALITY_ISSUES},
+                    "code_quality": {
+                        "metrics": TestAutoPRCrew.CODE_QUALITY_METRICS,
+                        "issues": TestAutoPRCrew.CODE_QUALITY_ISSUES,
+                    },
                     "platform_analysis": {
                         "platform": "Python",
                         "confidence": 0.95,
                         "components": TestAutoPRCrew.PLATFORM_COMPONENTS,
-                        "recommendations": ["Consider adding type hints"]
+                        "recommendations": ["Consider adding type hints"],
                     },
                     "linting_issues": TestAutoPRCrew.LINT_ISSUES,
                     "current_volume": volume or self.volume,

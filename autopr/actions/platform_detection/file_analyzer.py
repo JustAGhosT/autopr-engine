@@ -170,7 +170,8 @@ class FileAnalyzer:
             # Analyze file contents for additional confidence
             for file_path in results[platform]["files"]:
                 content_results = self.analyze_file_content(
-                    str(self.workspace_path / file_path), {platform: platform_configs[platform]}
+                    str(self.workspace_path / file_path),
+                    {platform: platform_configs[platform]},
                 )
                 if platform in content_results:
                     confidence = min(1.0, confidence + content_results[platform])

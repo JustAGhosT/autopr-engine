@@ -1,7 +1,7 @@
 """Markdown linter entry point."""
 
 try:
-    from .cli import main
+    from tools.markdown_lint.cli import main
 except ImportError:
     from cli import main
 

@@ -10,6 +10,7 @@ import operator
 from pathlib import Path
 import shutil
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -213,7 +214,8 @@ class FileManager:
             if older_than_days:
                 cutoff_time = datetime.now(UTC).timestamp() - (older_than_days * 24 * 60 * 60)
                 backups_to_remove = [
-                    backup for backup in backups_to_remove
+                    backup
+                    for backup in backups_to_remove
                     if datetime.fromisoformat(backup["modified_time"]).timestamp() < cutoff_time
                 ]
 

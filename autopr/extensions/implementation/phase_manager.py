@@ -9,8 +9,9 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any
 
-from .task_definitions import TaskRegistry
-from .task_executor import TaskExecution, TaskExecutor
+from implementation.task_definitions import TaskRegistry
+from implementation.task_executor import TaskExecution, TaskExecutor
+
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,11 @@ class PhaseManager:
     def get_phase_status(self, phase_id: str) -> dict[str, Any]:
         """Get detailed status of a specific phase."""
         if phase_id not in self.phase_executions:
-            return {"phase_id": phase_id, "status": "not_started", "progress_percentage": 0.0}
+            return {
+                "phase_id": phase_id,
+                "status": "not_started",
+                "progress_percentage": 0.0,
+            }
 
         execution = self.phase_executions[phase_id]
         phase_definition = self.phase_definitions[phase_id]
@@ -178,9 +183,11 @@ class PhaseManager:
             "description": phase_definition.get("description", ""),
             "status": execution.status,
             "progress_percentage": execution.progress_percentage,
-            "start_time": execution.start_time.isoformat() if execution.start_time else None,
+            "start_time": (execution.start_time.isoformat() if execution.start_time else None),
             "end_time": execution.end_time.isoformat() if execution.end_time else None,
-            "duration_seconds": execution.duration.total_seconds() if execution.duration else None,
+            "duration_seconds": (
+                execution.duration.total_seconds() if execution.duration else None
+            ),
             "total_tasks": len(phase_definition.get("tasks", [])),
             "completed_tasks": sum(1 for e in execution.task_executions.values() if e.is_completed),
             "failed_tasks": sum(1 for e in execution.task_executions.values() if e.is_failed),

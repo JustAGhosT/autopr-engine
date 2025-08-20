@@ -9,7 +9,7 @@ Handles platform recommendations based on project requirements.
 import operator
 from typing import Any
 
-from .template_models import PlatformRequirements, TemplateInfo
+from discovery.template_models import PlatformRequirements, TemplateInfo
 
 
 class PlatformRecommendationEngine:
@@ -170,7 +170,12 @@ class PlatformRecommendationEngine:
     def _score_technical_expertise(self, platform: str, expertise: str) -> float:
         """Score platform based on technical expertise requirements."""
         # No-code platforms generally favor lower technical expertise
-        expertise_mapping = {"beginner": 0.9, "intermediate": 0.7, "advanced": 0.5, "expert": 0.3}
+        expertise_mapping = {
+            "beginner": 0.9,
+            "intermediate": 0.7,
+            "advanced": 0.5,
+            "expert": 0.3,
+        }
 
         return expertise_mapping.get(expertise.lower(), 0.5)
 

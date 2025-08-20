@@ -131,7 +131,10 @@ class TestGitHubClient(TestCase):
             "Retry-After": "1",
         }
         rate_limit_response.raise_for_status.side_effect = ClientResponseError(
-            request_info=None, history=None, status=403, message="API rate limit exceeded"
+            request_info=None,
+            history=None,
+            status=403,
+            message="API rate limit exceeded",
         )
 
         # Second response is successful
@@ -278,7 +281,12 @@ class TestGitHubClient(TestCase):
         assignees = ["user1"]
 
         expected_url = f"/repos/{owner}/{repo}/issues"
-        expected_data = {"title": title, "body": body, "labels": labels, "assignees": assignees}
+        expected_data = {
+            "title": title,
+            "body": body,
+            "labels": labels,
+            "assignees": assignees,
+        }
 
         with patch.object(self.client, "_post") as mock_post:
             mock_post.return_value = self.mock_response

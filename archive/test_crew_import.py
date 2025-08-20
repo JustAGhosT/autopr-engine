@@ -3,6 +3,7 @@
 from pathlib import Path
 import sys
 
+
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
 if project_root not in sys.path:
@@ -13,7 +14,6 @@ for _p in sys.path:
 
 try:
     from autopr.agents.crew import AutoPRCrew
-
 
     # Create a mock LLM provider manager
     class MockLLMProviderManager:
@@ -48,4 +48,3 @@ except Exception:
     import traceback
 
     traceback.print_exc()
-

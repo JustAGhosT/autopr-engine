@@ -46,14 +46,20 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
         # Try to check if eslint is available via npx
         try:
             import subprocess
+
             result = subprocess.run(
                 ["npx", "eslint", "--version"],
-                check=False, capture_output=True,
+                check=False,
+                capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
             return result.returncode == 0
-        except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
+        except (
+            subprocess.TimeoutExpired,
+            FileNotFoundError,
+            subprocess.SubprocessError,
+        ):
             return False
 
     def get_required_command(self) -> str | None:
@@ -123,7 +129,10 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
             ]
         else:
             # Check for execution errors
-            if process.returncode not in (0, 1):  # ESLint returns 1 if there are linting errors
+            if process.returncode not in (
+                0,
+                1,
+            ):  # ESLint returns 1 if there are linting errors
                 error_message = stderr.decode().strip()
                 logging.error("Error running ESLint: %s", error_message)
                 return [

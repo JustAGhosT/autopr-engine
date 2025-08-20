@@ -8,7 +8,8 @@ import bcrypt
 import jwt
 import structlog
 
-from .encryption import EnterpriseEncryptionManager
+from autopr.security.encryption import EnterpriseEncryptionManager
+
 
 logger = structlog.get_logger(__name__)
 
@@ -223,7 +224,11 @@ class EnterpriseAuthenticationManager:
             return AuthenticationResult(success=False, error_message="Token validation failed")
 
     def create_api_key(
-        self, username: str, name: str, permissions: list[str], expires_in_days: int = 365
+        self,
+        username: str,
+        name: str,
+        permissions: list[str],
+        expires_in_days: int = 365,
     ) -> str | None:
         "Create API key for user"
         try:
@@ -245,7 +250,10 @@ class EnterpriseAuthenticationManager:
             }
 
             logger.info(
-                "API key created", username=username, key_name=name, permissions=permissions
+                "API key created",
+                username=username,
+                key_name=name,
+                permissions=permissions,
             )
             return api_key
 
@@ -309,7 +317,13 @@ class EnterpriseAuthenticationManager:
 
     def check_role(self, user_roles: list[str], required_role: str) -> bool:
         "Check if user has required role"
-        role_hierarchy = {"guest": 0, "user": 1, "admin": 2, "super_admin": 3, "service_account": 1}
+        role_hierarchy = {
+            "guest": 0,
+            "user": 1,
+            "admin": 2,
+            "super_admin": 3,
+            "service_account": 1,
+        }
 
         user_level = max([role_hierarchy.get(role, 0) for role in user_roles])
         required_level = role_hierarchy.get(required_role, 0)
@@ -381,7 +395,9 @@ class EnterpriseAuthenticationManager:
                 del self.active_sessions[session_id]
 
             logger.info(
-                "Revoked all user sessions", username=username, count=len(sessions_to_remove)
+                "Revoked all user sessions",
+                username=username,
+                count=len(sessions_to_remove),
             )
             return len(sessions_to_remove)
 

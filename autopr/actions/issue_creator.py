@@ -155,7 +155,10 @@ class IssueCreator:
         }
 
         response = requests.post(
-            url, headers=headers, json={"query": mutation, "variables": variables}, timeout=30
+            url,
+            headers=headers,
+            json={"query": mutation, "variables": variables},
+            timeout=30,
         )
         response.raise_for_status()
 
@@ -277,7 +280,10 @@ A Linear ticket has been created for autonomous resolution.
         }
 
         response = requests.post(
-            url, headers=headers, json={"query": mutation, "variables": variables}, timeout=30
+            url,
+            headers=headers,
+            json={"query": mutation, "variables": variables},
+            timeout=30,
         )
         response.raise_for_status()
 

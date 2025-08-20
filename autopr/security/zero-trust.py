@@ -4,6 +4,7 @@ from enum import Enum
 
 import structlog
 
+
 logger = structlog.get_logger(__name__)
 
 
@@ -70,7 +71,10 @@ class ZeroTrustSecurityManager:
                     return False
 
             self.audit_logger.info(
-                "Access granted", user_id=context.user_id, resource=resource, action=action
+                "Access granted",
+                user_id=context.user_id,
+                resource=resource,
+                action=action,
             )
             return True
 

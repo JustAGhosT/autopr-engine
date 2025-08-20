@@ -20,8 +20,8 @@ from autopr.actions.ai_linting_fixer.error_handler import (
     ErrorRecoveryStrategy,
     create_error_context,
 )
+from autopr.workflows.base import Workflow
 
-from .base import Workflow
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,9 @@ class ErrorHandlerWorkflow(Workflow):
         try:
             # Create display configuration
             self.display_config = DisplayConfig(
-                mode=OutputMode.VERBOSE if self.config.get("verbose", False) else OutputMode.NORMAL,
+                mode=(
+                    OutputMode.VERBOSE if self.config.get("verbose", False) else OutputMode.NORMAL
+                ),
                 use_colors=self.config.get("use_colors", True),
                 use_emojis=self.config.get("use_emojis", True),
             )
@@ -224,7 +226,10 @@ class ErrorHandlerWorkflow(Workflow):
         if inputs.exception:
             # Process exception
             error_info = self.error_handler.log_error(
-                inputs.exception, context, inputs.additional_info, display=inputs.enable_display
+                inputs.exception,
+                context,
+                inputs.additional_info,
+                display=inputs.enable_display,
             )
         elif inputs.error_message:
             # Create synthetic exception for error message
@@ -233,7 +238,10 @@ class ErrorHandlerWorkflow(Workflow):
 
             synthetic_exception = SyntheticError(inputs.error_message)
             error_info = self.error_handler.log_error(
-                synthetic_exception, context, inputs.additional_info, display=inputs.enable_display
+                synthetic_exception,
+                context,
+                inputs.additional_info,
+                display=inputs.enable_display,
             )
         else:
             # No error to process

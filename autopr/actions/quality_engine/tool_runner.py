@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING, Any
 
 import structlog
 
-from .models import ToolResult
+from autopr.actions.quality_engine.models import ToolResult
+
 
 if TYPE_CHECKING:
-    from .tools.tool_base import ToolExecutionResult
+    from autopr.actions.quality_engine.tools.tool_base import ToolExecutionResult
 
 logger = structlog.get_logger(__name__)
 
@@ -93,7 +94,9 @@ async def run_tool(
                 handler_registry.handle_results(issues, result_type)
             except Exception as handler_error:
                 logger.warning(
-                    "Error handling tool results", tool=tool_name, error=str(handler_error)
+                    "Error handling tool results",
+                    tool=tool_name,
+                    error=str(handler_error),
                 )
 
         # Extract files with issues for the result

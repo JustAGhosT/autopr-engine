@@ -10,11 +10,13 @@ import logging
 import time
 from typing import Any
 
+
 try:
     import psutil  # type: ignore[import-not-found]
 except Exception:  # pragma: no cover - optional in CI/tests
     psutil = None  # type: ignore[assignment]
 from pydantic import BaseModel, Field
+
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +122,10 @@ class MetricsCollector:
         self.session_metrics.api_response_times.append(response_time)
 
     def record_fix_attempt(
-        self, success: bool, confidence: float | None = None, processing_time: float = 0.0
+        self,
+        success: bool,
+        confidence: float | None = None,
+        processing_time: float = 0.0,
     ) -> None:
         """Record a fix attempt."""
         if success:

@@ -9,10 +9,11 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from .phase_manager import PhaseManager
-from .report_generator import ReportGenerator
-from .task_definitions import ImplementationPhases, TaskRegistry
-from .task_executor import TaskExecutor
+from implementation_roadmap.phase_manager import PhaseManager
+from implementation_roadmap.report_generator import ReportGenerator
+from implementation_roadmap.task_definitions import ImplementationPhases, TaskRegistry
+from implementation_roadmap.task_executor import TaskExecutor
+
 
 logger = logging.getLogger(__name__)
 
@@ -351,7 +352,12 @@ class Phase1ExtensionImplementor:
         Returns:
             Dictionary containing validation results
         """
-        validation_results = {"valid": True, "issues": [], "warnings": [], "recommendations": []}
+        validation_results = {
+            "valid": True,
+            "issues": [],
+            "warnings": [],
+            "recommendations": [],
+        }
 
         # Check Python version
 

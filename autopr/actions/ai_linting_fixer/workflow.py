@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +30,11 @@ class WorkflowContext(BaseModel):
     priority: int = 5  # 1-10, higher = more priority
     timeout_seconds: int = 300
     retry_config: dict[str, Any] = Field(
-        default_factory=lambda: {"max_retries": 3, "retry_delay": 1.0, "exponential_backoff": True}
+        default_factory=lambda: {
+            "max_retries": 3,
+            "retry_delay": 1.0,
+            "exponential_backoff": True,
+        }
     )
 
     # Resource management

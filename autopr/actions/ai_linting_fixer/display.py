@@ -18,11 +18,12 @@ import logging
 import sys
 from typing import Any, TextIO
 
-from .models import (  # SessionMetrics, # Removed; ProcessingMode, # Removed
+from autopr.actions.ai_linting_fixer.models import (
     AILintingFixerInputs,
     AILintingFixerOutputs,
     LintingIssue,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +193,9 @@ class SystemStatusDisplay:
                     successes = stats.get("successes", 0)
                     self._print(
                         self.formatter.metric(
-                            agent_name, f"{successes}/{attempts} ({success_rate:.1f}%)", "agent"
+                            agent_name,
+                            f"{successes}/{attempts} ({success_rate:.1f}%)",
+                            "agent",
                         )
                     )
 
@@ -212,7 +215,9 @@ class SystemStatusDisplay:
         else:
             self._print(
                 self.formatter.metric(
-                    "No providers available", "Configure API keys in environment", "warning"
+                    "No providers available",
+                    "Configure API keys in environment",
+                    "warning",
                 )
             )
 
@@ -287,7 +292,10 @@ class OperationDisplay:
             )
 
     def show_detection_results(
-        self, filtered_count: int, total_count: int, unique_files_count: int | None = None
+        self,
+        filtered_count: int,
+        total_count: int,
+        unique_files_count: int | None = None,
     ):
         """Display detection results."""
         if self.config.is_quiet():
@@ -391,7 +399,9 @@ class ResultsDisplay:
             display_name = agent_name.replace("_", " ").title()
             self._print(
                 self.formatter.metric(
-                    display_name, f"{successes}/{attempts} ({success_rate:.1f}%)", "agent"
+                    display_name,
+                    f"{successes}/{attempts} ({success_rate:.1f}%)",
+                    "agent",
                 )
             )
 

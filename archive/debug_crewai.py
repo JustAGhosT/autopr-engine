@@ -3,6 +3,7 @@
 from pathlib import Path
 import sys
 
+
 # Add project root to Python path
 project_root = str(Path(__file__).parent)
 if project_root not in sys.path:

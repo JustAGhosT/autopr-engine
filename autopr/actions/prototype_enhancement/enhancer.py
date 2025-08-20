@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+
 try:
     from autopr.models.artifacts import (  # type: ignore[import-untyped]
         PrototypeEnhancerInputs,
@@ -20,9 +21,16 @@ except ImportError:
     from typing import Any as PrototypeEnhancerInputs
     from typing import Any as PrototypeEnhancerOutputs
 
-from .enhancement_strategies import EnhancementStrategy, EnhancementStrategyFactory
-from .file_generators import FileGenerator
-from .platform_configs import PlatformConfig, PlatformRegistry
+from autopr.actions.prototype_enhancement.enhancement_strategies import (
+    EnhancementStrategy,
+    EnhancementStrategyFactory,
+)
+from autopr.actions.prototype_enhancement.file_generators import FileGenerator
+from autopr.actions.prototype_enhancement.platform_configs import (
+    PlatformConfig,
+    PlatformRegistry,
+)
+
 
 logger = logging.getLogger(__name__)
 

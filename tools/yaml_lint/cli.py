@@ -6,8 +6,8 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from .linter import YAMLLinter
-from .models import IssueSeverity
+from tools.yaml_lint.linter import YAMLLinter
+from tools.yaml_lint.models import IssueSeverity
 
 
 def parse_args(args: list[str]) -> argparse.Namespace:

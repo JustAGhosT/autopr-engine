@@ -7,7 +7,7 @@ Handles generation of CI/CD pipeline configurations for various providers.
 from pathlib import Path
 from typing import Any
 
-from .base_generator import BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class CICDGenerator(BaseGenerator):
@@ -149,7 +149,11 @@ class CICDGenerator(BaseGenerator):
         issue_template_dir = Path(output_dir) / ".github" / "ISSUE_TEMPLATE"
         issue_template_dir.mkdir(parents=True, exist_ok=True)
 
-        issue_templates = ["bug_report.md", "feature_request.md", "security_vulnerability.md"]
+        issue_templates = [
+            "bug_report.md",
+            "feature_request.md",
+            "security_vulnerability.md",
+        ]
 
         for template in issue_templates:
             content = self._render_template(f"ci/github/ISSUE_TEMPLATE/{template}", variables)

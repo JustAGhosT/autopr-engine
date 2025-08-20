@@ -6,6 +6,7 @@ from typing import Any
 
 import aiohttp
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,18 +35,20 @@ class LinearClient:
         """Execute a GraphQL query against the Linear API."""
         data = {"query": query, "variables": variables or {}}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self.base_url, headers=self.headers, json=data) as response:
-                response.raise_for_status()
-                result = await response.json()
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(self.base_url, headers=self.headers, json=data) as response,
+        ):
+            response.raise_for_status()
+            result = await response.json()
 
-                if "errors" in result:
-                    error_messages = [
-                        e.get("message", "Unknown error") for e in result.get("errors", [])
-                    ]
-                    msg = f"Linear API error: {', '.join(error_messages)}"
-                    raise Exception(msg)
+            if "errors" in result:
+                error_messages = [
+                    e.get("message", "Unknown error") for e in result.get("errors", [])
+                ]
+                msg = f"Linear API error: {', '.join(error_messages)}"
+                raise Exception(msg)
 
-                return result.get("data", {})
+            return result.get("data", {})
 
     # Add more Linear API methods as needed

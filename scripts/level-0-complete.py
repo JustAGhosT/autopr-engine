@@ -23,7 +23,6 @@ def check_tool_disabled(tool_name, command, expected_exit=0):
 
 
 def main():
-
     # Check Python linting tools
     check_tool_disabled("Flake8", "flake8 scripts/volume-control/volume_knob.py")
     check_tool_disabled("Ruff", "ruff check scripts/volume-control/volume_knob.py")
@@ -57,7 +56,6 @@ def main():
                 pass
     else:
         pass
-
 
 
 if __name__ == "__main__":

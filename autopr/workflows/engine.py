@@ -11,8 +11,8 @@ from typing import Any
 
 from autopr.config import AutoPRConfig
 from autopr.exceptions import WorkflowError
+from autopr.workflows.base import Workflow
 
-from .base import Workflow
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,10 @@ class WorkflowEngine:
             logger.info(f"Unregistered workflow: {workflow_name}")
 
     async def execute_workflow(
-        self, workflow_name: str, context: dict[str, Any], workflow_id: str | None = None
+        self,
+        workflow_name: str,
+        context: dict[str, Any],
+        workflow_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Execute a workflow by name.
@@ -189,10 +192,15 @@ class WorkflowEngine:
             if workflow.handles_event(event_type):
                 try:
                     result = await self.execute_workflow(
-                        workflow_name, {"event_type": event_type, "event_data": event_data}
+                        workflow_name,
+                        {"event_type": event_type, "event_data": event_data},
                     )
                     results.append(
-                        {"workflow": workflow_name, "status": "success", "result": result}
+                        {
+                            "workflow": workflow_name,
+                            "status": "success",
+                            "result": result,
+                        }
                     )
                 except Exception as e:
                     logger.exception(
@@ -203,7 +211,11 @@ class WorkflowEngine:
                     )
                     results.append({"workflow": workflow_name, "status": "error", "error": str(e)})
 
-        return {"event_type": event_type, "processed_workflows": len(results), "results": results}
+        return {
+            "event_type": event_type,
+            "processed_workflows": len(results),
+            "results": results,
+        }
 
     def _record_execution(
         self, execution_id: str, workflow_name: str, status: str, result: dict[str, Any]

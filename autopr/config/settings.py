@@ -19,6 +19,7 @@ from pydantic import BaseModel, SecretStr, field_validator
 from pydantic import Field as _Field
 import yaml  # type: ignore[import-untyped]
 
+
 try:
     # Pydantic 2.0+ (preferred)
     from pydantic_settings import BaseSettings
@@ -97,7 +98,11 @@ class LLMConfig(BaseModel):
 
     default_provider: LLMProvider = Field(LLMProvider.OPENAI, env="DEFAULT_LLM_PROVIDER")
     fallback_order: list[LLMProvider] = Field(
-        default_factory=lambda: [LLMProvider.OPENAI, LLMProvider.ANTHROPIC, LLMProvider.MISTRAL]
+        default_factory=lambda: [
+            LLMProvider.OPENAI,
+            LLMProvider.ANTHROPIC,
+            LLMProvider.MISTRAL,
+        ]
     )
 
     # Provider-specific configurations

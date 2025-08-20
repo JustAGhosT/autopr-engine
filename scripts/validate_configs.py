@@ -176,7 +176,6 @@ def main():
     project_root = os.getcwd()
     configs_dir = os.path.join(project_root, "configs")
 
-
     # Find configuration files
     config_files = find_config_files(configs_dir)
 
@@ -193,7 +192,6 @@ def main():
     report_file = os.path.join(project_root, "config_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     # Return appropriate exit code
     if results["invalid_files"] or results["duplicates"] or results["issues"]:

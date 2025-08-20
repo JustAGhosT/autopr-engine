@@ -2,24 +2,24 @@
 LLM Providers package - Individual provider implementations.
 """
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import Any
 
 # Import base class for inline implementations
 from autopr.actions.llm.base import BaseLLMProvider
+from autopr.actions.llm.providers.anthropic import AnthropicProvider
+from autopr.actions.llm.providers.groq import GroqProvider
 from autopr.actions.llm.types import LLMResponse
 
-from .anthropic import AnthropicProvider
-from .groq import GroqProvider
 
 # Optional AI providers
 try:
-    from .mistral import MistralProvider
+    from autopr.actions.llm.providers.mistral import MistralProvider
 
     MISTRAL_AVAILABLE = True
 except ImportError:
     MistralProvider = None
     MISTRAL_AVAILABLE = False
-from .openai import OpenAIProvider
+from autopr.actions.llm.providers.openai import OpenAIProvider
 
 
 class PerplexityProvider(BaseLLMProvider):

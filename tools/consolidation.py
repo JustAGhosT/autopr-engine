@@ -98,7 +98,6 @@ class Consolidator:
         for _log_entry in self.operations_log:
             pass
 
-
     def _safe_remove(self, path: Path):
         """Safely remove a file or directory"""
         try:

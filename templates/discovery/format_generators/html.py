@@ -9,10 +9,9 @@ Generates documentation in HTML format.
 from typing import Any
 
 from discovery.content_analyzer import TemplateAnalysis
-
-from .base import BaseFormatGenerator
-from .html_template_loader import YAMLHTMLTemplateLoader
-from .markdown import MarkdownGenerator
+from discovery.format_generators.base import BaseFormatGenerator
+from discovery.format_generators.html_template_loader import YAMLHTMLTemplateLoader
+from discovery.format_generators.markdown import MarkdownGenerator
 
 
 class HTMLGenerator(BaseFormatGenerator):

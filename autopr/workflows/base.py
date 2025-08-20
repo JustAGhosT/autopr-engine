@@ -9,6 +9,7 @@ import asyncio
 import logging
 from typing import Any
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -179,7 +180,12 @@ class YAMLWorkflow(Workflow):
             except Exception as err:
                 logger.exception("Step %s failed", step_name)
                 results.append(
-                    {"step": step_name, "type": step_type, "status": "error", "error": str(err)}
+                    {
+                        "step": step_name,
+                        "type": step_type,
+                        "status": "error",
+                        "error": str(err),
+                    }
                 )
 
                 # Check if workflow should continue on error
@@ -264,4 +270,7 @@ class YAMLWorkflow(Workflow):
         delay_seconds = step.get("seconds", 1)
         await asyncio.sleep(delay_seconds)
 
-        return {"delay_seconds": delay_seconds, "message": f"Delayed for {delay_seconds} seconds"}
+        return {
+            "delay_seconds": delay_seconds,
+            "message": f"Delayed for {delay_seconds} seconds",
+        }

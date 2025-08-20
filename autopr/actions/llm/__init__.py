@@ -22,16 +22,16 @@ Usage:
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Export base classes
-from .base import BaseLLMProvider
+from autopr.actions.llm.base import BaseLLMProvider
 
 # Export manager
-from .manager import LLMProviderManager
+from autopr.actions.llm.manager import LLMProviderManager
 
 # Export providers
-from .providers import (
+from autopr.actions.llm.providers import (
     AnthropicProvider,
     GroqProvider,
     MistralProvider,
@@ -41,7 +41,14 @@ from .providers import (
 )
 
 # Export types
-from .types import LLMConfig, LLMProviderType, LLMResponse, Message, MessageRole
+from autopr.actions.llm.types import (
+    LLMConfig,
+    LLMProviderType,
+    LLMResponse,
+    Message,
+    MessageRole,
+)
+
 
 # Global provider manager instance
 _provider_manager: LLMProviderManager | None = None

@@ -9,17 +9,20 @@ import logging
 import time
 from typing import Any
 
+from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
+from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
+from autopr.actions.ai_linting_fixer.detection import IssueDetector
+from autopr.actions.ai_linting_fixer.display import AILintingFixerDisplay, DisplayConfig
+from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler
+from autopr.actions.ai_linting_fixer.file_manager import FileManager
+from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+)
+from autopr.actions.ai_linting_fixer.performance_tracker import PerformanceTracker
 from autopr.actions.llm.manager import LLMProviderManager
 
-from .ai_agent_manager import AIAgentManager
-from .code_analyzer import CodeAnalyzer
-from .detection import IssueDetector
-from .display import AILintingFixerDisplay, DisplayConfig
-from .error_handler import ErrorHandler
-from .file_manager import FileManager
-from .issue_fixer import IssueFixer
-from .models import AILintingFixerInputs, AILintingFixerOutputs
-from .performance_tracker import PerformanceTracker
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +48,12 @@ class AILintingFixer:
         llm_config = {
             "default_provider": "azure_openai",
             "fallback_order": ["azure_openai"],  # Only use Azure OpenAI
-            "azure_openai": {
-                "azure_endpoint": "https://dev-saf-openai-phoenixvc-ai.openai.azure.com/",
-                "api_key": None,  # Will be loaded from environment
+            "providers": {
+                "azure_openai": {
+                    "azure_endpoint": "https://jurie-mcnb2krj-swedencentral.cognitiveservices.azure.com/",
+                    "api_key": None,  # Will be loaded from environment
+                    "api_version": "2025-01-01-preview",
+                },
             },
         }
         self.llm_manager = LLMProviderManager(llm_config, display=self.display)
@@ -61,7 +67,7 @@ class AILintingFixer:
 
         # Initialize database for logging interactions
         try:
-            from .database import AIInteractionDB
+            from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 
             self.database = AIInteractionDB()
             self.issue_fixer.database = self.database
@@ -444,7 +450,10 @@ class AILintingFixer:
         return self
 
     def __exit__(
-        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
     ) -> None:
         """Context manager exit."""
         try:
@@ -468,7 +477,9 @@ class AILintingFixer:
 
 
 # Convenience functions for backward compatibility
-def create_ai_linting_fixer(display_config: DisplayConfig | None = None) -> AILintingFixer:
+def create_ai_linting_fixer(
+    display_config: DisplayConfig | None = None,
+) -> AILintingFixer:
     """Create an AI linting fixer with default configuration."""
     return AILintingFixer(display_config=display_config)
 

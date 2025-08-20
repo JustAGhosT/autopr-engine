@@ -13,6 +13,5 @@ class LintHandler(Handler[LintIssue]):
         if not results:
             return
 
-
         for _issue in results:
             pass

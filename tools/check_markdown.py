@@ -2,6 +2,7 @@ from pathlib import Path
 import re
 import sys
 
+
 # Configuration
 MAX_LINE_LENGTH = 120
 REQUIRE_BLANK_LINE_BEFORE_HEADING = True

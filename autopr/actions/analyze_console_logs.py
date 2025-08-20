@@ -9,6 +9,7 @@ import pydantic
 
 from autopr.actions.base.action import Action
 
+
 logger = logging.getLogger(__name__)
 
 

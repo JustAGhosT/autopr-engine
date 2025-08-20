@@ -12,7 +12,7 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
-from .settings import AutoPRSettings, Environment, LLMProvider
+from autopr.config.settings import AutoPRSettings, Environment, LLMProvider
 
 
 class ConfigurationValidator:
@@ -339,7 +339,12 @@ def check_environment_variables() -> dict[str, Any]:
         recommendations.append("Consider creating a .env file for environment variables")
 
     # Check for sensitive data in environment
-    sensitive_patterns = [r".*[Pp]assword.*", r".*[Ss]ecret.*", r".*[Kk]ey.*", r".*[Tt]oken.*"]
+    sensitive_patterns = [
+        r".*[Pp]assword.*",
+        r".*[Ss]ecret.*",
+        r".*[Kk]ey.*",
+        r".*[Tt]oken.*",
+    ]
 
     for var_name, var_value in os.environ.items():
         if any(re.match(pattern, var_name) for pattern in sensitive_patterns):

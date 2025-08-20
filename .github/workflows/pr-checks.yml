@@ -16,7 +16,7 @@ jobs:
     name: Essential Checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -41,8 +41,8 @@ jobs:
 
       - name: Run volume-aware pre-commit (fast/quiet)
         env:
-          AUTOPR_PRECOMMIT_VOLUME: '100'
-          PRECOMMIT_DISABLE_PRETTIER: '1'
+          AUTOPR_PRECOMMIT_VOLUME: "100"
+          PRECOMMIT_DISABLE_PRETTIER: "1"
         run: |
           FILES="${{ steps.changed.outputs.files }}"
           if [ -z "$FILES" ]; then echo "No changed files to lint"; exit 0; fi
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     continue-on-error: true
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -66,7 +66,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -76,7 +76,7 @@ jobs:
       - name: Quick syntax check
         run: |
           python -c "import autopr; print('✅ Import successful')"
-          
+
       - name: Comment draft status
         uses: actions/github-script@v6
         with:
@@ -85,7 +85,7 @@ jobs:
 
             **Status:** Draft PR validation completed
             **Essential Checks:** ✅ Passed
-            
+
             **Note:** Comprehensive checks will run when PR is marked as ready for review.
 
             ---

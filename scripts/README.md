@@ -9,7 +9,7 @@ The main volume control system for managing IDE linting and commit checks:
 - **`volume.py`** - Main volume control interface
 - **`volume-control/`** - Complete volume control system
   - `main.py` - Volume control engine
-  - `volume_knob.py` - Volume knob implementation  
+  - `volume_knob.py` - Volume knob implementation
   - `config_loader.py` - JSON configuration loader
   - `configs/` - Tool-specific volume configurations
   - `status.py` - Show current volume status
@@ -32,10 +32,11 @@ Scripts for validating different aspects of the project:
 
 ## 📦 Archived Scripts
 
-Legacy and one-time use scripts have been moved to the `archive/scripts/` directory.
-These are kept for reference but are not part of the active codebase.
+Legacy and one-time use scripts have been moved to the `archive/scripts/` directory. These are kept
+for reference but are not part of the active codebase.
 
 ### Usage
+
 ```bash
 # Set volumes
 python scripts/volume.py dev 50        # Set dev volume to 50
@@ -54,24 +55,28 @@ python scripts/volume-control/status.py
 ### Common Scenarios
 
 **Quiet Coding** (minimal distractions):
+
 ```bash
 python scripts/volume.py dev 50        # Light IDE features
 python scripts/volume.py commit 200    # Basic commit checks
 ```
 
 **Development Mode** (balanced):
+
 ```bash
-python scripts/volume.py dev 200       # Standard IDE features  
+python scripts/volume.py dev 200       # Standard IDE features
 python scripts/volume.py commit 500    # Comprehensive commit checks
 ```
 
 **Production Ready** (maximum quality):
+
 ```bash
 python scripts/volume.py dev 500       # Full IDE validation
 python scripts/volume.py commit 1000   # Maximum commit validation
 ```
 
 **Emergency Debugging** (complete silence):
+
 ```bash
 python scripts/volume.py dev 0         # No IDE noise
 python scripts/volume.py commit 0      # No commit checks
@@ -80,7 +85,7 @@ python scripts/volume.py commit 0      # No commit checks
 ## 🔧 Validation & Utility Scripts
 
 - **`validate_build_system.py`** - Validates build system configuration
-- **`validate_configs.py`** - Validates project configuration files  
+- **`validate_configs.py`** - Validates project configuration files
 - **`validate_imports.py`** - Validates import statements across codebase
 - **`validate_links.py`** - Validates external links in documentation
 - **`validate_templates.py`** - Validates template files
@@ -219,16 +224,19 @@ Add this to your `.vscode/tasks.json` to run the comprehensive commit script dir
 ### Common Issues
 
 **AI-Enhanced Analysis Fails**
+
 - Verify your OpenAI API key is properly configured
 - Check your internet connection
 - You can continue with the commit using `-SkipAI` parameter
 
 **Quality Analysis Finds Issues**
+
 - Review the reported issues in detail
 - Use volume control to adjust validation strictness
 - For quick checks: `python -m autopr.actions.quality_engine --mode=fast`
 
 **Pre-commit Hooks Fail**
+
 - Fix any formatting/linting issues reported
 - Run `pre-commit run --all-files` to test hooks separately
 - Use volume control to temporarily reduce strictness if needed
@@ -236,6 +244,7 @@ Add this to your `.vscode/tasks.json` to run the comprehensive commit script dir
 ## Customization
 
 You can modify the scripts to:
+
 - Change AI provider/model
 - Add additional quality checks
 - Customize error handling

@@ -18,9 +18,10 @@ Usage:
     from autopr.quality.template_metrics import get_quality_scorer, get_quality_analyzer
 """
 
-from .quality_analyzer import QualityAnalyzer
-from .quality_models import QualityMetrics
-from .quality_scorer import QualityScorer
+from autopr.quality.template_metrics.quality_analyzer import QualityAnalyzer
+from autopr.quality.template_metrics.quality_models import QualityMetrics
+from autopr.quality.template_metrics.quality_scorer import QualityScorer
+
 
 # Factory functions for global instances
 _scorer_instance: QualityScorer | None = None

@@ -29,11 +29,8 @@ def create_volume_0_marker():
 
 
 def main():
-
     disable_problematic_files()
     create_volume_0_marker()
-
-
 
 
 if __name__ == "__main__":

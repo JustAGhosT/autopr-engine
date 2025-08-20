@@ -51,7 +51,10 @@ class TestQualityEngine:
                 total_issues_found=5,
                 total_issues_fixed=0,
                 files_modified=[],
-                issues_by_tool={"ruff": [{"issue": "test"}], "bandit": [{"issue": "test"}]},
+                issues_by_tool={
+                    "ruff": [{"issue": "test"}],
+                    "bandit": [{"issue": "test"}],
+                },
                 files_by_tool={"ruff": ["test.py"], "bandit": ["test.py"]},
                 summary="Test summary",
             )
@@ -233,7 +236,10 @@ class TestQualityEngine:
 
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
             mock_result = QualityResult(
-                success=True, total_issues=1, files_with_issues=1, issues_by_tool={"ruff": 1}
+                success=True,
+                total_issues=1,
+                files_with_issues=1,
+                issues_by_tool={"ruff": 1},
             )
             mock_run_tools.return_value = mock_result
 
@@ -278,11 +284,17 @@ class TestQualityEngine:
     def test_merge_results(self):
         """Test merging multiple tool results."""
         result1 = QualityResult(
-            success=True, total_issues=2, files_with_issues=1, issues_by_tool={"ruff": 2}
+            success=True,
+            total_issues=2,
+            files_with_issues=1,
+            issues_by_tool={"ruff": 2},
         )
 
         result2 = QualityResult(
-            success=True, total_issues=3, files_with_issues=2, issues_by_tool={"bandit": 3}
+            success=True,
+            total_issues=3,
+            files_with_issues=2,
+            issues_by_tool={"bandit": 3},
         )
 
         merged = self.engine._merge_results([result1, result2])
@@ -323,7 +335,10 @@ class TestQualityEngineIntegration:
 
         with patch.object(self.engine, "_run_tools") as mock_run_tools:
             mock_result = QualityResult(
-                success=True, total_issues=1, files_with_issues=1, issues_by_tool={"ruff": 1}
+                success=True,
+                total_issues=1,
+                files_with_issues=1,
+                issues_by_tool={"ruff": 1},
             )
             mock_run_tools.return_value = mock_result
 

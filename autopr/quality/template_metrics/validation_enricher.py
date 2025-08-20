@@ -12,7 +12,10 @@ so they can be properly rendered by report generators.
 from dataclasses import dataclass
 from typing import Any
 
-from .validation_types import ValidationIssue, ValidationSeverity
+from autopr.quality.template_metrics.validation_types import (
+    ValidationIssue,
+    ValidationSeverity,
+)
 
 
 @dataclass
@@ -32,7 +35,9 @@ class EnrichedValidationIssue:
     rule_id: str = ""
 
     @classmethod
-    def from_validation_issue(cls, issue: ValidationIssue, template_path: str = "") -> "EnrichedValidationIssue":
+    def from_validation_issue(
+        cls, issue: ValidationIssue, template_path: str = ""
+    ) -> "EnrichedValidationIssue":
         """Create an enriched ValidationIssue from a base ValidationIssue."""
         # Extract location from line number or metadata
         location = template_path
@@ -67,7 +72,9 @@ class EnrichedValidationIssue:
         )
 
 
-def enrich_validation_issues(issues: list[ValidationIssue], template_path: str = "") -> list[EnrichedValidationIssue]:
+def enrich_validation_issues(
+    issues: list[ValidationIssue], template_path: str = ""
+) -> list[EnrichedValidationIssue]:
     """Enrich a list of ValidationIssue objects with additional attributes."""
     return [EnrichedValidationIssue.from_validation_issue(issue, template_path) for issue in issues]
 

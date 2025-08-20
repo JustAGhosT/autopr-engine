@@ -8,16 +8,19 @@ import operator
 from pathlib import Path
 from typing import Any
 
-from .phase_manager import PhaseManager
-from .task_definitions import ImplementationPhases, TaskRegistry
-from .task_executor import TaskExecutor
+from implementation_roadmap.phase_manager import PhaseManager
+from implementation_roadmap.task_definitions import ImplementationPhases, TaskRegistry
+from implementation_roadmap.task_executor import TaskExecutor
 
 
 class ReportGenerator:
     """Generates comprehensive reports for implementation progress"""
 
     def __init__(
-        self, task_registry: TaskRegistry, task_executor: TaskExecutor, phase_manager: PhaseManager
+        self,
+        task_registry: TaskRegistry,
+        task_executor: TaskExecutor,
+        phase_manager: PhaseManager,
     ) -> None:
         self.task_registry = task_registry
         self.task_executor = task_executor
@@ -98,10 +101,10 @@ class ReportGenerator:
             <div style="margin: 20px 0;">
                 <h3>{phase_name.title()} Phase</h3>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: {phase_data['progress_percentage']}%"></div>
+                    <div class="progress-fill" style="width: {phase_data["progress_percentage"]}%"></div>
                 </div>
-                <p>Status: <span style="color: {status_color.get(phase_data['status'], '#000')};">{phase_data['status'].title()}</span></p>
-                <p>{phase_data['completed_tasks']}/{phase_data['total_tasks']} tasks completed</p>
+                <p>Status: <span style="color: {status_color.get(phase_data["status"], "#000")};">{phase_data["status"].title()}</span></p>
+                <p>{phase_data["completed_tasks"]}/{phase_data["total_tasks"]} tasks completed</p>
             </div>
             """
 
@@ -112,10 +115,12 @@ class ReportGenerator:
 
         # Determine health color via shared utility
         from autopr.reporting.html_utils import health_color_from_score
+
         health_score = exec_summary["overall_health_score"]
         health_color = health_color_from_score(health_score)
 
         from autopr.reporting.html_page import PageHeader, build_basic_page
+
         extra_css = """
 .metric-card { background: #f8f9fa; border-radius: 6px; padding: 20px; margin: 10px 0; border-left: 4px solid #667eea; }
 .progress-bar { background: #e9ecef; border-radius: 10px; height: 20px; overflow: hidden; margin: 10px 0; }
@@ -139,9 +144,9 @@ th { background: #f8f9fa; font-weight: 600; }
                     <div>
                         <h4>Overall Progress</h4>
                         <div class=\"progress-bar\">
-                            <div class=\"progress-fill\" style=\"width: {exec_summary['progress_percentage']}%\"></div>
+                            <div class=\"progress-fill\" style=\"width: {exec_summary["progress_percentage"]}%\"></div>
                         </div>
-                        <p>{exec_summary['progress_percentage']:.1f}% Complete</p>
+                        <p>{exec_summary["progress_percentage"]:.1f}% Complete</p>
                     </div>
                     <div>
                         <h4>Health Score</h4>
@@ -149,7 +154,7 @@ th { background: #f8f9fa; font-weight: 600; }
                     </div>
                     <div>
                         <h4>Success Rate</h4>
-                        <p style=\"font-size: 2em; color: #28a745;\">{exec_summary['success_rate']*100:.1f}%</p>
+                        <p style=\"font-size: 2em; color: #28a745;\">{exec_summary["success_rate"] * 100:.1f}%</p>
                     </div>
                 </div>
             </div>
@@ -170,9 +175,9 @@ th { background: #f8f9fa; font-weight: 600; }
                 <h2>Performance Metrics</h2>
                 <table>
                     <tr><th>Metric</th><th>Value</th><th>Status</th></tr>
-                    <tr><td>Velocity (tasks/hour)</td><td>{exec_summary['key_metrics']['velocity']:.2f}</td><td>Good</td></tr>
-                    <tr><td>Quality Score</td><td>{exec_summary['key_metrics']['quality_score']:.1f}</td><td>Excellent</td></tr>
-                    <tr><td>Risk Level</td><td>{exec_summary['key_metrics']['risk_level']}</td><td>Low</td></tr>
+                    <tr><td>Velocity (tasks/hour)</td><td>{exec_summary["key_metrics"]["velocity"]:.2f}</td><td>Good</td></tr>
+                    <tr><td>Quality Score</td><td>{exec_summary["key_metrics"]["quality_score"]:.1f}</td><td>Excellent</td></tr>
+                    <tr><td>Risk Level</td><td>{exec_summary["key_metrics"]["risk_level"]}</td><td>Low</td></tr>
                 </table>
             </div>
         """

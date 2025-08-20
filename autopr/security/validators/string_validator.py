@@ -3,6 +3,7 @@ import re
 
 from autopr.security.validation_models import ValidationResult, ValidationSeverity
 
+
 # Constants
 MAX_KEY_LENGTH = 100
 

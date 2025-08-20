@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from autopr.templates.base import TemplateMetadata, TemplateProvider
 
+
 logger = logging.getLogger(__name__)
 
 

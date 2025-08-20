@@ -10,12 +10,15 @@ scoring algorithms used to calculate quality metrics from validation results.
 
 from typing import Any
 
-from .quality_models import (
+from autopr.quality.template_metrics.quality_models import (
     DEFAULT_CATEGORY_WEIGHTS,
     DEFAULT_SEVERITY_WEIGHTS,
     QualityMetrics,
 )
-from .validation_types import ValidationIssue, ValidationSeverity
+from autopr.quality.template_metrics.validation_types import (
+    ValidationIssue,
+    ValidationSeverity,
+)
 
 
 class QualityScorer:

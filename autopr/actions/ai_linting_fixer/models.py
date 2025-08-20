@@ -40,7 +40,10 @@ class OrchestrationConfig(BaseModel):
 
     # Prefect configuration
     prefect: dict[str, Any] = Field(
-        default_factory=lambda: {"flow_name": "ai_linting_flow", "task_name": "ai_linting_task"}
+        default_factory=lambda: {
+            "flow_name": "ai_linting_flow",
+            "task_name": "ai_linting_task",
+        }
     )
 
     # Fallback configuration
@@ -60,7 +63,11 @@ class WorkflowContext(BaseModel):
     priority: int = 5  # 1-10, higher = more priority
     timeout_seconds: int = 300
     retry_config: dict[str, Any] = Field(
-        default_factory=lambda: {"max_retries": 3, "retry_delay": 1.0, "exponential_backoff": True}
+        default_factory=lambda: {
+            "max_retries": 3,
+            "retry_delay": 1.0,
+            "exponential_backoff": True,
+        }
     )
 
     # Resource management
@@ -215,7 +222,18 @@ class AILintingFixerInputs(BaseModel):
 
     target_path: str = Field(default=".", description="Path to check for linting issues")
     fix_types: list[str] = Field(
-        default=["E501", "F401", "F841", "E722", "E302", "E305", "D200", "D205", "D400", "D401"],
+        default=[
+            "E501",
+            "F401",
+            "F841",
+            "E722",
+            "E302",
+            "E305",
+            "D200",
+            "D205",
+            "D400",
+            "D401",
+        ],
         description="Types of linting issues to fix",
     )
     max_fixes_per_run: int = Field(
@@ -243,7 +261,8 @@ class AILintingFixerInputs(BaseModel):
         default=None, description="Workflow orchestration configuration (optional)"
     )
     force_standalone: bool = Field(
-        default=False, description="Force standalone execution even if orchestration is configured"
+        default=False,
+        description="Force standalone execution even if orchestration is configured",
     )
 
 

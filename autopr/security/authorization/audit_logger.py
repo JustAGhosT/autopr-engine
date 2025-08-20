@@ -7,7 +7,8 @@ from typing import Any
 
 import structlog
 
-from .models import AuthorizationContext
+from autopr.security.authorization.models import AuthorizationContext
+
 
 logger = structlog.get_logger(__name__)
 

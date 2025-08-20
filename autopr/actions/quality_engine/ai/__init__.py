@@ -5,15 +5,18 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
-from .ai_analyzer import AICodeAnalyzer, CodeSuggestion
+from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer, CodeSuggestion
+
 
 try:  # Provide resilient exports; these modules may be optional in some environments
-    from .ai_handler import AIHandler  # type: ignore[import-not-found,attr-defined]
+    from autopr.actions.quality_engine.ai.ai_handler import (
+        AIHandler,
+    )
 except Exception:  # pragma: no cover
     AIHandler = None  # type: ignore[assignment]
 
 try:
-    from .ai_modes import (  # type: ignore[import-not-found,attr-defined]
+    from autopr.actions.quality_engine.ai.ai_modes import (
         QualityMode,
         analyze_code_architecture,
         analyze_security_issues,

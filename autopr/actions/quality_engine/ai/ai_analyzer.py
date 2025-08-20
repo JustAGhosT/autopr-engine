@@ -14,6 +14,7 @@ import structlog
 from autopr.ai.base import LLMMessage
 from autopr.ai.providers.manager import LLMProviderManager
 
+
 logger = structlog.get_logger(__name__)
 
 
@@ -125,7 +126,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
 
         try:
             self.logger.info(
-                "Analyzing code with AI", file_path=file_path, provider=provider_name or "default"
+                "Analyzing code with AI",
+                file_path=file_path,
+                provider=provider_name or "default",
             )
             response = await self.llm_manager.generate_completion(
                 messages=messages,
@@ -133,7 +136,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 model=model,
                 temperature=0.3,  # Lower temperature for more deterministic responses
                 max_tokens=2000,
-                response_format={"type": "json"},  # Request JSON response for easier parsing
+                response_format={
+                    "type": "json"
+                },  # Request JSON response for easier parsing
             )
 
             if not response:
@@ -169,7 +174,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 return result
             except Exception as e:
                 self.logger.exception(
-                    "Failed to parse AI response", error=str(e), content=response.content
+                    "Failed to parse AI response",
+                    error=str(e),
+                    content=response.content,
                 )
                 return {
                     "suggestions": [],
@@ -178,11 +185,20 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 }
 
         except Exception as e:
-            self.logger.exception("Error during AI code analysis", error=str(e), file_path=file_path)
-            return {"suggestions": [], "summary": f"AI analysis error: {e!s}", "priorities": []}
+            self.logger.exception(
+                "Error during AI code analysis", error=str(e), file_path=file_path
+            )
+            return {
+                "suggestions": [],
+                "summary": f"AI analysis error: {e!s}",
+                "priorities": [],
+            }
 
     async def analyze_files(
-        self, files: list[str], provider_name: str | None = None, model: str | None = None
+        self,
+        files: list[str],
+        provider_name: str | None = None,
+        model: str | None = None,
     ) -> dict[str, dict[str, Any]]:
         """
         Analyze multiple files in parallel.
@@ -209,7 +225,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 tasks.append((file_path, task))
             except Exception as e:
                 self.logger.exception(
-                    "Error reading file for AI analysis", file_path=file_path, error=str(e)
+                    "Error reading file for AI analysis",
+                    file_path=file_path,
+                    error=str(e),
                 )
                 results[file_path] = {
                     "suggestions": [],
@@ -222,7 +240,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
             try:
                 results[file_path] = await task
             except Exception as e:
-                self.logger.exception("Error in AI analysis task", file_path=file_path, error=str(e))
+                self.logger.exception(
+                    "Error in AI analysis task", file_path=file_path, error=str(e)
+                )
                 results[file_path] = {
                     "suggestions": [],
                     "summary": f"Error in analysis: {e!s}",
@@ -257,7 +277,9 @@ Each suggestion should be specific, actionable, and explain both what to change 
         }
         return mapping.get(extension, "text")
 
-    def convert_to_tool_results(self, ai_results: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    def convert_to_tool_results(
+        self, ai_results: dict[str, dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Convert AI analysis results to the format expected by the quality engine.
 
@@ -292,8 +314,14 @@ Each suggestion should be specific, actionable, and explain both what to change 
 
         # Create a summary from all file summaries
         summaries = [
-            result.get("summary", "") for result in ai_results.values() if result.get("summary")
+            result.get("summary", "")
+            for result in ai_results.values()
+            if result.get("summary")
         ]
         summary = "AI Analysis Results:\n\n" + "\n\n".join(summaries)
 
-        return {"issues": issues, "files_with_issues": files_with_issues, "summary": summary}
+        return {
+            "issues": issues,
+            "files_with_issues": files_with_issues,
+            "summary": summary,
+        }

@@ -5,9 +5,10 @@ from pathlib import Path
 import sys
 from typing import Any
 
+
 try:
-    from .linter import MarkdownLinter
-    from .models import IssueSeverity
+    from tools.markdown_lint.linter import MarkdownLinter
+    from tools.markdown_lint.models import IssueSeverity
 except ImportError:
     from linter import MarkdownLinter
     from models import IssueSeverity

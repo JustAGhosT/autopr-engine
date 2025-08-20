@@ -6,7 +6,8 @@ import shutil
 import tempfile
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
+
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,9 @@ class CodeQLTool(Tool):
             ]
 
             process_db = await asyncio.create_subprocess_exec(
-                *db_create_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *db_create_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
             _, stderr_db = await process_db.communicate()
 
@@ -78,7 +81,9 @@ class CodeQLTool(Tool):
             ]
 
             process_analyze = await asyncio.create_subprocess_exec(
-                *analyze_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *analyze_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
             _, stderr_analyze = await process_analyze.communicate()
 
@@ -150,7 +155,7 @@ class CodeQLTool(Tool):
                             "rule_name": (
                                 rule.get("name", "Unknown") if isinstance(rule, dict) else "Unknown"
                             ),
-                            "help_uri": rule.get("helpUri", "") if isinstance(rule, dict) else "",
+                            "help_uri": (rule.get("helpUri", "") if isinstance(rule, dict) else ""),
                         },
                     }
                 )

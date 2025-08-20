@@ -7,8 +7,8 @@ import asyncio
 import glob
 import sys
 
-from .di import container, get_engine
-from .engine import QualityInputs, QualityMode
+from autopr.actions.quality_engine.di import container, get_engine
+from autopr.actions.quality_engine.engine import QualityInputs, QualityMode
 
 
 def main() -> None:
@@ -25,14 +25,30 @@ def main() -> None:
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument("--ai-provider", help="AI provider to use for AI-enhanced mode")
     parser.add_argument("--ai-model", help="AI model to use for AI-enhanced mode")
-    parser.add_argument("--skip-windows-check", action="store_true", help="Skip Windows compatibility warnings and checks")
-    parser.add_argument("--continue-on-errors", action="store_true", help="Continue execution even if some tools fail or are not available")
+    parser.add_argument(
+        "--skip-windows-check",
+        action="store_true",
+        help="Skip Windows compatibility warnings and checks",
+    )
+    parser.add_argument(
+        "--continue-on-errors",
+        action="store_true",
+        help="Continue execution even if some tools fail or are not available",
+    )
 
     # Auto-fix options
     parser.add_argument("--auto-fix", action="store_true", help="Automatically fix issues using AI")
-    parser.add_argument("--fix-types", nargs="+", help="Types of issues to fix (e.g., E501 F401 F841)")
-    parser.add_argument("--max-fixes", type=int, default=50, help="Maximum number of fixes to apply")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be fixed without making changes")
+    parser.add_argument(
+        "--fix-types", nargs="+", help="Types of issues to fix (e.g., E501 F401 F841)"
+    )
+    parser.add_argument(
+        "--max-fixes", type=int, default=50, help="Maximum number of fixes to apply"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be fixed without making changes",
+    )
 
     args = parser.parse_args()
 
@@ -79,6 +95,7 @@ def main() -> None:
         sys.exit(130)
     except Exception:
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

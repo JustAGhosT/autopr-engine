@@ -10,9 +10,9 @@ from typing import Any
 
 import structlog
 
+from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
 from autopr.ai.providers.manager import LLMProviderManager
 
-from .ai_analyzer import AICodeAnalyzer
 
 logger = structlog.get_logger(__name__)
 
@@ -131,13 +131,17 @@ async def run_ai_analysis(
             file_size = os.path.getsize(file_path)
             if file_size > 100 * 1024:  # 100 KB
                 logger.info(
-                    "Skipping large file for AI analysis", file_path=file_path, size=file_size
+                    "Skipping large file for AI analysis",
+                    file_path=file_path,
+                    size=file_size,
                 )
                 continue
 
             files_for_analysis.append(file_path)
         except Exception as e:
-            logger.exception("Error checking file for AI analysis", file_path=file_path, error=str(e))
+            logger.exception(
+                "Error checking file for AI analysis", file_path=file_path, error=str(e)
+            )
 
     # If no files are suitable for analysis, return empty results
     if not files_for_analysis:

@@ -13,7 +13,7 @@ from ..enhanced_file_generator import TemplateMetadata
 class TestTemplateMetadataInit:
     # --- Happy Path Tests ---
 
-    @pytest.mark.happy_path
+    @pytest.mark.happy_path()
     def test_full_metadata_initialization(self):
         """
         Test that all fields are correctly set when metadata dict contains all expected keys.
@@ -44,7 +44,7 @@ class TestTemplateMetadataInit:
         assert tm.notes == ["note1", "note2"]
         assert tm.examples == {"ex1": "example usage"}
 
-    @pytest.mark.happy_path
+    @pytest.mark.happy_path()
     def test_minimal_metadata_initialization(self):
         """
         Test that all fields are set to their default values when metadata dict is empty.
@@ -63,7 +63,7 @@ class TestTemplateMetadataInit:
         assert tm.notes == []
         assert tm.examples == {}
 
-    @pytest.mark.happy_path
+    @pytest.mark.happy_path()
     def test_partial_metadata_initialization(self):
         """
         Test that only provided fields are set, others use defaults.
@@ -84,7 +84,7 @@ class TestTemplateMetadataInit:
 
     # --- Edge Case Tests ---
 
-    @pytest.mark.edge_case
+    @pytest.mark.edge_case()
     def test_metadata_with_none_values(self):
         """
         Test that None values in metadata dict are used as-is (not replaced by defaults).
@@ -115,7 +115,7 @@ class TestTemplateMetadataInit:
         assert tm.notes is None
         assert tm.examples is None
 
-    @pytest.mark.edge_case
+    @pytest.mark.edge_case()
     def test_metadata_with_unexpected_extra_keys(self):
         """
         Test that extra keys in metadata dict are ignored and do not cause errors.
@@ -134,7 +134,7 @@ class TestTemplateMetadataInit:
         assert tm.notes == []
         assert tm.examples == {}
 
-    @pytest.mark.edge_case
+    @pytest.mark.edge_case()
     def test_metadata_with_wrong_types(self):
         """
         Test that wrong types in metadata dict are assigned as-is (no type enforcement).
@@ -165,7 +165,7 @@ class TestTemplateMetadataInit:
         assert tm.notes == "notalist"
         assert tm.examples == 999
 
-    @pytest.mark.edge_case
+    @pytest.mark.edge_case()
     def test_metadata_with_empty_strings_and_collections(self):
         """
         Test that empty strings, lists, and dicts are preserved.
@@ -196,7 +196,7 @@ class TestTemplateMetadataInit:
         assert tm.notes == []
         assert tm.examples == {}
 
-    @pytest.mark.edge_case
+    @pytest.mark.edge_case()
     def test_metadata_with_missing_dict(self):
         """
         Test that passing a non-dict (e.g., None) raises AttributeError.

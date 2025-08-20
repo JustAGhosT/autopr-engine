@@ -6,7 +6,7 @@ import asyncio
 import json
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class WindowsSecurityTool(Tool):
@@ -36,6 +36,7 @@ class WindowsSecurityTool(Tool):
         """Check if Windows security tools are available."""
         # Check if we're on Windows and basic tools are available
         import platform
+
         if platform.system() != "Windows":
             return False
         return self.check_command_availability("bandit")

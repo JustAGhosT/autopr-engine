@@ -5,6 +5,7 @@ import argparse
 from collections.abc import Callable
 from pathlib import Path
 
+
 # Default file extensions to consider as Markdown
 DEFAULT_EXTENSIONS = {".md", ".markdown", ".mdown", ".mkd", ".mkdn"}
 
@@ -112,7 +113,9 @@ def main():
         help="File patterns to exclude (supports glob patterns)",
     )
     parser.add_argument(
-        "--relative", action="store_true", help="Show paths relative to the current directory"
+        "--relative",
+        action="store_true",
+        help="Show paths relative to the current directory",
     )
 
     args = parser.parse_args()

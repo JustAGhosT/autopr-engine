@@ -12,8 +12,9 @@ from pathlib import Path
 import sqlite3
 from typing import Any
 
-from .queue_manager import IssueQueueManager
-from .reporting import get_database_info as _get_db_info
+from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
+from autopr.actions.ai_linting_fixer.reporting import get_database_info as _get_db_info
+
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +86,8 @@ class AIInteractionDB:
             conn.execute(
                 """
                 CREATE TRIGGER IF NOT EXISTS interactions_ai AFTER INSERT ON ai_interactions BEGIN
-                    INSERT INTO interactions_fts(rowid, system_prompt, user_prompt, ai_response, issue_type, file_path)
-                    VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_type, new.file_path);
+INSERT INTO interactions_fts(rowid, system_prompt, user_prompt, ai_response, issue_type, file_path) VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_type, new.file_path);
+VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_type, new.file_path);
                 END;
             """
             )
@@ -416,7 +417,7 @@ class AIInteractionDB:
                 },
                 "file_stats": {
                     "unique_files": file_stats["unique_files"] if file_stats else 0,
-                    "average_file_size": file_stats["average_file_size"] if file_stats else 0,
+                    "average_file_size": (file_stats["average_file_size"] if file_stats else 0),
                     "most_processed_file": (
                         most_processed_file["file_path"] if most_processed_file else "None"
                     ),

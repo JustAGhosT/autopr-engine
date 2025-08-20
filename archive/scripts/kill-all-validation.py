@@ -8,7 +8,6 @@ from pathlib import Path
 
 
 def main():
-
     # Create the most aggressive VS Code settings possible
     aggressive_settings = {
         # Disable ALL Python features
@@ -113,7 +112,11 @@ def main():
         "html.validate.styles": False,
         # Disable ALL hover and completion
         "editor.hover.enabled": False,
-        "editor.quickSuggestions": {"other": False, "comments": False, "strings": False},
+        "editor.quickSuggestions": {
+            "other": False,
+            "comments": False,
+            "strings": False,
+        },
         "editor.suggestOnTriggerCharacters": False,
         "editor.acceptSuggestionOnEnter": "off",
         # Disable ALL error reporting
@@ -152,9 +155,6 @@ def main():
     settings_file = vscode_dir / "settings.json"
     with open(settings_file, "w") as f:
         json.dump(aggressive_settings, f, indent=2)
-
-
-
 
 
 if __name__ == "__main__":

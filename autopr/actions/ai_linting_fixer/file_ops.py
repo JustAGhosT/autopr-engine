@@ -15,6 +15,7 @@ import shutil
 import tempfile
 from typing import Any
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -272,7 +273,11 @@ class SafeFileOperations:
             raise
 
     def write_file_safely(
-        self, file_path: str, content: str, validate_syntax: bool = True, create_backup: bool = True
+        self,
+        file_path: str,
+        content: str,
+        validate_syntax: bool = True,
+        create_backup: bool = True,
     ) -> bool:
         """Write content to a file safely with validation and backup."""
         try:
@@ -299,7 +304,10 @@ class SafeFileOperations:
             return False
 
     def apply_fixes_to_file(
-        self, file_path: str, fixes: list[dict[str, Any]], validate_each_fix: bool = True
+        self,
+        file_path: str,
+        fixes: list[dict[str, Any]],
+        validate_each_fix: bool = True,
     ) -> tuple[bool, list[str]]:
         """Apply multiple fixes to a file safely."""
         try:

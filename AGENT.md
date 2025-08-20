@@ -1,6 +1,7 @@
 # AutoPR Engine Agent Guide
 
 ## Build/Test/Lint Commands
+
 - **Run all tests**: `pytest`
 - **Single test file**: `pytest tests/unit/test_file.py`
 - **Single test function**: `pytest tests/unit/test_file.py::test_function`
@@ -14,15 +15,20 @@
 - **Install dev deps**: `pip install -e ".[dev]"`
 
 ## Architecture
+
 - **Main package**: `autopr/` - Core engine with actions, workflows, integrations, AI providers
-- **Actions**: 50+ automation actions in `autopr/actions/` (PR analysis, issue creation, quality gates)
+- **Actions**: 50+ automation actions in `autopr/actions/` (PR analysis, issue creation, quality
+  gates)
 - **Workflows**: Pre-built workflow definitions in `autopr/workflows/`
-- **Integrations**: External services (GitHub, Linear, Slack, AI providers) in `autopr/integrations/`
+- **Integrations**: External services (GitHub, Linear, Slack, AI providers) in
+  `autopr/integrations/`
 - **AI/LLM**: Multi-provider AI system in `autopr/ai/` (OpenAI, Anthropic, Mistral, Groq)
 - **Quality System**: AI-powered code analysis and quality gates in `autopr/quality/`
-- **Volume Control**: HiFi-style volume control system in `scripts/volume-control/` (dev & commit knobs)
+- **Volume Control**: HiFi-style volume control system in `scripts/volume-control/` (dev & commit
+  knobs)
 
 ## Code Style & Conventions
+
 - **Python 3.13** required
 - **Type hints**: Optional (mypy configured to ignore most errors)
 - **Line length**: Effectively unlimited (flake8 disabled)
@@ -33,4 +39,4 @@
 - **Pydantic**: Used for configuration and data models
 - **Logging**: Structured logging with configurable JSON output
 
-*Context improved by Giga AI, using cursorrules and windsurfrules development guidelines.*
+_Context improved by Giga AI, using cursorrules and windsurfrules development guidelines._

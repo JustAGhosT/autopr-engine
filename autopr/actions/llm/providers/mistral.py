@@ -4,6 +4,7 @@ Mistral AI provider implementation.
 
 from typing import Any
 
+
 try:
     from mistralai.models.chat_completion import ChatMessage
 except ImportError:

@@ -19,7 +19,9 @@ from pathlib import Path
 from typing import Any
 
 from autopr.quality.template_metrics import QualityMetrics
-from autopr.quality.template_metrics.validation_enricher import enrich_quality_metrics_issues
+from autopr.quality.template_metrics.validation_enricher import (
+    enrich_quality_metrics_issues,
+)
 from autopr.quality.template_metrics.validation_types import (
     ValidationSeverity as QMValidationSeverity,
 )
@@ -60,7 +62,9 @@ class JSONReportGenerator(ReportGenerator):
         report_data = {
             "template_path": enriched_metrics.template_path,
             "analysis_timestamp": (
-                enriched_metrics.analysis_timestamp.isoformat() if enriched_metrics.analysis_timestamp else None
+                enriched_metrics.analysis_timestamp.isoformat()
+                if enriched_metrics.analysis_timestamp
+                else None
             ),
             "quality_metrics": {
                 "overall_score": enriched_metrics.overall_score,
@@ -78,7 +82,9 @@ class JSONReportGenerator(ReportGenerator):
             },
             "issues": [
                 {
-                    "severity": issue.severity.value if getattr(issue, "severity", None) else None,
+                    "severity": (
+                        issue.severity.value if getattr(issue, "severity", None) else None
+                    ),
                     "category": getattr(issue, "category", None),
                     "message": getattr(issue, "message", None),
                     "line": getattr(issue, "line", None),
@@ -148,7 +154,11 @@ class MarkdownReportGenerator(ReportGenerator):
         lines: list[str] = []
 
         # Header
-        template_name = Path(enriched_metrics.template_path).name if enriched_metrics.template_path else "Template"
+        template_name = (
+            Path(enriched_metrics.template_path).name
+            if enriched_metrics.template_path
+            else "Template"
+        )
         lines.extend((f"# Quality Assurance Report: {template_name}", ""))
 
         # Metadata
@@ -303,7 +313,11 @@ class HTMLReportGenerator(ReportGenerator):
         # Enrich the metrics with additional attributes for reporting
         enriched_metrics = enrich_quality_metrics_issues(metrics)
 
-        template_name = Path(enriched_metrics.template_path).name if enriched_metrics.template_path else "Template"
+        template_name = (
+            Path(enriched_metrics.template_path).name
+            if enriched_metrics.template_path
+            else "Template"
+        )
         extra_css = """
 .summary { margin: 20px 0; }
 .metric { display: inline-block; margin: 10px; padding: 10px; background: #e9ecef; border-radius: 3px; }
@@ -352,7 +366,12 @@ class HTMLReportGenerator(ReportGenerator):
                 else None
             ),
         )
-        return build_basic_page(header=header, generated_at=None, content_html=content_html, extra_css=extra_css)
+        return build_basic_page(
+            header=header,
+            generated_at=None,
+            content_html=content_html,
+            extra_css=extra_css,
+        )
 
     def generate_batch_report(
         self,

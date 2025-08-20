@@ -1,8 +1,14 @@
 """Cached authorization manager implementation."""
 
-from .cache import PermissionCache
-from .enterprise_manager import EnterpriseAuthorizationManager
-from .models import AuthorizationContext, Permission, ResourceType
+from autopr.security.authorization.cache import PermissionCache
+from autopr.security.authorization.enterprise_manager import (
+    EnterpriseAuthorizationManager,
+)
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourceType,
+)
 
 
 class CachedAuthorizationManager(EnterpriseAuthorizationManager):
@@ -14,7 +20,10 @@ class CachedAuthorizationManager(EnterpriseAuthorizationManager):
 
     def authorize(self, context: AuthorizationContext) -> bool:
         cached_result = self.cache.get(
-            context.user_id, context.resource_type.value, context.resource_id, context.action.value
+            context.user_id,
+            context.resource_type.value,
+            context.resource_id,
+            context.action.value,
         )
 
         if cached_result is not None:

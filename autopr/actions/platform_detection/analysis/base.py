@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
+
 if TYPE_CHECKING:
     from autopr.actions.platform_detection.analysis.handlers import FileHandler
 

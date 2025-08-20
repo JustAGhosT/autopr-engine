@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 """
 Shared HTML page builder for simple reports.
 
@@ -7,6 +8,7 @@ Provides a minimal wrapper with a common header and basic styles.
 """
 
 from dataclasses import dataclass
+
 
 BASE_CSS = """
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
@@ -22,7 +24,13 @@ class PageHeader:
     subtitle: str | None = None
 
 
-def build_basic_page(*, header: PageHeader, generated_at: str | None, content_html: str, extra_css: str | None = None) -> str:
+def build_basic_page(
+    *,
+    header: PageHeader,
+    generated_at: str | None,
+    content_html: str,
+    extra_css: str | None = None,
+) -> str:
     css = BASE_CSS + (extra_css or "")
     subtitle_html = f"<p>{header.subtitle}</p>" if header.subtitle else ""
     generated_html = f"<p>Generated on {generated_at}</p>" if generated_at else ""

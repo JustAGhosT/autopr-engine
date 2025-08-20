@@ -5,19 +5,26 @@ from typing import Any, ClassVar, Union, cast
 
 import structlog
 
-from .audit import AuthorizationAuditLogger
-from .managers import (
+from autopr.security.authorization.audit import AuthorizationAuditLogger
+from autopr.security.authorization.managers import (
     AuditedAuthorizationManager,
     CachedAuthorizationManager,
     EnterpriseAuthorizationManager,
 )
-from .models import AuthorizationContext, Permission, ResourceType
+from autopr.security.authorization.models import (
+    AuthorizationContext,
+    Permission,
+    ResourceType,
+)
+
 
 logger = structlog.get_logger(__name__)
 
 
 ManagerType = Union[
-    AuditedAuthorizationManager, CachedAuthorizationManager, EnterpriseAuthorizationManager
+    AuditedAuthorizationManager,
+    CachedAuthorizationManager,
+    EnterpriseAuthorizationManager,
 ]
 
 
@@ -191,7 +198,10 @@ def validate_permission_hierarchy(permissions: list[str]) -> bool:
 
 
 def get_effective_permissions(
-    user_roles: list[str], explicit_permissions: list[str], *, resource_owner: bool = False
+    user_roles: list[str],
+    explicit_permissions: list[str],
+    *,
+    resource_owner: bool = False,
 ) -> list[str]:
     """Calculate effective permissions for a user."""
     effective_permissions = set(explicit_permissions)
@@ -199,7 +209,11 @@ def get_effective_permissions(
     # Add role-based permissions
     role_permissions = {
         "viewer": [Permission.READ.value],
-        "contributor": [Permission.READ.value, Permission.WRITE.value, Permission.CREATE.value],
+        "contributor": [
+            Permission.READ.value,
+            Permission.WRITE.value,
+            Permission.CREATE.value,
+        ],
         "maintainer": [
             Permission.READ.value,
             Permission.WRITE.value,

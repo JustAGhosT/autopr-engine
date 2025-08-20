@@ -11,7 +11,7 @@ from typing import Any
 import openai
 from pydantic import BaseModel, Field
 
-from .base import Action
+from autopr.actions.base import Action
 
 
 class AICommentAnalysisInputs(BaseModel):

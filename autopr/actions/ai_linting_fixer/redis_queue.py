@@ -17,16 +17,19 @@ import time
 from typing import Any, TypedDict
 import uuid
 
+
 logger = logging.getLogger(__name__)
 
 # Optional Redis dependency
 try:
     import redis  # type: ignore[import-not-found, import-untyped]
     from redis.exceptions import (
-        ConnectionError as RedisConnectionError,  # type: ignore[import-not-found, import-untyped]
+        ConnectionError as RedisConnectionError,
     )
+
+    # type: ignore[import-not-found, import-untyped]
     from redis.exceptions import (
-        RedisError,  # type: ignore[import-not-found, import-untyped]
+        RedisError,
     )
 
     REDIS_AVAILABLE = True
@@ -257,14 +260,14 @@ class RedisQueueManager:
             return {
                 "queue_length": length,
                 "queue_name": self.issue_queue_key,
-                "status": "active" if length > 0 else "empty"
+                "status": "active" if length > 0 else "empty",
             }
         except Exception as e:
             logger.exception(f"Failed to get queue stats: {e}")
             return {
                 "queue_length": 0,
                 "queue_name": self.issue_queue_key,
-                "status": "error"
+                "status": "error",
             }
 
     def peek_queue(self, count: int = 5) -> list[QueuedIssue]:
@@ -275,15 +278,17 @@ class RedisQueueManager:
             issues = []
             for result in results:
                 data = json.loads(result)
-                issues.append(QueuedIssue(
-                    id=data["id"],
-                    file_path=Path(data["file_path"]),
-                    issue_type=data["issue_type"],
-                    message=data["message"],
-                    line=data["line"],
-                    column=data["column"],
-                    severity=data["severity"],
-                ))
+                issues.append(
+                    QueuedIssue(
+                        id=data["id"],
+                        file_path=Path(data["file_path"]),
+                        issue_type=data["issue_type"],
+                        message=data["message"],
+                        line=data["line"],
+                        column=data["column"],
+                        severity=data["severity"],
+                    )
+                )
             return issues
         except Exception as e:
             logger.exception(f"Failed to peek queue: {e}")
@@ -311,15 +316,11 @@ class RedisQueueManager:
             return {
                 "queue_length": queue_length,
                 "processing_count": int(processing_count),
-                "status": "processing" if int(processing_count) > 0 else "idle"
+                "status": "processing" if int(processing_count) > 0 else "idle",
             }
         except Exception as e:
             logger.exception(f"Failed to get processing status: {e}")
-            return {
-                "queue_length": 0,
-                "processing_count": 0,
-                "status": "error"
-            }
+            return {"queue_length": 0, "processing_count": 0, "status": "error"}
 
     def increment_processing_count(self) -> bool:
         """Increment the processing count."""
@@ -359,7 +360,7 @@ class RedisQueueManager:
             return {
                 "status": "healthy",
                 "connection": "active",
-                "queue_accessible": True
+                "queue_accessible": True,
             }
         except Exception as e:
             logger.exception(f"Redis health check failed: {e}")
@@ -367,7 +368,7 @@ class RedisQueueManager:
                 "status": "unhealthy",
                 "connection": "error",
                 "queue_accessible": False,
-                "error": str(e)
+                "error": str(e),
             }
 
     def enqueue_issues(self, issues: list[QueuedIssue]) -> int:
@@ -447,7 +448,9 @@ class RedisQueueManager:
             self.failed_count += 1
 
             logger.warning(
-                "Issue %s failed permanently after %d retries", issue.id, issue.retry_count
+                "Issue %s failed permanently after %d retries",
+                issue.id,
+                issue.retry_count,
             )
             return True
 
@@ -547,7 +550,10 @@ class RedisQueueManager:
         try:
             assert self.redis_client is not None
             self.redis_client.delete(
-                self.pending_queue, self.processing_queue, self.results_queue, self.failed_queue
+                self.pending_queue,
+                self.processing_queue,
+                self.results_queue,
+                self.failed_queue,
             )
             logger.info("Cleared all queues")
         except Exception:

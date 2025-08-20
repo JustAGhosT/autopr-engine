@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .task_definitions import Task, TaskRegistry
+from implementation_roadmap.task_definitions import Task, TaskRegistry
 
 
 @dataclass
@@ -121,7 +121,8 @@ def initialize_sentry():
 
         await self._write_file(str(monitoring_dir / "sentry_config.py"), sentry_config)
         await self._write_file(
-            str(monitoring_dir / "__init__.py"), "from .sentry_config import initialize_sentry"
+            str(monitoring_dir / "__init__.py"),
+            "from .sentry_config import initialize_sentry",
         )
         await self._add_requirement("sentry-sdk[fastapi]>=1.32.0")
 
@@ -319,7 +320,8 @@ class CircuitBreaker:
 
         await self._write_file(str(resilience_dir / "circuit_breaker.py"), circuit_breaker)
         await self._write_file(
-            str(resilience_dir / "__init__.py"), "from .circuit_breaker import CircuitBreaker"
+            str(resilience_dir / "__init__.py"),
+            "from .circuit_breaker import CircuitBreaker",
         )
         await self._add_requirement("tenacity>=8.2.0")
 

@@ -12,12 +12,10 @@ import time
 def force_ide_refresh():
     """Force IDE to refresh all settings"""
 
-
     # Create a touch file to force refresh
     touch_file = ".vscode/refresh_trigger.txt"
     with open(touch_file, "w") as f:
         f.write(f"Refresh triggered at {time.strftime('%Y-%m-%d %H:%M:%S')}")
-
 
     # Remove any cached settings
     cache_dirs = [".vscode/.cache", ".cursor/.cache", ".pytest_cache", "__pycache__"]
@@ -30,7 +28,6 @@ def force_ide_refresh():
                 shutil.rmtree(cache_dir)
             except Exception:
                 pass
-
 
     # Check all configuration files
     config_files = [
@@ -55,8 +52,6 @@ def force_ide_refresh():
                 pass
             else:
                 pass
-
-
 
 
 if __name__ == "__main__":

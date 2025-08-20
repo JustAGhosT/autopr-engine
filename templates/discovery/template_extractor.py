@@ -312,7 +312,11 @@ def main():
     parser.add_argument("templates_dir", help="Path to templates directory")
     parser.add_argument("--output", "-o", help="Output file path")
     parser.add_argument(
-        "--format", "-f", choices=["json", "yaml", "markdown"], default="json", help="Output format"
+        "--format",
+        "-f",
+        choices=["json", "yaml", "markdown"],
+        default="json",
+        help="Output format",
     )
     parser.add_argument("--search", "-s", help="Search query")
     parser.add_argument("--category", "-c", help="Filter by category")

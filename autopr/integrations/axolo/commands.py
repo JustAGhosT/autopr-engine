@@ -3,11 +3,12 @@ import logging
 import re
 from typing import TYPE_CHECKING, Any
 
+
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .messaging import AxoloMessaging
-    from .models import AxoloPRChannel
+    from autopr.integrations.axolo.messaging import AxoloMessaging
+    from autopr.integrations.axolo.models import AxoloPRChannel
 
 
 class AxoloCommandHandler:
@@ -69,7 +70,7 @@ class AxoloCommandHandler:
         except Exception as e:
             try:
                 from slack_sdk.errors import (
-                    SlackApiError,  # type: ignore[import-not-found]
+                    SlackApiError,
                 )
 
                 if isinstance(e, SlackApiError):
@@ -111,7 +112,10 @@ class AxoloCommandHandler:
                 {
                     "type": "section",
                     "fields": [
-                        {"type": "mrkdwn", "text": f"*Status:*\n{status.get('status', 'Unknown')}"},
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Status:*\n{status.get('status', 'Unknown')}",
+                        },
                         {
                             "type": "mrkdwn",
                             "text": f"*Last Analyzed:*\n{status.get('last_analyzed', 'Never')}",
@@ -184,7 +188,11 @@ class AxoloCommandHandler:
 
         if match:
             owner, repo, pr_number = match.groups()
-            return {"pr_number": int(pr_number), "repository": f"{owner}/{repo}", "url": pr_url}
+            return {
+                "pr_number": int(pr_number),
+                "repository": f"{owner}/{repo}",
+                "url": pr_url,
+            }
         return None
 
     async def _gather_review_data(self, pr_number: int) -> dict[str, Any]:

@@ -17,6 +17,7 @@ from aiohttp import (
     ClientTimeout,
 )
 
+
 # Default configuration constants
 DEFAULT_RETRIES = 3
 DEFAULT_BACKOFF_FACTOR = 0.5
@@ -114,7 +115,8 @@ class GitHubClient:
         """
         if self._session is None or self._session.closed:
             self._session = ClientSession(
-                headers=self.config.headers, timeout=ClientTimeout(total=self.config.timeout)
+                headers=self.config.headers,
+                timeout=ClientTimeout(total=self.config.timeout),
             )
             self._session_owner = True
         return self._session
@@ -186,17 +188,19 @@ class GitHubClient:
                         # Update rate limit info from response
                         await self._handle_rate_limit(response)
 
-                        if response.status == 403 and "X-RateLimit-Remaining" in response.headers:
-                            if int(response.headers["X-RateLimit-Remaining"]) == 0:
-                                reset_time = int(
-                                    response.headers.get("X-RateLimit-Reset", time.time() + 60)
-                                )
-                                sleep_time = max(1, reset_time - time.time() + 1)  # Add 1s buffer
-                                self.logger.warning(
-                                    "Rate limited. Waiting %.1fs until reset", sleep_time
-                                )
-                                await asyncio.sleep(sleep_time)
-                                continue  # Retry the request after waiting
+                        if (
+                            response.status == 403 and "X-RateLimit-Remaining" in response.headers
+                        ) and int(response.headers["X-RateLimit-Remaining"]) == 0:
+                            reset_time = int(
+                                response.headers.get("X-RateLimit-Reset", time.time() + 60)
+                            )
+                            sleep_time = max(1, reset_time - time.time() + 1)  # Add 1s buffer
+                            self.logger.warning(
+                                "Rate limited. Waiting %.1fs until reset",
+                                sleep_time,
+                            )
+                            await asyncio.sleep(sleep_time)
+                            continue  # Retry the request after waiting
 
                         response.raise_for_status()
 

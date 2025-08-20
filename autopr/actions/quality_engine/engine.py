@@ -8,14 +8,18 @@ from typing import Any
 import structlog
 
 from autopr.actions.base.action import Action
+from autopr.actions.quality_engine.config import load_config
+from autopr.actions.quality_engine.handler_registry import HandlerRegistry
+from autopr.actions.quality_engine.models import (
+    QualityInputs,
+    QualityMode,
+    QualityOutputs,
+)
+from autopr.actions.quality_engine.platform_detector import PlatformDetector
+from autopr.actions.quality_engine.tool_runner import determine_smart_tools, run_tool
+from autopr.actions.quality_engine.tools.registry import ToolRegistry
 from autopr.utils.volume_utils import get_volume_level_name
 
-from .config import load_config
-from .handler_registry import HandlerRegistry
-from .models import QualityInputs, QualityMode, QualityOutputs
-from .platform_detector import PlatformDetector
-from .tool_runner import determine_smart_tools, run_tool
-from .tools.registry import ToolRegistry
 
 logger = structlog.get_logger(__name__)
 
@@ -43,7 +47,7 @@ class QualityEngine(Action):
         self.tool_registry = tool_registry
         if self.tool_registry is None:
             # Fallback to discover tools if not injected
-            from .tools import discover_tools
+            from autopr.actions.quality_engine.tools import discover_tools
 
             tools = discover_tools()
             self.tools = {tool().name: tool() for tool in tools}
@@ -142,10 +146,16 @@ class QualityEngine(Action):
             raise ValueError(msg)
         return max(0, min(1000, volume))  # Clamp to 0-1000 range
 
-    async def _run_auto_fix(self, inputs: QualityInputs, files_to_check: list[str]) -> tuple[bool, int, list[str], str | None, list[str] | None]:
+    async def _run_auto_fix(
+        self, inputs: QualityInputs, files_to_check: list[str]
+    ) -> tuple[bool, int, list[str], str | None, list[str] | None]:
         """Run auto-fix process and return results."""
         try:
-            logger.info("Starting auto-fix process", fix_types=inputs.fix_types, max_fixes=inputs.max_fixes)
+            logger.info(
+                "Starting auto-fix process",
+                fix_types=inputs.fix_types,
+                max_fixes=inputs.max_fixes,
+            )
 
             # Import AI Linting Fixer
             from autopr.actions.ai_linting_fixer import AILintingFixer
@@ -273,7 +283,10 @@ class QualityEngine(Action):
         volume_level = get_volume_level_name(volume)  # Directly use the imported function
 
         logger.info(
-            "Executing Quality Engine", mode=inputs.mode, volume=volume, volume_level=volume_level
+            "Executing Quality Engine",
+            mode=inputs.mode,
+            volume=volume,
+            volume_level=volume_level,
         )
 
         # Determine files to check
@@ -345,7 +358,9 @@ class QualityEngine(Action):
                     tool_name=tool_name,
                     tool_instance=tool_instance,
                     files=files_to_check,
-                    tool_config=tool_config.get("config", {}) if isinstance(tool_config, dict) else {},
+                    tool_config=(
+                        tool_config.get("config", {}) if isinstance(tool_config, dict) else {}
+                    ),
                     handler_registry=self.handler_registry,
                 )
                 tool_tasks.append((tool_name, task))
@@ -363,12 +378,12 @@ class QualityEngine(Action):
         if inputs.mode == QualityMode.AI_ENHANCED and inputs.enable_ai_agents:
             # Lazy load the LLM manager if needed
             if not self.llm_manager:
-                from .ai import initialize_llm_manager
+                from autopr.actions.quality_engine.ai import initialize_llm_manager
 
                 self.llm_manager = await initialize_llm_manager()
 
             if self.llm_manager:
-                from .ai import run_ai_analysis
+                from autopr.actions.quality_engine.ai import run_ai_analysis
 
                 ai_result = await run_ai_analysis(
                     files_to_check,
@@ -378,7 +393,9 @@ class QualityEngine(Action):
                 )
 
                 if ai_result:
-                    from .ai import create_tool_result_from_ai_analysis
+                    from autopr.actions.quality_engine.ai import (
+                        create_tool_result_from_ai_analysis,
+                    )
 
                     results["ai_analysis"] = create_tool_result_from_ai_analysis(ai_result)
                     ai_summary = ai_result.get("summary")
@@ -391,10 +408,16 @@ class QualityEngine(Action):
         files_modified = []
 
         if inputs.auto_fix and inputs.enable_ai_agents:
-            auto_fix_applied, total_issues_fixed, files_modified, fix_summary, fix_errors = await self._run_auto_fix(inputs, files_to_check)
+            (
+                auto_fix_applied,
+                total_issues_fixed,
+                files_modified,
+                fix_summary,
+                fix_errors,
+            ) = await self._run_auto_fix(inputs, files_to_check)
 
         # Build the comprehensive summary
-        from .summary import build_comprehensive_summary
+        from autopr.actions.quality_engine.summary import build_comprehensive_summary
 
         summary = build_comprehensive_summary(results, ai_summary)
 

@@ -8,7 +8,7 @@ Handles template combinations and use case recommendations.
 
 from typing import TypedDict
 
-from .template_models import TemplateCombination, TemplateInfo
+from discovery.template_models import TemplateCombination, TemplateInfo
 
 
 class CombinationDict(TypedDict):
@@ -61,7 +61,8 @@ class TemplateCombinationEngine:
                     (t for t in integration_templates if "auth" in t.name.lower()), None
                 )
                 payment_template = next(
-                    (t for t in integration_templates if "payment" in t.name.lower()), None
+                    (t for t in integration_templates if "payment" in t.name.lower()),
+                    None,
                 )
 
                 if auth_template and platform in auth_template.platforms:
@@ -116,7 +117,10 @@ class TemplateCombinationEngine:
         return workflow_templates[:3]  # Return top 3 workflow templates
 
     def create_template_combination(
-        self, main_template: TemplateInfo, integrations: list[TemplateInfo], platform: str
+        self,
+        main_template: TemplateInfo,
+        integrations: list[TemplateInfo],
+        platform: str,
     ) -> TemplateCombination:
         """Create a structured template combination."""
         integration_names = [t.name for t in integrations]
@@ -155,7 +159,14 @@ class TemplateCombinationEngine:
         template2_features = [f.lower() for f in template2.key_features]
 
         # Look for common themes or complementary functionality
-        common_themes = ["auth", "payment", "database", "api", "storage", "notification"]
+        common_themes = [
+            "auth",
+            "payment",
+            "database",
+            "api",
+            "storage",
+            "notification",
+        ]
 
         for theme in common_themes:
             if any(theme in f for f in template1_features) and any(

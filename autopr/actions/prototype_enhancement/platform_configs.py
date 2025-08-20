@@ -113,7 +113,13 @@ class PlatformRegistry:
                 primary_language="javascript",
                 framework="node",
                 deployment_targets=["railway", "render", "azure"],
-                common_files=["package.json", "index.js", "lib/", "config/", "scripts/"],
+                common_files=[
+                    "package.json",
+                    "index.js",
+                    "lib/",
+                    "config/",
+                    "scripts/",
+                ],
                 package_manager="npm",
                 build_command="npm run build",
                 start_command="npm start",
@@ -313,7 +319,10 @@ class PlatformRegistry:
                     "build_command": "npm run build",
                     "output_directory": "dist",
                 },
-                "netlify": {"build_command": "npm run build", "publish_directory": "dist"},
+                "netlify": {
+                    "build_command": "npm run build",
+                    "publish_directory": "dist",
+                },
                 "github-pages": {
                     "build_command": "npm run build",
                     "output_directory": "dist",

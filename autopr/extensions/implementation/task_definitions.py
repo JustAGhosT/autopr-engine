@@ -58,7 +58,11 @@ class TaskRegistry:
                 "complexity": "medium",
                 "estimated_time": "3-4 hours",
                 "dependencies": [],
-                "files_created": ["redis_config.py", "cache_manager.py", "cache_decorators.py"],
+                "files_created": [
+                    "redis_config.py",
+                    "cache_manager.py",
+                    "cache_decorators.py",
+                ],
                 "env_vars": ["REDIS_URL", "REDIS_PASSWORD", "CACHE_TTL"],
             },
             "create_health_checks": {
@@ -109,8 +113,16 @@ class TaskRegistry:
                 "complexity": "high",
                 "estimated_time": "5-6 hours",
                 "dependencies": ["setup_postgresql_integration"],
-                "files_created": ["auth_config.py", "oauth_handlers.py", "token_manager.py"],
-                "env_vars": ["OAUTH_CLIENT_ID", "OAUTH_CLIENT_SECRET", "JWT_SECRET_KEY"],
+                "files_created": [
+                    "auth_config.py",
+                    "oauth_handlers.py",
+                    "token_manager.py",
+                ],
+                "env_vars": [
+                    "OAUTH_CLIENT_ID",
+                    "OAUTH_CLIENT_SECRET",
+                    "JWT_SECRET_KEY",
+                ],
             },
             "implement_advanced_llm_routing": {
                 "name": "Advanced LLM Routing",
@@ -119,7 +131,11 @@ class TaskRegistry:
                 "complexity": "high",
                 "estimated_time": "6-8 hours",
                 "dependencies": ["setup_redis_caching", "implement_prometheus_metrics"],
-                "files_created": ["llm_router.py", "load_balancer.py", "model_selector.py"],
+                "files_created": [
+                    "llm_router.py",
+                    "load_balancer.py",
+                    "model_selector.py",
+                ],
                 "env_vars": ["LLM_ROUTING_STRATEGY", "LOAD_BALANCER_ALGORITHM"],
             },
             "create_comprehensive_testing": {
@@ -144,7 +160,10 @@ class TaskRegistry:
                 "category": "ai",
                 "complexity": "very_high",
                 "estimated_time": "10-15 hours",
-                "dependencies": ["setup_postgresql_integration", "implement_advanced_llm_routing"],
+                "dependencies": [
+                    "setup_postgresql_integration",
+                    "implement_advanced_llm_routing",
+                ],
                 "files_created": [
                     "rag_system.py",
                     "vector_store.py",
@@ -159,7 +178,10 @@ class TaskRegistry:
                 "category": "analytics",
                 "complexity": "very_high",
                 "estimated_time": "12-16 hours",
-                "dependencies": ["implement_prometheus_metrics", "setup_oauth2_authentication"],
+                "dependencies": [
+                    "implement_prometheus_metrics",
+                    "setup_oauth2_authentication",
+                ],
                 "files_created": [
                     "dashboard_app.py",
                     "analytics_queries.py",
@@ -174,14 +196,21 @@ class TaskRegistry:
                 "category": "ai",
                 "complexity": "very_high",
                 "estimated_time": "15-20 hours",
-                "dependencies": ["implement_rag_system", "create_comprehensive_testing"],
+                "dependencies": [
+                    "implement_rag_system",
+                    "create_comprehensive_testing",
+                ],
                 "files_created": [
                     "model_training.py",
                     "fine_tuning_pipeline.py",
                     "model_deployment.py",
                     "training_data_processor.py",
                 ],
-                "env_vars": ["TRAINING_DATA_PATH", "MODEL_REGISTRY_URL", "FINE_TUNING_API_KEY"],
+                "env_vars": [
+                    "TRAINING_DATA_PATH",
+                    "MODEL_REGISTRY_URL",
+                    "FINE_TUNING_API_KEY",
+                ],
             },
             "implement_multi_cloud_deployment": {
                 "name": "Multi-cloud Deployment",
@@ -189,14 +218,21 @@ class TaskRegistry:
                 "category": "infrastructure",
                 "complexity": "very_high",
                 "estimated_time": "20-25 hours",
-                "dependencies": ["create_analytics_dashboard", "setup_fine_tuned_models"],
+                "dependencies": [
+                    "create_analytics_dashboard",
+                    "setup_fine_tuned_models",
+                ],
                 "files_created": [
                     "cloud_config.py",
                     "deployment_scripts/",
                     "terraform/",
                     "kubernetes/",
                 ],
-                "env_vars": ["AWS_ACCESS_KEY_ID", "GCP_PROJECT_ID", "AZURE_SUBSCRIPTION_ID"],
+                "env_vars": [
+                    "AWS_ACCESS_KEY_ID",
+                    "GCP_PROJECT_ID",
+                    "AZURE_SUBSCRIPTION_ID",
+                ],
             },
         }
 

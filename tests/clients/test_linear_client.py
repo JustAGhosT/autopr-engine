@@ -98,7 +98,10 @@ class TestLinearClient(TestCase):
         with patch("aiohttp.ClientSession.post") as mock_post:
             mock_resp = AsyncMock()
             mock_resp.raise_for_status.side_effect = ClientResponseError(
-                request_info=None, history=None, status=500, message="Internal Server Error"
+                request_info=None,
+                history=None,
+                status=500,
+                message="Internal Server Error",
             )
             mock_post.return_value.__aenter__.return_value = mock_resp
 

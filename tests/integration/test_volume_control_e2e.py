@@ -30,10 +30,11 @@ class TestVolumeControlE2E:
     @pytest.fixture
     def mock_agents(self):
         """Mock agent classes to avoid actual LLM calls."""
-        with patch("autopr.agents.crew.CodeQualityAgent") as mock_qa_agent, patch(
-            "autopr.agents.crew.PlatformAnalysisAgent"
-        ) as mock_pa_agent, patch("autopr.agents.crew.LintingAgent") as mock_lint_agent:
-
+        with (
+            patch("autopr.agents.crew.CodeQualityAgent") as mock_qa_agent,
+            patch("autopr.agents.crew.PlatformAnalysisAgent") as mock_pa_agent,
+            patch("autopr.agents.crew.LintingAgent") as mock_lint_agent,
+        ):
             # Set up mock agent instances
             mock_qa_agent.return_value = MagicMock()
             mock_pa_agent.return_value = MagicMock()
@@ -60,13 +61,23 @@ class TestVolumeControlE2E:
             (0, QualityMode.ULTRA_FAST, "Silent"),
             (100, QualityMode.FAST, "Quiet"),
             (300, QualityMode.FAST, "Moderate"),  # 300 < VOLUME_STANDARD (400)
-            (450, QualityMode.SMART, "Balanced"),  # 450 >= VOLUME_STANDARD (400) but < VOLUME_HIGH (700)
+            (
+                450,
+                QualityMode.SMART,
+                "Balanced",
+            ),  # 450 >= VOLUME_STANDARD (400) but < VOLUME_HIGH (700)
             (700, QualityMode.AI_ENHANCED, "Thorough"),  # 700 >= VOLUME_HIGH (700)
             (900, QualityMode.AI_ENHANCED, "Maximum"),  # 900 >= VOLUME_HIGH (700)
         ],
     )
     def test_volume_propagation(
-        self, test_repo, mock_llm_provider, mock_agents, volume, expected_mode, expected_level
+        self,
+        test_repo,
+        mock_llm_provider,
+        mock_agents,
+        volume,
+        expected_mode,
+        expected_level,
     ):
         """Test that volume settings propagate correctly through the entire pipeline."""
         # Arrange
@@ -76,7 +87,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
 
         # Configure mock agent responses
@@ -92,7 +103,10 @@ class TestVolumeControlE2E:
         # Assert - Verify volume context is passed to agents
         # Only check the code quality agent's backstory since that's the only one updated by the crew
         code_quality_agent = mock_agents["code_quality"]
-        assert f"volume level {volume} ({expected_level.lower()})" in code_quality_agent.backstory.lower()
+        assert (
+            f"volume level {volume} ({expected_level.lower()})"
+            in code_quality_agent.backstory.lower()
+        )
 
         # Verify quality inputs are created with correct mode
         assert report["quality_inputs"]["mode"] == expected_mode
@@ -110,7 +124,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
 
         # Test with high volume (comprehensive mode)
@@ -120,7 +134,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
 
         # Configure mock agent responses
@@ -180,7 +194,7 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
         report_low = crew_low.analyze_repository(test_repo, auto_fix=False)
 
@@ -191,13 +205,15 @@ class TestVolumeControlE2E:
             code_quality_agent=mock_agents["code_quality"],
             platform_agent=mock_agents["platform_analysis"],
             linting_agent=mock_agents["linting"],
-            llm_provider=mock_llm_provider
+            llm_provider=mock_llm_provider,
         )
         report_high = crew_high.analyze_repository(test_repo, auto_fix=True)
 
         # Verify that auto-fix behavior is controlled by the auto_fix parameter
         # and that volume affects the agent's behavior
-        assert not report_low["applied_fixes"], "Expected no fixes to be applied with auto_fix=False"
+        assert not report_low[
+            "applied_fixes"
+        ], "Expected no fixes to be applied with auto_fix=False"
         assert report_high["applied_fixes"], "Expected fixes to be applied with auto_fix=True"
 
         # Verify that the linting agent was called with the correct parameters

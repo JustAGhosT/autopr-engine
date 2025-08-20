@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class PyTestTool(Tool):

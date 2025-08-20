@@ -4,6 +4,7 @@ import contextlib
 from pathlib import Path
 import sys
 
+
 # Add project root to path
 project_root = str(Path(__file__).parent.absolute())
 if project_root not in sys.path:
@@ -49,4 +50,3 @@ for _name, volume, config, should_pass in test_cases:
 
 with contextlib.suppress(Exception):
     config = VolumeConfig(volume=500, config={"enable_ai_agents": True})
-

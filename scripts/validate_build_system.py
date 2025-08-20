@@ -67,7 +67,10 @@ def validate_pyproject_toml(file_path: str) -> tuple[bool, str]:
                 missing_fields.append(field)
 
         if missing_fields:
-            return False, f"Missing required project fields: {', '.join(missing_fields)}"
+            return (
+                False,
+                f"Missing required project fields: {', '.join(missing_fields)}",
+            )
 
         # Check dependencies
         if "dependencies" not in project:
@@ -99,7 +102,12 @@ def check_package_management(build_files: dict[str, list[str]]) -> list[str]:
     issues = []
 
     # Check for redundant requirements files
-    redundant_files = ["requirements.txt", "requirements-dev.txt", "setup.py", "setup.cfg"]
+    redundant_files = [
+        "requirements.txt",
+        "requirements-dev.txt",
+        "setup.py",
+        "setup.cfg",
+    ]
     for file in redundant_files:
         if os.path.exists(file):
             issues.append(f"Redundant package management file: {file}")
@@ -188,7 +196,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-
     # Find build files
     build_files = find_build_files(project_root)
 
@@ -205,7 +212,6 @@ def main():
     report_file = os.path.join(project_root, "build_system_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     # Return appropriate exit code
     if (

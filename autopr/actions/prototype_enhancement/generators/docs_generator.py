@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .base_generator import BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class DocsGenerator(BaseGenerator):
@@ -93,9 +93,9 @@ class DocsGenerator(BaseGenerator):
         content = self._render_template("docs/README.md", variables)
         if not content:
             # Fallback to a basic README
-            content = f"""# {variables['project_name']}
+            content = f"""# {variables["project_name"]}
 
-{variables['description']}
+{variables["description"]}
 
 ## Getting Started
 
@@ -109,8 +109,8 @@ class DocsGenerator(BaseGenerator):
 
 ```bash
 # Clone the repository
-git clone {variables['repo_url']}
-cd {variables['project_name']}
+git clone {variables["repo_url"]}
+cd {variables["project_name"]}
 
 # Install dependencies
 npm install  # for Node.js projects
@@ -137,7 +137,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 
 ## License
 
-This project is licensed under the {variables['license']} License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the {variables["license"]} License - see the [LICENSE](LICENSE) file for details.
 """
 
         file_path = str(Path(output_dir) / "README.md")
@@ -148,7 +148,7 @@ This project is licensed under the {variables['license']} License - see the [LIC
         """Generate CONTRIBUTING.md file."""
         content = self._render_template("docs/CONTRIBUTING.md", variables)
         if not content:
-            content = f"""# Contributing to {variables['project_name']}
+            content = f"""# Contributing to {variables["project_name"]}
 
 Thank you for your interest in contributing! Here are some guidelines to help you get started.
 
@@ -176,11 +176,11 @@ This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participatin
 
 ```bash
 # Clone your fork
-git clone git@github.com:YOUR_USERNAME/{variables['project_name']}.git
-cd {variables['project_name']}
+git clone git@github.com:YOUR_USERNAME/{variables["project_name"]}.git
+cd {variables["project_name"]}
 
 # Set up the upstream remote
-git remote add upstream {variables['repo_url']}
+git remote add upstream {variables["repo_url"]}
 
 # Install dependencies
 npm install  # for Node.js projects
@@ -205,7 +205,7 @@ pytest  # for Python projects
 
 ## Reporting Issues
 
-Please use the [GitHub issue tracker]({variables['repo_url']}/issues) to report any issues or submit feature requests.
+Please use the [GitHub issue tracker]({variables["repo_url"]}/issues) to report any issues or submit feature requests.
 """
 
         file_path = str(Path(output_dir) / "CONTRIBUTING.md")
@@ -228,7 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial project setup
 
-## [0.1.0] - {datetime.now().strftime('%Y-%m-%d')}
+## [0.1.0] - {datetime.now().strftime("%Y-%m-%d")}
 
 ### Added
 - Initial release
@@ -302,7 +302,7 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage], versi
         if not content and license_type == "mit":
             content = f"""MIT License
 
-Copyright (c) {datetime.now().year} {variables.get('author', '')}
+Copyright (c) {datetime.now().year} {variables.get("author", "")}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -411,10 +411,10 @@ Open `docs/_build/html/index.html` in your browser to view the API documentation
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = '{variables['project_name']}'
-copyright = '{datetime.now().year}, {variables.get('author', '')}'
-author = '{variables.get('author', '')}'
-release = '{variables.get('version', '0.1.0')}'
+project = '{variables["project_name"]}'
+copyright = '{datetime.now().year}, {variables.get("author", "")}'
+author = '{variables.get("author", "")}'
+release = '{variables.get("version", "0.1.0")}'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -439,7 +439,7 @@ html_static_path = ['_static']
 
 # Autodoc settings
 autodoc_default_options = {
-    'members': True,
+                    "members": True,
     'member-order': 'bysource',
     'special-members': '__init__',
     'undoc-members': True,
@@ -449,10 +449,10 @@ autodoc_default_options = {
                 self._write_file(str(conf_py), sphinx_quickstart)
                 generated_files.append(str(conf_py))
                 # Create index.rst
-                index_rst = f""".. {variables['project_name']} documentation master file, created by
-   sphinx-quickstart on {datetime.now().strftime('%Y-%m-%d')}.
+                index_rst = f""".. {variables["project_name"]} documentation master file, created by
+   sphinx-quickstart on {datetime.now().strftime("%Y-%m-%d")}.
 
-Welcome to {variables['project_name']}'s documentation!
+Welcome to {variables["project_name"]}'s documentation!
 =========================================
 
 .. toctree::
@@ -473,10 +473,10 @@ Indices and tables
                 generated_files.append(str(index_path))
 
                 # Create modules.rst
-                modules_rst = f"""{variables['project_name']}
-{'=' * len(variables['project_name'])}
+                modules_rst = f"""{variables["project_name"]}
+{"=" * len(variables["project_name"])}
 
-.. automodule:: {variables['project_name'].lower().replace('-', '_')}
+.. automodule:: {variables["project_name"].lower().replace("-", "_")}
    :members:
    :undoc-members:
    :show-inheritance:

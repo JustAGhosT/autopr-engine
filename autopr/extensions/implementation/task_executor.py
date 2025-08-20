@@ -11,7 +11,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from .task_definitions import TaskRegistry
+from implementation.task_definitions import TaskRegistry
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -453,7 +454,10 @@ class CircuitBreaker:
 
         return {
             "files_created": ["circuit_breaker.py"],
-            "env_vars_required": ["CIRCUIT_BREAKER_THRESHOLD", "CIRCUIT_BREAKER_TIMEOUT"],
+            "env_vars_required": [
+                "CIRCUIT_BREAKER_THRESHOLD",
+                "CIRCUIT_BREAKER_TIMEOUT",
+            ],
             "status": "completed",
         }
 
@@ -471,7 +475,10 @@ class CircuitBreaker:
         return {"status": "completed", "message": "Advanced LLM routing implemented"}
 
     async def _create_comprehensive_testing(self) -> dict[str, Any]:
-        return {"status": "completed", "message": "Comprehensive testing framework created"}
+        return {
+            "status": "completed",
+            "message": "Comprehensive testing framework created",
+        }
 
     async def _implement_rag_system(self) -> dict[str, Any]:
         return {"status": "completed", "message": "RAG system implemented"}

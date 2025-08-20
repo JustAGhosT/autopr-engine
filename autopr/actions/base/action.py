@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 import logging
 from typing import Any, TypeVar
 
+
 logger = logging.getLogger(__name__)
 
 # Type variables for generic Action class

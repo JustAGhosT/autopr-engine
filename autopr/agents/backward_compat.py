@@ -8,6 +8,7 @@ new locations.
 
 import warnings
 
+
 # Show deprecation warning
 warnings.warn(
     "The 'agents.agents' module is deprecated. Import directly from 'agents' instead.",
@@ -16,6 +17,19 @@ warnings.warn(
 )
 
 # Re-export models from the models module
+# Re-export the new agent classes from their new locations
+from autopr.agents.base import BaseAgent, VolumeConfig
+from autopr.agents.code_quality_agent import (
+    CodeQualityAgent,
+    CodeQualityInputs,
+    CodeQualityOutputs,
+)
+from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
+from autopr.agents.platform_analysis_agent import (
+    PlatformAnalysisAgent,
+    PlatformAnalysisInputs,
+    PlatformAnalysisOutputs,
+)
 from autopr.models import (
     CodeAnalysisReport,
     CodeIssue,
@@ -24,15 +38,6 @@ from autopr.models import (
     PlatformComponent,
 )
 
-# Re-export the new agent classes from their new locations
-from .base import BaseAgent, VolumeConfig
-from .code_quality_agent import CodeQualityAgent, CodeQualityInputs, CodeQualityOutputs
-from .linting_agent import LintingAgent, LintingInputs, LintingOutputs
-from .platform_analysis_agent import (
-    PlatformAnalysisAgent,
-    PlatformAnalysisInputs,
-    PlatformAnalysisOutputs,
-)
 
 # For backward compatibility with existing code
 __all__ = [

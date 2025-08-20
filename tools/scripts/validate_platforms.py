@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 from typing import Any
 
+
 # Project directories
 PROJECT_ROOT = Path(__file__).parent.parent
 CONFIG_DIR = PROJECT_ROOT / "configs" / "platforms"
@@ -47,7 +48,11 @@ def load_json_file(file_path: Path) -> tuple[bool, dict[str, Any] | None, list[s
             try:
                 data = json.loads(content)
                 if not isinstance(data, dict):
-                    return False, None, [f"Expected JSON object, got {type(data).__name__}"]
+                    return (
+                        False,
+                        None,
+                        [f"Expected JSON object, got {type(data).__name__}"],
+                    )
                 return True, data, []
             except json.JSONDecodeError as e:
                 return False, None, [f"Invalid JSON: {e!s}"]

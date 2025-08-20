@@ -11,6 +11,7 @@ from pathlib import Path
 import time
 from typing import Any
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -97,7 +98,7 @@ class PerformanceTracker:
             )
         else:
             logger.info(
-                f"Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s"
+                f"📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s"
             )
 
     def log_metric(self, metric_name: str, value: Any) -> None:
@@ -105,7 +106,7 @@ class PerformanceTracker:
         if metric_name in self.metrics:
             if isinstance(self.metrics[metric_name], list):
                 self.metrics[metric_name].append(value)
-            elif isinstance(self.metrics[metric_name], (int, float)):
+            elif isinstance(self.metrics[metric_name], int | float):
                 self.metrics[metric_name] += value
             else:
                 self.metrics[metric_name] = value
@@ -384,16 +385,16 @@ class PerformanceTracker:
 Performance Report
 ==================
 
-Session Duration: {summary['session_duration']:.2f} seconds
-Files Processed: {summary['files_processed']}
-Success Rate: {summary['success_rate']:.1f}%
-Fix Rate: {summary['fix_rate']:.1f}%
+Session Duration: {summary["session_duration"]:.2f} seconds
+Files Processed: {summary["files_processed"]}
+Success Rate: {summary["success_rate"]:.1f}%
+Fix Rate: {summary["fix_rate"]:.1f}%
 
 Performance Metrics:
-- Average Processing Time: {summary['average_processing_time']:.2f}s per file
-- Average API Response Time: {summary['average_api_response_time']:.2f}s
-- Total API Calls: {summary['total_api_calls']}
-- Total Tokens Used: {summary['total_tokens_used']}
+- Average Processing Time: {summary["average_processing_time"]:.2f}s per file
+- Average API Response Time: {summary["average_api_response_time"]:.2f}s
+- Total API Calls: {summary["total_api_calls"]}
+- Total Tokens Used: {summary["total_tokens_used"]}
 
 Quality Metrics:
 """

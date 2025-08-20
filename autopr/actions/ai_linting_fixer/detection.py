@@ -12,6 +12,7 @@ import operator
 import subprocess
 from typing import Any
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -89,7 +90,11 @@ class IssueClassifier:
     ISSUE_CLASSIFICATIONS = {
         # Critical issues
         "F821": (IssueCategory.CRITICAL, IssueSeverity.ERROR, 9),  # Undefined name
-        "F822": (IssueCategory.CRITICAL, IssueSeverity.ERROR, 9),  # Undefined name in __all__
+        "F822": (
+            IssueCategory.CRITICAL,
+            IssueSeverity.ERROR,
+            9,
+        ),  # Undefined name in __all__
         "E999": (IssueCategory.CRITICAL, IssueSeverity.ERROR, 10),  # Syntax error
         # High priority issues
         "F401": (IssueCategory.HIGH, IssueSeverity.WARNING, 8),  # Unused import
@@ -99,10 +104,22 @@ class IssueClassifier:
         "B001": (IssueCategory.HIGH, IssueSeverity.WARNING, 6),  # Bare except
         # Medium priority issues
         "E501": (IssueCategory.MEDIUM, IssueSeverity.WARNING, 6),  # Line too long
-        "F541": (IssueCategory.MEDIUM, IssueSeverity.WARNING, 5),  # F-string missing placeholders
-        "E741": (IssueCategory.MEDIUM, IssueSeverity.WARNING, 4),  # Ambiguous variable name
+        "F541": (
+            IssueCategory.MEDIUM,
+            IssueSeverity.WARNING,
+            5,
+        ),  # F-string missing placeholders
+        "E741": (
+            IssueCategory.MEDIUM,
+            IssueSeverity.WARNING,
+            4,
+        ),  # Ambiguous variable name
         # Low priority issues
-        "W293": (IssueCategory.LOW, IssueSeverity.INFO, 3),  # Blank line with whitespace
+        "W293": (
+            IssueCategory.LOW,
+            IssueSeverity.INFO,
+            3,
+        ),  # Blank line with whitespace
         "W291": (IssueCategory.LOW, IssueSeverity.INFO, 3),  # Trailing whitespace
         "E302": (IssueCategory.LOW, IssueSeverity.INFO, 2),  # Expected 2 blank lines
         "E303": (IssueCategory.LOW, IssueSeverity.INFO, 2),  # Too many blank lines
@@ -294,25 +311,129 @@ class Flake8Parser:
             return None, None
 
 
+class RuffParser:
+    """Parser for Ruff linting tool output."""
+
+    def __init__(self):
+        self.classifier = IssueClassifier()
+
+    def run_ruff(self, target_path: str, config_file: str | None = None) -> list[LintingIssue]:
+        """Run ruff and parse its output."""
+        try:
+            cmd = ["ruff", "check", target_path, "--output-format=json"]
+            if config_file:
+                cmd.extend(["--config", config_file])
+
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, encoding="utf-8", errors="ignore"
+            )
+
+            if result.returncode not in [0, 1]:  # ruff returns 1 when issues found
+                logger.warning("Ruff command failed: %s", result.stderr)
+                return []
+
+            return self._parse_ruff_json(result.stdout)
+
+        except Exception as e:
+            logger.error("Failed to run ruff: %s", e)
+            return []
+
+    def _parse_ruff_json(self, json_output: str) -> list[LintingIssue]:
+        """Parse ruff JSON output."""
+        try:
+            import json
+
+            # Handle empty output
+            if not json_output.strip():
+                return []
+
+            data = json.loads(json_output)
+            issues = []
+
+            # Ensure data is a list
+            if not isinstance(data, list):
+                logger.warning("Ruff JSON output is not a list: %s", type(data))
+                return []
+
+            for item in data:
+                try:
+                    # Validate required fields
+                    if not all(key in item for key in ["code", "message", "filename", "location"]):
+                        logger.debug("Skipping item with missing fields: %s", item)
+                        continue
+
+                    # Classify the issue
+                    category, severity, priority = self.classifier.classify_issue(item["code"])
+                    confidence = self.classifier.estimate_fix_confidence(item["code"])
+
+                    # Get line content if possible
+                    line_content = self._get_line_content(item["filename"], item["location"]["row"])
+
+                    issue = LintingIssue(
+                        file_path=item["filename"],
+                        line_number=item["location"]["row"],
+                        column_number=item["location"]["column"],
+                        error_code=item["code"],
+                        message=item["message"],
+                        tool="ruff",
+                        category=category,
+                        severity=severity,
+                        line_content=line_content,
+                        fix_priority=priority,
+                        estimated_confidence=confidence,
+                        requires_human_review=category == IssueCategory.CRITICAL,
+                    )
+                    issues.append(issue)
+                except Exception as e:
+                    logger.debug("Failed to parse ruff item: %s - %s", item, e)
+                    continue
+
+            return issues
+
+        except Exception as e:
+            logger.error("Failed to parse ruff JSON: %s", e)
+            return []
+
+    def _get_line_content(self, file_path: str, line_number: int) -> str:
+        """Get the content of a specific line from a file."""
+        try:
+            from pathlib import Path
+
+            with Path(file_path).open(encoding="utf-8") as f:
+                lines = f.readlines()
+                if 1 <= line_number <= len(lines):
+                    return lines[line_number - 1].rstrip("\n\r")
+        except Exception as e:
+            logger.debug("Failed to read line content from %s:%s - %s", file_path, line_number, e)
+        return ""
+
+
 class IssueDetector:
     """Main class for detecting and analyzing linting issues."""
 
     def __init__(self):
         self.flake8_parser = Flake8Parser()
-        self.supported_tools = ["flake8"]
+        self.ruff_parser = RuffParser()
+        self.supported_tools = ["flake8", "ruff"]
 
     def detect_issues(
-        self, target_path: str, tools: list[str] | None = None, config_file: str | None = None
+        self,
+        target_path: str,
+        tools: list[str] | None = None,
+        config_file: str | None = None,
     ) -> list[LintingIssue]:
         """Detect linting issues using specified tools."""
         if tools is None:
-            tools = ["flake8"]
+            tools = ["ruff"]  # Default to ruff instead of flake8
 
         all_issues = []
 
         for tool in tools:
             if tool == "flake8":
                 issues = self.flake8_parser.run_flake8(target_path, config_file)
+                all_issues.extend(issues)
+            elif tool == "ruff":
+                issues = self.ruff_parser.run_ruff(target_path, config_file)
                 all_issues.extend(issues)
             else:
                 logger.warning(f"Unsupported tool: {tool}")

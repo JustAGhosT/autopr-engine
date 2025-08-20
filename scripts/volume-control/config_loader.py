@@ -12,53 +12,32 @@ from typing import Any
 class VolumeConfigLoader:
     """Loads and applies tool configurations based on volume levels"""
 
-    def __init__(self, config_dir: str | None = None):
-        # Try multiple possible locations for config files
-        possible_config_dirs = [
-            Path(__file__).parent / "configs",  # Default location
-            Path.cwd() / "configs",  # Current working directory
-            Path.cwd() / "scripts" / "volume-control" / "configs",  # From project root
-            Path.home() / ".config" / "volume-control",  # User config directory
-        ]
-
-        # Use provided config_dir if specified, otherwise find first existing directory
-        if config_dir:
-            self.config_dir = Path(config_dir)
-        else:
-            self.config_dir = None
-            for dir_path in possible_config_dirs:
-                if dir_path.exists() and dir_path.is_dir():
-                    self.config_dir = dir_path
-                    break
-
-            if self.config_dir is None:
-                self.config_dir = possible_config_dirs[0]  # Default to first option
-
+    def __init__(self, config_dir: str = "configs"):
+        self.config_dir = Path(__file__).parent / config_dir
         self.tools = {}
         self.load_all_configs()
 
     def load_all_configs(self):
         """Load all tool configuration files"""
         if not self.config_dir.exists():
+            print(f"Config directory {self.config_dir} not found")
             return
 
-        config_files = list(self.config_dir.glob("*.json"))
-
-        for config_file in config_files:
+        for config_file in self.config_dir.glob("*.json"):
             try:
                 with open(config_file) as f:
                     config = json.load(f)
                     tool_name = config.get("tool", config_file.stem)
                     self.tools[tool_name] = config
-            except Exception:
-                pass
-
+                    print(f"Loaded config for {tool_name}")
+            except Exception as e:
+                print(f"Error loading {config_file}: {e}")
 
     def get_settings_for_volume(self, volume: int) -> dict[str, Any]:
         """Get combined settings for all tools at the specified volume level"""
         combined_settings = {}
 
-        for tool_name in self.tools:
+        for tool_name, _config in self.tools.items():
             tool_settings = self.get_tool_settings_for_volume(tool_name, volume)
             combined_settings.update(tool_settings)
 
@@ -133,11 +112,14 @@ def main():
     test_volumes = [0, 50, 200, 500, 1000]
 
     for volume in test_volumes:
+        print(f"\n=== VOLUME {volume} ===")
         summary = loader.get_activation_summary(volume)
 
+        print(f"Active tools: {', '.join(summary['active_tools'])}")
 
-        for details in summary["tool_details"].values():
-            "ACTIVE" if details["active"] else "inactive"
+        for tool, details in summary["tool_details"].items():
+            status = "ACTIVE" if details["active"] else "inactive"
+            print(f"  {tool}: {status} ({details['settings_applied']} settings)")
 
 
 if __name__ == "__main__":

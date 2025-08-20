@@ -24,32 +24,29 @@ from autopr.quality.template_metrics import (
     get_quality_analyzer,
     get_quality_scorer,
 )
-from autopr.quality.template_metrics.validation_types import ValidationIssue as QMValidationIssue
+from autopr.quality.template_metrics.validation_types import (
+    ValidationIssue as QMValidationIssue,
+)
 from autopr.quality.template_metrics.validation_types import (
     ValidationSeverity as QMValidationSeverity,
 )
-
-from .report_generators import (
+from discovery.report_generators import (
     ReportGeneratorFactory,
     generate_batch_report,
     generate_report,
     save_report,
 )
-from .template_validators import (
-    ValidationIssue as LocalValidationIssue,
-)
-from .template_validators import (
-    ValidationSeverity as LocalValidationSeverity,
-)
-from .template_validators import (
-    get_validator_registry,
-)
+from discovery.template_validators import ValidationIssue as LocalValidationIssue
+from discovery.template_validators import ValidationSeverity as LocalValidationSeverity
+from discovery.template_validators import get_validator_registry
 
 # Import modular components
-from .validation_rules import get_validation_rules
+from discovery.validation_rules import get_validation_rules
 
 
-def convert_validation_issue(local_issue: LocalValidationIssue, template_path: str) -> QMValidationIssue:
+def convert_validation_issue(
+    local_issue: LocalValidationIssue, template_path: str
+) -> QMValidationIssue:
     """Convert a local ValidationIssue to a canonical QualityMetrics ValidationIssue."""
     # Convert severity enum
     severity_map = {
@@ -108,7 +105,7 @@ class TemplateValidator:
                                 "Template file is empty or invalid",
                                 str(template_file),
                             ),
-                            str(template_file)
+                            str(template_file),
                         )
                     ],
                     template_path=str(template_file),
@@ -124,7 +121,7 @@ class TemplateValidator:
                             f"Failed to parse template: {e}",
                             str(template_file),
                         ),
-                        str(template_file)
+                        str(template_file),
                     )
                 ],
                 template_path=str(template_file),
@@ -143,7 +140,9 @@ class TemplateValidator:
                 rule.check_function, template_data, template_file, rule
             )
             # Convert local issues to canonical issues
-            canonical_issues = [convert_validation_issue(issue, str(template_file)) for issue in local_issues]
+            canonical_issues = [
+                convert_validation_issue(issue, str(template_file)) for issue in local_issues
+            ]
             all_issues.extend(canonical_issues)
 
         # Calculate quality metrics using modular scorer
@@ -168,7 +167,7 @@ class TemplateValidator:
                                 f"Validation failed: {e}",
                                 str(template_file),
                             ),
-                            str(template_file)
+                            str(template_file),
                         )
                     ],
                     template_path=str(template_file),
@@ -224,7 +223,11 @@ class QualityAssuranceFramework:
                 raise ValueError(msg)
 
         if not template_files:
-            return {"error": "No template files found", "template_count": 0, "results": []}
+            return {
+                "error": "No template files found",
+                "template_count": 0,
+                "results": [],
+            }
 
         # Validate templates using modular validator
         template_metrics = self.validator.validate_templates_batch(template_files)

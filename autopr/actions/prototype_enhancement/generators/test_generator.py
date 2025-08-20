@@ -7,7 +7,7 @@ Handles generation of test files and configurations for different testing framew
 from pathlib import Path
 from typing import Any
 
-from .base_generator import BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class TestGenerator(BaseGenerator):
@@ -102,7 +102,11 @@ class TestGenerator(BaseGenerator):
 
         if test_framework == "jest":
             test_files.extend(
-                ["example.test.ts", "utils/__tests__/example-util.test.ts", "setupTests.ts"]
+                [
+                    "example.test.ts",
+                    "utils/__tests__/example-util.test.ts",
+                    "setupTests.ts",
+                ]
             )
         elif test_framework == "mocha":
             test_files.extend(["example.spec.ts", "test-utils/test-helper.ts"])

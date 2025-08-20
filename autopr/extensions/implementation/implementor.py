@@ -8,10 +8,11 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from .phase_manager import PhaseManager
-from .report_generator import ReportGenerator
-from .task_definitions import Task, TaskRegistry
-from .task_executor import TaskExecutor
+from implementation.phase_manager import PhaseManager
+from implementation.report_generator import ReportGenerator
+from implementation.task_definitions import Task, TaskRegistry
+from implementation.task_executor import TaskExecutor
+
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,11 @@ class Phase1ExtensionImplementor:
             else:
                 logger.error(f"Phase {phase} failed")
                 self._log_implementation_event(
-                    {"event": "phase_failed", "phase": phase, "timestamp": self._get_timestamp()}
+                    {
+                        "event": "phase_failed",
+                        "phase": phase,
+                        "timestamp": self._get_timestamp(),
+                    }
                 )
 
         except Exception as e:
@@ -188,8 +193,8 @@ class Phase1ExtensionImplementor:
             return {
                 "task_id": task_id,
                 "status": execution.status,
-                "start_time": execution.start_time.isoformat() if execution.start_time else None,
-                "end_time": execution.end_time.isoformat() if execution.end_time else None,
+                "start_time": (execution.start_time.isoformat() if execution.start_time else None),
+                "end_time": (execution.end_time.isoformat() if execution.end_time else None),
                 "duration_seconds": (
                     execution.duration.total_seconds() if execution.duration else None
                 ),

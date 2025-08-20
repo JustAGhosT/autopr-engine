@@ -148,7 +148,12 @@ class ValidationRuleLoader:
                     check_function="check_required_fields",
                     weight=2.0,
                     parameters={
-                        "required_fields": ["name", "description", "category", "platforms"]
+                        "required_fields": [
+                            "name",
+                            "description",
+                            "category",
+                            "platforms",
+                        ]
                     },
                 ),
                 ValidationRule(

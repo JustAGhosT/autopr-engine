@@ -4,12 +4,12 @@ from typing import Any
 import structlog
 
 from autopr.security.validation_models import ValidationResult, ValidationSeverity
+from autopr.security.validators.array_validator import ArrayValidator
+from autopr.security.validators.file_validator import FileValidator
+from autopr.security.validators.number_validator import NumberValidator
+from autopr.security.validators.object_validator import ObjectValidator
+from autopr.security.validators.string_validator import StringValidator
 
-from .array_validator import ArrayValidator
-from .file_validator import FileValidator
-from .number_validator import NumberValidator
-from .object_validator import ObjectValidator
-from .string_validator import StringValidator
 
 logger = structlog.get_logger(__name__)
 
@@ -130,11 +130,11 @@ class EnterpriseInputValidator(
 
         if isinstance(value, str):
             result = self._validate_string(key, value)
-        elif isinstance(value, (list, tuple)):
+        elif isinstance(value, list | tuple):
             result = self._validate_array(key, value)
         elif isinstance(value, dict):
             result = self._validate_object(key, value)
-        elif isinstance(value, (int, float)):
+        elif isinstance(value, int | float):
             result = self._validate_number(key, value)
         else:
             result.sanitized_data = {"value": value}  # Wrap in dict to satisfy type constraints

@@ -4,6 +4,7 @@ Generic wrapper for tool results.
 
 from typing import Any, TypeVar
 
+
 T = TypeVar("T")
 
 

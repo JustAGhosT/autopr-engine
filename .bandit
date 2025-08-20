@@ -1,6 +1,0 @@
-[bandit]
-# Directories Bandit should skip while scanning
-exclude_dirs: .venv, venv, env, node_modules, build, dist, docs, migrations, tests
-
-# Rule IDs to skip (comma-separated)
-skips: B101, B601, B603, B607, B110, B112, B404, B105, B311, B324, B608

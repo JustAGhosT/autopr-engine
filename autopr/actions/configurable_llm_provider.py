@@ -7,7 +7,7 @@ This module maintains backward compatibility by re-exporting the modular compone
 """
 
 # Re-export everything from the modular LLM package for backward compatibility
-from .llm import (  # Types; Base classes; Manager; Providers; Factory functions
+from autopr.actions.llm import (
     AnthropicProvider,
     BaseLLMProvider,
     GroqProvider,
@@ -24,6 +24,7 @@ from .llm import (  # Types; Base classes; Manager; Providers; Factory functions
     complete_chat,
     get_llm_provider_manager,
 )
+
 
 # Maintain the same public API
 __all__ = [

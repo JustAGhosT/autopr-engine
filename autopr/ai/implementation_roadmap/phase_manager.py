@@ -7,8 +7,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from .task_definitions import ImplementationPhases, Phase, TaskRegistry
-from .task_executor import TaskExecution, TaskExecutor
+from implementation_roadmap.task_definitions import (
+    ImplementationPhases,
+    Phase,
+    TaskRegistry,
+)
+from implementation_roadmap.task_executor import TaskExecution, TaskExecutor
 
 
 @dataclass
@@ -244,7 +248,7 @@ class PhaseManager:
             "total_tasks": total_tasks,
             "success_rate": execution.success_rate,
             "duration": execution.duration,
-            "start_time": execution.start_time.isoformat() if execution.start_time else None,
+            "start_time": (execution.start_time.isoformat() if execution.start_time else None),
             "end_time": execution.end_time.isoformat() if execution.end_time else None,
         }
 

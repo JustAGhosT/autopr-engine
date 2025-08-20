@@ -233,7 +233,6 @@ def validate_imports(project_root: str) -> dict[str, list[tuple[str, int, str]]]
     python_files = find_python_files(project_root)
     broken_imports = {}
 
-
     for file_path in python_files:
         imports = extract_imports(file_path)
         file_broken_imports = []
@@ -268,7 +267,6 @@ def main():
     """Main function."""
     project_root = os.getcwd()
 
-
     # Validate imports
     broken_imports = validate_imports(project_root)
 
@@ -279,7 +277,6 @@ def main():
     report_file = os.path.join(project_root, "import_validation_report.txt")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(report)
-
 
     if broken_imports:
         return 1

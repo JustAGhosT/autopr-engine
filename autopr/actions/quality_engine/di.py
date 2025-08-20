@@ -4,15 +4,17 @@ Dependency Injection container for the Quality Engine.
 
 from dependency_injector import containers, providers
 
-from .config import load_config
-from .engine import QualityEngine
-from .handler_registry import HandlerRegistry
-from .handlers.lint_handler import LintHandler
-from .handlers.lint_issue import LintIssue
-from .tools import discover_tools
+from autopr.actions.quality_engine.config import load_config
+from autopr.actions.quality_engine.engine import QualityEngine
+from autopr.actions.quality_engine.handler_registry import HandlerRegistry
+from autopr.actions.quality_engine.handlers.lint_handler import LintHandler
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
+from autopr.actions.quality_engine.tools import discover_tools
 
 # Import registry at the module level to avoid circular imports
-from .tools.registry import registry as tool_registry_instance
+from autopr.actions.quality_engine.tools.registry import (
+    registry as tool_registry_instance,
+)
 
 
 class HandlerContainer(containers.DeclarativeContainer):

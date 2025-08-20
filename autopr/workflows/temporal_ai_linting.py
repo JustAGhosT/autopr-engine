@@ -27,6 +27,7 @@ from autopr.actions.ai_linting_fixer import (
     ai_linting_fixer,
 )
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -191,7 +192,7 @@ class AILintingWorkflow:
             "success": linting_result.get("success", False),
             "workflow_id": workflow_id,
             "linting_result": linting_result,
-            "final_status": "no_changes" if linting_result.get("success") else "linting_failed",
+            "final_status": ("no_changes" if linting_result.get("success") else "linting_failed"),
         }
 
 
@@ -212,12 +213,18 @@ async def validate_and_setup_activity(workflow_input: dict[str, Any]) -> dict[st
 
         # Validate API keys are available
         if not os.getenv("AZURE_OPENAI_API_KEY"):
-            return {"valid": False, "error": "AZURE_OPENAI_API_KEY environment variable not set"}
+            return {
+                "valid": False,
+                "error": "AZURE_OPENAI_API_KEY environment variable not set",
+            }
 
         # Validate target path exists
         target_path = workflow_input["target_path"]
         if not pathlib.Path(target_path).exists():
-            return {"valid": False, "error": f"Target path does not exist: {target_path}"}
+            return {
+                "valid": False,
+                "error": f"Target path does not exist: {target_path}",
+            }
 
         return {"valid": True, "message": "Validation successful"}
 
@@ -269,7 +276,12 @@ async def ai_linting_activity(activity_input: dict[str, Any]) -> dict[str, Any]:
 
     except Exception as e:
         logger.exception(f"AI linting activity failed: {e}")
-        return {"success": False, "error": str(e), "issues_fixed": 0, "modified_files": []}
+        return {
+            "success": False,
+            "error": str(e),
+            "issues_fixed": 0,
+            "modified_files": [],
+        }
 
 
 @activity.defn
@@ -381,8 +393,8 @@ async def notify_completion_activity(notification_input: dict[str, Any]) -> dict
         message = f"""🎉 AI Linting Workflow Completed!
 
 **Workflow ID:** {workflow_id}
-**Issues Fixed:** {linting_result.get('issues_fixed', 0)}
-**Files Modified:** {len(linting_result.get('modified_files', []))}
+**Issues Fixed:** {linting_result.get("issues_fixed", 0)}
+**Files Modified:** {len(linting_result.get("modified_files", []))}
 **Status:** Success ✅
 
 View details in Temporal UI: https://cloud.temporal.io/workflows/{workflow_id}
@@ -414,7 +426,7 @@ async def create_review_issue_activity(issue_input: dict[str, Any]) -> dict[str,
 AI linting workflow `{workflow_id}` made changes but tests failed.
 
 **Test Failure Details:**
-{test_failure.get('message', 'Unknown test failure')}
+{test_failure.get("message", "Unknown test failure")}
 
 **Next Steps:**
 1. Review the AI-generated changes
@@ -561,6 +573,8 @@ if __name__ == "__main__":
     else:
         result = asyncio.run(
             execute_ai_linting_workflow(
-                target_path=args.target, fix_types=args.fix_types, max_fixes=args.max_fixes
+                target_path=args.target,
+                fix_types=args.fix_types,
+                max_fixes=args.max_fixes,
             )
         )

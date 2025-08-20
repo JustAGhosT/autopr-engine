@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 """
 Shared HTML report helpers for consistent styling and status coloring.
 """

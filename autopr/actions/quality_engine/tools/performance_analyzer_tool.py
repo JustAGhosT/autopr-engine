@@ -3,7 +3,7 @@ import json
 import os
 from typing import Any
 
-from .tool_base import Tool
+from autopr.actions.quality_engine.tools.tool_base import Tool
 
 
 class PerformanceAnalyzerTool(Tool):
@@ -141,6 +141,7 @@ class PerformanceAnalyzerTool(Tool):
             try:
                 # Check if it's actually a file
                 import os
+
                 if os.path.isfile(f):
                     actual_files.append(f)
             except (OSError, PermissionError):

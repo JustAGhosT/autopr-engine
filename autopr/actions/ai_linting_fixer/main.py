@@ -8,33 +8,49 @@ to provide AI-powered linting fixes. Much cleaner and focused!
 from contextlib import suppress
 from datetime import UTC, datetime
 import logging
+import os
 from pathlib import Path
 import random
 from typing import Any
 
-from autopr.actions.llm.manager import LLMProviderManager
-from autopr.config.settings import AutoPRConfig  # type: ignore[attr-defined]
-
-from .agents import AgentType, agent_manager
-from .database import AIInteractionDB, IssueQueueManager
-from .detection import issue_detector
-from .display import DisplayConfig, OutputMode, get_display
-from .display import display_provider_status as display_show_provider_status
-from .display import print_feature_status as display_print_feature_status
-from .file_ops import dry_run_ops, safe_file_ops
-from .metrics import MetricsCollector
-from .models import (
+from autopr.actions.ai_linting_fixer.agents import AgentType, agent_manager
+from autopr.actions.ai_linting_fixer.database import AIInteractionDB, IssueQueueManager
+from autopr.actions.ai_linting_fixer.detection import issue_detector
+from autopr.actions.ai_linting_fixer.display import (
+    DisplayConfig,
+    OutputMode,
+    get_display,
+)
+from autopr.actions.ai_linting_fixer.display import (
+    display_provider_status as display_show_provider_status,
+)
+from autopr.actions.ai_linting_fixer.display import (
+    print_feature_status as display_print_feature_status,
+)
+from autopr.actions.ai_linting_fixer.file_ops import dry_run_ops, safe_file_ops
+from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
+from autopr.actions.ai_linting_fixer.models import (
     AILintingFixerInputs,
     AILintingFixerOutputs,
     LintingFixResult,
     LintingIssue,
     create_empty_outputs,
 )
-from .workflow import WorkflowContext, WorkflowIntegrationMixin
+from autopr.actions.ai_linting_fixer.workflow import (
+    WorkflowContext,
+    WorkflowIntegrationMixin,
+)
+from autopr.actions.llm.manager import LLMProviderManager
+from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
+
 
 # Optional Redis support
 try:
-    from .redis_queue import REDIS_AVAILABLE, RedisConfig, RedisQueueManager
+    from autopr.actions.ai_linting_fixer.redis_queue import (
+        REDIS_AVAILABLE,
+        RedisConfig,
+        RedisQueueManager,
+    )
 except ImportError:
     REDIS_AVAILABLE = False
     # Do not assign RedisQueueManager = None here; just rely on REDIS_AVAILABLE
@@ -424,7 +440,8 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 self.metrics.end_operation(f"fix_issue_{i}")
 
         self.emit_event(
-            "completed", {"issues_fixed": len(fixed_issues), "files_modified": len(modified_files)}
+            "completed",
+            {"issues_fixed": len(fixed_issues), "files_modified": len(modified_files)},
         )
 
         return LintingFixResult(
@@ -650,9 +667,9 @@ def ai_linting_fixer(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
                 "fallback_order": ["azure_openai", "openai", "anthropic"],
                 "providers": {
                     "azure_openai": {
-                        "azure_endpoint": "https://dev-saf-openai-phoenixvc-ai.openai.azure.com/",
+                        "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
                         "api_version": "2024-02-01",
-                        "deployment_name": inputs.model or "gpt-4.1",
+                        "deployment_name": inputs.model or "gpt-35-turbo",
                     }
                 },
             }
@@ -787,7 +804,9 @@ def print_feature_status() -> None:
 
     # Check orchestration availability
     try:
-        from .orchestration import detect_available_orchestrators
+        from autopr.actions.ai_linting_fixer.orchestration import (
+            detect_available_orchestrators,
+        )
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())
@@ -806,7 +825,7 @@ def display_provider_status(*, quiet: bool = False) -> None:
     try:
         # Create a basic config for LLMProviderManager
 
-        config = AutoPRConfig()  # type: ignore[attr-defined]
+        config = AutoPRSettings()  # type: ignore[attr-defined]
         llm_manager = LLMProviderManager(config)
         available_providers = llm_manager.get_available_providers()
         display_show_provider_status(available_providers, quiet=quiet)

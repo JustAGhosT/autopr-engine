@@ -11,6 +11,7 @@ import logging
 import sqlite3
 from typing import Any
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +67,10 @@ class IssueQueueManager:
         return queued_count
 
     def get_next_issues(
-        self, limit: int = 10, worker_id: str | None = None, filter_types: list[str] | None = None
+        self,
+        limit: int = 10,
+        worker_id: str | None = None,
+        filter_types: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """Get the next batch of issues to process, ordered by priority."""
         with sqlite3.connect(self.db.db_path) as conn:
@@ -95,7 +99,7 @@ class IssueQueueManager:
             # Mark issues as in_progress and assign worker
             if issues and worker_id:
                 issue_ids = [
-                    int(issue["id"]) for issue in issues if isinstance(issue.get("id"), (int, str))
+                    int(issue["id"]) for issue in issues if isinstance(issue.get("id"), int | str)
                 ]
                 placeholders = self._safe_in_placeholders(len(issue_ids))
                 update_query = (

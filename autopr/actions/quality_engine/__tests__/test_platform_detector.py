@@ -105,7 +105,14 @@ class TestPlatformDetector:
         with patch("platform.system", return_value="Windows"):
             detector = PlatformDetector()
 
-            all_tools = ["ruff", "mypy", "bandit", "codeql", "semgrep", "windows_security"]
+            all_tools = [
+                "ruff",
+                "mypy",
+                "bandit",
+                "codeql",
+                "semgrep",
+                "windows_security",
+            ]
             available_tools = detector.get_available_tools(all_tools)
 
             # Windows-compatible tools should be included
@@ -125,7 +132,14 @@ class TestPlatformDetector:
         with patch("platform.system", return_value="Linux"):
             detector = PlatformDetector()
 
-            all_tools = ["ruff", "mypy", "bandit", "codeql", "semgrep", "windows_security"]
+            all_tools = [
+                "ruff",
+                "mypy",
+                "bandit",
+                "codeql",
+                "semgrep",
+                "windows_security",
+            ]
             available_tools = detector.get_available_tools(all_tools)
 
             # All tools should be available on Linux

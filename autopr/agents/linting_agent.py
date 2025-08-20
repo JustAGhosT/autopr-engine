@@ -16,6 +16,7 @@ from autopr.actions.ai_linting_fixer import (
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.agents.base import BaseAgent
 
+
 # Set up logger
 logger = logging.getLogger(__name__)
 
@@ -116,9 +117,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         # Initialize the AI linting fixer (constructor manages its own LLM manager)
         if _create_ai_linting_fixer is None:
             msg = "AILintingFixer factory is not available. Ensure optional AI components are installed."
-            raise ImportError(
-                msg
-            )
+            raise ImportError(msg)
         self.linting_fixer = _create_ai_linting_fixer()
 
         # Register fixer agents

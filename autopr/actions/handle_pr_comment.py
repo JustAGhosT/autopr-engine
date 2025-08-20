@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .base import Action
+from autopr.actions.base import Action
 
 
 class HandlePRCommentInputs(BaseModel):
@@ -175,7 +175,10 @@ def remove_unused_imports(file_path: str) -> dict[str, Any]:
     """Remove unused imports (basic implementation)."""
     # This would require more sophisticated AST parsing
     # For now, return not implemented
-    return {"success": False, "description": "Unused import removal not yet implemented"}
+    return {
+        "success": False,
+        "description": "Unused import removal not yet implemented",
+    }
 
 
 def create_github_issue(inputs: HandlePRCommentInputs) -> int:
@@ -197,8 +200,8 @@ def create_github_issue(inputs: HandlePRCommentInputs) -> int:
 **Context:**
 - PR: #{inputs.pr_number}
 - Branch: {inputs.branch_name}
-- File: {inputs.file_path or 'N/A'}
-- Line: {inputs.line_number or 'N/A'}
+- File: {inputs.file_path or "N/A"}
+- Line: {inputs.line_number or "N/A"}
 
 **Generated automatically by AutoPR**
 """

@@ -13,6 +13,7 @@ import warnings
 import pytest  # type: ignore
 import pytest_asyncio  # type: ignore
 
+
 # Prefer stdlib tomllib (Py3.11+), then fallback to tomli; avoid requiring 'toml' package
 try:  # Python 3.11+
     import tomllib as toml  # type: ignore[import-not-found]
@@ -22,6 +23,7 @@ except ModuleNotFoundError:  # Fallback for older interpreters
 import contextlib
 
 from aiohttp import ClientSession
+
 
 # Import volume utilities (placeholder for future use)
 
@@ -169,7 +171,7 @@ def configure_warnings_per_test(request):
 
 
 @pytest_asyncio.fixture
-async def http_session() -> AsyncGenerator[ClientSession, None]:
+async def http_session() -> AsyncGenerator[ClientSession]:
     """
     Create and provide an aiohttp ClientSession for testing.
 

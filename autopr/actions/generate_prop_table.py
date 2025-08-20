@@ -41,7 +41,8 @@ class GeneratePropTable(Action[Inputs, Outputs]):
             docgen_output = json.loads(stdout)
             if not docgen_output:
                 return Outputs(
-                    markdown_table="No props found or component not exported correctly.", error=None
+                    markdown_table="No props found or component not exported correctly.",
+                    error=None,
                 )
 
             # Assuming single component per file for simplicity

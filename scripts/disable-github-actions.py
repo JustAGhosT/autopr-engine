@@ -8,7 +8,6 @@ from pathlib import Path
 
 
 def main():
-
     # Read current settings
     vscode_dir = Path(".vscode")
     settings_file = vscode_dir / "settings.json"
@@ -40,7 +39,11 @@ def main():
             "problems.showCurrentInStatus": False,
             # Disable ALL hover and completion
             "editor.hover.enabled": False,
-            "editor.quickSuggestions": {"other": False, "comments": False, "strings": False},
+            "editor.quickSuggestions": {
+                "other": False,
+                "comments": False,
+                "strings": False,
+            },
             "editor.suggestOnTriggerCharacters": False,
             "editor.acceptSuggestionOnEnter": "off",
         }
@@ -50,8 +53,6 @@ def main():
     vscode_dir.mkdir(exist_ok=True)
     with open(settings_file, "w") as f:
         json.dump(current_settings, f, indent=2)
-
-
 
 
 if __name__ == "__main__":

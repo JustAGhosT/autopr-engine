@@ -10,7 +10,7 @@ import secrets
 import string
 from typing import Any
 
-from .base_generator import BaseGenerator
+from autopr.actions.prototype_enhancement.generators.base_generator import BaseGenerator
 
 
 class SecurityGenerator(BaseGenerator):

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig
 
+
 if TYPE_CHECKING:
     from autopr.actions.prototype_enhancement.generators.template_utils import (
         TemplateManager,
@@ -25,7 +26,9 @@ class BaseGenerator(ABC):
     """
 
     def __init__(
-        self, template_manager: "TemplateManager", platform_config: PlatformConfig | None = None
+        self,
+        template_manager: "TemplateManager",
+        platform_config: PlatformConfig | None = None,
     ):
         """Initialize the base generator.
 

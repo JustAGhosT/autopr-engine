@@ -85,14 +85,23 @@ test_cases = [
     (500, {"enable_ai_agents": True}, True, True),
     (500, {"enable_ai_agents": "true"}, True, True),
     (500, {"enable_ai_agents": "false"}, False, True),
-    (100, {"enable_ai_agents": True}, True, True),  # Below threshold but explicitly enabled
+    (
+        100,
+        {"enable_ai_agents": True},
+        True,
+        True,
+    ),  # Below threshold but explicitly enabled
     (100, {}, False, True),  # Below threshold, should be disabled
-    (500, {"enable_ai_agents": "invalid"}, False, True),  # Invalid string defaults to False
+    (
+        500,
+        {"enable_ai_agents": "invalid"},
+        False,
+        True,
+    ),  # Invalid string defaults to False
 ]
 
 # Run tests
 for _i, (volume, config, expected_value, should_pass) in enumerate(test_cases, 1):
-
     try:
         vc = VolumeConfig(volume=volume, config=config)
         actual_value = vc.config.get("enable_ai_agents", False)

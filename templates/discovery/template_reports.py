@@ -14,7 +14,7 @@ import operator
 from pathlib import Path
 from typing import Any
 
-from .template_models import TemplateInfo
+from discovery.template_models import TemplateInfo
 
 
 class TemplateReportGenerator:

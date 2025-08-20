@@ -10,6 +10,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+
 try:
     from autogen import ConversableAgent, GroupChat, GroupChatManager
 
@@ -296,7 +297,7 @@ Review criteria:
         """Create the initial task message for agents"""
 
         message = f"""
-# Development Task: {inputs.task_type.replace('_', ' ').title()}
+# Development Task: {inputs.task_type.replace("_", " ").title()}
 
 ## Task Description
 {inputs.task_description}
@@ -305,10 +306,10 @@ Review criteria:
 {inputs.repository}
 
 ## File Paths (if specific files need modification)
-{', '.join(inputs.file_paths) if inputs.file_paths else 'No specific files specified'}
+{", ".join(inputs.file_paths) if inputs.file_paths else "No specific files specified"}
 
 ## Requirements
-{json.dumps(inputs.requirements, indent=2) if inputs.requirements else 'No specific requirements'}
+{json.dumps(inputs.requirements, indent=2) if inputs.requirements else "No specific requirements"}
 
 ## Complexity Level
 {inputs.complexity_level}
