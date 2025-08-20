@@ -76,18 +76,13 @@ def enrich_validation_issues(
     issues: list[ValidationIssue], template_path: str = ""
 ) -> list[EnrichedValidationIssue]:
     """Enrich a list of ValidationIssue objects with additional attributes."""
-    return [
-        EnrichedValidationIssue.from_validation_issue(issue, template_path)
-        for issue in issues
-    ]
+    return [EnrichedValidationIssue.from_validation_issue(issue, template_path) for issue in issues]
 
 
 def enrich_quality_metrics_issues(metrics: Any) -> Any:
     """Enrich ValidationIssue objects in a QualityMetrics object."""
     if hasattr(metrics, "issues") and hasattr(metrics, "template_path"):
-        enriched_issues = enrich_validation_issues(
-            metrics.issues, metrics.template_path
-        )
+        enriched_issues = enrich_validation_issues(metrics.issues, metrics.template_path)
         # Create a new object with enriched issues
         return type(metrics)(
             overall_score=metrics.overall_score,

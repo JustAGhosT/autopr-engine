@@ -48,11 +48,7 @@ class HandlerRegistryContainer(containers.DeclarativeContainer):
 
     # Create a handler mapping
     handler_mapping = providers.Dict(
-        {
-            LintIssue: providers.Callable(
-                lambda handlers: handlers.lint_handler(), handlers=handlers
-            )
-        }
+        {LintIssue: providers.Callable(lambda handlers: handlers.lint_handler(), handlers=handlers)}
     )
 
     # Create the handler registry with the mapping

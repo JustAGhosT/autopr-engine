@@ -59,6 +59,22 @@ repos:
         stages: ["manual"] # Manual only - won't block commits
         verbose: true
         pass_filenames: true
+      - id: ai-fixer
+        name: AutoPR AI Linting Fixer
+        entry: python -m autopr.actions.ai_linting_fixer.ai_linting_fixer
+        language: system
+        types: ["python"]
+        args:
+          [
+            "--target",
+            "--max-fixes=10",
+            "--provider=azure_openai",
+            "--model=gpt-35-turbo",
+            "--verbose",
+          ]
+        stages: ["manual"] # Manual only - won't block commits
+        verbose: true
+        pass_filenames: true
 
   # Individual tool hooks for specific checks - All manual (non-blocking)
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -68,7 +84,6 @@ repos:
         args: ["--fix", "--exit-zero"]
         stages: ["manual"] # Manual only - won't block commits
       - id: ruff-format
-        args: ["--exit-zero"]
         stages: ["manual"] # Manual only - won't block commits
 
   - repo: https://github.com/pre-commit/mirrors-mypy

@@ -69,9 +69,7 @@ class PerformanceTracker:
             metrics_path.parent.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             if self.display:
-                self.display.error.show_warning(
-                    f"⚠️ Failed to create metrics directory: {e}"
-                )
+                self.display.error.show_warning(f"⚠️ Failed to create metrics directory: {e}")
             else:
                 logger.warning(f"Failed to create metrics directory: {e}")
 
@@ -96,11 +94,11 @@ class PerformanceTracker:
 
         if self.display:
             self.display.error.show_info(
-f'📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s'
+                f"📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s"
             )
         else:
             logger.info(
-f'📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s'
+                f"📊 Performance tracking session ended. Duration: {self.metrics['total_duration']:.2f}s"
             )
 
     def log_metric(self, metric_name: str, value: Any) -> None:
@@ -141,9 +139,7 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
             f"Logged file processing: {file_path}, success: {success}, time: {processing_time:.2f}s"
         )
 
-    def log_api_call(
-        self, response_time: float, tokens_used: int, success: bool
-    ) -> None:
+    def log_api_call(self, response_time: float, tokens_used: int, success: bool) -> None:
         """Log API call metrics."""
         self.metrics["api_calls_made"] += 1
         self.metrics["api_response_times"].append(response_time)
@@ -152,9 +148,7 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
         if not success:
             self.metrics["errors_encountered"] += 1
 
-        logger.debug(
-            f"Logged API call: response_time={response_time:.2f}s, tokens={tokens_used}"
-        )
+        logger.debug(f"Logged API call: response_time={response_time:.2f}s, tokens={tokens_used}")
 
     def log_syntax_validation(self, passed: bool) -> None:
         """Log syntax validation results."""
@@ -181,13 +175,9 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
         self.metrics["cpu_usage_samples"].append(cpu_percent)
 
         # Update peak values
-        self.metrics["peak_memory_usage"] = max(
-            self.metrics["peak_memory_usage"], memory_mb
-        )
+        self.metrics["peak_memory_usage"] = max(self.metrics["peak_memory_usage"], memory_mb)
 
-        self.metrics["peak_cpu_usage"] = max(
-            self.metrics["peak_cpu_usage"], cpu_percent
-        )
+        self.metrics["peak_cpu_usage"] = max(self.metrics["peak_cpu_usage"], cpu_percent)
 
     def get_session_metrics(self) -> dict[str, Any]:
         """Get current session metrics."""
@@ -203,15 +193,13 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
         try:
             # Calculate averages
             avg_processing_time = (
-                sum(self.metrics["processing_times"])
-                / len(self.metrics["processing_times"])
+                sum(self.metrics["processing_times"]) / len(self.metrics["processing_times"])
                 if self.metrics["processing_times"]
                 else 0.0
             )
 
             avg_api_response_time = (
-                sum(self.metrics["api_response_times"])
-                / len(self.metrics["api_response_times"])
+                sum(self.metrics["api_response_times"]) / len(self.metrics["api_response_times"])
                 if self.metrics["api_response_times"]
                 else 0.0
             )
@@ -223,8 +211,7 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
                 avg_confidence = sum(confidence_scores) / len(confidence_scores)
 
             success_rate = (
-                (self.metrics["files_successful"] / self.metrics["files_processed"])
-                * 100
+                (self.metrics["files_successful"] / self.metrics["files_processed"]) * 100
                 if self.metrics["files_processed"] > 0
                 else 0.0
             )
@@ -274,9 +261,7 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
                 json.dump(self.metrics, f, indent=2, default=str)
 
             if self.display:
-                self.display.error.show_info(
-                    f"📊 Performance metrics exported to: {export_path}"
-                )
+                self.display.error.show_info(f"📊 Performance metrics exported to: {export_path}")
             else:
                 logger.info(f"Performance metrics exported to: {export_path}")
             return True
@@ -355,9 +340,9 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
 
             # Calculate average CPU usage
             if self.metrics["cpu_usage_samples"]:
-                self.metrics["average_cpu_usage"] = sum(
+                self.metrics["average_cpu_usage"] = sum(self.metrics["cpu_usage_samples"]) / len(
                     self.metrics["cpu_usage_samples"]
-                ) / len(self.metrics["cpu_usage_samples"])
+                )
 
         except Exception as e:
             logger.debug(f"Error calculating averages: {e}")
@@ -400,33 +385,29 @@ f'📊 Performance tracking session ended. Duration: {self.metrics['total_durati
 Performance Report
 ==================
 
-Session Duration: {summary['session_duration']:.2f} seconds
-Files Processed: {summary['files_processed']}
-Success Rate: {summary['success_rate']:.1f}%
-Fix Rate: {summary['fix_rate']:.1f}%
+Session Duration: {summary["session_duration"]:.2f} seconds
+Files Processed: {summary["files_processed"]}
+Success Rate: {summary["success_rate"]:.1f}%
+Fix Rate: {summary["fix_rate"]:.1f}%
 
 Performance Metrics:
-- Average Processing Time: {summary['average_processing_time']:.2f}s per file
-- Average API Response Time: {summary['average_api_response_time']:.2f}s
-- Total API Calls: {summary['total_api_calls']}
-- Total Tokens Used: {summary['total_tokens_used']}
+- Average Processing Time: {summary["average_processing_time"]:.2f}s per file
+- Average API Response Time: {summary["average_api_response_time"]:.2f}s
+- Total API Calls: {summary["total_api_calls"]}
+- Total Tokens Used: {summary["total_tokens_used"]}
 
 Quality Metrics:
 """
         # Quality metrics
         if summary.get("average_confidence", 0) > 0:
             report += f"- Average Confidence: {summary['average_confidence']:.3f}\n"
-            report += (
-                f"- Confidence Scores Count: {summary['confidence_scores_count']}\n"
-            )
+            report += f"- Confidence Scores Count: {summary['confidence_scores_count']}\n"
 
             # Add confidence distribution if available
             confidence_scores = self.metrics["confidence_scores"]
             if confidence_scores:
                 high_confidence = len([c for c in confidence_scores if c > 0.8])
-                medium_confidence = len(
-                    [c for c in confidence_scores if 0.5 <= c <= 0.8]
-                )
+                medium_confidence = len([c for c in confidence_scores if 0.5 <= c <= 0.8])
                 low_confidence = len([c for c in confidence_scores if c < 0.5])
                 total = len(confidence_scores)
 

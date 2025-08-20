@@ -82,9 +82,7 @@ def _get_volume() -> int:
 
 def _get_unstaged_changes() -> set[str]:
     try:
-        rc, out, _ = _run_with_timeout(
-            ["git", "diff", "--name-only"], timeout_seconds=5
-        )
+        rc, out, _ = _run_with_timeout(["git", "diff", "--name-only"], timeout_seconds=5)
         if rc == 0 and out:
             return {line.strip() for line in out.splitlines() if line.strip()}
     except Exception:
@@ -201,10 +199,12 @@ def _persist_ruff_findings(py_files: list[str]) -> int:
 
         from autopr.actions.ai_linting_fixer.database import (
             AIInteractionDB,
-        )  # type: ignore
+        )
+
+        # type: ignore
         from autopr.actions.ai_linting_fixer.queue_manager import (
             IssueQueueManager,
-        )  # type: ignore
+        )
 
         findings = json.loads(out_json)
         issues: list[dict[str, object]] = []
@@ -272,10 +272,12 @@ def _persist_findings(findings: list[dict]) -> int:
     try:
         from autopr.actions.ai_linting_fixer.database import (
             AIInteractionDB,
-        )  # type: ignore
+        )
+
+        # type: ignore
         from autopr.actions.ai_linting_fixer.queue_manager import (
             IssueQueueManager,
-        )  # type: ignore
+        )
 
         issues: list[dict[str, object]] = []
         for f in findings:
@@ -316,6 +318,49 @@ def _run_quality_engine(files: list[str]) -> int:
     ]
     if files:
         cmd.extend(["--files", *files])
+    return _run(cmd)
+
+
+def _run_ai_fixer(files: list[str], volume: int) -> int:
+    """Run AI fixer based on volume level."""
+    if not files:
+        return 0
+
+    # Determine max fixes based on volume
+    if volume >= 800:
+        max_fixes = 50
+    elif volume >= 600:
+        max_fixes = 30
+    elif volume >= 400:
+        max_fixes = 20
+    else:  # volume >= 300
+        max_fixes = 10
+
+    # Determine issue types based on volume
+    if volume >= 700:
+        fix_types = ["E501", "F401", "F841", "UP006", "TID252", "E722", "B001"]
+    elif volume >= 500:
+        fix_types = ["E501", "F401", "F841", "UP006", "TID252"]
+    else:  # volume >= 300
+        fix_types = ["E501", "F401", "F841"]
+
+    cmd = (
+        [
+            sys.executable,
+            "-m",
+            "autopr.actions.ai_linting_fixer.ai_linting_fixer",
+            "--target",
+            "--max-fixes",
+            str(max_fixes),
+            "--provider=azure_openai",
+            "--model=gpt-35-turbo",
+            "--fix-types",
+        ]
+        + fix_types
+        + files
+    )
+
+    print(f"🤖 Running AI Fixer (volume {volume}): max_fixes={max_fixes}, types={fix_types}")
     return _run(cmd)
 
 
@@ -409,9 +454,7 @@ def main(argv: list[str]) -> int:
                     file_counts[filename] += 1
             _persist_findings(findings)
             if os.getenv("AUTOPR_BG_FIX", "0") in {"1", "true", "True"}:
-                _run_with_timeout(
-                    [sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120
-                )
+                _run_with_timeout([sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120)
     elif 300 < volume < 600:
         rc |= _run_security_and_typing(py_files)
         if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
@@ -428,12 +471,14 @@ def main(argv: list[str]) -> int:
                     file_counts[filename] += 1
             _persist_findings(findings)
             if os.getenv("AUTOPR_BG_FIX", "0") in {"1", "true", "True"}:
-                _run_with_timeout(
-                    [sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120
-                )
+                _run_with_timeout([sys.executable, "scripts/bg-fix-queue.py"], timeout_seconds=120)
 
     if volume >= 600:
         rc |= _run_quality_engine(files)
+
+    # AI Fixer integration - runs at volume >= 300
+    if volume >= 300:
+        rc |= _run_ai_fixer(py_files, volume)
 
     if volume < 300 and os.getenv("AUTOPR_PRECOMMIT_AI_SUGGEST", "0") in {
         "1",
@@ -446,18 +491,11 @@ def main(argv: list[str]) -> int:
         # Concise low-volume summary with top rules/files and next-step hint
         if os.getenv("AUTOPR_PRECOMMIT_QUEUE_ISSUES", "1") in {"1", "true", "True"}:
             if rule_counts:
-                ", ".join(
-                    [f"{code}:{count}" for code, count in rule_counts.most_common(5)]
-                )
+                ", ".join([f"{code}:{count}" for code, count in rule_counts.most_common(5)])
             if file_counts:
                 from pathlib import Path as _P
 
-                ", ".join(
-                    [
-                        f"{_P(fp).as_posix()}:{cnt}"
-                        for fp, cnt in file_counts.most_common(5)
-                    ]
-                )
+                ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
         _print_low_volume_note()
         return 0
 
@@ -479,9 +517,7 @@ def main(argv: list[str]) -> int:
         if file_counts:
             from pathlib import Path as _P
 
-            ", ".join(
-                [f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)]
-            )
+            ", ".join([f"{_P(fp).as_posix()}:{cnt}" for fp, cnt in file_counts.most_common(5)])
         next_hint = os.getenv("AUTOPR_BG_FIX", "0")
         if next_hint in {"1", "true", "True"}:
             pass

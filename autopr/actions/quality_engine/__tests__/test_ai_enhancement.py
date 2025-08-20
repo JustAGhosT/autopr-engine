@@ -163,9 +163,7 @@ class TestAIAnalyzer:
         """Test AI analysis when provider fails."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
             mock_provider = MagicMock()
-            mock_provider.analyze = AsyncMock(
-                side_effect=Exception("AI provider error")
-            )
+            mock_provider.analyze = AsyncMock(side_effect=Exception("AI provider error"))
             mock_get_provider.return_value = mock_provider
 
             result = await self.analyzer.analyze_code_quality(self.test_files)
@@ -402,9 +400,7 @@ class TestAIEnhancementIntegration:
                 }
 
                 # Execute AI-enhanced mode
-                result = await engine.execute(
-                    files=self.test_files, mode=QualityMode.AI_ENHANCED
-                )
+                result = await engine.execute(files=self.test_files, mode=QualityMode.AI_ENHANCED)
 
                 assert result.success is True
                 assert result.total_issues == 2

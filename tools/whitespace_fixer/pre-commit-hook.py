@@ -37,9 +37,7 @@ def main():
 
     for file_path in files:
         # Resolve the full path relative to repo root
-        full_path = (
-            Path(file_path) if Path(file_path).is_absolute() else repo_root / file_path
-        )
+        full_path = Path(file_path) if Path(file_path).is_absolute() else repo_root / file_path
 
         if not full_path.exists():
             continue

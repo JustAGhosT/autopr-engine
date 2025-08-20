@@ -34,9 +34,7 @@ class RunChangedTests(Action[Inputs, Outputs]):
             )
             changed_files = changed_files_process.stdout.strip().split("\\n")
         except subprocess.CalledProcessError as e:
-            return Outputs(
-                test_results=f"Failed to get changed files: {e.stderr}", passed=False
-            )
+            return Outputs(test_results=f"Failed to get changed files: {e.stderr}", passed=False)
 
         if not any(f.endswith((".ts", ".tsx", ".js", ".jsx")) for f in changed_files):
             return Outputs(

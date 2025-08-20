@@ -108,9 +108,7 @@ class TestVolumeMapping:
     def test_volume_level_enum(self):
         """Test VolumeLevel enum values."""
         assert VolumeLevel.SILENT.value == 0
-        assert (
-            VolumeLevel.QUIET.value == 100
-        )  # Matches actual implementation (1-199 range)
+        assert VolumeLevel.QUIET.value == 100  # Matches actual implementation (1-199 range)
         assert VolumeLevel.MODERATE.value == 300  # 200-399 range
         assert VolumeLevel.BALANCED.value == 500  # 400-599 range
         assert VolumeLevel.THOROUGH.value == 700  # 600-799 range

@@ -130,9 +130,7 @@ class GitHubClient:
         Returns:
             Time to sleep in seconds
         """
-        jitter = random.uniform(
-            0, 0.1
-        )  # Add up to 10% jitter  # - Used for backoff, not security
+        jitter = random.uniform(0, 0.1)  # Add up to 10% jitter  # - Used for backoff, not security
         backoff_time = min(
             (2**attempt) * self.config.backoff_factor * (1 + jitter), 60
         )  # Max 60 seconds
@@ -154,14 +152,10 @@ class GitHubClient:
         now = time.time()
         if self.rate_limit_remaining < 100 and now < self.rate_limit_reset:
             sleep_time = max(1, self.rate_limit_reset - now + 1)  # Add 1s buffer
-            self.logger.warning(
-                "Approaching rate limit. Waiting %.1fs until reset", sleep_time
-            )
+            self.logger.warning("Approaching rate limit. Waiting %.1fs until reset", sleep_time)
             await asyncio.sleep(sleep_time)
 
-    async def _request(
-        self, method: str, endpoint: str, **kwargs: Any
-    ) -> dict[str, Any]:
+    async def _request(self, method: str, endpoint: str, **kwargs: Any) -> dict[str, Any]:
         """Make an HTTP request with retry logic and rate limit handling.
 
         Args:
@@ -195,17 +189,12 @@ class GitHubClient:
                         await self._handle_rate_limit(response)
 
                         if (
-                            response.status == 403
-                            and "X-RateLimit-Remaining" in response.headers
+                            response.status == 403 and "X-RateLimit-Remaining" in response.headers
                         ) and int(response.headers["X-RateLimit-Remaining"]) == 0:
                             reset_time = int(
-                                response.headers.get(
-                                    "X-RateLimit-Reset", time.time() + 60
-                                )
+                                response.headers.get("X-RateLimit-Reset", time.time() + 60)
                             )
-                            sleep_time = max(
-                                1, reset_time - time.time() + 1
-                            )  # Add 1s buffer
+                            sleep_time = max(1, reset_time - time.time() + 1)  # Add 1s buffer
                             self.logger.warning(
                                 "Rate limited. Waiting %.1fs until reset",
                                 sleep_time,

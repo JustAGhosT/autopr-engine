@@ -57,9 +57,7 @@ class FileGenerator:
         if not self.use_hybrid_templates:
             return None
 
-        return self.template_registry.generate_template(
-            template_key, variables, variants
-        )
+        return self.template_registry.generate_template(template_key, variables, variants)
 
     def list_available_templates(
         self, platform: str | None = None, category: str | None = None
@@ -97,9 +95,7 @@ class FileGenerator:
                 if "node_version" not in template_vars:
                     template_vars["node_version"] = "18"  # Default
 
-                hybrid_content = self.generate_from_template(
-                    template_key, template_vars, variants
-                )
+                hybrid_content = self.generate_from_template(template_key, template_vars, variants)
                 if hybrid_content:
                     return hybrid_content
 
@@ -146,13 +142,9 @@ class FileGenerator:
                 # Merge platform-specific variables with user variables
                 template_vars = variables or {}
                 if "target" not in template_vars:
-                    template_vars["target"] = (
-                        "ES2020" if config.name == "bolt" else "es5"
-                    )
+                    template_vars["target"] = "ES2020" if config.name == "bolt" else "es5"
 
-                hybrid_content = self.generate_from_template(
-                    template_key, template_vars, variants
-                )
+                hybrid_content = self.generate_from_template(template_key, template_vars, variants)
                 if hybrid_content:
                     return hybrid_content
 
@@ -890,9 +882,7 @@ stages:
                 return files
 
         # Fallback to original hardcoded approach
-        files[".github/workflows/deploy.yml"] = self._generate_github_actions_deploy(
-            config
-        )
+        files[".github/workflows/deploy.yml"] = self._generate_github_actions_deploy(config)
 
         # Platform-specific deployment configs
         for target in config.deployment_targets:

@@ -138,9 +138,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
                 pass
 
             return CodeQualityOutputs(
-                issues=[
-                    {"message": f"Error analyzing code: {e!s}", "severity": "error"}
-                ],
+                issues=[{"message": f"Error analyzing code: {e!s}", "severity": "error"}],
                 score=0.0,
                 metrics={"error": str(e)},
                 suggestions=["Failed to analyze code quality due to an error."],
@@ -158,9 +156,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         """
         # Get the quality mode name for the prompt
         quality_mode = self.volume_config.quality_mode
-        quality_mode_name = (
-            quality_mode.name if quality_mode is not None else "STANDARD"
-        )
+        quality_mode_name = quality_mode.name if quality_mode is not None else "STANDARD"
 
         return f"""
 Analyze the following code for quality issues and provide improvement suggestions.
@@ -174,7 +170,7 @@ Code:
 {inputs.code}
 ```
 
-Context: {inputs.context or 'No additional context provided.'}
+Context: {inputs.context or "No additional context provided."}
 
 Please provide a detailed analysis including:
 1. A list of code quality issues with severity levels

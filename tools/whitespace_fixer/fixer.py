@@ -270,9 +270,7 @@ class WhitespaceFixer:
 
         return fixed_content, issues_fixed
 
-    def fix_file(
-        self, file_path: Path, dry_run: bool = False
-    ) -> tuple[bool, list[str]]:
+    def fix_file(self, file_path: Path, dry_run: bool = False) -> tuple[bool, list[str]]:
         """
         Fix whitespace issues in a single file.
 
@@ -359,9 +357,7 @@ class WhitespaceFixer:
                 results["files_with_issues"][str(relative_path)] = issues
                 results["total_issues"] += len(issues)
             elif issues:  # Errors
-                results["errors"].extend(
-                    [f"{relative_path}: {issue}" for issue in issues]
-                )
+                results["errors"].extend([f"{relative_path}: {issue}" for issue in issues])
 
         return results
 
@@ -403,9 +399,7 @@ Examples:
     parser.add_argument(
         "--tab-size", type=int, default=4, help="Tab size for conversion (default: 4)"
     )
-    parser.add_argument(
-        "--convert-tabs", action="store_true", help="Convert tabs to spaces"
-    )
+    parser.add_argument("--convert-tabs", action="store_true", help="Convert tabs to spaces")
     parser.add_argument(
         "--extensions",
         nargs="*",
@@ -424,9 +418,7 @@ Examples:
     # Set up extensions
     extensions = None
     if args.extensions is not None:
-        extensions = {
-            ext if ext.startswith(".") else f".{ext}" for ext in args.extensions
-        }
+        extensions = {ext if ext.startswith(".") else f".{ext}" for ext in args.extensions}
 
     # Create fixer
     fixer = WhitespaceFixer(

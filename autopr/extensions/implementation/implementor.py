@@ -52,9 +52,7 @@ class Phase1ExtensionImplementor:
                 metadata=task_info,
             )
 
-    async def run_implementation(
-        self, phase: str = "immediate", dry_run: bool = False
-    ) -> None:
+    async def run_implementation(self, phase: str = "immediate", dry_run: bool = False) -> None:
         """
         Run implementation for a specific phase.
         Maintains backward compatibility with original method signature.
@@ -134,9 +132,7 @@ class Phase1ExtensionImplementor:
             )
 
             # Log completion
-            completed_phases = sum(
-                1 for e in phase_executions.values() if e.is_completed
-            )
+            completed_phases = sum(1 for e in phase_executions.values() if e.is_completed)
             failed_phases = sum(1 for e in phase_executions.values() if e.is_failed)
 
             self._log_implementation_event(
@@ -197,12 +193,8 @@ class Phase1ExtensionImplementor:
             return {
                 "task_id": task_id,
                 "status": execution.status,
-                "start_time": (
-                    execution.start_time.isoformat() if execution.start_time else None
-                ),
-                "end_time": (
-                    execution.end_time.isoformat() if execution.end_time else None
-                ),
+                "start_time": (execution.start_time.isoformat() if execution.start_time else None),
+                "end_time": (execution.end_time.isoformat() if execution.end_time else None),
                 "duration_seconds": (
                     execution.duration.total_seconds() if execution.duration else None
                 ),
@@ -279,9 +271,7 @@ class Phase1ExtensionImplementor:
             missing_deps = [dep for dep in dependencies if dep not in task_ids]
 
             if missing_deps:
-                issues.append(
-                    {"task_id": task_id, "missing_dependencies": missing_deps}
-                )
+                issues.append({"task_id": task_id, "missing_dependencies": missing_deps})
 
         return {"valid": len(issues) == 0, "issues": issues}
 
@@ -322,11 +312,7 @@ class Phase1ExtensionImplementor:
     def implementation_progress(self) -> float:
         """Get overall implementation progress percentage (backward compatibility)."""
         overall_status = self.phase_manager.get_overall_status()
-        return (
-            overall_status.get("overall_progress_percentage", 0.0)
-            if overall_status
-            else 0.0
-        )
+        return overall_status.get("overall_progress_percentage", 0.0) if overall_status else 0.0
 
     def get_implementation_summary(self) -> dict[str, Any]:
         """

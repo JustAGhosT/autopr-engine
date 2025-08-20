@@ -132,9 +132,7 @@ class AILintingWorkflow:
             )
 
             # Wait for both to complete
-            test_result, report_result = await asyncio.gather(
-                test_future, report_future
-            )
+            test_result, report_result = await asyncio.gather(test_future, report_future)
 
             # Step 4: Final integration steps
             if test_result.get("success"):
@@ -194,9 +192,7 @@ class AILintingWorkflow:
             "success": linting_result.get("success", False),
             "workflow_id": workflow_id,
             "linting_result": linting_result,
-            "final_status": (
-                "no_changes" if linting_result.get("success") else "linting_failed"
-            ),
+            "final_status": ("no_changes" if linting_result.get("success") else "linting_failed"),
         }
 
 
@@ -321,9 +317,7 @@ async def run_tests_activity(test_input: dict[str, Any]) -> dict[str, Any]:
 
 
 @activity.defn
-async def generate_quality_report_activity(
-    report_input: dict[str, Any]
-) -> dict[str, Any]:
+async def generate_quality_report_activity(report_input: dict[str, Any]) -> dict[str, Any]:
     """Generate a quality report for the linting results."""
     try:
         linting_result = report_input["linting_result"]
@@ -350,9 +344,7 @@ async def generate_quality_report_activity(
             report["recommendations"].append("Consider manual review of complex issues")
 
         if len(report["files"]) > 10:
-            report["recommendations"].append(
-                "Large number of changes - review carefully"
-            )
+            report["recommendations"].append("Large number of changes - review carefully")
 
         return {
             "success": True,
@@ -392,9 +384,7 @@ async def commit_changes_activity(commit_input: dict[str, Any]) -> dict[str, Any
 
 
 @activity.defn
-async def notify_completion_activity(
-    notification_input: dict[str, Any]
-) -> dict[str, Any]:
+async def notify_completion_activity(notification_input: dict[str, Any]) -> dict[str, Any]:
     """Send completion notifications."""
     try:
         workflow_id = notification_input["workflow_id"]
@@ -403,8 +393,8 @@ async def notify_completion_activity(
         message = f"""🎉 AI Linting Workflow Completed!
 
 **Workflow ID:** {workflow_id}
-**Issues Fixed:** {linting_result.get('issues_fixed', 0)}
-**Files Modified:** {len(linting_result.get('modified_files', []))}
+**Issues Fixed:** {linting_result.get("issues_fixed", 0)}
+**Files Modified:** {len(linting_result.get("modified_files", []))}
 **Status:** Success ✅
 
 View details in Temporal UI: https://cloud.temporal.io/workflows/{workflow_id}
@@ -416,9 +406,7 @@ View details in Temporal UI: https://cloud.temporal.io/workflows/{workflow_id}
         return {
             "success": True,
             "message": "Notifications sent",
-            "channels": [
-                "console"
-            ],  # Would be ["slack", "email"] in real implementation
+            "channels": ["console"],  # Would be ["slack", "email"] in real implementation
         }
 
     except Exception as e:
@@ -438,7 +426,7 @@ async def create_review_issue_activity(issue_input: dict[str, Any]) -> dict[str,
 AI linting workflow `{workflow_id}` made changes but tests failed.
 
 **Test Failure Details:**
-{test_failure.get('message', 'Unknown test failure')}
+{test_failure.get("message", "Unknown test failure")}
 
 **Next Steps:**
 1. Review the AI-generated changes
@@ -576,9 +564,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--fix-types", nargs="+", default=["E501", "F401"], help="Issue types to fix"
     )
-    parser.add_argument(
-        "--max-fixes", type=int, default=10, help="Maximum fixes per run"
-    )
+    parser.add_argument("--max-fixes", type=int, default=10, help="Maximum fixes per run")
 
     args = parser.parse_args()
 

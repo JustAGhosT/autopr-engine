@@ -21,9 +21,7 @@ class Workflow(ABC):
     or executed manually. Each workflow has inputs, outputs, and execution logic.
     """
 
-    def __init__(
-        self, name: str, description: str = "", version: str = "1.0.0"
-    ) -> None:
+    def __init__(self, name: str, description: str = "", version: str = "1.0.0") -> None:
         """
         Initialize the workflow.
 
@@ -201,9 +199,7 @@ class YAMLWorkflow(Workflow):
             "final_context": workflow_context,
         }
 
-    async def _execute_step(
-        self, step: dict[str, Any], context: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _execute_step(self, step: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
         """
         Execute a single workflow step.
 

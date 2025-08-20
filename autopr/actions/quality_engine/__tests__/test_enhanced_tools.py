@@ -295,9 +295,7 @@ class TestWindowsSecurityTool:
         """
 
         with patch("builtins.open", create=True) as mock_open:
-            mock_open.return_value.__enter__.return_value.read.return_value = (
-                test_content
-            )
+            mock_open.return_value.__enter__.return_value.read.return_value = test_content
 
             issues = await tool._check_python_security_patterns("test.py", {})
 

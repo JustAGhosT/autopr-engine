@@ -182,9 +182,7 @@ class TemplateExtractor:
         """Export catalog as JSON."""
         catalog = {
             "total_templates": len(self.templates),
-            "categories": {
-                cat: len(templates) for cat, templates in self.categories.items()
-            },
+            "categories": {cat: len(templates) for cat, templates in self.categories.items()},
             "templates": [],
         }
 
@@ -195,9 +193,7 @@ class TemplateExtractor:
                     "description": template.description,
                     "category": template.category,
                     "platforms": template.platforms,
-                    "file_path": str(
-                        template.file_path.relative_to(self.templates_root)
-                    ),
+                    "file_path": str(template.file_path.relative_to(self.templates_root)),
                     "variables_count": len(template.variables),
                     "has_platform_info": bool(template.platform_info),
                     "metadata_keys": list(template.metadata.keys()),
@@ -242,9 +238,7 @@ Categories: {len(self.categories)}
             content += f"### {category.replace('_', ' ').title()} ({len(templates)} templates)\n\n"
 
             for template in sorted(templates, key=lambda t: t.name):
-                platforms_str = (
-                    ", ".join(template.platforms) if template.platforms else "N/A"
-                )
+                platforms_str = ", ".join(template.platforms) if template.platforms else "N/A"
                 content += f"- **{template.name}**\n"
                 content += f"  - Description: {template.description}\n"
                 content += f"  - Platforms: {platforms_str}\n"
@@ -267,9 +261,7 @@ Categories: {len(self.categories)}
         """
         stats = {
             "total_templates": len(self.templates),
-            "categories": {
-                cat: len(templates) for cat, templates in self.categories.items()
-            },
+            "categories": {cat: len(templates) for cat, templates in self.categories.items()},
             "platforms": {},
             "variables_stats": {
                 "total_variables": 0,
@@ -282,8 +274,7 @@ Categories: {len(self.categories)}
         # Platform statistics
         platform_templates = self.get_templates_by_platform()
         stats["platforms"] = {
-            platform: len(templates)
-            for platform, templates in platform_templates.items()
+            platform: len(templates) for platform, templates in platform_templates.items()
         }
 
         # Variable statistics
@@ -293,17 +284,15 @@ Categories: {len(self.categories)}
 
         stats["variables_stats"]["total_variables"] = len(all_variables)
         if self.templates:
-            stats["variables_stats"]["avg_variables_per_template"] = len(
-                all_variables
-            ) / len(self.templates)
+            stats["variables_stats"]["avg_variables_per_template"] = len(all_variables) / len(
+                self.templates
+            )
 
         # Most common variables
         from collections import Counter
 
         variable_counts = Counter(all_variables)
-        stats["variables_stats"]["most_common_variables"] = dict(
-            variable_counts.most_common(10)
-        )
+        stats["variables_stats"]["most_common_variables"] = dict(variable_counts.most_common(10))
 
         # File distribution by directory
         file_dirs = defaultdict(int)
@@ -346,14 +335,10 @@ def main():
         filtered_templates = extractor.search_templates(args.search)
 
     if args.category:
-        filtered_templates = [
-            t for t in filtered_templates if t.category == args.category
-        ]
+        filtered_templates = [t for t in filtered_templates if t.category == args.category]
 
     if args.platform:
-        filtered_templates = [
-            t for t in filtered_templates if args.platform in t.platforms
-        ]
+        filtered_templates = [t for t in filtered_templates if args.platform in t.platforms]
 
     # Display results
     if not args.output:

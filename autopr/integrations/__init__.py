@@ -3,7 +3,7 @@ AutoPR Engine Integrations
 External service integrations for communication and project management
 """
 
-from typing import Any, List, Optional, Type
+from typing import Any
 
 from autopr.integrations.base import Integration
 

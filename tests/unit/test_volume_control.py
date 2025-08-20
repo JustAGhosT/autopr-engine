@@ -5,9 +5,7 @@ import pytest
 
 
 # Skip this test for now due to import issues with scripts/volume-control
-pytest.skip(
-    "Skipping volume control test due to import path issues", allow_module_level=True
-)
+pytest.skip("Skipping volume control test due to import path issues", allow_module_level=True)
 
 # The following test class is commented out due to import path issues
 # class TestVolumeKnob:

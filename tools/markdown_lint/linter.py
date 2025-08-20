@@ -87,9 +87,7 @@ class MarkdownLinter:
                     prev_line_blank = True
                     # Check if we're ending a list
                     if in_list and current_list_type:
-                        self._check_list_end_spacing(
-                            report, i - 1, lines, list_start_line
-                        )
+                        self._check_list_end_spacing(report, i - 1, lines, list_start_line)
                         in_list = False
                         current_list_type = None
                         expected_ordered_number = 1
@@ -107,9 +105,7 @@ class MarkdownLinter:
                             )
                     # Ending a code block
                     elif self.config["check_fenced_code_blocks"]:
-                        self._check_fenced_code_block_end(
-                            report, i, lines, code_block_start_line
-                        )
+                        self._check_fenced_code_block_end(report, i, lines, code_block_start_line)
 
                     in_code_block = not in_code_block
                     prev_line = line
@@ -161,9 +157,7 @@ class MarkdownLinter:
                         self._check_heading_spacing(report, i, lines, prev_line_blank)
                     # MD024: Check for duplicate headings
                     if self.config["check_duplicate_headings"]:
-                        self._check_duplicate_headings(
-                            report, i, heading_match, seen_headings
-                        )
+                        self._check_duplicate_headings(report, i, heading_match, seen_headings)
 
                 # Check list items
                 list_match = self.LIST_ITEM_PATTERN.match(line)
@@ -211,11 +205,7 @@ class MarkdownLinter:
                 prev_line_blank = False
 
             # Check for final newline
-            if (
-                self.config["insert_final_newline"]
-                and content
-                and not content.endswith("\n")
-            ):
+            if self.config["insert_final_newline"] and content and not content.endswith("\n"):
                 self._add_issue(
                     report,
                     len(lines),
@@ -254,9 +244,7 @@ class MarkdownLinter:
                 fix=fix_func,
             )
 
-    def _get_line_length_fix(
-        self, line: str, max_length: int
-    ) -> Callable[[str], str] | None:
+    def _get_line_length_fix(self, line: str, max_length: int) -> Callable[[str], str] | None:
         """Determine if and how to fix a long line."""
         stripped = line.strip()
 
@@ -304,19 +292,11 @@ class MarkdownLinter:
         # Find word boundary before break point
         space_before = content.rfind(" ", 0, break_point)
         if space_before > break_point // 2:  # Reasonable break point found
-            return (
-                indent
-                + content[:space_before]
-                + "\n"
-                + indent
-                + content[space_before:].lstrip()
-            )
+            return indent + content[:space_before] + "\n" + indent + content[space_before:].lstrip()
 
         return line  # Can't find good break point
 
-    def _check_heading(
-        self, report: FileReport, line_num: int, line: str, match: re.Match
-    ) -> None:
+    def _check_heading(self, report: FileReport, line_num: int, line: str, match: re.Match) -> None:
         """Check heading formatting and spacing."""
         level = len(match.group("level"))
         content = match.group("content")
@@ -636,9 +616,7 @@ class MarkdownLinter:
                         def create_url_fix(url_to_fix):
                             def fix_url(line_content):
                                 title = self._get_url_title(url_to_fix)
-                                return line_content.replace(
-                                    url_to_fix, f"[{title}]({url_to_fix})"
-                                )
+                                return line_content.replace(url_to_fix, f"[{title}]({url_to_fix})")
 
                             return fix_url
 
@@ -659,18 +637,14 @@ class MarkdownLinter:
                     start_pos = match.start(1)  # Use group 1 start position
                     if start_pos == 0 or (
                         line[start_pos - 1] not in "<[]("
-                        and not (
-                            start_pos > 1 and line[start_pos - 2 : start_pos] == "]("
-                        )
+                        and not (start_pos > 1 and line[start_pos - 2 : start_pos] == "](")
                     ):
                         # Create a fix function for email addresses
                         def create_email_fix(email_to_fix):
                             def fix_email(line_content):
                                 # Use word boundaries to ensure exact match
                                 pattern = r"\b" + re.escape(email_to_fix) + r"\b"
-                                return re.sub(
-                                    pattern, f"<{email_to_fix}>", line_content
-                                )
+                                return re.sub(pattern, f"<{email_to_fix}>", line_content)
 
                             return fix_email
 
@@ -723,9 +697,7 @@ class MarkdownLinter:
             for i in issues
             if i.fixable and i.line > 0 and i.code not in {"MD022", "MD032", "MD031"}
         ]
-        spacing_fixes = [
-            i for i in issues if i.fixable and i.code in {"MD022", "MD032", "MD031"}
-        ]
+        spacing_fixes = [i for i in issues if i.fixable and i.code in {"MD022", "MD032", "MD031"}]
         file_fixes = [i for i in issues if i.fixable and i.line == 0]
 
         # Apply line-level fixes first (sort descending to avoid offset issues)
@@ -748,9 +720,7 @@ class MarkdownLinter:
         # Ensure lines end with newlines (except the last one which will be handled by file write)
         return [line + "\n" if not line.endswith("\n") else line for line in lines]
 
-    def _apply_spacing_fixes(
-        self, lines: list[str], spacing_issues: list[LintIssue]
-    ) -> list[str]:
+    def _apply_spacing_fixes(self, lines: list[str], spacing_issues: list[LintIssue]) -> list[str]:
         """Apply MD022, MD032, and MD031 spacing fixes by inserting blank lines."""
         # Collect all blank line insertions needed
         insertions = []  # List of (line_index, position) tuples
@@ -768,12 +738,8 @@ class MarkdownLinter:
 
                 if line_idx + 1 < len(lines):
                     next_line = lines[line_idx + 1]
-                    if next_line.strip() and not self.BLANK_LINE_PATTERN.match(
-                        next_line
-                    ):
-                        insertions.append(
-                            (line_idx + 1, "before")
-                        )  # Insert before next line
+                    if next_line.strip() and not self.BLANK_LINE_PATTERN.match(next_line):
+                        insertions.append((line_idx + 1, "before"))  # Insert before next line
 
             elif issue.code == "MD032":  # List spacing
                 if "(start)" in issue.message:
@@ -781,19 +747,12 @@ class MarkdownLinter:
                     insertions.append((line_idx, "before"))
                 elif "(end)" in issue.message:
                     # Add blank line after the list (before the next content)
-                    insertions.append(
-                        (line_idx, "before")
-                    )  # Insert before the non-list line
+                    insertions.append((line_idx, "before"))  # Insert before the non-list line
 
             elif issue.code == "MD031":  # Fenced code block spacing
-                if (
-                    "Fenced code blocks should be surrounded by blank lines"
-                    in issue.message
-                ):
+                if "Fenced code blocks should be surrounded by blank lines" in issue.message:
                     # Check if this is a start or end of code block
-                    if line_idx < len(lines) and lines[line_idx].strip().startswith(
-                        "```"
-                    ):
+                    if line_idx < len(lines) and lines[line_idx].strip().startswith("```"):
                         # Check if previous line needs spacing (start of code block)
                         if line_idx > 0 and lines[line_idx - 1].strip():
                             insertions.append((line_idx, "before"))

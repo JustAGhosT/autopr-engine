@@ -14,13 +14,9 @@ from autopr.enums import QualityMode
 # Volume threshold constants for consistent behavior
 AI_AGENTS_THRESHOLD = 200  # Volume level at which to enable AI agents
 MIN_FIXES = 1  # Minimum number of fixes to apply
-MAX_FIXES = (
-    500  # Maximum number of fixes to apply (increased for more aggressive AI fixing)
-)
+MAX_FIXES = 500  # Maximum number of fixes to apply (increased for more aggressive AI fixing)
 MIN_ISSUES = 10  # Minimum number of issues to report
-MAX_ISSUES = (
-    9999  # Maximum number of issues to report (increased for comprehensive analysis)
-)
+MAX_ISSUES = 9999  # Maximum number of issues to report (increased for comprehensive analysis)
 
 
 class VolumeLevel(Enum):
@@ -132,11 +128,14 @@ def volume_to_quality_mode(volume: int) -> tuple[QualityMode, dict[str, Any]]:
             "enable_ai_agents": False,
         }
     if quality_mode == QualityMode.AI_ENHANCED:
-        return quality_mode, {
-            **base_config,
-            "max_fixes": 500,  # More aggressive fixes at max volume (increased for maximum AI fixing)
-            "enable_ai_agents": True,
-        }
+        return (
+            quality_mode,
+            {
+                **base_config,
+                "max_fixes": 500,  # More aggressive fixes at max volume (increased for maximum AI fixing)
+                "enable_ai_agents": True,
+            },
+        )
     return quality_mode, base_config
 
 
@@ -151,9 +150,7 @@ def _get_ai_fixer_issue_types(volume: int) -> list[str]:
     if volume >= 500:
         basic_types.extend(["E501", "E741"])  # Line length, ambiguous names
     if volume >= 700:
-        basic_types.extend(
-            ["E722", "B001", "F821"]
-        )  # Exception handling, undefined names
+        basic_types.extend(["E722", "B001", "F821"])  # Exception handling, undefined names
     if volume >= 800:
         basic_types.extend(["F811"])  # Redefined imports
     if volume >= 900:

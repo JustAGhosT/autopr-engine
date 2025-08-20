@@ -40,9 +40,7 @@ class SemgrepTool(Tool):
         """Get the required command for this tool."""
         return "semgrep"
 
-    async def run(
-        self, files: list[str], config: dict[str, Any]
-    ) -> list[dict[str, Any]]:
+    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run Semgrep on the specified files.
         """

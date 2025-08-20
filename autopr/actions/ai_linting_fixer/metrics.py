@@ -208,15 +208,8 @@ class MetricsCollector:
         # Calculate rates
         success_rate = (
             self.session_metrics.successful_fixes
-            / (
-                self.session_metrics.successful_fixes
-                + self.session_metrics.failed_fixes
-            )
-            if (
-                self.session_metrics.successful_fixes
-                + self.session_metrics.failed_fixes
-            )
-            > 0
+            / (self.session_metrics.successful_fixes + self.session_metrics.failed_fixes)
+            if (self.session_metrics.successful_fixes + self.session_metrics.failed_fixes) > 0
             else 0.0
         )
 
@@ -226,19 +219,13 @@ class MetricsCollector:
             ai_processing_duration=0.0,  # TODO: Track separately
             file_io_duration=0.0,  # TODO: Track separately
             files_per_second=(
-                self.session_metrics.total_files / total_duration
-                if total_duration > 0
-                else 0.0
+                self.session_metrics.total_files / total_duration if total_duration > 0 else 0.0
             ),
             issues_per_second=(
-                self.session_metrics.total_issues / total_duration
-                if total_duration > 0
-                else 0.0
+                self.session_metrics.total_issues / total_duration if total_duration > 0 else 0.0
             ),
             tokens_per_second=(
-                self.session_metrics.total_tokens / total_duration
-                if total_duration > 0
-                else 0.0
+                self.session_metrics.total_tokens / total_duration if total_duration > 0 else 0.0
             ),
             total_files_processed=self.session_metrics.total_files,
             total_issues_found=self.session_metrics.total_issues,
@@ -348,9 +335,7 @@ class MetricsAggregator:
         if session.api_response_times:
             if "avg_api_response" not in self.performance_trends:
                 self.performance_trends["avg_api_response"] = []
-            avg_response = sum(session.api_response_times) / len(
-                session.api_response_times
-            )
+            avg_response = sum(session.api_response_times) / len(session.api_response_times)
             self.performance_trends["avg_api_response"].append(avg_response)
 
     def get_performance_trends(self, metric: str, window: int = 10) -> list[float]:
@@ -365,15 +350,10 @@ class MetricsAggregator:
             return {}
 
         total_files = sum(
-            len(getattr(session, "file_metrics", []))
-            for session in self.historical_sessions
+            len(getattr(session, "file_metrics", [])) for session in self.historical_sessions
         )
-        total_fixes = sum(
-            session.successful_fixes for session in self.historical_sessions
-        )
-        total_failures = sum(
-            session.failed_fixes for session in self.historical_sessions
-        )
+        total_fixes = sum(session.successful_fixes for session in self.historical_sessions)
+        total_failures = sum(session.failed_fixes for session in self.historical_sessions)
 
         return {
             "total_sessions": len(self.historical_sessions),
@@ -392,8 +372,7 @@ class MetricsAggregator:
             )
             / len(self.historical_sessions),
             "performance_trends": {
-                metric: self.get_performance_trends(metric, 5)
-                for metric in self.performance_trends
+                metric: self.get_performance_trends(metric, 5) for metric in self.performance_trends
             },
         }
 

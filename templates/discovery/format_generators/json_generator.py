@@ -82,9 +82,7 @@ class JSONGenerator(BaseFormatGenerator):
         """Generate main documentation index in JSON format."""
         return self.generate_summary_data(analyses)
 
-    def generate_comparison_guide(
-        self, platform_analyses: list[TemplateAnalysis]
-    ) -> str:
+    def generate_comparison_guide(self, platform_analyses: list[TemplateAnalysis]) -> str:
         """Generate platform comparison guide in JSON format."""
         comparison: dict[str, Any] = {
             "generated_at": datetime.now().isoformat(),

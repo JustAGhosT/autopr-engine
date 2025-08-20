@@ -142,8 +142,7 @@ if not AI_LINTING_FIXER_AVAILABLE:
     __all__ = [
         item
         for item in __all__
-        if item
-        not in ["AILintingFixer", "create_ai_linting_fixer", "run_ai_linting_fixer"]
+        if item not in ["AILintingFixer", "create_ai_linting_fixer", "run_ai_linting_fixer"]
     ]
 
 if not CODE_ANALYZER_AVAILABLE:

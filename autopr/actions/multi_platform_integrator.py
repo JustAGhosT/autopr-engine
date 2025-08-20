@@ -172,9 +172,7 @@ def send_slack_notification(inputs: MultiPlatformInputs) -> MultiPlatformOutputs
                 }
             )
 
-        response: requests.Response = requests.post(
-            webhook_url, json=message, timeout=30
-        )
+        response: requests.Response = requests.post(webhook_url, json=message, timeout=30)
 
         if response.status_code == 200:
             return MultiPlatformOutputs(
@@ -212,9 +210,7 @@ def send_discord_message(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
 
         message: dict[str, Any] = {"embeds": [embed]}
 
-        response: requests.Response = requests.post(
-            webhook_url, json=message, timeout=30
-        )
+        response: requests.Response = requests.post(webhook_url, json=message, timeout=30)
 
         if response.status_code == 204:
             return MultiPlatformOutputs(
@@ -243,18 +239,14 @@ def create_notion_page(inputs: MultiPlatformInputs) -> MultiPlatformOutputs:
                 "Title": {"title": [{"text": {"content": inputs.title}}]},
                 "Priority": {"select": {"name": inputs.priority}},
                 "Status": {"select": {"name": "Todo"}},
-                "Labels": {
-                    "multi_select": [{"name": label} for label in inputs.labels]
-                },
+                "Labels": {"multi_select": [{"name": label} for label in inputs.labels]},
             },
             "children": [
                 {
                     "object": "block",
                     "type": "paragraph",
                     "paragraph": {
-                        "rich_text": [
-                            {"type": "text", "text": {"content": inputs.description}}
-                        ]
+                        "rich_text": [{"type": "text", "text": {"content": inputs.description}}]
                     },
                 }
             ],

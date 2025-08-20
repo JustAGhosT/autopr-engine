@@ -52,8 +52,8 @@ class PrototypeEnhancer:
 
         # Initialize strategies for all supported platforms
         for platform in self.platform_registry.get_platform_configs():
-            self.enhancement_strategies[platform] = (
-                EnhancementStrategyFactory.create_strategy(platform)
+            self.enhancement_strategies[platform] = EnhancementStrategyFactory.create_strategy(
+                platform
             )
 
         logger.info("PrototypeEnhancer initialized with modular architecture")
@@ -75,14 +75,10 @@ class PrototypeEnhancer:
 
             # Validate platform support
             if not self.platform_registry.is_supported_platform(inputs.platform):
-                return self._create_error_output(
-                    f"Unsupported platform: {inputs.platform}"
-                )
+                return self._create_error_output(f"Unsupported platform: {inputs.platform}")
 
             # Get platform configuration
-            platform_config = self.platform_registry.get_platform_config(
-                inputs.platform
-            )
+            platform_config = self.platform_registry.get_platform_config(inputs.platform)
 
             # Perform enhancement based on type
             if inputs.enhancement_type == "production_ready":
@@ -122,14 +118,10 @@ class PrototypeEnhancer:
         )
 
         # Get production checklist
-        production_checklist = self.platform_registry.get_production_checklists()[
-            inputs.platform
-        ]
+        production_checklist = self.platform_registry.get_production_checklists()[inputs.platform]
 
         # Get next steps
-        next_steps = self.platform_registry.get_next_steps()[inputs.platform][
-            "production_ready"
-        ]
+        next_steps = self.platform_registry.get_next_steps()[inputs.platform]["production_ready"]
 
         return PrototypeEnhancerOutputs(
             enhanced_files=enhancement_result.get("files", {}),
@@ -138,9 +130,7 @@ class PrototypeEnhancer:
             production_checklist=production_checklist,
             next_steps=next_steps,
             enhancement_summary=self._create_enhancement_summary(enhancement_result),
-            platform_specific_notes=self._get_platform_notes(
-                inputs.platform, "production_ready"
-            ),
+            platform_specific_notes=self._get_platform_notes(inputs.platform, "production_ready"),
         )
 
     def _enhance_for_testing(
@@ -185,9 +175,7 @@ class PrototypeEnhancer:
             production_checklist=testing_checklist,
             next_steps=next_steps,
             enhancement_summary=self._create_enhancement_summary(enhancement_result),
-            platform_specific_notes=self._get_platform_notes(
-                inputs.platform, "testing"
-            ),
+            platform_specific_notes=self._get_platform_notes(inputs.platform, "testing"),
         )
 
     def _enhance_for_security(
@@ -223,9 +211,7 @@ class PrototypeEnhancer:
         ]
 
         # Get next steps
-        next_steps = self.platform_registry.get_next_steps()[inputs.platform][
-            "security"
-        ]
+        next_steps = self.platform_registry.get_next_steps()[inputs.platform]["security"]
 
         return PrototypeEnhancerOutputs(
             enhanced_files=enhancement_result.get("files", {}),
@@ -234,9 +220,7 @@ class PrototypeEnhancer:
             production_checklist=security_checklist,
             next_steps=next_steps,
             enhancement_summary=self._create_enhancement_summary(enhancement_result),
-            platform_specific_notes=self._get_platform_notes(
-                inputs.platform, "security"
-            ),
+            platform_specific_notes=self._get_platform_notes(inputs.platform, "security"),
         )
 
     def _generate_package_json_updates(
@@ -403,9 +387,7 @@ class PrototypeEnhancer:
 
         return errors
 
-    def get_enhancement_preview(
-        self, inputs: PrototypeEnhancerInputs
-    ) -> dict[str, Any]:
+    def get_enhancement_preview(self, inputs: PrototypeEnhancerInputs) -> dict[str, Any]:
         """Get a preview of what the enhancement will do without actually performing it."""
         validation_errors = self.validate_inputs(inputs)
         if validation_errors:
@@ -417,17 +399,13 @@ class PrototypeEnhancer:
         return {
             "platform": inputs.platform,
             "enhancement_type": inputs.enhancement_type,
-            "files_to_create": list(
-                strategy.generate_files(inputs.enhancement_type).keys()
-            ),
+            "files_to_create": list(strategy.generate_files(inputs.enhancement_type).keys()),
             "packages_to_add": {
                 "dependencies": package_updates["dependencies"],
                 "devDependencies": package_updates["devDependencies"],
             },
             "checklist_items": len(
-                self.platform_registry.get_production_checklists().get(
-                    inputs.platform, []
-                )
+                self.platform_registry.get_production_checklists().get(inputs.platform, [])
             ),
             "next_steps_count": len(
                 self.platform_registry.get_next_steps()

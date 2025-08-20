@@ -48,8 +48,6 @@ if __name__ == "__main__":
     asyncio.run(
         run_action_manually(
             action=TriggerDeployment,
-            inputs=Inputs(
-                webhook_url="https://httpbin.org/post", client_payload={"ref": "main"}
-            ),
+            inputs=Inputs(webhook_url="https://httpbin.org/post", client_payload={"ref": "main"}),
         )
     )

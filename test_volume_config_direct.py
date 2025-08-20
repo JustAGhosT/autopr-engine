@@ -102,7 +102,6 @@ test_cases = [
 
 # Run tests
 for _i, (volume, config, expected_value, should_pass) in enumerate(test_cases, 1):
-
     try:
         vc = VolumeConfig(volume=volume, config=config)
         actual_value = vc.config.get("enable_ai_agents", False)

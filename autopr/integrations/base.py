@@ -19,9 +19,7 @@ class Integration(ABC):
     Integrations provide connectivity to external services and platforms.
     """
 
-    def __init__(
-        self, name: str, description: str = "", version: str = "1.0.0"
-    ) -> None:
+    def __init__(self, name: str, description: str = "", version: str = "1.0.0") -> None:
         """
         Initialize the integration.
 
@@ -108,9 +106,7 @@ class GitHubIntegration(Integration):
     Provides common functionality for GitHub API interactions.
     """
 
-    def __init__(
-        self, name: str, description: str = "", version: str = "1.0.0"
-    ) -> None:
+    def __init__(self, name: str, description: str = "", version: str = "1.0.0") -> None:
         super().__init__(name, description, version)
         self.required_config_keys.extend(["github_token"])
         self.github_client: dict[str, Any] | None = None
@@ -165,9 +161,7 @@ class LLMIntegration(Integration):
     Provides common functionality for AI/LLM service interactions.
     """
 
-    def __init__(
-        self, name: str, description: str = "", version: str = "1.0.0"
-    ) -> None:
+    def __init__(self, name: str, description: str = "", version: str = "1.0.0") -> None:
         super().__init__(name, description, version)
         self.required_config_keys.extend(["api_key"])
         self.client: dict[str, Any] | None = None

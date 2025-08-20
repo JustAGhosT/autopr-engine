@@ -38,9 +38,7 @@ class TemplateManager:
 
         return sorted(discovered, key=lambda t: t.confidence, reverse=True)
 
-    def generate_from_template(
-        self, template_name: str, context: dict[str, Any]
-    ) -> dict[str, str]:
+    def generate_from_template(self, template_name: str, context: dict[str, Any]) -> dict[str, str]:
         """Generate files from template with context"""
         # Implementation details...
 

@@ -1,87 +1,52 @@
 """
-Logging Specialist
-
-This specialist handles logging-related issues like G004 (logging-f-string) and TRY401 (verbose-log-message).
+Logging Specialist for fixing logging-related issues (G004).
 """
 
-from typing import List
-
-from .base_specialist import BaseSpecialist
-from autopr.actions.ai_linting_fixer.models import LintingIssue
+from .base_specialist import AgentType, BaseSpecialist, FixStrategy
 
 
 class LoggingSpecialist(BaseSpecialist):
-    """Specialist for fixing logging issues (G004, TRY401)."""
+    """Specialized agent for fixing logging-related issues (G004)."""
 
-    def _get_supported_codes(self) -> List[str]:
-        """Get supported error codes."""
-        return ["G004", "TRY401"]
+    def __init__(self):
+        super().__init__(AgentType.LOGGING_SPECIALIST)
+
+    def _get_supported_codes(self) -> list[str]:
+        return ["G004", "LOG001", "LOG002"]
 
     def _get_expertise_level(self) -> str:
-        """Get expertise level."""
-        return "expert"
+        return "intermediate"
 
-    def get_system_prompt(self, issues: List[LintingIssue]) -> str:
-        """Get specialized system prompt for logging fixes."""
+    def _define_fix_strategies(self) -> list[FixStrategy]:
+        return [
+            FixStrategy(
+                name="logging_fixes",
+                description="Fix logging configuration and usage",
+                confidence_multiplier=1.2,
+                priority=1,
+            ),
+            FixStrategy(
+                name="log_levels",
+                description="Improve log level usage",
+                confidence_multiplier=1.0,
+                priority=2,
+            ),
+        ]
+
+    def get_system_prompt(self) -> str:
         return """You are a LOGGING SPECIALIST AI. Your expertise is fixing logging-related issues.
 
-SUPPORTED ISSUES:
-• G004: Logging statement uses f-string (should use % formatting or .format())
-• TRY401: Verbose log message (should be simplified)
-
 CORE PRINCIPLES:
-1. Replace f-strings in logging with % formatting or .format()
-2. Simplify verbose log messages for better performance
-3. Maintain logging functionality and message clarity
-4. Follow Python logging best practices
-5. Preserve log levels and context
+1. Fix logging configuration issues
+2. Improve log level usage
+3. Ensure proper logging setup
+4. Maintain logging functionality
+5. Follow logging best practices
 
-FIXING STRATEGIES:
-• G004: Convert f"message {var}" to "message %s" % var or "message {}".format(var)
-• TRY401: Simplify verbose messages while keeping essential information
-• Use % formatting for simple variable substitution
-• Use .format() for complex formatting
-• Avoid string concatenation in logging calls
+COMMON FIXES:
+• Fix logging configuration problems
+• Improve log level selection
+• Ensure proper logger setup
+• Fix logging format issues
 
-EXAMPLES:
-• logger.info(f"Processing {file}") → logger.info("Processing %s", file)
-• logger.error(f"Failed to {action} {object}") → logger.error("Failed to %s %s", action, object)
-• logger.debug(f"Complex {obj.name} with {obj.value}") → logger.debug("Complex %s with %s", obj.name, obj.value)
-
-AVOID:
-• Breaking logging functionality
-• Losing important context in messages
-• Making messages less informative
-• Changing log levels
-
-Focus on making logging more efficient and compliant with best practices.
-
-Provide your response in the following JSON format:
-{
-    "success": true/false,
-    "fixed_code": "only the specific lines that were fixed",
-    "changes_made": ["list of specific changes made"],
-    "confidence": 0.0-1.0,
-    "explanation": "brief explanation of the fix"
-}
-
-IMPORTANT: In the "fixed_code" field, provide ONLY the specific lines that need to be changed, not the entire file."""
-
-    def get_user_prompt(
-        self, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> str:
-        """Get user prompt for logging fixes."""
-        prompt = f"Please fix the following logging issues in the Python file '{file_path}':\n\n"
-
-        # Add specific issue details
-        for issue in issues:
-            if issue.error_code in ["G004", "TRY401"]:
-                prompt += (
-                    f"Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
-                )
-                prompt += f"Content: {issue.line_content}\n\n"
-
-        prompt += f"File content:\n```python\n{content}\n```\n\n"
-        prompt += "Please provide ONLY the specific lines that need to be fixed, not the entire file. Focus on the exact changes needed to resolve the logging issues."
-
-        return prompt
+Focus on making logging more effective and maintainable."""

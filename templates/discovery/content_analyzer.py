@@ -121,9 +121,7 @@ class ContentAnalyzer:
             examples=examples,
         )
 
-    def analyze_multiple_templates(
-        self, template_files: list[Path]
-    ) -> list[TemplateAnalysis]:
+    def analyze_multiple_templates(self, template_files: list[Path]) -> list[TemplateAnalysis]:
         """Analyze multiple template files.
 
         Args:
@@ -204,10 +202,7 @@ class ContentAnalyzer:
             features.extend(template_data["metadata"]["features"])
 
         # Extract features from platform info
-        if (
-            "platform_info" in template_data
-            and "key_features" in template_data["platform_info"]
-        ):
+        if "platform_info" in template_data and "key_features" in template_data["platform_info"]:
             features.extend(template_data["platform_info"]["key_features"])
 
         return list(set(features))  # Remove duplicates
@@ -264,17 +259,13 @@ class ContentAnalyzer:
                     {
                         "description": metadata.get("description", ""),
                         "target_audience": metadata.get("target_audience", ""),
-                        "complexity_description": metadata.get(
-                            "complexity_description", ""
-                        ),
+                        "complexity_description": metadata.get("complexity_description", ""),
                     }
                 )
 
             # Extract implementation steps
             if "implementation_steps" in template_data:
-                use_case_info["implementation_steps"] = template_data[
-                    "implementation_steps"
-                ]
+                use_case_info["implementation_steps"] = template_data["implementation_steps"]
 
         return use_case_info
 

@@ -62,11 +62,7 @@ class MistralProvider(BaseLLMProvider):
             # Defensive: ensure response has expected attributes
             content = ""
             finish_reason = "stop"
-            if (
-                hasattr(response, "choices")
-                and response.choices
-                and len(response.choices) > 0
-            ):
+            if hasattr(response, "choices") and response.choices and len(response.choices) > 0:
                 choice = response.choices[0]
                 if hasattr(choice, "message") and hasattr(choice.message, "content"):
                     content = str(choice.message.content or "")
@@ -80,9 +76,7 @@ class MistralProvider(BaseLLMProvider):
                 else:
                     usage = {
                         "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
-                        "completion_tokens": getattr(
-                            response.usage, "completion_tokens", 0
-                        ),
+                        "completion_tokens": getattr(response.usage, "completion_tokens", 0),
                         "total_tokens": getattr(response.usage, "total_tokens", 0),
                     }
 

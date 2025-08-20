@@ -86,7 +86,6 @@ def create_ignore_files():
 
 
 def main():
-
     update_vscode_settings()
     create_ignore_files()
 

@@ -97,9 +97,7 @@ class Phase1ExtensionImplementor:
         """
         return await self.run_implementation("all", dry_run)
 
-    async def run_specific_task(
-        self, task_name: str, dry_run: bool = False
-    ) -> dict[str, Any]:
+    async def run_specific_task(self, task_name: str, dry_run: bool = False) -> dict[str, Any]:
         """
         Run a specific implementation task
 
@@ -291,9 +289,7 @@ class Phase1ExtensionImplementor:
 
     # Reporting methods
 
-    def generate_implementation_report(
-        self, report_type: str = "detailed"
-    ) -> dict[str, Any]:
+    def generate_implementation_report(self, report_type: str = "detailed") -> dict[str, Any]:
         """
         Generate implementation report
 
@@ -369,9 +365,7 @@ class Phase1ExtensionImplementor:
         required_dirs = ["autopr", "autopr/actions", "autopr/ai"]
         for dir_name in required_dirs:
             if not (self.project_root / dir_name).exists():
-                validation_results["warnings"].append(
-                    f"Expected directory not found: {dir_name}"
-                )
+                validation_results["warnings"].append(f"Expected directory not found: {dir_name}")
 
         # Check for existing implementations
         existing_implementations = []
@@ -387,9 +381,7 @@ class Phase1ExtensionImplementor:
 
         # Add recommendations
         if not validation_results["issues"]:
-            validation_results["recommendations"].append(
-                "Environment is ready for implementation"
-            )
+            validation_results["recommendations"].append("Environment is ready for implementation")
             if not existing_implementations:
                 validation_results["recommendations"].append(
                     "Start with 'immediate' phase for quick wins"
@@ -438,9 +430,7 @@ class Phase1ExtensionImplementor:
 
     # Legacy method aliases for backward compatibility
 
-    async def implement_phase(
-        self, phase: str, dry_run: bool = False
-    ) -> dict[str, Any]:
+    async def implement_phase(self, phase: str, dry_run: bool = False) -> dict[str, Any]:
         """Legacy alias for run_implementation"""
         return await self.run_implementation(phase, dry_run)
 

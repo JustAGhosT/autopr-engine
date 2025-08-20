@@ -129,9 +129,7 @@ class RuffIssueFixer:
         print("\n=== Top 10 Files with Most Issues ===\n")
 
         # Sort files by number of issues
-        sorted_files = sorted(
-            self.issues_by_file.items(), key=lambda x: len(x[1]), reverse=True
-        )
+        sorted_files = sorted(self.issues_by_file.items(), key=lambda x: len(x[1]), reverse=True)
 
         for file_path, issues in sorted_files[:10]:
             print(f"{file_path}: {len(issues)} issues")

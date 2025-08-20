@@ -97,9 +97,7 @@ class Tool[TConfig: Any, TIssue](ABC):
         """
         return shutil.which(command) is not None
 
-    async def run_with_timeout(
-        self, files: list[str], config: TConfig
-    ) -> ToolExecutionResult:
+    async def run_with_timeout(self, files: list[str], config: TConfig) -> ToolExecutionResult:
         """
         Run the tool with timeout handling and error management.
 
@@ -122,9 +120,7 @@ class Tool[TConfig: Any, TIssue](ABC):
                 if required_command:
                     error_message = f"Tool '{self.name}' is not available. Required command '{required_command}' not found in PATH. Please install it first."
                 else:
-                    error_message = (
-                        f"Tool '{self.name}' is not available or properly configured."
-                    )
+                    error_message = f"Tool '{self.name}' is not available or properly configured."
                 return ToolExecutionResult(
                     success=False,
                     issues=[],
@@ -136,9 +132,7 @@ class Tool[TConfig: Any, TIssue](ABC):
 
             # Limit files if needed
             if len(files) > self.max_files:
-                warnings.append(
-                    f"Limited to first {self.max_files} files (out of {len(files)})"
-                )
+                warnings.append(f"Limited to first {self.max_files} files (out of {len(files)})")
                 files = files[: self.max_files]
 
             # Run the tool with timeout
@@ -156,7 +150,9 @@ class Tool[TConfig: Any, TIssue](ABC):
             success = True
 
         except TimeoutError:
-            error_message = f"{self.get_display_name()} execution timed out after {self.timeout} seconds"
+            error_message = (
+                f"{self.get_display_name()} execution timed out after {self.timeout} seconds"
+            )
             success = False
             logger.warning(f"Tool {self.name} timed out", timeout=self.timeout)
 
@@ -179,9 +175,7 @@ class Tool[TConfig: Any, TIssue](ABC):
             output_summary=output_summary,
         )
 
-    async def _run_implementation(
-        self, files: list[str], config: TConfig
-    ) -> list[TIssue]:
+    async def _run_implementation(self, files: list[str], config: TConfig) -> list[TIssue]:
         """
         Internal implementation method that tools should override.
         This is called by run_with_timeout with proper error handling.
@@ -284,6 +278,4 @@ class Tool[TConfig: Any, TIssue](ABC):
 
     def __repr__(self) -> str:
         """Detailed string representation of the tool."""
-        return (
-            f"{self.__class__.__name__}(name='{self.name}', category='{self.category}')"
-        )
+        return f"{self.__class__.__name__}(name='{self.name}', category='{self.category}')"

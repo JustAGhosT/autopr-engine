@@ -11,7 +11,7 @@ from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer, CodeSug
 try:  # Provide resilient exports; these modules may be optional in some environments
     from autopr.actions.quality_engine.ai.ai_handler import (
         AIHandler,
-    )  # type: ignore[import-not-found,attr-defined]
+    )
 except Exception:  # pragma: no cover
     AIHandler = None  # type: ignore[assignment]
 

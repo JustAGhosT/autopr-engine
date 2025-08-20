@@ -8,7 +8,6 @@ from pathlib import Path
 
 
 def main():
-
     # Create the most aggressive VS Code settings possible
     aggressive_settings = {
         # Disable ALL Python features

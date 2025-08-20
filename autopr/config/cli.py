@@ -30,9 +30,7 @@ def cli():
 
 
 @cli.command()
-@click.option(
-    "--config-file", "-c", type=click.Path(exists=True), help="Configuration file path"
-)
+@click.option("--config-file", "-c", type=click.Path(exists=True), help="Configuration file path")
 @click.option(
     "--format",
     "-f",
@@ -81,23 +79,17 @@ def validate(config_file: str | None, format: str, verbose: bool):
         sys.exit(0 if validation_result["valid"] else 1)
 
     except Exception as e:
-        click.echo(
-            click.style(f"Error validating configuration: {e}", fg="red"), err=True
-        )
+        click.echo(click.style(f"Error validating configuration: {e}", fg="red"), err=True)
         sys.exit(1)
 
 
 @cli.command()
-@click.option(
-    "--config-file", "-c", type=click.Path(exists=True), help="Configuration file path"
-)
+@click.option("--config-file", "-c", type=click.Path(exists=True), help="Configuration file path")
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
 def report(config_file: str | None, output: str | None):
     """Generate comprehensive configuration report."""
     try:
-        settings = (
-            AutoPRSettings.from_file(config_file) if config_file else get_settings()
-        )
+        settings = AutoPRSettings.from_file(config_file) if config_file else get_settings()
 
         report_content = generate_config_report(settings)
 
@@ -134,9 +126,7 @@ def check_env(format: str):
             click.echo("=" * 40)
 
             if env_check["missing_important_vars"]:
-                click.echo(
-                    click.style("\n❌ Missing Important Variables:", fg="yellow")
-                )
+                click.echo(click.style("\n❌ Missing Important Variables:", fg="yellow"))
                 for var in env_check["missing_important_vars"]:
                     click.echo(f"  - {var}")
 
@@ -230,9 +220,7 @@ def generate(environment: str, output: str | None, format: str):
         if format == "yaml":
             import yaml
 
-            content = yaml.dump(
-                sample_config, default_flow_style=False, sort_keys=False
-            )
+            content = yaml.dump(sample_config, default_flow_style=False, sort_keys=False)
         elif format == "json":
             content = json.dumps(sample_config, indent=2)
         elif format == "env":
@@ -281,30 +269,22 @@ def generate(environment: str, output: str | None, format: str):
             click.echo(content)
 
     except Exception as e:
-        click.echo(
-            click.style(f"Error generating configuration: {e}", fg="red"), err=True
-        )
+        click.echo(click.style(f"Error generating configuration: {e}", fg="red"), err=True)
         sys.exit(1)
 
 
 @cli.command()
-@click.option(
-    "--config-file", "-c", type=click.Path(exists=True), help="Configuration file path"
-)
+@click.option("--config-file", "-c", type=click.Path(exists=True), help="Configuration file path")
 @click.option(
     "--provider",
     "-p",
-    type=click.Choice(
-        ["openai", "anthropic", "mistral", "groq", "perplexity", "together"]
-    ),
+    type=click.Choice(["openai", "anthropic", "mistral", "groq", "perplexity", "together"]),
     help="Test specific LLM provider",
 )
 def test(config_file: str | None, provider: str | None):
     """Test configuration by attempting connections."""
     try:
-        settings = (
-            AutoPRSettings.from_file(config_file) if config_file else get_settings()
-        )
+        settings = AutoPRSettings.from_file(config_file) if config_file else get_settings()
 
         click.echo("🧪 Testing Configuration Connections")
         click.echo("=" * 40)
@@ -321,9 +301,7 @@ def test(config_file: str | None, provider: str | None):
 
         # Test LLM providers
         click.echo("\n🤖 Testing LLM providers...")
-        providers_to_test = (
-            [provider] if provider else ["openai", "anthropic", "mistral", "groq"]
-        )
+        providers_to_test = [provider] if provider else ["openai", "anthropic", "mistral", "groq"]
 
         for prov in providers_to_test:
             config = settings.get_provider_config(prov)
@@ -357,15 +335,11 @@ def test(config_file: str | None, provider: str | None):
 
 
 @cli.command()
-@click.option(
-    "--config-file", "-c", type=click.Path(exists=True), help="Configuration file path"
-)
+@click.option("--config-file", "-c", type=click.Path(exists=True), help="Configuration file path")
 def show(config_file: str | None):
     """Show current configuration (with secrets masked)."""
     try:
-        settings = (
-            AutoPRSettings.from_file(config_file) if config_file else get_settings()
-        )
+        settings = AutoPRSettings.from_file(config_file) if config_file else get_settings()
 
         safe_config = settings.to_safe_dict()
         click.echo("📋 Current Configuration")

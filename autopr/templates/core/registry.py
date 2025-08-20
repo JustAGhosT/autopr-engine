@@ -208,8 +208,7 @@ class TemplateRegistry:
             # Filter by search term
             if (
                 search
-                and search.lower()
-                not in (template.name + " " + template.description).lower()
+                and search.lower() not in (template.name + " " + template.description).lower()
             ):
                 continue
 
@@ -222,15 +221,11 @@ class TemplateRegistry:
                 continue
 
             # Filter by tags (all must match)
-            if tags and not all(
-                tag.lower() in [t.lower() for t in template.tags] for tag in tags
-            ):
+            if tags and not all(tag.lower() in [t.lower() for t in template.tags] for tag in tags):
                 continue
 
             # Filter by platform
-            if platform and platform.lower() not in [
-                p.lower() for p in template.platforms
-            ]:
+            if platform and platform.lower() not in [p.lower() for p in template.platforms]:
                 continue
 
             results.append(template)

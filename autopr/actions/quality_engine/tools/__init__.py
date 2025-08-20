@@ -1,7 +1,6 @@
 import importlib
 import pkgutil
 import platform
-from typing import List, Type
 
 from autopr.actions.quality_engine.tools.tool_base import Tool
 

@@ -44,9 +44,7 @@ def test_import_crew():
             if spec is None:
                 # Try to find where it might be
                 for path in sys.path:
-                    full_path = os.path.join(
-                        path, module_path.replace(".", os.sep) + ".py"
-                    )
+                    full_path = os.path.join(path, module_path.replace(".", os.sep) + ".py")
                     os.path.exists(full_path)
                 msg = f"Module {module_path} not found in sys.path"
                 raise ImportError(msg)

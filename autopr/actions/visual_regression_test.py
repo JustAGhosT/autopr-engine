@@ -45,9 +45,7 @@ class VisualRegressionTest(Action[Inputs, Outputs]):
 
             # 3. Compare images
             # In a real scenario, you'd use a library like pixelmatch
-            are_different = (
-                "component" in url
-            )  # Simulate a difference for a specific url
+            are_different = "component" in url  # Simulate a difference for a specific url
             if are_different:
                 success = False
                 diff_path = f"screenshots/diff{url.replace('/', '_')}.png"
@@ -58,9 +56,7 @@ class VisualRegressionTest(Action[Inputs, Outputs]):
             else:
                 report_lines.append(f"✅ No difference found for '{url}'.")
 
-        return Outputs(
-            success=success, report="\\n".join(report_lines), diff_images=diff_images
-        )
+        return Outputs(success=success, report="\\n".join(report_lines), diff_images=diff_images)
 
 
 if __name__ == "__main__":

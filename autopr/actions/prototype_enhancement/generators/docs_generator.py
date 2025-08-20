@@ -64,9 +64,7 @@ class DocsGenerator(BaseGenerator):
 
         # Generate CONTRIBUTING.md
         if kwargs.get("include_contributing", True):
-            generated_files.extend(
-                self._generate_contributing(output_dir, template_vars)
-            )
+            generated_files.extend(self._generate_contributing(output_dir, template_vars))
 
         # Generate CHANGELOG.md
         if kwargs.get("include_changelog", True):
@@ -74,9 +72,7 @@ class DocsGenerator(BaseGenerator):
 
         # Generate CODE_OF_CONDUCT.md
         if kwargs.get("include_code_of_conduct", True):
-            generated_files.extend(
-                self._generate_code_of_conduct(output_dir, template_vars)
-            )
+            generated_files.extend(self._generate_code_of_conduct(output_dir, template_vars))
 
         # Generate LICENSE
         if kwargs.get("include_license", True):
@@ -88,9 +84,7 @@ class DocsGenerator(BaseGenerator):
 
         # Generate GitHub Actions workflows
         if kwargs.get("include_github_actions", True):
-            generated_files.extend(
-                self._generate_github_actions(output_dir, template_vars)
-            )
+            generated_files.extend(self._generate_github_actions(output_dir, template_vars))
 
         return generated_files
 
@@ -99,9 +93,9 @@ class DocsGenerator(BaseGenerator):
         content = self._render_template("docs/README.md", variables)
         if not content:
             # Fallback to a basic README
-            content = f"""# {variables['project_name']}
+            content = f"""# {variables["project_name"]}
 
-{variables['description']}
+{variables["description"]}
 
 ## Getting Started
 
@@ -115,8 +109,8 @@ class DocsGenerator(BaseGenerator):
 
 ```bash
 # Clone the repository
-git clone {variables['repo_url']}
-cd {variables['project_name']}
+git clone {variables["repo_url"]}
+cd {variables["project_name"]}
 
 # Install dependencies
 npm install  # for Node.js projects
@@ -143,20 +137,18 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for det
 
 ## License
 
-This project is licensed under the {variables['license']} License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the {variables["license"]} License - see the [LICENSE](LICENSE) file for details.
 """
 
         file_path = str(Path(output_dir) / "README.md")
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_contributing(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_contributing(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate CONTRIBUTING.md file."""
         content = self._render_template("docs/CONTRIBUTING.md", variables)
         if not content:
-            content = f"""# Contributing to {variables['project_name']}
+            content = f"""# Contributing to {variables["project_name"]}
 
 Thank you for your interest in contributing! Here are some guidelines to help you get started.
 
@@ -184,11 +176,11 @@ This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participatin
 
 ```bash
 # Clone your fork
-git clone git@github.com:YOUR_USERNAME/{variables['project_name']}.git
-cd {variables['project_name']}
+git clone git@github.com:YOUR_USERNAME/{variables["project_name"]}.git
+cd {variables["project_name"]}
 
 # Set up the upstream remote
-git remote add upstream {variables['repo_url']}
+git remote add upstream {variables["repo_url"]}
 
 # Install dependencies
 npm install  # for Node.js projects
@@ -213,16 +205,14 @@ pytest  # for Python projects
 
 ## Reporting Issues
 
-Please use the [GitHub issue tracker]({variables['repo_url']}/issues) to report any issues or submit feature requests.
+Please use the [GitHub issue tracker]({variables["repo_url"]}/issues) to report any issues or submit feature requests.
 """
 
         file_path = str(Path(output_dir) / "CONTRIBUTING.md")
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_changelog(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_changelog(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate CHANGELOG.md file."""
         content = self._render_template("docs/CHANGELOG.md", variables)
         if not content:
@@ -238,7 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial project setup
 
-## [0.1.0] - {datetime.now().strftime('%Y-%m-%d')}
+## [0.1.0] - {datetime.now().strftime("%Y-%m-%d")}
 
 ### Added
 - Initial release
@@ -248,9 +238,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_code_of_conduct(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_code_of_conduct(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate CODE_OF_CONDUCT.md file."""
         content = self._render_template("docs/CODE_OF_CONDUCT.md", variables)
         if not content:
@@ -306,9 +294,7 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage], versi
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_license(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_license(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate LICENSE file."""
         license_type = variables.get("license", "MIT").lower()
         content = self._render_template(f"docs/licenses/{license_type}.txt", variables)
@@ -316,7 +302,7 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage], versi
         if not content and license_type == "mit":
             content = f"""MIT License
 
-Copyright (c) {datetime.now().year} {variables.get('author', '')}
+Copyright (c) {datetime.now().year} {variables.get("author", "")}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -344,9 +330,7 @@ SOFTWARE.
 
         return []
 
-    def _generate_api_docs(
-        self, docs_dir: Path, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_api_docs(self, docs_dir: Path, variables: dict[str, Any]) -> list[str]:
         """Generate API documentation."""
         generated_files = []
         language = variables.get("language", "")
@@ -427,10 +411,10 @@ Open `docs/_build/html/index.html` in your browser to view the API documentation
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = '{variables['project_name']}'
-copyright = '{datetime.now().year}, {variables.get('author', '')}'
-author = '{variables.get('author', '')}'
-release = '{variables.get('version', '0.1.0')}'
+project = '{variables["project_name"]}'
+copyright = '{datetime.now().year}, {variables.get("author", "")}'
+author = '{variables.get("author", "")}'
+release = '{variables.get("version", "0.1.0")}'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -455,7 +439,7 @@ html_static_path = ['_static']
 
 # Autodoc settings
 autodoc_default_options = {
-    'members': True,
+                    "members": True,
     'member-order': 'bysource',
     'special-members': '__init__',
     'undoc-members': True,
@@ -465,10 +449,10 @@ autodoc_default_options = {
                 self._write_file(str(conf_py), sphinx_quickstart)
                 generated_files.append(str(conf_py))
                 # Create index.rst
-                index_rst = f""".. {variables['project_name']} documentation master file, created by
-   sphinx-quickstart on {datetime.now().strftime('%Y-%m-%d')}.
+                index_rst = f""".. {variables["project_name"]} documentation master file, created by
+   sphinx-quickstart on {datetime.now().strftime("%Y-%m-%d")}.
 
-Welcome to {variables['project_name']}'s documentation!
+Welcome to {variables["project_name"]}'s documentation!
 =========================================
 
 .. toctree::
@@ -489,10 +473,10 @@ Indices and tables
                 generated_files.append(str(index_path))
 
                 # Create modules.rst
-                modules_rst = f"""{variables['project_name']}
-{'=' * len(variables['project_name'])}
+                modules_rst = f"""{variables["project_name"]}
+{"=" * len(variables["project_name"])}
 
-.. automodule:: {variables['project_name'].lower().replace('-', '_')}
+.. automodule:: {variables["project_name"].lower().replace("-", "_")}
    :members:
    :undoc-members:
    :show-inheritance:
@@ -503,9 +487,7 @@ Indices and tables
 
         return generated_files
 
-    def _generate_github_actions(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_github_actions(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate GitHub Actions workflows."""
         generated_files = []
         workflows_dir = Path(output_dir) / ".github" / "workflows"

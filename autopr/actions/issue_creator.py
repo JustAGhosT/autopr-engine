@@ -34,9 +34,7 @@ class IssueCreator:
         self.linear_token: str = os.getenv("LINEAR_API_KEY") or ""
         self.slack_webhook: str = os.getenv("SLACK_WEBHOOK_URL") or ""
 
-    def create_issues_and_tickets(
-        self, inputs: IssueCreatorInputs
-    ) -> IssueCreatorOutputs:
+    def create_issues_and_tickets(self, inputs: IssueCreatorInputs) -> IssueCreatorOutputs:
         """Main function to create issues and tickets"""
 
         github_created = []
@@ -48,9 +46,7 @@ class IssueCreator:
         if inputs.create_github and inputs.github_issues:
             for issue_data in inputs.github_issues:
                 try:
-                    created_issue = self._create_github_issue(
-                        issue_data, inputs.repository
-                    )
+                    created_issue = self._create_github_issue(issue_data, inputs.repository)
                     github_created.append(created_issue)
                 except Exception as e:
                     errors.append(f"Failed to create GitHub issue: {e!s}")
@@ -229,13 +225,9 @@ A Linear ticket has been created for autonomous resolution.
             """
             self._add_github_comment(repo_full_name, issue_number, comment)
 
-    def _add_github_comment(
-        self, repository: str, issue_number: int, comment: str
-    ) -> None:
+    def _add_github_comment(self, repository: str, issue_number: int, comment: str) -> None:
         """Add a comment to a GitHub issue"""
-        url = (
-            f"https://api.github.com/repos/{repository}/issues/{issue_number}/comments"
-        )
+        url = f"https://api.github.com/repos/{repository}/issues/{issue_number}/comments"
 
         headers = {
             "Authorization": f"token {self.github_token}",
@@ -313,9 +305,7 @@ A Linear ticket has been created for autonomous resolution.
         }
 
         if ai_tool in notification_methods:
-            return notification_methods[ai_tool](
-                assignment_key, github_issues, linear_tickets
-            )
+            return notification_methods[ai_tool](assignment_key, github_issues, linear_tickets)
         return {
             "ai_tool": ai_tool,
             "status": "no_notification_method",
@@ -329,9 +319,7 @@ A Linear ticket has been created for autonomous resolution.
 
         # Find relevant Linear tickets for Charlie
         charlie_tickets = [
-            ticket
-            for ticket in linear_tickets
-            if "typescript" in ticket.get("labels", [])
+            ticket for ticket in linear_tickets if "typescript" in ticket.get("labels", [])
         ]
 
         if not charlie_tickets:
@@ -373,9 +361,7 @@ A Linear ticket has been created for autonomous resolution.
             "message": "Charlie notified via Slack and Linear comments",
         }
 
-    def _notify_snyk(
-        self, assignment_key: str, github_issues: list, linear_tickets: list
-    ) -> dict:
+    def _notify_snyk(self, assignment_key: str, github_issues: list, linear_tickets: list) -> dict:
         """Notify Snyk about security issues"""
 
         security_issues = [
@@ -423,9 +409,7 @@ A Linear ticket has been created for autonomous resolution.
         """Notify Promptless about documentation issues"""
 
         doc_issues = [
-            issue
-            for issue in github_issues
-            if "documentation" in issue.get("labels", [])
+            issue for issue in github_issues if "documentation" in issue.get("labels", [])
         ]
 
         if not doc_issues:
@@ -443,9 +427,7 @@ A Linear ticket has been created for autonomous resolution.
     ) -> dict:
         """Notify Testim about testing issues"""
 
-        test_issues = [
-            issue for issue in github_issues if "testing" in issue.get("labels", [])
-        ]
+        test_issues = [issue for issue in github_issues if "testing" in issue.get("labels", [])]
 
         if not test_issues:
             return {"ai_tool": "testim", "status": "no_test_issues"}

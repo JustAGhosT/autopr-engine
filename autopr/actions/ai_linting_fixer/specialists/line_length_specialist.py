@@ -1,44 +1,62 @@
 """
-Line Length Specialist
-
-This specialist handles E501 line-too-long errors by intelligently breaking long lines.
+Line Length Specialist for fixing E501 line-too-long errors.
 """
 
-from typing import List
-
-from .base_specialist import BaseSpecialist
 from autopr.actions.ai_linting_fixer.models import LintingIssue
+
+from .base_specialist import AgentType, BaseSpecialist, FixStrategy
 
 
 class LineLengthSpecialist(BaseSpecialist):
-    """Specialist for fixing line length issues (E501)."""
+    """Specialized agent for fixing line length issues (E501)."""
 
-    def _get_supported_codes(self) -> List[str]:
-        """Get supported error codes."""
+    def __init__(self):
+        super().__init__(AgentType.LINE_LENGTH)
+
+    def _get_supported_codes(self) -> list[str]:
         return ["E501"]
 
     def _get_expertise_level(self) -> str:
-        """Get expertise level."""
         return "expert"
 
-    def get_system_prompt(self, issues: List[LintingIssue]) -> str:
-        """Get specialized system prompt for line length fixes."""
+    def _define_fix_strategies(self) -> list[FixStrategy]:
+        return [
+            FixStrategy(
+                name="smart_line_break",
+                description="Break long lines at logical points (operators, commas, etc.)",
+                confidence_multiplier=1.2,
+                priority=1,
+            ),
+            FixStrategy(
+                name="parentheses_wrapping",
+                description="Use parentheses for implicit line continuation",
+                confidence_multiplier=1.1,
+                priority=2,
+            ),
+            FixStrategy(
+                name="variable_extraction",
+                description="Extract complex expressions to variables",
+                confidence_multiplier=0.9,
+                priority=3,
+            ),
+        ]
+
+    def get_system_prompt(self) -> str:
         return """You are a LINE LENGTH SPECIALIST AI. Your expertise is fixing E501 line-too-long errors.
 
 CORE PRINCIPLES:
 1. Break lines at logical points (after operators, commas, parentheses)
-2. Maintain readability and code structure
-3. Follow PEP 8 line length guidelines (typically 79-88 characters)
-4. Preserve indentation and formatting
-5. Use parentheses for line continuation when possible
+2. Maintain code readability and logical flow
+3. Use Python's implicit line continuation (parentheses) when possible
+4. Preserve original functionality exactly
+5. Follow PEP 8 line breaking guidelines
 
-BREAKING STRATEGIES:
-• Function calls: Break after commas, before closing parenthesis
-• String concatenation: Use parentheses or + operator
-• Long variable assignments: Break after = or operators
-• Import statements: Break after commas
-• Dictionary/list literals: Break after commas
-• Method chains: Break after dots or parentheses
+PREFERRED STRATEGIES:
+• Break after operators (+, -, ==, and, or, etc.)
+• Break after commas in function calls/definitions
+• Use parentheses for implicit continuation
+• Break long string concatenations
+• Extract complex expressions to variables when needed
 
 AVOID:
 • Breaking in the middle of words or strings
@@ -46,24 +64,13 @@ AVOID:
 • Changing logic or functionality
 • Using backslash continuation (\\) unless absolutely necessary
 
-Focus on making clean, readable fixes that improve code quality.
+Focus on making clean, readable fixes that improve code quality."""
 
-Provide your response in the following JSON format:
-{
-    "success": true/false,
-    "fixed_code": "only the specific lines that were fixed",
-    "changes_made": ["list of specific changes made"],
-    "confidence": 0.0-1.0,
-    "explanation": "brief explanation of the fix"
-}
-
-IMPORTANT: In the "fixed_code" field, provide ONLY the specific lines that need to be changed, not the entire file."""
-
-    def get_user_prompt(
-        self, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> str:
+    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
         """Get user prompt for line length fixes."""
-        prompt = f"Please fix the following line length issues in the Python file '{file_path}':\n\n"
+        prompt = (
+            f"Please fix the following line length issues in the Python file '{file_path}':\n\n"
+        )
 
         # Add specific issue details
         for issue in issues:

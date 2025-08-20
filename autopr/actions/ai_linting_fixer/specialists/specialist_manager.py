@@ -1,90 +1,74 @@
 """
-Specialist Manager
-
-This module manages all AI specialists and coordinates their selection and usage.
+Specialist Manager for coordinating AI specialists.
 """
 
-from typing import List, Dict, Type
-
-from .base_specialist import BaseSpecialist
-from .line_length_specialist import LineLengthSpecialist
-from .import_specialist import ImportSpecialist
-from .variable_specialist import VariableSpecialist
-from .exception_specialist import ExceptionSpecialist
-from .style_specialist import StyleSpecialist
-from .logging_specialist import LoggingSpecialist
-from .general_specialist import GeneralSpecialist
+from typing import Any
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 
+from .base_specialist import AgentType, BaseSpecialist
+from .exception_specialist import ExceptionSpecialist
+from .general_specialist import GeneralSpecialist
+from .import_specialist import ImportSpecialist
+from .line_length_specialist import LineLengthSpecialist
+from .logging_specialist import LoggingSpecialist
+from .style_specialist import StyleSpecialist
+from .variable_specialist import VariableSpecialist
+
 
 class SpecialistManager:
-    """Manages all AI specialists and their selection."""
+    """Manages all specialists and their selection."""
 
     def __init__(self):
-        """Initialize the specialist manager."""
-        self.specialists: Dict[str, BaseSpecialist] = {}
-        self._initialize_specialists()
+        """Initialize the specialist manager with all available specialists."""
+        self.specialists = {
+            AgentType.LINE_LENGTH: LineLengthSpecialist(),
+            AgentType.IMPORT_OPTIMIZER: ImportSpecialist(),
+            AgentType.VARIABLE_CLEANER: VariableSpecialist(),
+            AgentType.EXCEPTION_HANDLER: ExceptionSpecialist(),
+            AgentType.STYLE_FIXER: StyleSpecialist(),
+            AgentType.LOGGING_SPECIALIST: LoggingSpecialist(),
+            AgentType.GENERAL_FIXER: GeneralSpecialist(),
+        }
 
-    def _initialize_specialists(self):
-        """Initialize all available specialists."""
-        specialist_classes = [
-            LineLengthSpecialist,
-            LoggingSpecialist,
-            ImportSpecialist,
-            VariableSpecialist,
-            ExceptionSpecialist,
-            StyleSpecialist,
-            GeneralSpecialist,
-        ]
-
-        for specialist_class in specialist_classes:
-            specialist = specialist_class()
-            self.specialists[specialist.name] = specialist
-
-    def get_specialist_for_issues(self, issues: List[LintingIssue]) -> BaseSpecialist:
+    def get_specialist_for_issues(self, issues: list[LintingIssue]) -> BaseSpecialist:
         """Get the best specialist for the given issues."""
         if not issues:
-            return self.specialists["GeneralSpecialist"]
+            return self.specialists[AgentType.GENERAL_FIXER]
 
-        # Calculate specialization scores for each specialist
+        # Calculate specialization scores for all specialists
         scores = {}
-        for name, specialist in self.specialists.items():
+        for agent_type, specialist in self.specialists.items():
             score = specialist.get_specialization_score(issues)
-            scores[name] = score
+            scores[agent_type] = score
 
-        # Find the specialist with the highest score
-        best_specialist_name = max(scores, key=scores.get)
-        best_score = scores[best_specialist_name]
+        # Select the specialist with the highest score
+        best_agent_type = max(scores, key=scores.get)
+        return self.specialists[best_agent_type]
 
-        # If no specialist has a good match, use the general specialist
-        if best_score == 0.0:
-            return self.specialists["GeneralSpecialist"]
+    def get_specialist_by_type(self, agent_type: AgentType) -> BaseSpecialist:
+        """Get a specialist by its type."""
+        return self.specialists.get(agent_type, self.specialists[AgentType.GENERAL_FIXER])
 
-        return self.specialists[best_specialist_name]
-
-    def get_specialist_by_name(self, name: str) -> BaseSpecialist:
-        """Get a specialist by name."""
-        return self.specialists.get(name, self.specialists["GeneralSpecialist"])
-
-    def get_all_specialists(self) -> Dict[str, BaseSpecialist]:
-        """Get all available specialists."""
-        return self.specialists.copy()
-
-    def get_specialist_stats(self) -> Dict[str, Dict]:
-        """Get statistics about all specialists."""
+    def get_specialist_stats(self) -> dict[str, dict[str, Any]]:
+        """Get performance statistics for all specialists."""
         stats = {}
-        for name, specialist in self.specialists.items():
-            stats[name] = {
+        for agent_type, specialist in self.specialists.items():
+            stats[specialist.name] = {
+                "agent_type": agent_type.value,
                 "supported_codes": specialist.supported_codes,
                 "expertise_level": specialist.expertise_level,
-                "can_handle_wildcard": "*" in specialist.supported_codes,
+                "attempts": specialist.performance.attempts,
+                "successes": specialist.performance.successes,
+                "success_rate": specialist.performance.success_rate,
+                "average_confidence": specialist.performance.average_confidence,
+                "total_fixes": specialist.performance.total_fixes,
             }
         return stats
 
-    def list_supported_codes(self) -> List[str]:
-        """Get a list of all supported error codes."""
-        codes = set()
-        for specialist in self.specialists.values():
-            codes.update(specialist.supported_codes)
-        return sorted(list(codes))
+    def record_specialist_result(
+        self, agent_type: AgentType, success: bool, confidence: float = 0.0
+    ) -> None:
+        """Record the result of a specialist's attempt."""
+        if agent_type in self.specialists:
+            self.specialists[agent_type].record_attempt(success, confidence)

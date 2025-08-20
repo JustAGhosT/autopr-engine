@@ -14,11 +14,7 @@ def ask_windows_confirmation() -> bool:
     """Ask user for confirmation to continue on Windows."""
 
     while True:
-        response = (
-            input("Continue with Windows-adapted quality analysis? (y/n): ")
-            .lower()
-            .strip()
-        )
+        response = input("Continue with Windows-adapted quality analysis? (y/n): ").lower().strip()
         if response in ["y", "yes"]:
             return True
         if response in ["n", "no"]:

@@ -41,9 +41,7 @@ def get_quality_analyzer() -> QualityAnalyzer:
 
 
 # Factory functions for easy instantiation
-def create_quality_scorer(
-    severity_weights=None, category_weights=None
-) -> QualityScorer:
+def create_quality_scorer(severity_weights=None, category_weights=None) -> QualityScorer:
     """Create a new quality scorer with optional custom weights."""
     scorer = QualityScorer()
     if severity_weights or category_weights:

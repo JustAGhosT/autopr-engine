@@ -8,7 +8,6 @@ from pathlib import Path
 
 
 def main():
-
     # Read current settings
     vscode_dir = Path(".vscode")
     settings_file = vscode_dir / "settings.json"

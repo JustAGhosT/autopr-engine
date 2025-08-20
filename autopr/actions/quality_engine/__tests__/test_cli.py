@@ -74,9 +74,7 @@ class TestCLI:
 
     @patch("autopr.actions.quality_engine.cli.QualityEngine")
     @patch("autopr.actions.quality_engine.cli.PlatformDetector")
-    def test_main_windows_confirmation_yes(
-        self, mock_platform_detector, mock_quality_engine
-    ):
+    def test_main_windows_confirmation_yes(self, mock_platform_detector, mock_quality_engine):
         """Test CLI with Windows confirmation (yes)."""
         # Mock platform detector
         mock_detector = MagicMock()
@@ -107,9 +105,7 @@ class TestCLI:
 
     @patch("autopr.actions.quality_engine.cli.QualityEngine")
     @patch("autopr.actions.quality_engine.cli.PlatformDetector")
-    def test_main_windows_confirmation_no(
-        self, mock_platform_detector, mock_quality_engine
-    ):
+    def test_main_windows_confirmation_no(self, mock_platform_detector, mock_quality_engine):
         """Test CLI with Windows confirmation (no)."""
         # Mock platform detector
         mock_detector = MagicMock()
@@ -169,8 +165,9 @@ class TestCLI:
         """Test CLI with invalid mode."""
         test_args = ["--files", "test.py", "--mode", "invalid_mode"]
 
-        with patch("sys.argv", ["cli.py", *test_args]), patch(
-            "builtins.input", return_value="y"
+        with (
+            patch("sys.argv", ["cli.py", *test_args]),
+            patch("builtins.input", return_value="y"),
         ):  # Mock input to avoid stdin capture
             with patch("sys.stderr", new=StringIO()) as mock_stderr:
                 try:
@@ -184,9 +181,7 @@ class TestCLI:
 
     @patch("autopr.actions.quality_engine.cli.QualityEngine")
     @patch("autopr.actions.quality_engine.cli.PlatformDetector")
-    def test_main_quality_engine_error(
-        self, mock_platform_detector, mock_quality_engine
-    ):
+    def test_main_quality_engine_error(self, mock_platform_detector, mock_quality_engine):
         """Test CLI when quality engine raises an error."""
         # Mock platform detector
         mock_detector = MagicMock()

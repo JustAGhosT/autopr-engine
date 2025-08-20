@@ -1,84 +1,72 @@
 """
-Variable Specialist
-
-This specialist handles variable-related issues like F841 (unused variables) and F821 (undefined names).
+Variable Specialist for fixing unused variable issues (F841, F821).
 """
 
-from typing import List
-
-from .base_specialist import BaseSpecialist
 from autopr.actions.ai_linting_fixer.models import LintingIssue
+
+from .base_specialist import AgentType, BaseSpecialist, FixStrategy
 
 
 class VariableSpecialist(BaseSpecialist):
-    """Specialist for fixing variable issues (F841, F821)."""
+    """Specialized agent for fixing unused variable issues (F841, F821)."""
 
-    def _get_supported_codes(self) -> List[str]:
-        """Get supported error codes."""
-        return ["F841", "F821"]
+    def __init__(self):
+        super().__init__(AgentType.VARIABLE_CLEANER)
+
+    def _get_supported_codes(self) -> list[str]:
+        return ["F841", "F821", "F823"]
 
     def _get_expertise_level(self) -> str:
-        """Get expertise level."""
-        return "expert"
+        return "advanced"
 
-    def get_system_prompt(self, issues: List[LintingIssue]) -> str:
-        """Get specialized system prompt for variable fixes."""
-        return """You are a VARIABLE SPECIALIST AI. Your expertise is fixing variable-related issues.
+    def _define_fix_strategies(self) -> list[FixStrategy]:
+        return [
+            FixStrategy(
+                name="underscore_prefix",
+                description="Add underscore prefix to indicate intentionally unused",
+                confidence_multiplier=1.2,
+                priority=1,
+            ),
+            FixStrategy(
+                name="variable_removal",
+                description="Remove unused variable assignments",
+                confidence_multiplier=1.1,
+                priority=2,
+            ),
+            FixStrategy(
+                name="use_variable",
+                description="Add meaningful usage of the variable",
+                confidence_multiplier=0.8,
+                priority=3,
+            ),
+        ]
 
-SUPPORTED ISSUES:
-• F841: Unused variable (assigned but never used)
-• F821: Undefined name (variable used but not defined)
+    def get_system_prompt(self) -> str:
+        return """You are a VARIABLE CLEANUP SPECIALIST AI. Your expertise is fixing unused variable issues.
 
 CORE PRINCIPLES:
-1. Remove unused variables to clean up code
-2. Fix undefined variable references
-3. Maintain code logic and functionality
-4. Use meaningful variable names
-5. Follow Python variable naming conventions
+1. Remove truly unused variables (F841)
+2. Fix undefined variable references (F821)
+3. Use underscore prefix for intentionally unused variables
+4. Preserve code functionality and logic
+5. Consider future usage patterns
 
-FIXING STRATEGIES:
-• F841: Remove unused variable assignments or use underscore prefix
-• F821: Define missing variables or fix variable names
-• Use _ prefix for intentionally unused variables
-• Ensure variables are properly scoped
-• Check for typos in variable names
+STRATEGIES:
+• Add underscore prefix (_variable) for intentionally unused variables
+• Remove unused variable assignments when safe
+• Fix undefined variable references
+• Consider if variable might be used in future development
 
-EXAMPLES:
-• F841: result = process() → _ = process() or remove if not needed
-• F821: print(undefined_var) → define undefined_var or fix typo
-• Unused loop variable: for i in range(10): → for _ in range(10):
+BE CAREFUL: Some variables might be used for side effects or future functionality."""
 
-AVOID:
-• Breaking code logic by removing needed variables
-• Creating new variables unnecessarily
-• Changing variable scope inappropriately
-• Making variables less descriptive
-
-Focus on cleaning up variable usage while maintaining code functionality.
-
-Provide your response in the following JSON format:
-{
-    "success": true/false,
-    "fixed_code": "only the specific lines that were fixed",
-    "changes_made": ["list of specific changes made"],
-    "confidence": 0.0-1.0,
-    "explanation": "brief explanation of the fix"
-}
-
-IMPORTANT: In the "fixed_code" field, provide ONLY the specific lines that need to be changed, not the entire file."""
-
-    def get_user_prompt(
-        self, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> str:
+    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
         """Get user prompt for variable fixes."""
         prompt = f"Please fix the following variable issues in the Python file '{file_path}':\n\n"
 
         # Add specific issue details
         for issue in issues:
             if issue.error_code in ["F841", "F821"]:
-                prompt += (
-                    f"Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
-                )
+                prompt += f"Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
                 prompt += f"Content: {issue.line_content}\n\n"
 
         prompt += f"File content:\n```python\n{content}\n```\n\n"

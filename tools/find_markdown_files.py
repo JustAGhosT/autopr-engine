@@ -87,9 +87,7 @@ def find_markdown_files(
 
 def main():
     """Command-line interface for finding markdown files."""
-    parser = argparse.ArgumentParser(
-        description="Find Markdown files in a directory tree."
-    )
+    parser = argparse.ArgumentParser(description="Find Markdown files in a directory tree.")
     parser.add_argument(
         "root_dir",
         nargs="?",

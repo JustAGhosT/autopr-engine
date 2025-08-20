@@ -25,7 +25,9 @@ except ImportError:
 
 class AutoGenInputs(BaseModel):
     task_description: str
-    task_type: str  # "feature_development", "bug_fix", "security_review", "performance_optimization"
+    task_type: (
+        str  # "feature_development", "bug_fix", "security_review", "performance_optimization"
+    )
     repository: str
     file_paths: list[str] = []
     requirements: dict[str, Any] = {}
@@ -35,12 +37,8 @@ class AutoGenInputs(BaseModel):
 
 class AutoGenOutputs(BaseModel):
     implementation_plan: str
-    code_changes: dict[str, str] = Field(
-        default_factory=dict
-    )  # file_path -> code_content
-    test_files: dict[str, str] = Field(
-        default_factory=dict
-    )  # test_file_path -> test_content
+    code_changes: dict[str, str] = Field(default_factory=dict)  # file_path -> code_content
+    test_files: dict[str, str] = Field(default_factory=dict)  # test_file_path -> test_content
     documentation: str
     agent_conversations: list[dict[str, Any]] = Field(default_factory=list)
     quality_score: float
@@ -123,9 +121,7 @@ class AutoGenImplementation:
                 errors=[str(e)],
             )
 
-    def _create_agents(
-        self, task_type: str, complexity_level: str
-    ) -> list[ConversableAgent]:
+    def _create_agents(self, task_type: str, complexity_level: str) -> list[ConversableAgent]:
         """Create specialized agents based on task requirements"""
 
         agents = []
@@ -279,9 +275,7 @@ Review criteria:
             # Initiate the conversation with the architect
             architect = agents[0]  # First agent is always the architect
 
-            result = architect.initiate_chat(
-                manager, message=task_message, max_turns=20
-            )
+            result = architect.initiate_chat(manager, message=task_message, max_turns=20)
 
             # Extract conversation history
             conversation_history = manager.groupchat.messages
@@ -303,7 +297,7 @@ Review criteria:
         """Create the initial task message for agents"""
 
         message = f"""
-# Development Task: {inputs.task_type.replace('_', ' ').title()}
+# Development Task: {inputs.task_type.replace("_", " ").title()}
 
 ## Task Description
 {inputs.task_description}
@@ -312,10 +306,10 @@ Review criteria:
 {inputs.repository}
 
 ## File Paths (if specific files need modification)
-{', '.join(inputs.file_paths) if inputs.file_paths else 'No specific files specified'}
+{", ".join(inputs.file_paths) if inputs.file_paths else "No specific files specified"}
 
 ## Requirements
-{json.dumps(inputs.requirements, indent=2) if inputs.requirements else 'No specific requirements'}
+{json.dumps(inputs.requirements, indent=2) if inputs.requirements else "No specific requirements"}
 
 ## Complexity Level
 {inputs.complexity_level}
@@ -338,9 +332,7 @@ Please work together to create a complete, production-ready solution.
 
         return message.strip()
 
-    def _process_results(
-        self, conversation_result: dict, inputs: AutoGenInputs
-    ) -> AutoGenOutputs:
+    def _process_results(self, conversation_result: dict, inputs: AutoGenInputs) -> AutoGenOutputs:
         """Process the conversation results into structured output"""
 
         if not conversation_result.get("success"):
@@ -391,11 +383,7 @@ Please work together to create a complete, production-ready solution.
             if "implementation plan" in content.lower() or "plan:" in content.lower():
                 plan_content.append(f"**{message.get('name', 'Agent')}**: {content}")
 
-        return (
-            "\n\n".join(plan_content)
-            if plan_content
-            else "No implementation plan found"
-        )
+        return "\n\n".join(plan_content) if plan_content else "No implementation plan found"
 
     def _extract_code_changes(self, conversation_history: list) -> dict[str, str]:
         """Extract code changes from conversation"""
@@ -463,9 +451,7 @@ Please work together to create a complete, production-ready solution.
 
         return "\n\n".join(doc_content) if doc_content else "No documentation found"
 
-    def _extract_filename_from_context(
-        self, content: str, code_block: str
-    ) -> str | None:
+    def _extract_filename_from_context(self, content: str, code_block: str) -> str | None:
         """Try to extract filename from the context around a code block"""
         import re
 

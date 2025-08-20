@@ -157,9 +157,9 @@ async def run_ai_analysis(
     if len(files_for_analysis) > max_files_to_analyze:
         logger.info(f"Limiting AI analysis to {max_files_to_analyze} files")
         # Prioritize smaller files that are more likely to be fully processed
-        files_for_analysis = sorted(
-            files_for_analysis, key=lambda f: os.path.getsize(f)
-        )[:max_files_to_analyze]
+        files_for_analysis = sorted(files_for_analysis, key=lambda f: os.path.getsize(f))[
+            :max_files_to_analyze
+        ]
 
     # Create an AI code analyzer and run the analysis
     analyzer = AICodeAnalyzer(llm_manager)
@@ -190,15 +190,11 @@ async def run_ai_analysis(
 
     if categories:
         summary_lines.append("\n## Issues by Category")
-        for category, count in sorted(
-            categories.items(), key=lambda x: x[1], reverse=True
-        ):
+        for category, count in sorted(categories.items(), key=lambda x: x[1], reverse=True):
             summary_lines.append(f"- {category}: {count} issues")
 
     # Add high-confidence issues
-    high_confidence_issues = [
-        i for i in tool_results["issues"] if i.get("confidence", 0) > 0.8
-    ]
+    high_confidence_issues = [i for i in tool_results["issues"] if i.get("confidence", 0) > 0.8]
     if high_confidence_issues:
         summary_lines.append("\n## High Confidence Suggestions")
         for issue in sorted(
@@ -208,9 +204,7 @@ async def run_ai_analysis(
             line = issue.get("line", "?")
             message = issue.get("message", "Unknown issue")
             confidence = issue.get("confidence", 0)
-            summary_lines.append(
-                f"- {file}:{line} - {message} (Confidence: {confidence:.2f})"
-            )
+            summary_lines.append(f"- {file}:{line} - {message} (Confidence: {confidence:.2f})")
 
     # Add file summaries
     if results:

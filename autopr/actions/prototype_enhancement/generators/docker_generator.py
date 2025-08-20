@@ -52,15 +52,11 @@ class DockerGenerator(BaseGenerator):
 
         # Generate Kubernetes manifests if requested
         if kwargs.get("kubernetes"):
-            generated_files.extend(
-                self._generate_kubernetes_manifests(output_dir, template_vars)
-            )
+            generated_files.extend(self._generate_kubernetes_manifests(output_dir, template_vars))
 
         return generated_files
 
-    def _generate_dockerfile(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_dockerfile(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate Dockerfile based on language and framework."""
         language = variables.get("language", "")
         framework = variables.get("framework", "")
@@ -95,9 +91,7 @@ class DockerGenerator(BaseGenerator):
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_docker_compose(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_docker_compose(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate docker-compose files."""
         generated_files = []
         language = variables.get("language", "")
@@ -134,9 +128,7 @@ class DockerGenerator(BaseGenerator):
             )
 
             if override_content:
-                override_path = str(
-                    Path(output_dir) / f"docker-compose.{environment}.yml"
-                )
+                override_path = str(Path(output_dir) / f"docker-compose.{environment}.yml")
                 self._write_file(override_path, override_content)
                 generated_files.append(override_path)
 
@@ -181,9 +173,7 @@ class DockerGenerator(BaseGenerator):
 
         return services
 
-    def _get_database_service(
-        self, database: str, environment: str
-    ) -> dict[str, Any] | None:
+    def _get_database_service(self, database: str, environment: str) -> dict[str, Any] | None:
         """Get database service configuration."""
         db_configs = {
             "postgresql": {
@@ -273,9 +263,7 @@ class DockerGenerator(BaseGenerator):
 
         return env_vars
 
-    def _generate_docker_ignore(
-        self, output_dir: str, variables: dict[str, Any]
-    ) -> list[str]:
+    def _generate_docker_ignore(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
         """Generate .dockerignore file."""
         language = variables.get("language", "")
         variables.get("framework", "")

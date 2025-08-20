@@ -31,15 +31,14 @@ class LinearClient:
             "Content-Type": "application/json",
         }
 
-    async def query(
-        self, query: str, variables: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    async def query(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
         """Execute a GraphQL query against the Linear API."""
         data = {"query": query, "variables": variables or {}}
 
-        async with aiohttp.ClientSession() as session, session.post(
-            self.base_url, headers=self.headers, json=data
-        ) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(self.base_url, headers=self.headers, json=data) as response,
+        ):
             response.raise_for_status()
             result = await response.json()
 
