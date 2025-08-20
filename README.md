@@ -7,9 +7,9 @@
 [![License: MIT](<https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)>
 [![GitHub Marketplace](<https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/autopr-engine)>
 
-[![CI](https://github.com/neuralliquid/autopr-engine/workflows/CI/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3ACI)
-[![Quality](https://github.com/neuralliquid/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
-[![PR Checks](https://github.com/neuralliquid/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3A%22PR+Checks%22)
+[![CI](https://github.com/JustAGhosT/autopr-engine/workflows/CI/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3ACI)
+[![Quality](https://github.com/JustAGhosT/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
+[![PR Checks](https://github.com/JustAGhosT/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22PR+Checks%22)
 
 AutoPR Engine is a comprehensive AI-powered automation platform that transforms GitHub pull request
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
@@ -87,7 +87,7 @@ docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
-  neuralliquid/autopr-engine:latest
+  justaghost/autopr-engine:latest
 ```
 
 ### **Basic Configuration**
@@ -131,7 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: neuralliquid/autopr-engine@v1
+      - uses: JustAGhosT/autopr-engine@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -212,7 +212,7 @@ graph TB
 
 ```bash
 # Clone repository
-git clone https://github.com/neuralliquid/autopr-engine.git
+git clone https://github.com/JustAGhosT/autopr-engine.git
 cd autopr-engine
 
 # Create virtual environment
@@ -306,7 +306,7 @@ SENTRY_DSN=https://...                  # Error tracking
 ```yaml
 # autopr.yml
 repositories:
-  - owner: neuralliquid
+  - owner: JustAGhosT
     repos: ["vv-landing", "vv-backend"]
 
 workflows:
@@ -473,11 +473,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Documentation**: [https://autopr-engine.readthedocs.io](<https://autopr-engine.readthedocs.io)>
 - **GitHub Issues**: [Report bugs and request
-  features](<https://github.com/neuralliquid/autopr-engine/issues)>
+  features](<https://github.com/JustAGhosT/autopr-engine/issues)>
 - **Discussions**: [Community
-  discussions](<https://github.com/neuralliquid/autopr-engine/discussions)>
-- **Email**: [support@neuralliquid.com](mailto:support@neuralliquid.com)
+  discussions](<https://github.com/JustAGhosT/autopr-engine/discussions)>
+- **Email**: [support@justaghost.com](mailto:support@justaghost.com)
 
 ---
 
-**Made with ❤️ by the NeuralLiquid team**
+**Made with ❤️ by JustAGhosT**
