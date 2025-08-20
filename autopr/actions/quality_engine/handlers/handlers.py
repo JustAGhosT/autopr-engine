@@ -1,5 +1,5 @@
-from ..registry import HandlerRegistry
-from ..results import LintIssue
+from autopr.actions.quality_engine.registry import HandlerRegistry
+from autopr.actions.quality_engine.results import LintIssue
 
 
 registry = HandlerRegistry()

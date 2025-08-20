@@ -237,7 +237,7 @@ class AIAgentManager:
         """Score based on AI's own confidence."""
         if "confidence" in ai_response:
             response_confidence = ai_response["confidence"]
-            if isinstance(response_confidence, (int, float)) and 0 <= response_confidence <= 1:
+            if isinstance(response_confidence, int | float) and 0 <= response_confidence <= 1:
                 confidence = confidence * 0.7 + response_confidence * 0.3
         return confidence
 

@@ -335,7 +335,7 @@ class RuffParser:
             return self._parse_ruff_json(result.stdout)
 
         except Exception as e:
-            logger.error("Failed to run ruff: %s", e)
+            logger.exception("Failed to run ruff: %s", e)
             return []
 
     def _parse_ruff_json(self, json_output: str) -> list[LintingIssue]:
@@ -391,7 +391,7 @@ class RuffParser:
             return issues
 
         except Exception as e:
-            logger.error("Failed to parse ruff JSON: %s", e)
+            logger.exception("Failed to parse ruff JSON: %s", e)
             return []
 
     def _get_line_content(self, file_path: str, line_number: int) -> str:

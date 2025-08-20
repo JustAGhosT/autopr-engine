@@ -2,7 +2,11 @@
 Logging Specialist for fixing logging-related issues (G004).
 """
 
-from .base_specialist import AgentType, BaseSpecialist, FixStrategy
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class LoggingSpecialist(BaseSpecialist):

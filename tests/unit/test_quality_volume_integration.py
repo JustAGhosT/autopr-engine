@@ -34,9 +34,7 @@ class TestVolumeIntegration(unittest.TestCase):
         )
 
         # Patch the tool runner to avoid actual execution
-        self.tool_runner_patcher = patch(
-            "autopr.actions.quality_engine.engine.run_tool"
-        )
+        self.tool_runner_patcher = patch("autopr.actions.quality_engine.engine.run_tool")
         self.mock_run_tool = self.tool_runner_patcher.start()
         self.mock_run_tool.return_value = MagicMock(
             issues=[],

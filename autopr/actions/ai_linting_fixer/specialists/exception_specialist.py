@@ -2,7 +2,11 @@
 Exception Specialist for fixing exception handling issues (E722, B001).
 """
 
-from .base_specialist import AgentType, BaseSpecialist, FixStrategy
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class ExceptionSpecialist(BaseSpecialist):

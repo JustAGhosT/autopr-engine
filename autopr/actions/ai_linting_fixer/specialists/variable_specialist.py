@@ -3,8 +3,11 @@ Variable Specialist for fixing unused variable issues (F841, F821).
 """
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
-
-from .base_specialist import AgentType, BaseSpecialist, FixStrategy
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class VariableSpecialist(BaseSpecialist):

@@ -42,9 +42,9 @@ def test_volume_config():
 
     for volume, expected_mode in test_cases:
         config = VolumeConfig(volume=volume)
-        assert (
-            config.quality_mode == expected_mode
-        ), f"Expected {expected_mode} for volume {volume}, got {config.quality_mode}"
+        assert config.quality_mode == expected_mode, (
+            f"Expected {expected_mode} for volume {volume}, got {config.quality_mode}"
+        )
 
     # Test boolean conversion in config
     config = VolumeConfig(

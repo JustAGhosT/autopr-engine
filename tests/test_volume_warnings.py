@@ -48,9 +48,9 @@ def test_balanced_volume():
 
         # At volume 500, all warnings should be shown
         warning_types = {type(warning.message) for warning in w}
-        assert (
-            len(warning_types) >= 2
-        ), f"Expected multiple warnings at volume 500, got {warning_types}"
+        assert len(warning_types) >= 2, (
+            f"Expected multiple warnings at volume 500, got {warning_types}"
+        )
 
 
 @mark.volume(1000)

@@ -5,15 +5,14 @@ Specialist Manager for coordinating AI specialists.
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
-
-from .base_specialist import AgentType, BaseSpecialist
-from .exception_specialist import ExceptionSpecialist
-from .general_specialist import GeneralSpecialist
-from .import_specialist import ImportSpecialist
-from .line_length_specialist import LineLengthSpecialist
-from .logging_specialist import LoggingSpecialist
-from .style_specialist import StyleSpecialist
-from .variable_specialist import VariableSpecialist
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import AgentType, BaseSpecialist
+from autopr.actions.ai_linting_fixer.specialists.exception_specialist import ExceptionSpecialist
+from autopr.actions.ai_linting_fixer.specialists.general_specialist import GeneralSpecialist
+from autopr.actions.ai_linting_fixer.specialists.import_specialist import ImportSpecialist
+from autopr.actions.ai_linting_fixer.specialists.line_length_specialist import LineLengthSpecialist
+from autopr.actions.ai_linting_fixer.specialists.logging_specialist import LoggingSpecialist
+from autopr.actions.ai_linting_fixer.specialists.style_specialist import StyleSpecialist
+from autopr.actions.ai_linting_fixer.specialists.variable_specialist import VariableSpecialist
 
 
 class SpecialistManager:

@@ -111,12 +111,16 @@ def create_code_quality_task(repo_path: str | Path, context: dict[str, Any], age
     analysis_depth = (
         "thorough"
         if volume > VOLUME_THOROUGH_THRESHOLD
-        else "standard" if volume > VOLUME_STANDARD_THRESHOLD else "quick"
+        else "standard"
+        if volume > VOLUME_STANDARD_THRESHOLD
+        else "quick"
     )
     detail_level = (
         "exhaustive"
         if volume > VOLUME_EXHAUSTIVE_THRESHOLD
-        else "detailed" if volume > VOLUME_DETAILED_THRESHOLD else "focused"
+        else "detailed"
+        if volume > VOLUME_DETAILED_THRESHOLD
+        else "focused"
     )
 
     TaskClass = _select_task_class(agent)
@@ -145,7 +149,9 @@ def create_platform_analysis_task(repo_path: str | Path, context: dict[str, Any]
     analysis_depth = (
         "deep"
         if volume > VOLUME_THOROUGH_THRESHOLD
-        else "moderate" if volume > VOLUME_STANDARD_THRESHOLD else "light"
+        else "moderate"
+        if volume > VOLUME_STANDARD_THRESHOLD
+        else "light"
     )
 
     TaskClass = _select_task_class(agent)

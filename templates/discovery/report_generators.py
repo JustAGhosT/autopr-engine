@@ -291,7 +291,9 @@ class MarkdownReportGenerator(ReportGenerator):
             status = (
                 "🔴 Critical"
                 if metrics.has_critical_issues
-                else "✅ Good" if metrics.overall_score >= 80 else "🟡 Needs Work"
+                else "✅ Good"
+                if metrics.overall_score >= 80
+                else "🟡 Needs Work"
             )
             lines.append(
                 f"| {template_name} | {metrics.overall_score:.1f} | {metrics.quality_grade} | {len(metrics.issues)} | {status} |"
@@ -403,7 +405,9 @@ class HTMLReportGenerator(ReportGenerator):
             status_class = (
                 "critical"
                 if metrics.has_critical_issues
-                else "good" if metrics.overall_score >= 80 else "warning"
+                else "good"
+                if metrics.overall_score >= 80
+                else "warning"
             )
 
             content_html += f"""

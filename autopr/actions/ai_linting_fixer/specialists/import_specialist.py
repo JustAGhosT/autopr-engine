@@ -3,8 +3,11 @@ Import Specialist for fixing import-related issues (F401, F811, etc.).
 """
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
-
-from .base_specialist import AgentType, BaseSpecialist, FixStrategy
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class ImportSpecialist(BaseSpecialist):
