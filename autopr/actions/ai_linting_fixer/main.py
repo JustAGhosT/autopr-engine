@@ -13,7 +13,7 @@ from pathlib import Path
 import random
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.agents import AgentType, agent_manager
+from autopr.actions.ai_linting_fixer.agents import AgentType, specialist_manager
 from autopr.actions.ai_linting_fixer.database import AIInteractionDB, IssueQueueManager
 from autopr.actions.ai_linting_fixer.detection import issue_detector
 from autopr.actions.ai_linting_fixer.display import (
@@ -40,6 +40,8 @@ from autopr.actions.ai_linting_fixer.workflow import (
     WorkflowContext,
     WorkflowIntegrationMixin,
 )
+from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
+from autopr.actions.ai_linting_fixer.issue_processor import IssueProcessor
 from autopr.actions.llm.manager import LLMProviderManager
 from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
 
@@ -95,9 +97,12 @@ class AILintingFixer(WorkflowIntegrationMixin):
         self.llm_manager = llm_manager
         self.max_workers = max_workers
 
-        # Use modular metrics collector
+        # Use modular components
         self.metrics = MetricsCollector()
         self.metrics.start_session()
+
+        # Initialize AI fix applier
+        self.ai_fix_applier = AIFixApplier(llm_manager) if llm_manager else None
 
         # Database-first processing components
         self.db = AIInteractionDB()
@@ -106,7 +111,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
         self.session_id = f"session_{timestamp}_{id(self)}"
 
         # Initialize modular components
-        self.agent_manager = agent_manager
+        self.agent_manager = specialist_manager
         self.issue_detector = issue_detector
         self.safe_file_ops = safe_file_ops
         self.dry_run_ops = dry_run_ops
@@ -299,19 +304,33 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 "issues_addressed": 0,
             }
 
-    def queue_detected_issues(self, issues: list[LintingIssue], *, quiet: bool = False) -> int:
+    def queue_detected_issues(
+        self, issues: list[LintingIssue], *, quiet: bool = False
+    ) -> int:
         """Queue detected linting issues for database-first processing."""
         if not quiet:
             logger.info("Queueing %d issues for processing", len(issues))
 
-        # Queue issues in the database
-        queued_count = 0
+        # Convert issues to the format expected by queue_issues
+        issue_dicts = []
         for issue in issues:
-            try:
-                self.queue_manager.add_issue(issue)  # type: ignore[attr-defined]
-                queued_count += 1
-            except Exception as e:
-                logger.warning("Failed to queue issue: %s", e)
+            issue_dict = {
+                "file_path": issue.file_path,
+                "line_number": issue.line_number,
+                "column_number": issue.column_number,
+                "error_code": issue.error_code,
+                "message": issue.message,
+                "line_content": getattr(issue, "line_content", ""),
+                "priority": self._calculate_issue_priority(issue.error_code),
+            }
+            issue_dicts.append(issue_dict)
+
+        # Queue all issues at once
+        try:
+            queued_count = self.queue_manager.queue_issues(self.session_id, issue_dicts)
+        except Exception as e:
+            logger.warning("Failed to queue issues: %s", e)
+            queued_count = 0
 
         self.stats["issues_queued"] += queued_count
         return queued_count
@@ -335,6 +354,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
         provider: str | None = None,
         model: str | None = None,
         filter_types: list[str] | None = None,
+        max_fixes: int = DEFAULT_MAX_FIXES,
         *,
         quiet: bool = False,
     ) -> dict[str, Any]:
@@ -343,7 +363,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
             logger.info("Processing queued issues with AI")
 
         # Get issues from queue
-        issues = self.queue_manager.get_pending_issues()  # type: ignore[attr-defined]
+        issues = self.queue_manager.get_next_issues(
+            limit=50, worker_id=f"worker_{id(self)}", filter_types=filter_types
+        )
         if not issues:
             return {"success": True, "processed": 0, "fixed": 0}
 
@@ -355,43 +377,29 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 if issue.get("error_code", "").split("(")[0] in filter_types
             ]
 
-        total_processed = 0
-        total_fixed = 0
-        modified_files = []
+        # Use modular issue processor
+        if not self.ai_fix_applier:
+            logger.error("AI fix applier not initialized - cannot process issues")
+            return {"success": False, "processed": 0, "fixed": 0, "modified_files": []}
 
-        for i, issue_data in enumerate(issues):
-            try:
-                self.metrics.start_operation(f"fix_issue_{i}")
+        issue_processor = IssueProcessor(
+            queue_manager=self.queue_manager,
+            metrics=self.metrics,
+            ai_fix_applier=self.ai_fix_applier,
+            session_id=self.session_id,
+        )
 
-                # Simulate AI fix
-                success = self._simulate_ai_fix_from_queue(issue_data, provider, model)
-
-                if success:
-                    total_fixed += 1
-                    modified_files.append(issue_data.get("file_path", "unknown"))
-
-                    # Update database
-                    self.queue_manager.update_issue_status(  # type: ignore[attr-defined]
-                        issue_data["id"], "fixed"
-                    )
-
-                    self.metrics.record_fix_attempt(success=True, confidence=0.85)
-                else:
-                    self.metrics.record_fix_attempt(success=False)
-
-                total_processed += 1
-
-            except Exception:
-                logger.exception("Error fixing issue %s", issue_data)
-                self.metrics.record_fix_attempt(success=False)
-            finally:
-                self.metrics.end_operation(f"fix_issue_{i}")
+        result = issue_processor.process_issues(
+            issues=issues,
+            max_fixes_per_run=max_fixes,
+            filter_types=filter_types,
+        )
 
         return {
             "success": True,
-            "processed": total_processed,
-            "fixed": total_fixed,
-            "modified_files": modified_files,
+            "processed": result["total_processed"],
+            "fixed": result["total_fixed"],
+            "modified_files": result["modified_files"],
         }
 
     def fix_issues_with_ai(
@@ -409,7 +417,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
         - FileOperations for safe file handling
         - Database module for logging
         """
-        self.emit_event("started", {"total_issues": len(issues), "max_fixes": max_fixes})
+        self.emit_event(
+            "started", {"total_issues": len(issues), "max_fixes": max_fixes}
+        )
 
         # Simplified implementation for demonstration
         # In full version, this would use the agent manager
@@ -448,7 +458,8 @@ class AILintingFixer(WorkflowIntegrationMixin):
             success=len(fixed_issues) > 0,
             fixed_issues=fixed_issues,
             remaining_issues=[
-                f"{issue.error_code}:{issue.line_number}" for issue in issues[max_fixes:]
+                f"{issue.error_code}:{issue.line_number}"
+                for issue in issues[max_fixes:]
             ],
             modified_files=modified_files,
         )
@@ -558,6 +569,63 @@ class AILintingFixer(WorkflowIntegrationMixin):
         success_rate = success_rates.get(base_code, 0.5)
         return random.random() < success_rate  # - Used for simulation, not security
 
+    def _apply_real_ai_fix(
+        self, issue_data: dict[str, Any], provider: str | None, model: str | None
+    ) -> bool:
+        """Apply real AI fix using modular components."""
+        if not self.ai_fix_applier:
+            logger.error("AI fix applier not initialized")
+            return False
+
+        try:
+            file_path = issue_data.get("file_path")
+            error_code = issue_data.get("error_code", "")
+            line_number = issue_data.get("line_number", 0)
+            message = issue_data.get("message", "")
+
+            if not file_path or not Path(file_path).exists():
+                return False
+
+            # Read the file content
+            with Path(file_path).open("r", encoding="utf-8") as f:
+                content = f.read()
+
+            # Create a LintingIssue object
+            issue = LintingIssue(
+                file_path=file_path,
+                line_number=line_number,
+                column_number=issue_data.get("column_number", 0),
+                error_code=error_code,
+                message=message,
+                line_content=issue_data.get("line_content", ""),
+            )
+
+            # Get the appropriate specialist agent for this issue type
+            agent = self.agent_manager.get_specialist_for_issues([issue])
+            if not agent:
+                logger.warning(f"No suitable agent found for {error_code}")
+                return False
+
+            # Apply the fix using the modular AI fix applier
+            fix_result = self.ai_fix_applier.apply_specialist_fix(
+                agent, file_path, content, [issue]
+            )
+
+            if fix_result.get("success", False):
+                # Write the fixed content back to the file
+                with Path(file_path).open("w", encoding="utf-8") as f:
+                    f.write(fix_result.get("fixed_content", content))
+                return True
+
+            return False
+
+        except Exception as e:
+            logger.exception(f"Error applying AI fix: {e}")
+            return False
+
+    # Note: _apply_specialist_fix and _apply_ruff_auto_fix methods have been moved to
+    # the modular AIFixApplier class for better separation of concerns.
+
     def close(self) -> None:
         """Clean up resources and close connections."""
         try:
@@ -581,7 +649,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
     def get_queue_statistics(self) -> dict[str, Any]:
         """Get statistics about the issue queue."""
         if hasattr(self, "queue_manager"):
-            return self.queue_manager.get_statistics()  # type: ignore[attr-defined,no-any-return]
+            return self.queue_manager.get_queue_statistics()
         return {}
 
     def get_session_results(self) -> AILintingFixerOutputs:
@@ -590,7 +658,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             return create_empty_outputs(self.session_id)
 
         # Get metrics summary
-        metrics_summary = self.metrics.get_summary()  # type: ignore[attr-defined]
+        metrics_summary = self.metrics.get_session_summary()
 
         # Get queue statistics
         queue_stats = self.get_queue_statistics()
@@ -601,22 +669,33 @@ class AILintingFixer(WorkflowIntegrationMixin):
             with suppress(Exception):
                 redis_stats = self.redis_manager.get_statistics()  # type: ignore[attr-defined]
 
+        # Calculate success rate
+        total_attempts = metrics_summary.get(
+            "successful_fixes", 0
+        ) + metrics_summary.get("failed_fixes", 0)
+        success_rate = (
+            (metrics_summary.get("successful_fixes", 0) / total_attempts)
+            if total_attempts > 0
+            else 0.0
+        )
+
         # Create comprehensive results
         return AILintingFixerOutputs(
-            success=metrics_summary.get("success_rate", 0.0) > DEFAULT_SUCCESS_RATE_THRESHOLD,
+            success=success_rate > DEFAULT_SUCCESS_RATE_THRESHOLD,
             total_issues_found=metrics_summary.get("total_issues", 0),
-            issues_fixed=metrics_summary.get("issues_fixed", 0),
-            files_modified=metrics_summary.get("modified_files", []),
-            summary=f"Session completed with {metrics_summary.get('success_rate', 0.0):.1%} success rate",
+            issues_fixed=metrics_summary.get("successful_fixes", 0),
+            files_modified=[],  # TODO: Track modified files
+            summary=f"Session completed with {success_rate:.1%} success rate",
             total_issues_detected=metrics_summary.get("total_issues", 0),
-            issues_queued=queue_stats.get("queued_count", 0),
-            issues_processed=metrics_summary.get("issues_processed", 0),
-            issues_failed=metrics_summary.get("issues_failed", 0),
-            total_duration=metrics_summary.get("total_duration", 0.0),
-            backup_files_created=metrics_summary.get("backup_files", 0),
-            errors=metrics_summary.get("errors", []),
-            warnings=metrics_summary.get("warnings", []),
-            agent_stats=metrics_summary.get("agent_performance", {}),
+            issues_queued=queue_stats.get("overall", {}).get("total_issues", 0),
+            issues_processed=metrics_summary.get("successful_fixes", 0)
+            + metrics_summary.get("failed_fixes", 0),
+            issues_failed=metrics_summary.get("failed_fixes", 0),
+            total_duration=metrics_summary.get("duration", 0.0),
+            backup_files_created=0,  # TODO: Track backup files
+            errors=[],  # TODO: Track errors
+            warnings=[],  # TODO: Track warnings
+            agent_stats={},  # TODO: Track agent performance
             queue_stats=queue_stats,
             redis_stats=redis_stats,
             session_id=self.session_id,
@@ -653,27 +732,28 @@ def ai_linting_fixer(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
     display = get_display(display_config)
 
     try:
+        # Create LLM manager first
+        llm_config = {
+            "default_provider": inputs.provider or "azure_openai",
+            "fallback_order": ["azure_openai", "openai", "anthropic"],
+            "providers": {
+                "azure_openai": {
+                    "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
+                    "api_version": "2024-02-01",
+                    "deployment_name": "gpt-35-turbo",
+                }
+            },
+        }
+        llm_manager = LLMProviderManager(llm_config)
+
         # Initialize main fixer with all modular components
-        fixer = AILintingFixer()
+        fixer = AILintingFixer(llm_manager=llm_manager)
 
         # Show session start information
         display.operation.show_session_start(inputs, fixer.session_id)
 
         # Show provider status
         try:
-            # Create default LLM config
-            llm_config = {
-                "default_provider": inputs.provider or "azure_openai",
-                "fallback_order": ["azure_openai", "openai", "anthropic"],
-                "providers": {
-                    "azure_openai": {
-                        "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
-                        "api_version": "2024-02-01",
-                        "deployment_name": inputs.model or "gpt-35-turbo",
-                    }
-                },
-            }
-            llm_manager = LLMProviderManager(llm_config)
             available_providers = llm_manager.get_available_providers()
             display.system.show_provider_status(available_providers)
         except Exception as e:
@@ -732,7 +812,8 @@ def ai_linting_fixer(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
         display.operation.show_processing_start(len(legacy_issues))
 
         process_results = fixer.process_queued_issues(
-            filter_types=inputs.filter_types,
+            filter_types=inputs.fix_types,
+            max_fixes=inputs.max_fixes_per_run,
             quiet=inputs.quiet,  # type: ignore[attr-defined]
         )
 
@@ -810,7 +891,9 @@ def print_feature_status() -> None:
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())
-        features["temporal_integration"] = available_orchestrators.get("temporal", False)
+        features["temporal_integration"] = available_orchestrators.get(
+            "temporal", False
+        )
         features["celery_integration"] = available_orchestrators.get("celery", False)
         features["prefect_integration"] = available_orchestrators.get("prefect", False)
     except Exception:
