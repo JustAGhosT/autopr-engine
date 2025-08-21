@@ -48,8 +48,8 @@ class IssueProcessor:
             try:
                 self.metrics.start_operation(f"fix_issue_{i}")
 
-                # Apply AI fix
-                success = self._apply_ai_fix(issue_data)
+                        # Apply AI fix with comprehensive workflow
+        success = self._apply_ai_fix_with_comprehensive_workflow(issue_data)
 
                 if success:
                     total_fixed += 1
@@ -131,6 +131,78 @@ class IssueProcessor:
 
         except Exception as e:
             logger.exception(f"Error applying AI fix: {e}")
+            return False
+
+    def _apply_ai_fix_with_comprehensive_workflow(self, issue_data: Dict[str, Any]) -> bool:
+        """Apply AI fix using the comprehensive workflow with splitting, test generation, and validation."""
+        try:
+            file_path = issue_data.get("file_path")
+            error_code = issue_data.get("error_code", "")
+            line_number = issue_data.get("line_number", 0)
+            message = issue_data.get("message", "")
+
+            if not file_path or not self._file_exists(file_path):
+                return False
+
+            # Read the file content
+            content = self._read_file_content(file_path)
+            if content is None:
+                return False
+
+            # Create LintingIssue object
+            issue = LintingIssue(
+                file_path=file_path,
+                line_number=line_number,
+                column_number=issue_data.get("column_number", 0),
+                error_code=error_code,
+                message=message,
+            )
+
+            # Get the appropriate specialist agent for this issue type
+            agent = specialist_manager.get_specialist_for_issues([issue])
+            if not agent:
+                logger.warning(f"No suitable agent found for {error_code}")
+                return False
+
+            # Apply the fix using comprehensive workflow
+            result = self.ai_fix_applier.apply_specialist_fix_with_comprehensive_workflow(
+                agent, file_path, content, [issue]
+            )
+
+            # Log comprehensive results
+            if result.get("final_success", False):
+                # Log detailed success information
+                strategy = result.get("strategy_used", "unknown")
+                file_split = result.get("file_split_performed", False)
+                tests_generated = result.get("tests_generated", False)
+                validation_passed = result.get("validation_passed", False)
+                
+                logger.info(
+                    f"✅ Comprehensive fix successful for {error_code} in {file_path}\n"
+                    f"   Strategy: {strategy}\n"
+                    f"   File split: {file_split}\n"
+                    f"   Tests generated: {tests_generated}\n"
+                    f"   Validation passed: {validation_passed}"
+                )
+                
+                return True
+            else:
+                # Log detailed failure information
+                error = result.get("error", "Unknown error")
+                rollback_performed = result.get("rollback_performed", False)
+                validation_passed = result.get("validation_passed", False)
+                
+                logger.warning(
+                    f"❌ Comprehensive fix failed for {error_code} in {file_path}\n"
+                    f"   Error: {error}\n"
+                    f"   Rollback performed: {rollback_performed}\n"
+                    f"   Validation passed: {validation_passed}"
+                )
+                
+                return False
+
+        except Exception as e:
+            logger.exception(f"Error applying comprehensive AI fix: {e}")
             return False
 
     def _file_exists(self, file_path: str) -> bool:

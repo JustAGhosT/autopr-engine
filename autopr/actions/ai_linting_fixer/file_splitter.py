@@ -1,1 +1,1 @@
-"""File Splitter Module - Splits large files into smaller components using AI guidance."""
+"""File Splitter Module - Complete AI integration for intelligent file splitting."""
