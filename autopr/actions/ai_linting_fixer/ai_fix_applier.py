@@ -10,6 +10,11 @@ from typing import Any, Dict, List, Optional
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.model_competency import competency_manager
+from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
+from autopr.actions.ai_linting_fixer.validation_manager import (
+    ValidationManager,
+    ValidationConfig,
+)
 from autopr.actions.llm.manager import LLMProviderManager
 from autopr.actions.llm.types import LLMResponse
 
@@ -20,9 +25,99 @@ logger = logging.getLogger(__name__)
 class AIFixApplier:
     """Handles AI fix application with model fallback and validation."""
 
-    def __init__(self, llm_manager: LLMProviderManager):
+    def __init__(
+        self,
+        llm_manager: LLMProviderManager,
+        backup_manager: Optional[BackupManager] = None,
+        validation_config: Optional[ValidationConfig] = None,
+    ):
         """Initialize the AI fix applier."""
         self.llm_manager = llm_manager
+        self.backup_manager = backup_manager or BackupManager()
+        self.validation_manager = ValidationManager(
+            validation_config or ValidationConfig()
+        )
+        self.enable_validation = True
+        self.enable_backup = True
+
+    def apply_specialist_fix_with_validation(
+        self,
+        agent: Any,
+        file_path: str,
+        content: str,
+        issues: List[LintingIssue],
+        session_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Apply fix with backup, validation, and rollback capability."""
+        # 1. Create backup if enabled
+        backup = None
+        if self.enable_backup:
+            backup = self.backup_manager.backup_file(file_path, session_id)
+            if not backup:
+                logger.error(f"Failed to create backup for {file_path}")
+                return {
+                    "success": False,
+                    "error": "Backup creation failed",
+                    "rollback_performed": False,
+                }
+
+        # 2. Apply the fix
+        fix_result = self.apply_specialist_fix(agent, file_path, content, issues)
+
+        if not fix_result.get("success", False):
+            return fix_result
+
+        # 3. Validate the fix if enabled
+        should_keep_fix = True
+        validation_checks = []
+
+        if self.enable_validation:
+            try:
+                error_codes = [issue.error_code.split("(")[0] for issue in issues]
+                should_keep_fix, validation_checks = (
+                    self.validation_manager.validate_file_fix(
+                        file_path,
+                        content,
+                        fix_result.get("fixed_content", ""),
+                        error_codes,
+                    )
+                )
+            except Exception as e:
+                logger.error(f"Validation failed for {file_path}: {e}")
+                should_keep_fix = False
+                validation_checks = []
+
+        # 4. Apply rollback if validation failed
+        rollback_performed = False
+        if not should_keep_fix and backup:
+            logger.info(f"Validation failed, rolling back {file_path}")
+            rollback_success = self.backup_manager.restore_file(file_path, session_id)
+            rollback_performed = rollback_success
+
+            if not rollback_success:
+                logger.error(f"Rollback failed for {file_path}")
+
+        # 5. Update result with validation info
+        fix_result.update(
+            {
+                "validation_performed": self.enable_validation,
+                "validation_passed": should_keep_fix,
+                "validation_checks": [
+                    {
+                        "name": check.check_name,
+                        "result": check.result.value,
+                        "message": check.message,
+                        "execution_time": check.execution_time,
+                    }
+                    for check in validation_checks
+                ],
+                "backup_created": backup is not None,
+                "rollback_performed": rollback_performed,
+                "final_success": fix_result.get("success", False) and should_keep_fix,
+            }
+        )
+
+        return fix_result
 
     def apply_specialist_fix(
         self, agent: Any, file_path: str, content: str, issues: List[LintingIssue]
@@ -115,16 +210,30 @@ class AIFixApplier:
             return {"success": False, "error": str(e)}
 
     def _extract_code_from_response(self, response_content: str) -> Optional[str]:
-        """Extract code from LLM response."""
+        """Extract code from LLM response with intelligent patching."""
         if not response_content:
             return None
 
-        # Look for code blocks
+        # Look for code blocks first
         code_block_pattern = r"```(?:python)?\s*\n(.*?)\n```"
         matches = re.findall(code_block_pattern, response_content, re.DOTALL)
 
         if matches:
-            return matches[0].strip()
+            extracted_code = matches[0].strip()
+            # Check if this looks like a complete file or just a patch
+            if self._is_complete_file(extracted_code):
+                return extracted_code
+            else:
+                # This might be a partial fix - try to extract targeted changes
+                return self._extract_targeted_changes(response_content, extracted_code)
+
+        # Look for specific line changes in the response
+        line_change_pattern = r"(?:Line \d+:|^\d+\.|^[+-])\s*(.+)"
+        line_changes = re.findall(line_change_pattern, response_content, re.MULTILINE)
+
+        if line_changes:
+            # This suggests targeted line changes rather than full file replacement
+            return "\n".join(line_changes)
 
         # If no code blocks, try to extract the entire response if it looks like code
         lines = response_content.strip().split("\n")
@@ -135,6 +244,65 @@ class AIFixApplier:
             return response_content.strip()
 
         return None
+
+    def _is_complete_file(self, code: str) -> bool:
+        """Check if the extracted code represents a complete file."""
+        lines = code.split("\n")
+
+        # Heuristics for complete file:
+        # 1. Has imports at the beginning
+        # 2. Has class or function definitions
+        # 3. Is longer than 10 lines
+        # 4. Doesn't start with partial constructs
+
+        has_imports = any(
+            line.strip().startswith(("import ", "from ")) for line in lines[:10]
+        )
+        has_definitions = any("def " in line or "class " in line for line in lines)
+        is_substantial = len(lines) > 10
+        starts_cleanly = not any(
+            lines[0].strip().startswith(prefix)
+            for prefix in ["...", "# Fix:", "# Change:"]
+        )
+
+        return has_imports and has_definitions and is_substantial and starts_cleanly
+
+    def _extract_targeted_changes(self, full_response: str, code_block: str) -> str:
+        """Extract targeted changes from AI response instead of full file replacement."""
+        # Look for specific change indicators in the response
+        change_indicators = [
+            r"(?:Change|Fix|Replace|Update) line (\d+)",
+            r"Line (\d+):\s*(.+)",
+            r"On line (\d+),?\s*(.+)",
+            r"(\d+):\s*(.+)",
+        ]
+
+        changes = []
+        for pattern in change_indicators:
+            matches = re.findall(pattern, full_response, re.IGNORECASE | re.MULTILINE)
+            for match in matches:
+                if len(match) == 2:  # Line number and change
+                    line_num, change = match
+                    changes.append(f"Line {line_num}: {change}")
+                elif len(match) == 1:  # Just line number, need to find the change
+                    line_num = match[0]
+                    # Look for the next non-empty line as the change
+                    response_lines = full_response.split("\n")
+                    for i, line in enumerate(response_lines):
+                        if line_num in line:
+                            if i + 1 < len(response_lines):
+                                change_line = response_lines[i + 1].strip()
+                                if change_line and not change_line.startswith(
+                                    ("#", "//")
+                                ):
+                                    changes.append(f"Line {line_num}: {change_line}")
+                            break
+
+        if changes:
+            return "\n".join(changes)
+
+        # Fallback to original code block if no targeted changes found
+        return code_block
 
     def _validate_fix(
         self, original_content: str, fixed_content: str, issues: List[LintingIssue]
