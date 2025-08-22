@@ -163,7 +163,7 @@ class AISplitDecisionEngine:
     ):
         self.llm_manager = llm_manager
         self.performance_optimizer = performance_optimizer or PerformanceOptimizer()
-        self.cache_manager = self.performance_optimizer.cache_manager
+        self.cache_manager = self.performance_optimizer.cache
 
     async def should_split_file(
         self, file_path: str, content: str, complexity: Dict[str, Any]
@@ -184,12 +184,19 @@ class AISplitDecisionEngine:
         # AI analysis
         try:
             prompt = self._create_split_decision_prompt(content, complexity)
-            response = await self.llm_manager.call_llm(
-                "openai",
-                prompt,
-                system_prompt="You are an expert code analyzer. Determine if a file should be split based on complexity, maintainability, and best practices.",
-                temperature=0.1,
-            )
+            # Use the LLM manager's complete method
+            request = {
+                "provider": "openai",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are an expert code analyzer. Determine if a file should be split based on complexity, maintainability, and best practices.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.1,
+            }
+            response = self.llm_manager.complete(request)
 
             if response and response.content:
                 # Parse AI response (simplified)
@@ -341,10 +348,12 @@ class FileSplitter:
 
         # Use parallel processing for large files
         if len(lines) > 500 and config.enable_parallel_processing:
-            components = await self.parallel_processor.process_parallel(
-                self._split_by_functions,
-                [(content, config)],
-                max_workers=config.max_parallel_workers,
+            # Use the correct method name from ParallelProcessor
+            components = self.parallel_processor.process_file_chunks_parallel(
+                Path("temp"),  # Temporary path for processing
+                content,
+                lambda chunk: self._split_by_functions(chunk, config),
+                chunk_size=500,
             )
             if components:
                 return components[0]  # Return first result
