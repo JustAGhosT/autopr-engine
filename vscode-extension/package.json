@@ -180,7 +180,11 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "clean": "rimraf out",
+    "build": "npm run clean && npm run compile"
   },
   "devDependencies": {
     "@types/vscode": "^1.74.0",
@@ -192,8 +196,10 @@
     "eslint": "^8.26.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
+    "rimraf": "^5.0.0",
     "typescript": "^4.8.4",
-    "vscode-test": "^2.3.0"
+    "vscode-test": "^2.3.0",
+    "vsce": "^2.15.0"
   },
   "dependencies": {
     "axios": "^1.4.0"
