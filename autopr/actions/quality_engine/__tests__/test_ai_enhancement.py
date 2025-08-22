@@ -20,7 +20,7 @@ class TestAIAnalyzer:
         self.test_files = ["test.py"]
         self.test_content = "def test_function():\n    pass\n"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_code_quality(self):
         """Test AI code quality analysis."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -44,7 +44,7 @@ class TestAIAnalyzer:
             assert result["issues"] == ["Missing type hints", "No docstring"]
             mock_provider.analyze.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_security_issues(self):
         """Test AI security analysis."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -76,7 +76,7 @@ class TestAIAnalyzer:
                 "Use environment variables",
             ]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_performance_issues(self):
         """Test AI performance analysis."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -100,7 +100,7 @@ class TestAIAnalyzer:
                 "Add garbage collection",
             ]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_best_practices(self):
         """Test AI best practices analysis."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -121,7 +121,7 @@ class TestAIAnalyzer:
             ]
             assert result["violations"] == ["Line too long", "Unused import"]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_with_different_modes(self):
         """Test AI analysis with different modes."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -137,7 +137,7 @@ class TestAIAnalyzer:
             result = await self.analyzer.analyze(self.test_files, AIMode.FOCUSED)
             assert result is not None
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_with_context(self):
         """Test AI analysis with additional context."""
         context = {
@@ -158,7 +158,7 @@ class TestAIAnalyzer:
             call_args = mock_provider.analyze.call_args[1]
             assert "context" in call_args
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_analyze_ai_provider_failure(self):
         """Test AI analysis when provider fails."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -312,7 +312,7 @@ class TestAIHandler:
         assert "Add docstring" in actionable
         assert "Use parameterized queries" in actionable
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_apply_suggestions(self):
         """Test applying AI suggestions to code."""
         suggestions = ["Add type hints", "Add docstring"]
@@ -352,7 +352,7 @@ class TestAIEnhancementIntegration:
         self.handler = AIHandler()
         self.test_files = ["test.py"]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_end_to_end_ai_analysis(self):
         """Test end-to-end AI analysis workflow."""
         with patch.object(self.analyzer, "_get_ai_provider") as mock_get_provider:
@@ -377,7 +377,7 @@ class TestAIEnhancementIntegration:
             assert len(processed["suggestions"]) == 2
             assert processed["score"] == 0.85
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_ai_enhanced_quality_engine_integration(self):
         """Test AI enhancement integration with Quality Engine."""
         from autopr.actions.quality_engine.engine import QualityEngine

@@ -7,21 +7,16 @@ intelligent decision-making about when and how to split large files.
 """
 
 import ast
-import logging
-import os
-import re
-import time
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+import logging
+import time
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.ai_linting_fixer.specialists.base_specialist import BaseSpecialist
-from autopr.actions.learning_memory_system import LearningMemorySystem
+from autopr.actions.learning_memory_system import LearningMemorySystem, MemoryInputs
 from autopr.actions.llm.manager import LLMProviderManager
 
 
@@ -37,7 +32,7 @@ class SplitComponent:
     start_line: int
     end_line: int
     component_type: str  # "class", "function", "module", "section"
-    dependencies: List[str]
+    dependencies: list[str]
     complexity_score: float
     file_path: str
 
@@ -99,7 +94,7 @@ class SplitResult(BaseModel):
 
     success: bool
     original_file: str
-    components: List[SplitComponent] = Field(default_factory=list)
+    components: list[SplitComponent] = Field(default_factory=list)
     split_strategy: str = ""
     reasoning: str = ""
     processing_time: float = 0.0
@@ -113,9 +108,9 @@ class FileComplexityAnalyzer:
     """Analyzes file complexity for splitting decisions."""
 
     def __init__(self):
-        self.complexity_cache: Dict[str, Dict[str, Any]] = {}
+        self.complexity_cache: dict[str, dict[str, Any]] = {}
 
-    def analyze_file_complexity(self, file_path: str, content: str) -> Dict[str, Any]:
+    def analyze_file_complexity(self, file_path: str, content: str) -> dict[str, Any]:
         """Analyze file complexity metrics."""
         if file_path in self.complexity_cache:
             return self.complexity_cache[file_path]
@@ -155,7 +150,7 @@ class FileComplexityAnalyzer:
             return complexity_data
 
         except SyntaxError as e:
-            logger.warning(f"Syntax error in {file_path}: {e}")
+            logger.warning("Syntax error in %s: %s", file_path, e)
             return {
                 "total_lines": len(content.splitlines()),
                 "total_functions": 0,
@@ -171,8 +166,8 @@ class FileComplexityAnalyzer:
             }
 
     def should_split_by_complexity(
-        self, complexity_data: Dict[str, Any], config: SplitConfig
-    ) -> Tuple[bool, str]:
+        self, complexity_data: dict[str, Any], config: SplitConfig
+    ) -> tuple[bool, str]:
         """Determine if file should be split based on complexity metrics."""
         reasons = []
 
@@ -183,7 +178,8 @@ class FileComplexityAnalyzer:
 
         if complexity_data["total_functions"] > config.max_functions_per_file:
             reasons.append(
-                f"Too many functions ({complexity_data['total_functions']} > {config.max_functions_per_file})"
+                f"Too many functions ({complexity_data['total_functions']} > "
+                f"{config.max_functions_per_file})"
             )
 
         if complexity_data["total_classes"] > config.max_classes_per_file:
@@ -253,11 +249,11 @@ class ComplexityVisitor(ast.NodeVisitor):
         complexity = 1  # Base complexity
 
         for child in ast.walk(node):
-            if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor)):
-                complexity += 1
-            elif isinstance(child, ast.ExceptHandler):
-                complexity += 1
-            elif isinstance(child, ast.With):
+            if (
+                isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor))
+                or isinstance(child, ast.ExceptHandler)
+                or isinstance(child, ast.With)
+            ):
                 complexity += 1
             elif isinstance(child, ast.Compare):
                 # Count comparison operators
@@ -282,15 +278,15 @@ class AISplitDecisionEngine:
     ):
         self.llm_manager = llm_manager
         self.learning_system = learning_system
-        self.decision_cache: Dict[str, Dict[str, Any]] = {}
+        self.decision_cache: dict[str, dict[str, Any]] = {}
 
     def analyze_split_decision(
         self,
         file_path: str,
         content: str,
-        complexity_data: Dict[str, Any],
+        complexity_data: dict[str, Any],
         config: SplitConfig,
-    ) -> Tuple[bool, str, float]:
+    ) -> tuple[bool, str, float]:
         """Use AI to analyze whether and how to split a file."""
 
         cache_key = f"{file_path}_{hash(content)}"
@@ -339,8 +335,8 @@ class AISplitDecisionEngine:
             return False, f"AI analysis error: {e}", 0.0
 
     def _get_historical_patterns(
-        self, file_path: str, complexity_data: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, file_path: str, complexity_data: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Get historical splitting patterns for similar files."""
         try:
             # Query learning memory system for similar patterns
@@ -356,8 +352,8 @@ class AISplitDecisionEngine:
         self,
         file_path: str,
         content: str,
-        complexity_data: Dict[str, Any],
-        patterns: List[Dict[str, Any]],
+        complexity_data: dict[str, Any],
+        patterns: list[dict[str, Any]],
         config: SplitConfig,
     ) -> str:
         """Create prompt for AI split decision."""
@@ -417,7 +413,7 @@ Consider the following factors:
 
 Provide clear, actionable decisions with confidence scores based on your analysis."""
 
-    def _parse_ai_decision(self, response: str) -> Dict[str, Any]:
+    def _parse_ai_decision(self, response: str) -> dict[str, Any]:
         """Parse AI response into structured decision."""
         try:
             lines = response.strip().split("\n")
@@ -446,7 +442,7 @@ Provide clear, actionable decisions with confidence scores based on your analysi
             }
 
     def _learn_from_decision(
-        self, file_path: str, complexity_data: Dict[str, Any], decision: Dict[str, Any]
+        self, file_path: str, complexity_data: dict[str, Any], decision: dict[str, Any]
     ):
         """Learn from the split decision for future improvements."""
         try:
@@ -474,10 +470,10 @@ class FileSplitter:
 
     def __init__(
         self,
-        config: Optional[SplitConfig] = None,
-        llm_manager: Optional[LLMProviderManager] = None,
-        learning_system: Optional[LearningMemorySystem] = None,
-        metrics_collector: Optional[MetricsCollector] = None,
+        config: SplitConfig | None = None,
+        llm_manager: LLMProviderManager | None = None,
+        learning_system: LearningMemorySystem | None = None,
+        metrics_collector: MetricsCollector | None = None,
     ):
         self.config = config or SplitConfig()
         self.llm_manager = llm_manager
@@ -493,9 +489,9 @@ class FileSplitter:
         )
 
         # Performance tracking
-        self.split_history: List[Dict[str, Any]] = []
+        self.split_history: list[dict[str, Any]] = []
 
-    def should_split_file(self, file_path: str, content: str) -> Tuple[bool, str]:
+    def should_split_file(self, file_path: str, content: str) -> tuple[bool, str]:
         """Determine if a file should be split based on complexity and AI analysis."""
         start_time = time.time()
 
@@ -609,7 +605,7 @@ class FileSplitter:
             )
 
     def _choose_splitting_strategy(
-        self, complexity_data: Dict[str, Any], content: str
+        self, complexity_data: dict[str, Any], content: str
     ) -> str:
         """Choose the best splitting strategy based on file characteristics."""
         if complexity_data["total_classes"] > complexity_data["total_functions"]:
@@ -623,7 +619,7 @@ class FileSplitter:
 
     def _execute_splitting_strategy(
         self, strategy: str, file_path: str, content: str
-    ) -> List[SplitComponent]:
+    ) -> list[SplitComponent]:
         """Execute the chosen splitting strategy."""
         if strategy == "class_based":
             return self._split_by_classes(file_path, content)
@@ -634,7 +630,7 @@ class FileSplitter:
         else:
             return self._split_by_modules(file_path, content)
 
-    def _split_by_classes(self, file_path: str, content: str) -> List[SplitComponent]:
+    def _split_by_classes(self, file_path: str, content: str) -> list[SplitComponent]:
         """Split file by classes."""
         components = []
         lines = content.splitlines()
@@ -674,7 +670,7 @@ class FileSplitter:
             logger.warning(f"Syntax error in {file_path}: {e}")
             return []
 
-    def _split_by_functions(self, file_path: str, content: str) -> List[SplitComponent]:
+    def _split_by_functions(self, file_path: str, content: str) -> list[SplitComponent]:
         """Split file by functions."""
         components = []
         lines = content.splitlines()
@@ -725,7 +721,7 @@ class FileSplitter:
             logger.warning(f"Syntax error in {file_path}: {e}")
             return []
 
-    def _split_by_sections(self, file_path: str, content: str) -> List[SplitComponent]:
+    def _split_by_sections(self, file_path: str, content: str) -> list[SplitComponent]:
         """Split file by logical sections."""
         components = []
         lines = content.splitlines()
@@ -751,7 +747,7 @@ class FileSplitter:
 
         return components
 
-    def _split_by_modules(self, file_path: str, content: str) -> List[SplitComponent]:
+    def _split_by_modules(self, file_path: str, content: str) -> list[SplitComponent]:
         """Split file by modules (default strategy)."""
         # For now, return the original file as a single component
         return [
@@ -767,7 +763,7 @@ class FileSplitter:
             )
         ]
 
-    def _extract_dependencies(self, node: ast.AST) -> List[str]:
+    def _extract_dependencies(self, node: ast.AST) -> list[str]:
         """Extract dependencies from an AST node."""
         dependencies = []
         for child in ast.walk(node):
@@ -788,7 +784,7 @@ class FileSplitter:
         """Create a backup of the original file."""
         try:
             backup_path = f"{file_path}.backup_{int(time.time())}"
-            with open(file_path, "r", encoding="utf-8") as src:
+            with open(file_path, encoding="utf-8") as src:
                 with open(backup_path, "w", encoding="utf-8") as dst:
                     dst.write(src.read())
             logger.info(f"Created backup: {backup_path}")
@@ -797,7 +793,7 @@ class FileSplitter:
             logger.error(f"Failed to create backup for {file_path}: {e}")
             return False
 
-    def _validate_split_components(self, components: List[SplitComponent]) -> bool:
+    def _validate_split_components(self, components: list[SplitComponent]) -> bool:
         """Validate that split components are syntactically correct."""
         for component in components:
             try:
@@ -810,7 +806,7 @@ class FileSplitter:
     def _record_split_analysis(
         self,
         file_path: str,
-        complexity_data: Dict[str, Any],
+        complexity_data: dict[str, Any],
         should_split: bool,
         reasoning: str,
         processing_time: float,
@@ -826,7 +822,7 @@ class FileSplitter:
         self,
         file_path: str,
         strategy: str,
-        components: List[SplitComponent],
+        components: list[SplitComponent],
         validation_passed: bool,
     ):
         """Record split result in history."""
@@ -840,7 +836,7 @@ class FileSplitter:
             }
         )
 
-    def get_split_statistics(self) -> Dict[str, Any]:
+    def get_split_statistics(self) -> dict[str, Any]:
         """Get statistics about file splitting operations."""
         if not self.split_history:
             return {"total_splits": 0, "success_rate": 0.0}

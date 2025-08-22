@@ -48,8 +48,8 @@ class IssueProcessor:
             try:
                 self.metrics.start_operation(f"fix_issue_{i}")
 
-                        # Apply AI fix with comprehensive workflow
-        success = self._apply_ai_fix_with_comprehensive_workflow(issue_data)
+                # Apply AI fix with comprehensive workflow
+                success = self._apply_ai_fix_with_comprehensive_workflow(issue_data)
 
                 if success:
                     total_fixed += 1
@@ -176,7 +176,7 @@ class IssueProcessor:
                 file_split = result.get("file_split_performed", False)
                 tests_generated = result.get("tests_generated", False)
                 validation_passed = result.get("validation_passed", False)
-                
+
                 logger.info(
                     f"✅ Comprehensive fix successful for {error_code} in {file_path}\n"
                     f"   Strategy: {strategy}\n"
@@ -184,21 +184,21 @@ class IssueProcessor:
                     f"   Tests generated: {tests_generated}\n"
                     f"   Validation passed: {validation_passed}"
                 )
-                
+
                 return True
             else:
                 # Log detailed failure information
                 error = result.get("error", "Unknown error")
                 rollback_performed = result.get("rollback_performed", False)
                 validation_passed = result.get("validation_passed", False)
-                
+
                 logger.warning(
                     f"❌ Comprehensive fix failed for {error_code} in {file_path}\n"
                     f"   Error: {error}\n"
                     f"   Rollback performed: {rollback_performed}\n"
                     f"   Validation passed: {validation_passed}"
                 )
-                
+
                 return False
 
         except Exception as e:

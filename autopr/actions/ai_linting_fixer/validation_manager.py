@@ -5,13 +5,14 @@ Manages validation phases and rollback decisions for AI fixes.
 """
 
 import ast
-import logging
-import subprocess
-import tempfile
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
+import logging
+from pathlib import Path
+import subprocess
+import tempfile
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class ValidationCheck:
     check_name: str
     result: ValidationResult
     message: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     execution_time: float
 
 
@@ -54,18 +55,18 @@ class ValidationConfig:
 class ValidationManager:
     """Manages validation phases and rollback decisions."""
 
-    def __init__(self, config: Optional[ValidationConfig] = None):
+    def __init__(self, config: ValidationConfig | None = None):
         """Initialize the validation manager."""
         self.config = config or ValidationConfig()
-        self.validation_history: List[Dict[str, Any]] = []
+        self.validation_history: list[dict[str, Any]] = []
 
     def validate_file_fix(
         self,
         file_path: str,
         original_content: str,
         fixed_content: str,
-        issue_codes: List[str],
-    ) -> Tuple[bool, List[ValidationCheck]]:
+        issue_codes: list[str],
+    ) -> tuple[bool, list[ValidationCheck]]:
         """Validate a file fix and return whether it should be kept."""
         checks = []
 
@@ -78,9 +79,7 @@ class ValidationManager:
                 syntax_check.result == ValidationResult.FAILED
                 and self.config.rollback_on_syntax_error
             ):
-                logger.warning(
-                    f"Syntax error detected, recommending rollback for {file_path}"
-                )
+                logger.warning(f"Syntax error detected, recommending rollback for {file_path}")
                 return False, checks
 
         # 2. Import validation
@@ -92,9 +91,7 @@ class ValidationManager:
                 import_check.result == ValidationResult.FAILED
                 and self.config.rollback_on_import_error
             ):
-                logger.warning(
-                    f"Import error detected, recommending rollback for {file_path}"
-                )
+                logger.warning(f"Import error detected, recommending rollback for {file_path}")
                 return False, checks
 
         # 3. Linting validation (check if issues were actually fixed)
@@ -113,15 +110,11 @@ class ValidationManager:
                 test_check.result == ValidationResult.FAILED
                 and self.config.rollback_on_test_failure
             ):
-                logger.warning(
-                    f"Test failure detected, recommending rollback for {file_path}"
-                )
+                logger.warning(f"Test failure detected, recommending rollback for {file_path}")
                 return False, checks
 
         # Calculate overall validation score
-        passed_checks = sum(
-            1 for check in checks if check.result == ValidationResult.PASSED
-        )
+        passed_checks = sum(1 for check in checks if check.result == ValidationResult.PASSED)
         total_checks = len([c for c in checks if c.result != ValidationResult.SKIPPED])
 
         if total_checks == 0:
@@ -143,9 +136,7 @@ class ValidationManager:
                 for check in checks
             ],
             "recommended_action": (
-                "keep"
-                if validation_score >= self.config.rollback_threshold
-                else "rollback"
+                "keep" if validation_score >= self.config.rollback_threshold else "rollback"
             ),
         }
         self.validation_history.append(validation_record)
@@ -205,9 +196,7 @@ class ValidationManager:
 
         try:
             # Create a temporary file to test imports
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False
-            ) as temp_file:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
                 temp_file.write(content)
                 temp_file_path = temp_file.name
 
@@ -266,7 +255,7 @@ class ValidationManager:
         file_path: str,
         original_content: str,
         fixed_content: str,
-        target_issue_codes: List[str],
+        target_issue_codes: list[str],
     ) -> ValidationCheck:
         """Validate that the linting issues were actually improved."""
         import time
@@ -296,9 +285,7 @@ class ValidationManager:
 
             if issues_fixed > 0 and new_issues <= 2:  # Allow up to 2 new minor issues
                 result = ValidationResult.PASSED
-                message = (
-                    f"Fixed {issues_fixed} issues, {new_issues} new issues introduced"
-                )
+                message = f"Fixed {issues_fixed} issues, {new_issues} new issues introduced"
             elif issues_fixed == 0 and new_issues == 0:
                 result = ValidationResult.WARNING
                 message = "No issues fixed, but no new issues introduced"
@@ -330,12 +317,10 @@ class ValidationManager:
                 execution_time=time.time() - start_time,
             )
 
-    def _get_ruff_issues(self, content: str) -> List[str]:
+    def _get_ruff_issues(self, content: str) -> list[str]:
         """Get ruff issues for content."""
         try:
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False
-            ) as temp_file:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
                 temp_file.write(content)
                 temp_file_path = temp_file.name
 
@@ -435,7 +420,7 @@ class ValidationManager:
                 execution_time=time.time() - start_time,
             )
 
-    def _find_test_files(self, file_path: Path) -> List[Path]:
+    def _find_test_files(self, file_path: Path) -> list[Path]:
         """Find test files related to the given file."""
         test_files = []
 
@@ -464,7 +449,7 @@ class ValidationManager:
                 # Also look for test files that import the module
                 for test_file in test_dir.glob("test_*.py"):
                     try:
-                        with open(test_file, "r", encoding="utf-8") as f:
+                        with open(test_file, encoding="utf-8") as f:
                             content = f.read()
                             if file_path.stem in content:
                                 test_files.append(test_file)
@@ -473,19 +458,14 @@ class ValidationManager:
 
         return list(set(test_files))  # Remove duplicates
 
-    def get_validation_stats(self) -> Dict[str, Any]:
+    def get_validation_stats(self) -> dict[str, Any]:
         """Get validation statistics."""
         if not self.validation_history:
             return {}
 
         total_validations = len(self.validation_history)
-        kept_fixes = sum(
-            1 for v in self.validation_history if v["recommended_action"] == "keep"
-        )
-        avg_score = (
-            sum(v["validation_score"] for v in self.validation_history)
-            / total_validations
-        )
+        kept_fixes = sum(1 for v in self.validation_history if v["recommended_action"] == "keep")
+        avg_score = sum(v["validation_score"] for v in self.validation_history) / total_validations
 
         check_stats = {}
         for validation in self.validation_history:

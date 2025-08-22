@@ -4,8 +4,6 @@ Import Specialist Module
 This module provides specialized handling for import-related linting issues.
 """
 
-from typing import List
-
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
     AgentType,
@@ -21,7 +19,7 @@ class ImportSpecialist(BaseSpecialist):
         """Initialize the import specialist."""
         super().__init__(AgentType.IMPORT_OPTIMIZER)
 
-    def _get_supported_codes(self) -> List[str]:
+    def _get_supported_codes(self) -> list[str]:
         """Get the list of error codes this specialist supports."""
         return [
             "F401",  # Unused imports
@@ -36,7 +34,7 @@ class ImportSpecialist(BaseSpecialist):
         """Get the expertise level of this specialist."""
         return "expert"
 
-    def _define_fix_strategies(self) -> List[FixStrategy]:
+    def _define_fix_strategies(self) -> list[FixStrategy]:
         """Define the fix strategies this specialist uses."""
         return [
             FixStrategy(
@@ -69,14 +67,12 @@ class ImportSpecialist(BaseSpecialist):
 
 Always maintain code functionality while improving import clarity and efficiency."""
 
-    def get_specialization_score(self, issues: List[LintingIssue]) -> float:
+    def get_specialization_score(self, issues: list[LintingIssue]) -> float:
         """Calculate specialization score for import issues."""
         if not issues:
             return 0.0
 
-        import_issues = [
-            issue for issue in issues if issue.error_code in self.supported_codes
-        ]
+        import_issues = [issue for issue in issues if issue.error_code in self.supported_codes]
 
         if not import_issues:
             return 0.0
@@ -85,7 +81,7 @@ Always maintain code functionality while improving import clarity and efficiency
         return min(1.0, len(import_issues) / len(issues) * 2.0)
 
     def validate_fix(
-        self, original_content: str, fixed_content: str, issues: List[LintingIssue]
+        self, original_content: str, fixed_content: str, issues: list[LintingIssue]
     ) -> bool:
         """Validate that the fix addresses the import issues."""
         # Basic validation - check if content changed
@@ -94,8 +90,6 @@ Always maintain code functionality while improving import clarity and efficiency
 
         # Check for common import patterns
         import_keywords = ["import ", "from ", "as "]
-        has_import_changes = any(
-            keyword in fixed_content for keyword in import_keywords
-        )
+        has_import_changes = any(keyword in fixed_content for keyword in import_keywords)
 
         return has_import_changes

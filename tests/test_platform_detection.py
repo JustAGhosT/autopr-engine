@@ -16,15 +16,15 @@ class TestPlatformDetection(unittest.TestCase):
         for platform_id, platform in ai_platforms.items():
             # Check required top-level fields
             assert platform_id == platform.get("id"), f"Platform ID mismatch for {platform_id}"
-            assert isinstance(platform.get("name"), str), (
-                f"Platform {platform_id} missing or invalid 'name'"
-            )
-            assert isinstance(platform.get("description"), str), (
-                f"Platform {platform_id} missing or invalid 'description'"
-            )
-            assert platform.get("category") == "ai_development", (
-                f"Platform {platform_id} has incorrect category"
-            )
+            assert isinstance(
+                platform.get("name"), str
+            ), f"Platform {platform_id} missing or invalid 'name'"
+            assert isinstance(
+                platform.get("description"), str
+            ), f"Platform {platform_id} missing or invalid 'description'"
+            assert (
+                platform.get("category") == "ai_development"
+            ), f"Platform {platform_id} has incorrect category"
 
             # Verify detection section exists
             assert "detection" in platform, f"Platform {platform_id} missing 'detection' section"
@@ -69,20 +69,20 @@ class TestPlatformDetection(unittest.TestCase):
                 "package_scripts",
             ]:
                 if field in detection:
-                    assert isinstance(detection[field], list), (
-                        f"{field} should be a list in platform {platform_id}"
-                    )
+                    assert isinstance(
+                        detection[field], list
+                    ), f"{field} should be a list in platform {platform_id}"
 
             # Check confidence_weights if present
             if "confidence_weights" in detection:
-                assert isinstance(detection["confidence_weights"], dict), (
-                    f"confidence_weights should be a dict in platform {platform_id}"
-                )
+                assert isinstance(
+                    detection["confidence_weights"], dict
+                ), f"confidence_weights should be a dict in platform {platform_id}"
 
             # Check project_config section
-            assert "project_config" in platform, (
-                f"Platform {platform_id} missing 'project_config' section"
-            )
+            assert (
+                "project_config" in platform
+            ), f"Platform {platform_id} missing 'project_config' section"
             project_config = platform["project_config"]
 
             # Check required project_config fields - these are optional in the actual schema
@@ -91,9 +91,9 @@ class TestPlatformDetection(unittest.TestCase):
             # Check optional list fields in project_configuration
             for field in ["common_files", "deployment_targets"]:
                 if field in project_config:
-                    assert isinstance(project_config[field], list), (
-                        f"{field} should be a list in project config for {platform_id}"
-                    )
+                    assert isinstance(
+                        project_config[field], list
+                    ), f"{field} should be a list in project config for {platform_id}"
 
 
 if __name__ == "__main__":

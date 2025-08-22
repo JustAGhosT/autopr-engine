@@ -388,9 +388,9 @@ class TestCrewVolumeIntegration:
 
         # Now test the method
         quality_inputs = crew._create_quality_inputs(volume)
-        assert quality_inputs.mode == expected_mode, (
-            f"Volume {volume} should map to {expected_mode}, got {quality_inputs.mode}"
-        )
+        assert (
+            quality_inputs.mode == expected_mode
+        ), f"Volume {volume} should map to {expected_mode}, got {quality_inputs.mode}"
 
     @pytest.mark.parametrize(
         "volume,expected_detail",

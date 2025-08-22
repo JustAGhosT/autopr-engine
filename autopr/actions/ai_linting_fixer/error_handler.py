@@ -4,10 +4,12 @@ Error Handler Module
 This module provides error handling and recovery mechanisms for the AI linting fixer.
 """
 
-from typing import Callable, Dict, List, Optional, Any
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 import logging
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +49,11 @@ class ErrorRecoveryStrategy(Enum):
 class ErrorContext:
     """Context information for an error."""
 
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
-    function_name: Optional[str] = None
-    module_name: Optional[str] = None
-    additional_info: Dict[str, Any] = field(default_factory=dict)
+    file_path: str | None = None
+    line_number: int | None = None
+    function_name: str | None = None
+    module_name: str | None = None
+    additional_info: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -63,8 +65,8 @@ class ErrorInfo:
     severity: ErrorSeverity
     category: ErrorCategory = ErrorCategory.UNKNOWN
     context: ErrorContext = field(default_factory=ErrorContext)
-    file_path: Optional[str] = None
-    line_number: Optional[int] = None
+    file_path: str | None = None
+    line_number: int | None = None
 
 
 class ErrorHandler:
@@ -72,9 +74,7 @@ class ErrorHandler:
 
     def __init__(self):
         """Initialize the error handler."""
-        self.on_recovery_callbacks: List[
-            Callable[[ErrorInfo, ErrorRecoveryStrategy], None]
-        ] = []
+        self.on_recovery_callbacks: list[Callable[[ErrorInfo, ErrorRecoveryStrategy], None]] = []
         self.error_count = 0
         self.recovery_count = 0
 
@@ -82,9 +82,7 @@ class ErrorHandler:
         """Handle an error and determine recovery strategy."""
         self.error_count += 1
 
-        logger.warning(
-            f"Error {self.error_count}: {error_info.error_type} - {error_info.message}"
-        )
+        logger.warning(f"Error {self.error_count}: {error_info.error_type} - {error_info.message}")
 
         # Determine recovery strategy based on severity
         if error_info.severity == ErrorSeverity.CRITICAL:
@@ -111,7 +109,7 @@ class ErrorHandler:
         """Add a recovery callback."""
         self.on_recovery_callbacks.append(callback)
 
-    def get_error_stats(self) -> Dict[str, int]:
+    def get_error_stats(self) -> dict[str, int]:
         """Get error handling statistics."""
         return {
             "total_errors": self.error_count,
@@ -125,10 +123,10 @@ class ErrorHandler:
 
 
 def create_error_context(
-    file_path: Optional[str] = None,
-    line_number: Optional[int] = None,
-    function_name: Optional[str] = None,
-    module_name: Optional[str] = None,
+    file_path: str | None = None,
+    line_number: int | None = None,
+    function_name: str | None = None,
+    module_name: str | None = None,
     **additional_info: Any,
 ) -> ErrorContext:
     """Create an error context."""

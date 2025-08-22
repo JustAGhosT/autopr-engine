@@ -14,6 +14,7 @@ import random
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.agents import AgentType, specialist_manager
+from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 from autopr.actions.ai_linting_fixer.database import AIInteractionDB, IssueQueueManager
 from autopr.actions.ai_linting_fixer.detection import issue_detector
 from autopr.actions.ai_linting_fixer.display import (
@@ -28,6 +29,7 @@ from autopr.actions.ai_linting_fixer.display import (
     print_feature_status as display_print_feature_status,
 )
 from autopr.actions.ai_linting_fixer.file_ops import dry_run_ops, safe_file_ops
+from autopr.actions.ai_linting_fixer.issue_processor import IssueProcessor
 from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
 from autopr.actions.ai_linting_fixer.models import (
     AILintingFixerInputs,
@@ -40,8 +42,6 @@ from autopr.actions.ai_linting_fixer.workflow import (
     WorkflowContext,
     WorkflowIntegrationMixin,
 )
-from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.ai_linting_fixer.issue_processor import IssueProcessor
 from autopr.actions.llm.manager import LLMProviderManager
 from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
 
@@ -304,9 +304,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 "issues_addressed": 0,
             }
 
-    def queue_detected_issues(
-        self, issues: list[LintingIssue], *, quiet: bool = False
-    ) -> int:
+    def queue_detected_issues(self, issues: list[LintingIssue], *, quiet: bool = False) -> int:
         """Queue detected linting issues for database-first processing."""
         if not quiet:
             logger.info("Queueing %d issues for processing", len(issues))
@@ -417,9 +415,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
         - FileOperations for safe file handling
         - Database module for logging
         """
-        self.emit_event(
-            "started", {"total_issues": len(issues), "max_fixes": max_fixes}
-        )
+        self.emit_event("started", {"total_issues": len(issues), "max_fixes": max_fixes})
 
         # Simplified implementation for demonstration
         # In full version, this would use the agent manager
@@ -458,8 +454,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             success=len(fixed_issues) > 0,
             fixed_issues=fixed_issues,
             remaining_issues=[
-                f"{issue.error_code}:{issue.line_number}"
-                for issue in issues[max_fixes:]
+                f"{issue.error_code}:{issue.line_number}" for issue in issues[max_fixes:]
             ],
             modified_files=modified_files,
         )
@@ -670,9 +665,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 redis_stats = self.redis_manager.get_statistics()  # type: ignore[attr-defined]
 
         # Calculate success rate
-        total_attempts = metrics_summary.get(
-            "successful_fixes", 0
-        ) + metrics_summary.get("failed_fixes", 0)
+        total_attempts = metrics_summary.get("successful_fixes", 0) + metrics_summary.get(
+            "failed_fixes", 0
+        )
         success_rate = (
             (metrics_summary.get("successful_fixes", 0) / total_attempts)
             if total_attempts > 0
@@ -891,9 +886,7 @@ def print_feature_status() -> None:
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())
-        features["temporal_integration"] = available_orchestrators.get(
-            "temporal", False
-        )
+        features["temporal_integration"] = available_orchestrators.get("temporal", False)
         features["celery_integration"] = available_orchestrators.get("celery", False)
         features["prefect_integration"] = available_orchestrators.get("prefect", False)
     except Exception:

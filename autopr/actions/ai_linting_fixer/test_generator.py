@@ -5,13 +5,14 @@ Generates tests for code sections that lack coverage and validates fixes.
 """
 
 import ast
-import logging
-import subprocess
-import tempfile
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple, Set
 from dataclasses import dataclass
 from enum import Enum
+import logging
+from pathlib import Path
+import subprocess
+import tempfile
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +31,11 @@ class TestGenerationResult:
     """Result of test generation."""
 
     success: bool
-    test_file_path: Optional[str] = None
-    test_content: Optional[str] = None
+    test_file_path: str | None = None
+    test_content: str | None = None
     coverage_level: TestCoverageLevel = TestCoverageLevel.NONE
-    functions_tested: List[str] = None
-    error_message: Optional[str] = None
+    functions_tested: list[str] = None
+    error_message: str | None = None
 
 
 @dataclass
@@ -45,20 +46,20 @@ class TestValidationResult:
     tests_passed: bool = False
     original_tests_passed: bool = False
     new_tests_passed: bool = False
-    error_message: Optional[str] = None
-    test_output: Optional[str] = None
+    error_message: str | None = None
+    test_output: str | None = None
 
 
 class TestGenerator:
     """Generates and validates tests for code sections."""
 
-    def __init__(self, test_dir: Optional[str] = None):
+    def __init__(self, test_dir: str | None = None):
         """Initialize the test generator."""
         self.test_dir = Path(test_dir or "tests/generated")
         self.test_dir.mkdir(parents=True, exist_ok=True)
-        self.generated_tests: Dict[str, str] = {}  # file_path -> test_file_path
+        self.generated_tests: dict[str, str] = {}  # file_path -> test_file_path
 
-    def analyze_coverage_needs(self, file_path: str, content: str) -> Dict[str, Any]:
+    def analyze_coverage_needs(self, file_path: str, content: str) -> dict[str, Any]:
         """Analyze what test coverage is needed for a file."""
         try:
             tree = ast.parse(content)
@@ -75,9 +76,7 @@ class TestGenerator:
                             "line": node.lineno,
                             "has_docstring": ast.get_docstring(node) is not None,
                             "is_async": isinstance(node, ast.AsyncFunctionDef),
-                            "args": [
-                                arg.arg for arg in node.args.args if arg.arg != "self"
-                            ],
+                            "args": [arg.arg for arg in node.args.args if arg.arg != "self"],
                         }
                     )
                 elif isinstance(node, ast.ClassDef):
@@ -87,9 +86,7 @@ class TestGenerator:
                             "line": node.lineno,
                             "has_docstring": ast.get_docstring(node) is not None,
                             "methods": [
-                                n.name
-                                for n in node.body
-                                if isinstance(n, ast.FunctionDef)
+                                n.name for n in node.body if isinstance(n, ast.FunctionDef)
                             ],
                         }
                     )
@@ -108,8 +105,7 @@ class TestGenerator:
                 "classes": classes,
                 "existing_tests": existing_tests,
                 "coverage_level": coverage_level.value,
-                "needs_tests": coverage_level
-                in [TestCoverageLevel.NONE, TestCoverageLevel.LOW],
+                "needs_tests": coverage_level in [TestCoverageLevel.NONE, TestCoverageLevel.LOW],
                 "testable_items": len(functions) + len(classes),
             }
 
@@ -140,9 +136,7 @@ class TestGenerator:
                 )
 
             # Generate tests
-            test_content = self._generate_test_content(
-                file_path, content, coverage_analysis
-            )
+            test_content = self._generate_test_content(file_path, content, coverage_analysis)
 
             if not test_content:
                 return TestGenerationResult(
@@ -194,9 +188,7 @@ class TestGenerator:
                 test_file_path = existing_tests[0]
 
             # Run tests on original content
-            original_result = self._run_tests_on_content(
-                test_file_path, original_content
-            )
+            original_result = self._run_tests_on_content(test_file_path, original_content)
 
             # Run tests on fixed content
             fixed_result = self._run_tests_on_content(test_file_path, fixed_content)
@@ -221,9 +213,9 @@ class TestGenerator:
     def _determine_coverage_level(
         self,
         file_path: str,
-        functions: List[Dict],
-        classes: List[Dict],
-        existing_tests: List[str],
+        functions: list[dict],
+        classes: list[dict],
+        existing_tests: list[str],
     ) -> TestCoverageLevel:
         """Determine the current test coverage level."""
         if not existing_tests:
@@ -233,7 +225,7 @@ class TestGenerator:
         test_file = existing_tests[0] if existing_tests else None
         if test_file and Path(test_file).exists():
             try:
-                with open(test_file, "r", encoding="utf-8") as f:
+                with open(test_file, encoding="utf-8") as f:
                     test_content = f.read()
 
                 # Count test functions
@@ -264,7 +256,7 @@ class TestGenerator:
 
         return TestCoverageLevel.NONE
 
-    def _find_existing_tests(self, file_path: str) -> List[str]:
+    def _find_existing_tests(self, file_path: str) -> list[str]:
         """Find existing test files for a given file."""
         file_path_obj = Path(file_path)
         test_files = []
@@ -294,8 +286,8 @@ class TestGenerator:
         return test_files
 
     def _generate_test_content(
-        self, file_path: str, content: str, coverage_analysis: Dict[str, Any]
-    ) -> Optional[str]:
+        self, file_path: str, content: str, coverage_analysis: dict[str, Any]
+    ) -> str | None:
         """Generate test content for a file."""
         try:
             # Create test generation prompt
@@ -329,16 +321,14 @@ Generate only the test file content, no explanations.
 
             # For now, return a basic test template
             # In a real implementation, this would call an LLM
-            return self._generate_basic_test_template(
-                file_path, functions, classes, content
-            )
+            return self._generate_basic_test_template(file_path, functions, classes, content)
 
         except Exception as e:
             logger.error(f"Failed to generate test content: {e}")
             return None
 
     def _generate_basic_test_template(
-        self, file_path: str, functions: List[Dict], classes: List[Dict], content: str
+        self, file_path: str, functions: list[dict], classes: list[dict], content: str
     ) -> str:
         """Generate a basic test template."""
         file_path_obj = Path(file_path)
@@ -396,7 +386,7 @@ class Test{cls["name"]}:
 
         return test_content
 
-    def _write_test_file(self, file_path: str, test_content: str) -> Optional[str]:
+    def _write_test_file(self, file_path: str, test_content: str) -> str | None:
         """Write test content to a file."""
         try:
             file_path_obj = Path(file_path)
@@ -413,15 +403,11 @@ class Test{cls["name"]}:
             logger.error(f"Failed to write test file: {e}")
             return None
 
-    def _run_tests_on_content(
-        self, test_file_path: str, content: str
-    ) -> Dict[str, Any]:
+    def _run_tests_on_content(self, test_file_path: str, content: str) -> dict[str, Any]:
         """Run tests on a specific content version."""
         try:
             # Create temporary file with the content
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False
-            ) as temp_file:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
                 temp_file.write(content)
                 temp_file_path = temp_file.name
 
@@ -447,7 +433,7 @@ class Test{cls["name"]}:
             logger.error(f"Failed to run tests: {e}")
             return {"passed": False, "output": str(e), "returncode": -1}
 
-    def cleanup_generated_tests(self, file_path: Optional[str] = None):
+    def cleanup_generated_tests(self, file_path: str | None = None):
         """Clean up generated test files."""
         if file_path:
             test_file_path = self.generated_tests.get(file_path)

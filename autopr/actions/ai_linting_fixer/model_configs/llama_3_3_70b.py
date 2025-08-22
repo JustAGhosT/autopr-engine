@@ -5,7 +5,6 @@ Configuration for Llama 3.3 70B local model with specific competency ratings
 and performance characteristics for code linting fixes.
 """
 
-from typing import Dict, Tuple
 from dataclasses import dataclass
 
 
@@ -20,7 +19,7 @@ class ModelSpec:
     performance_tier: str
     availability: bool
     endpoint_available: bool = False
-    competency_ratings: Dict[str, float] = None
+    competency_ratings: dict[str, float] = None
     recommended_use_cases: list = None
 
 
@@ -79,15 +78,16 @@ def get_llama_3_3_endpoints() -> list:
     ]
 
 
-def check_availability() -> Tuple[bool, str]:
+def check_availability() -> tuple[bool, str]:
     """
     Check if Llama 3.3 70B is available locally.
 
     Returns:
         Tuple of (availability, reason)
     """
-    import requests
     from contextlib import suppress
+
+    import requests
 
     endpoints = get_llama_3_3_endpoints()
 
@@ -99,9 +99,7 @@ def check_availability() -> Tuple[bool, str]:
                     models = response.json().get("data", [])
                     for model in models:
                         model_id = model.get("id", "").lower()
-                        if "llama" in model_id and (
-                            "3.3" in model_id or "70b" in model_id
-                        ):
+                        if "llama" in model_id and ("3.3" in model_id or "70b" in model_id):
                             return True, f"Available at {endpoint}"
         except:
             continue

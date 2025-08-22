@@ -6,13 +6,13 @@ for the AI linting fixer.
 """
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from autopr.actions.ai_linting_fixer.model_configs import (
     ALL_MODEL_CONFIGS,
     update_all_availabilities,
-    get_available_models,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class ModelCompetencyManager:
         self.available_models = {}
         self._update_model_availabilities()
 
-    def _initialize_competency_ratings(self) -> Dict[str, Dict[str, float]]:
+    def _initialize_competency_ratings(self) -> dict[str, dict[str, float]]:
         """Initialize model competency ratings for different issue types."""
         # Start with existing cloud models
         ratings = {
@@ -120,7 +120,7 @@ class ModelCompetencyManager:
 
         return ratings
 
-    def _initialize_fallback_strategies(self) -> Dict[str, List[Tuple[str, str]]]:
+    def _initialize_fallback_strategies(self) -> dict[str, list[tuple[str, str]]]:
         """Initialize fallback strategies for different issue types."""
         return {
             "default": [
@@ -177,7 +177,7 @@ class ModelCompetencyManager:
 
     def get_fallback_sequence(
         self, error_code: str, strategy_override: str = None
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """Get the optimal fallback sequence for an error code."""
         if strategy_override:
             strategy = strategy_override
@@ -210,9 +210,7 @@ class ModelCompetencyManager:
 
         # If no models available from strategy, fall back to default available models
         if not available_sequence:
-            available_sequence = [
-                (model, "local") for model in self.get_available_model_names()
-            ]
+            available_sequence = [(model, "local") for model in self.get_available_model_names()]
 
         return available_sequence
 
@@ -229,9 +227,7 @@ class ModelCompetencyManager:
             # Reduce confidence for failed fixes
             return max(0.1, base_competency - 0.2)
 
-    def get_best_model_for_issue(
-        self, error_code: str, available_models: List[str] = None
-    ) -> str:
+    def get_best_model_for_issue(self, error_code: str, available_models: list[str] = None) -> str:
         """Get the best available model for a specific issue type."""
         if available_models is None:
             available_models = self.get_available_model_names()
@@ -270,7 +266,7 @@ class ModelCompetencyManager:
         # Check local models from availability cache
         return self.available_models.get(model_name, False)
 
-    def get_available_model_names(self) -> List[str]:
+    def get_available_model_names(self) -> list[str]:
         """Get list of currently available model names."""
         available = []
 
@@ -287,12 +283,12 @@ class ModelCompetencyManager:
 
         return available
 
-    def refresh_availability(self) -> Dict[str, bool]:
+    def refresh_availability(self) -> dict[str, bool]:
         """Refresh and return current model availability."""
         self._update_model_availabilities()
         return self.available_models.copy()
 
-    def get_model_info(self, model_name: str) -> Dict[str, Any]:
+    def get_model_info(self, model_name: str) -> dict[str, Any]:
         """Get detailed information about a model."""
         for config in ALL_MODEL_CONFIGS:
             if config.name == model_name:

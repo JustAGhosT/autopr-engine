@@ -4,12 +4,12 @@ Issue Queue Manager
 Manages the queue of linting issues for processing by AI agents.
 """
 
-import sqlite3
 import json
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any
 from pathlib import Path
+import sqlite3
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class IssueQueueManager:
             """
             )
 
-    def queue_issues(self, session_id: str, issues: List[Dict[str, Any]]) -> int:
+    def queue_issues(self, session_id: str, issues: list[dict[str, Any]]) -> int:
         """Queue multiple issues for processing."""
         queued_count = 0
 
@@ -93,9 +93,9 @@ class IssueQueueManager:
     def get_next_issues(
         self,
         limit: int = 50,
-        worker_id: Optional[str] = None,
-        filter_types: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
+        worker_id: str | None = None,
+        filter_types: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Get the next batch of issues to process."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
@@ -135,7 +135,7 @@ class IssueQueueManager:
         return issues
 
     def update_issue_status(
-        self, issue_id: int, status: str, fix_result: Optional[Dict[str, Any]] = None
+        self, issue_id: int, status: str, fix_result: dict[str, Any] | None = None
     ) -> None:
         """Update the status of an issue."""
         with sqlite3.connect(self.db_path) as conn:
@@ -149,7 +149,7 @@ class IssueQueueManager:
                 (status, json.dumps(fix_result) if fix_result else None, issue_id),
             )
 
-    def get_queue_stats(self) -> Dict[str, int]:
+    def get_queue_stats(self) -> dict[str, int]:
         """Get statistics about the issue queue."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(

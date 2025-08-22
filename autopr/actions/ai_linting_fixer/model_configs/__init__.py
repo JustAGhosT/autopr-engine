@@ -5,31 +5,45 @@ This package contains individual model configurations for AI linting with
 availability detection and performance characteristics.
 """
 
-from .gpt_5_chat import (
-    GPT_5_CHAT_CONFIG,
-    update_availability as update_gpt5_availability,
-)
-from .mistral_7b import (
-    MISTRAL_7B_CONFIG,
-    update_availability as update_mistral_availability,
-)
 from .deepseek_r1_7b import (
     DEEPSEEK_R1_7B_CONFIG,
-    update_availability as update_deepseek_r1_availability,
 )
-from .llama_3_3_70b import (
-    LLAMA_3_3_70B_CONFIG,
-    update_availability as update_llama_availability,
+from .deepseek_r1_7b import (
+    update_availability as update_deepseek_r1_availability,
 )
 from .deepseek_v3 import (
     DEEPSEEK_V3_CONFIG,
+)
+from .deepseek_v3 import (
     update_availability as update_deepseek_v3_availability,
+)
+from .gpt_5_chat import (
+    GPT_5_CHAT_CONFIG,
+)
+from .gpt_5_chat import (
+    update_availability as update_gpt5_availability,
+)
+from .llama_3_3_70b import (
+    LLAMA_3_3_70B_CONFIG,
+)
+from .llama_3_3_70b import (
+    update_availability as update_llama_availability,
+)
+from .mistral_7b import (
+    MISTRAL_7B_CONFIG,
+)
+from .mistral_7b import (
+    update_availability as update_mistral_availability,
 )
 from .phi_4_mini import (
     PHI_4_MINI_CONFIG,
+)
+from .phi_4_mini import (
     update_availability as update_phi_mini_availability,
 )
-from .qwen_2_5 import QWEN_2_5_CONFIG, update_availability as update_qwen_availability
+from .qwen_2_5 import QWEN_2_5_CONFIG
+from .qwen_2_5 import update_availability as update_qwen_availability
+
 
 # All model configurations
 ALL_MODEL_CONFIGS = [

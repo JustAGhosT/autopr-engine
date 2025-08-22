@@ -6,19 +6,18 @@ This module handles the application of AI-generated fixes to code files.
 
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.ai_linting_fixer.model_competency import competency_manager
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
-from autopr.actions.ai_linting_fixer.validation_manager import (
-    ValidationManager,
-    ValidationConfig,
-)
-from autopr.actions.ai_linting_fixer.test_generator import TestGenerator
 from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from autopr.actions.ai_linting_fixer.model_competency import competency_manager
+from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.actions.ai_linting_fixer.test_generator import TestGenerator
+from autopr.actions.ai_linting_fixer.validation_manager import (
+    ValidationConfig,
+    ValidationManager,
+)
 from autopr.actions.llm.manager import LLMProviderManager
-from autopr.actions.llm.types import LLMResponse
 
 
 logger = logging.getLogger(__name__)
@@ -30,16 +29,14 @@ class AIFixApplier:
     def __init__(
         self,
         llm_manager: LLMProviderManager,
-        backup_manager: Optional[BackupManager] = None,
-        validation_config: Optional[ValidationConfig] = None,
-        split_config: Optional[SplitConfig] = None,
+        backup_manager: BackupManager | None = None,
+        validation_config: ValidationConfig | None = None,
+        split_config: SplitConfig | None = None,
     ):
         """Initialize the AI fix applier."""
         self.llm_manager = llm_manager
         self.backup_manager = backup_manager or BackupManager()
-        self.validation_manager = ValidationManager(
-            validation_config or ValidationConfig()
-        )
+        self.validation_manager = ValidationManager(validation_config or ValidationConfig())
         self.file_splitter = FileSplitter(split_config or SplitConfig())
         self.test_generator = TestGenerator()
         self.enable_validation = True
@@ -52,9 +49,9 @@ class AIFixApplier:
         agent: Any,
         file_path: str,
         content: str,
-        issues: List[LintingIssue],
-        session_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        issues: list[LintingIssue],
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
         """Apply fix with backup, validation, and rollback capability."""
         # 1. Create backup if enabled
         backup = None
@@ -81,13 +78,11 @@ class AIFixApplier:
         if self.enable_validation:
             try:
                 error_codes = [issue.error_code.split("(")[0] for issue in issues]
-                should_keep_fix, validation_checks = (
-                    self.validation_manager.validate_file_fix(
-                        file_path,
-                        content,
-                        fix_result.get("fixed_content", ""),
-                        error_codes,
-                    )
+                should_keep_fix, validation_checks = self.validation_manager.validate_file_fix(
+                    file_path,
+                    content,
+                    fix_result.get("fixed_content", ""),
+                    error_codes,
                 )
             except Exception as e:
                 logger.error(f"Validation failed for {file_path}: {e}")
@@ -131,9 +126,9 @@ class AIFixApplier:
         agent: Any,
         file_path: str,
         content: str,
-        issues: List[LintingIssue],
-        session_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        issues: list[LintingIssue],
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
         """Apply fix with comprehensive workflow including splitting, test generation, and validation."""
 
         # 1. Create backup if enabled
@@ -151,23 +146,17 @@ class AIFixApplier:
         # 2. Check if file should be split
         split_result = None
         if self.enable_splitting:
-            should_split, split_reason = self.file_splitter.should_split_file(
-                file_path, content
-            )
+            should_split, split_reason = self.file_splitter.should_split_file(file_path, content)
             if should_split:
                 logger.info(f"Splitting file {file_path}: {split_reason}")
                 split_result = self.file_splitter.split_file(file_path, content)
                 if split_result.success:
-                    logger.info(
-                        f"File split into {len(split_result.components)} components"
-                    )
+                    logger.info(f"File split into {len(split_result.components)} components")
 
         # 3. Generate tests if needed
         test_result = None
         if self.enable_test_generation:
-            test_result = self.test_generator.generate_tests_if_needed(
-                file_path, content
-            )
+            test_result = self.test_generator.generate_tests_if_needed(file_path, content)
             if test_result.success and test_result.test_file_path:
                 logger.info(f"Generated tests for {file_path}")
 
@@ -197,21 +186,17 @@ class AIFixApplier:
             try:
                 # Standard validation
                 error_codes = [issue.error_code.split("(")[0] for issue in issues]
-                should_keep_fix, validation_checks = (
-                    self.validation_manager.validate_file_fix(
-                        file_path,
-                        content,
-                        fix_result.get("fixed_content", ""),
-                        error_codes,
-                    )
+                should_keep_fix, validation_checks = self.validation_manager.validate_file_fix(
+                    file_path,
+                    content,
+                    fix_result.get("fixed_content", ""),
+                    error_codes,
                 )
 
                 # Test validation if tests exist
                 if test_result and test_result.test_file_path:
-                    test_validation_result = (
-                        self.test_generator.validate_fix_with_tests(
-                            file_path, content, fix_result.get("fixed_content", "")
-                        )
+                    test_validation_result = self.test_generator.validate_fix_with_tests(
+                        file_path, content, fix_result.get("fixed_content", "")
                     )
                     if not test_validation_result.tests_passed:
                         logger.warning(f"Tests failed after fix for {file_path}")
@@ -237,11 +222,8 @@ class AIFixApplier:
             {
                 "strategy_used": strategy,
                 "strategy_reasoning": strategy_result.get("reasoning", ""),
-                "file_split_performed": split_result is not None
-                and split_result.success,
-                "split_components_created": (
-                    len(split_result.components) if split_result else 0
-                ),
+                "file_split_performed": split_result is not None and split_result.success,
+                "split_components_created": (len(split_result.components) if split_result else 0),
                 "tests_generated": test_result.success if test_result else False,
                 "test_file_path": test_result.test_file_path if test_result else None,
                 "validation_performed": self.enable_validation,
@@ -258,9 +240,7 @@ class AIFixApplier:
                 "test_validation": (
                     {
                         "tests_passed": (
-                            test_validation_result.tests_passed
-                            if test_validation_result
-                            else None
+                            test_validation_result.tests_passed if test_validation_result else None
                         ),
                         "original_tests_passed": (
                             test_validation_result.original_tests_passed
@@ -289,9 +269,9 @@ class AIFixApplier:
         agent: Any,
         file_path: str,
         content: str,
-        issues: List[LintingIssue],
-        session_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        issues: list[LintingIssue],
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
         """Apply fix with AI strategy selection (full file vs targeted section)."""
         # 1. Create backup if enabled
         backup = None
@@ -329,13 +309,11 @@ class AIFixApplier:
         if self.enable_validation:
             try:
                 error_codes = [issue.error_code.split("(")[0] for issue in issues]
-                should_keep_fix, validation_checks = (
-                    self.validation_manager.validate_file_fix(
-                        file_path,
-                        content,
-                        fix_result.get("fixed_content", ""),
-                        error_codes,
-                    )
+                should_keep_fix, validation_checks = self.validation_manager.validate_file_fix(
+                    file_path,
+                    content,
+                    fix_result.get("fixed_content", ""),
+                    error_codes,
                 )
             except Exception as e:
                 logger.error(f"Validation failed for {file_path}: {e}")
@@ -377,8 +355,8 @@ class AIFixApplier:
         return fix_result
 
     def apply_specialist_fix(
-        self, agent: Any, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> Dict[str, Any]:
+        self, agent: Any, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> dict[str, Any]:
         """Apply fix using a specialist agent with real AI integration and model fallback."""
         try:
             # Get the system and user prompts from the agent
@@ -394,9 +372,7 @@ class AIFixApplier:
 
             for model_name, provider_name in fallback_sequence:
                 try:
-                    logger.info(
-                        f"Trying {model_name} via {provider_name} for {primary_error}"
-                    )
+                    logger.info(f"Trying {model_name} via {provider_name} for {primary_error}")
 
                     # Create the request for the LLM
                     request = {
@@ -424,9 +400,7 @@ class AIFixApplier:
                         continue
 
                     # Validate the fix
-                    validation_result = self._validate_fix(
-                        content, fixed_content, issues
-                    )
+                    validation_result = self._validate_fix(content, fixed_content, issues)
                     if validation_result["is_valid"]:
                         # Calculate confidence based on model competency
                         confidence = competency_manager.calculate_confidence(
@@ -467,8 +441,8 @@ class AIFixApplier:
             return {"success": False, "error": str(e)}
 
     def _select_fix_strategy(
-        self, agent: Any, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> Dict[str, Any]:
+        self, agent: Any, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> dict[str, Any]:
         """Let AI choose between full file replacement or targeted section fixes."""
         try:
             # Create strategy selection prompt
@@ -507,9 +481,7 @@ File content:
             )
 
             if not response or not response.content:
-                logger.warning(
-                    "No response from AI for strategy selection, defaulting to targeted"
-                )
+                logger.warning("No response from AI for strategy selection, defaulting to targeted")
                 return {
                     "success": True,
                     "strategy": "targeted",
@@ -525,9 +497,7 @@ File content:
                 reasoning = strategy_data.get("reasoning", "No reasoning provided")
 
                 if strategy not in ["targeted", "full_file"]:
-                    logger.warning(
-                        f"Invalid strategy '{strategy}', defaulting to targeted"
-                    )
+                    logger.warning(f"Invalid strategy '{strategy}', defaulting to targeted")
                     strategy = "targeted"
 
                 return {"success": True, "strategy": strategy, "reasoning": reasoning}
@@ -548,8 +518,8 @@ File content:
             }
 
     def apply_targeted_fix(
-        self, agent: Any, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> Dict[str, Any]:
+        self, agent: Any, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> dict[str, Any]:
         """Apply targeted fixes to specific sections only."""
         try:
             # Create targeted fix prompt
@@ -608,9 +578,7 @@ Line Y: [fixed content]
                 }
 
             # Apply targeted changes
-            fixed_content = self._apply_targeted_changes(
-                content, response.content, issue_lines
-            )
+            fixed_content = self._apply_targeted_changes(content, response.content, issue_lines)
 
             if fixed_content == content:
                 return {
@@ -637,7 +605,7 @@ Line Y: [fixed content]
             return {"success": False, "error": str(e)}
 
     def _apply_targeted_changes(
-        self, original_content: str, ai_response: str, issue_lines: List[int]
+        self, original_content: str, ai_response: str, issue_lines: list[int]
     ) -> str:
         """Apply targeted line changes from AI response."""
         lines = original_content.split("\n")
@@ -656,9 +624,7 @@ Line Y: [fixed content]
 
                     # Validate line number
                     if 1 <= line_num <= len(lines):
-                        line_changes[line_num - 1] = (
-                            new_content  # Convert to 0-based index
-                        )
+                        line_changes[line_num - 1] = new_content  # Convert to 0-based index
                 except (ValueError, IndexError):
                     continue
 
@@ -673,7 +639,7 @@ Line Y: [fixed content]
 
         return "\n".join(new_lines)
 
-    def _extract_code_from_response(self, response_content: str) -> Optional[str]:
+    def _extract_code_from_response(self, response_content: str) -> str | None:
         """Extract code from LLM response with intelligent patching."""
         if not response_content:
             return None
@@ -702,8 +668,7 @@ Line Y: [fixed content]
         # If no code blocks, try to extract the entire response if it looks like code
         lines = response_content.strip().split("\n")
         if len(lines) > 3 and any(
-            "def " in line or "import " in line or "class " in line
-            for line in lines[:5]
+            "def " in line or "import " in line or "class " in line for line in lines[:5]
         ):
             return response_content.strip()
 
@@ -719,14 +684,11 @@ Line Y: [fixed content]
         # 3. Is longer than 10 lines
         # 4. Doesn't start with partial constructs
 
-        has_imports = any(
-            line.strip().startswith(("import ", "from ")) for line in lines[:10]
-        )
+        has_imports = any(line.strip().startswith(("import ", "from ")) for line in lines[:10])
         has_definitions = any("def " in line or "class " in line for line in lines)
         is_substantial = len(lines) > 10
         starts_cleanly = not any(
-            lines[0].strip().startswith(prefix)
-            for prefix in ["...", "# Fix:", "# Change:"]
+            lines[0].strip().startswith(prefix) for prefix in ["...", "# Fix:", "# Change:"]
         )
 
         return has_imports and has_definitions and is_substantial and starts_cleanly
@@ -756,9 +718,7 @@ Line Y: [fixed content]
                         if line_num in line:
                             if i + 1 < len(response_lines):
                                 change_line = response_lines[i + 1].strip()
-                                if change_line and not change_line.startswith(
-                                    ("#", "//")
-                                ):
+                                if change_line and not change_line.startswith(("#", "//")):
                                     changes.append(f"Line {line_num}: {change_line}")
                             break
 
@@ -769,8 +729,8 @@ Line Y: [fixed content]
         return code_block
 
     def _validate_fix(
-        self, original_content: str, fixed_content: str, issues: List[LintingIssue]
-    ) -> Dict[str, Any]:
+        self, original_content: str, fixed_content: str, issues: list[LintingIssue]
+    ) -> dict[str, Any]:
         """Validate that the fix actually addresses the issues."""
         try:
             # Basic validation - check if content changed
@@ -794,16 +754,14 @@ Line Y: [fixed content]
             return {"is_valid": False, "reason": f"Validation error: {e}"}
 
     def apply_ruff_auto_fix(
-        self, file_path: str, content: str, issues: List[LintingIssue]
-    ) -> Dict[str, Any]:
+        self, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> dict[str, Any]:
         """Apply ruff auto-fix for the specific issues."""
         try:
             # Get the error codes to fix
             error_codes = [issue.error_code.split("(")[0] for issue in issues]
 
-            logger.info(
-                f"Applying ruff auto-fix to {file_path} for codes: {error_codes}"
-            )
+            logger.info(f"Applying ruff auto-fix to {file_path} for codes: {error_codes}")
 
             # Run ruff check --fix for these specific codes
             import subprocess
@@ -849,7 +807,7 @@ Line Y: [fixed content]
                         "agent_type": "ruff_auto_fix",
                     }
                 else:
-                    logger.info(f"No changes made to file - ruff couldn't auto-fix")
+                    logger.info("No changes made to file - ruff couldn't auto-fix")
                     return {
                         "success": False,
                         "error": "No changes made to file - ruff couldn't auto-fix",

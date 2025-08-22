@@ -4,8 +4,9 @@ Simple CLI script to run the AI Linting Fixer
 """
 
 import argparse
-import sys
 from pathlib import Path
+import sys
+
 
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -18,9 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description="AI Linting Fixer CLI")
     parser.add_argument("--target-path", default=".", help="Target path to fix")
     parser.add_argument("--fix-types", help="Comma-separated list of fix types")
-    parser.add_argument(
-        "--max-fixes-per-run", type=int, default=50, help="Maximum fixes per run"
-    )
+    parser.add_argument("--max-fixes-per-run", type=int, default=50, help="Maximum fixes per run")
     parser.add_argument("--verbose", action="store_true", help="Verbose output")
     parser.add_argument("--dry-run", action="store_true", help="Dry run mode")
     parser.add_argument("--provider", default="azure_openai", help="LLM provider")

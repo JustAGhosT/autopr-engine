@@ -5,7 +5,6 @@ Configuration for DeepSeek-R1 7B local model with specific competency ratings
 and performance characteristics for code linting fixes.
 """
 
-from typing import Dict, Tuple
 from dataclasses import dataclass
 
 
@@ -20,7 +19,7 @@ class ModelSpec:
     performance_tier: str
     availability: bool
     endpoint_available: bool = False
-    competency_ratings: Dict[str, float] = None
+    competency_ratings: dict[str, float] = None
     recommended_use_cases: list = None
 
 
@@ -78,15 +77,16 @@ def get_deepseek_r1_endpoints() -> list:
     ]
 
 
-def check_availability() -> Tuple[bool, str]:
+def check_availability() -> tuple[bool, str]:
     """
     Check if DeepSeek-R1 7B is available locally.
 
     Returns:
         Tuple of (availability, reason)
     """
-    import requests
     from contextlib import suppress
+
+    import requests
 
     endpoints = get_deepseek_r1_endpoints()
 

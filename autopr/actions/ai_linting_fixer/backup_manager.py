@@ -4,14 +4,15 @@ Backup Manager Module
 Manages file backups and rollback capabilities for the AI linting fixer.
 """
 
+from dataclasses import dataclass, field
+from datetime import datetime
 import json
 import logging
+from pathlib import Path
 import shutil
 import tempfile
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class FileBackup:
     original_content: str
     backup_time: datetime
     session_id: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -34,35 +35,29 @@ class BackupSession:
 
     session_id: str
     start_time: datetime
-    backups: Dict[str, FileBackup] = field(default_factory=dict)
+    backups: dict[str, FileBackup] = field(default_factory=dict)
     is_active: bool = True
 
 
 class BackupManager:
     """Manages file backups and rollback operations."""
 
-    def __init__(self, backup_dir: Optional[str] = None):
+    def __init__(self, backup_dir: str | None = None):
         """Initialize the backup manager."""
-        self.backup_dir = Path(
-            backup_dir or tempfile.mkdtemp(prefix="ai_fixer_backup_")
-        )
+        self.backup_dir = Path(backup_dir or tempfile.mkdtemp(prefix="ai_fixer_backup_"))
         self.backup_dir.mkdir(parents=True, exist_ok=True)
-        self.sessions: Dict[str, BackupSession] = {}
-        self.current_session: Optional[str] = None
+        self.sessions: dict[str, BackupSession] = {}
+        self.current_session: str | None = None
 
         logger.info(f"Backup manager initialized with directory: {self.backup_dir}")
 
     def start_session(self, session_id: str) -> None:
         """Start a new backup session."""
-        self.sessions[session_id] = BackupSession(
-            session_id=session_id, start_time=datetime.now()
-        )
+        self.sessions[session_id] = BackupSession(session_id=session_id, start_time=datetime.now())
         self.current_session = session_id
         logger.info(f"Started backup session: {session_id}")
 
-    def backup_file(
-        self, file_path: str, session_id: Optional[str] = None
-    ) -> Optional[FileBackup]:
+    def backup_file(self, file_path: str, session_id: str | None = None) -> FileBackup | None:
         """Create a backup of a file before modification."""
         session_id = session_id or self.current_session
         if not session_id or session_id not in self.sessions:
@@ -76,7 +71,7 @@ class BackupManager:
                 return None
 
             # Read original content
-            with open(file_path_obj, "r", encoding="utf-8") as f:
+            with open(file_path_obj, encoding="utf-8") as f:
                 original_content = f.read()
 
             # Create backup file path
@@ -109,7 +104,7 @@ class BackupManager:
             logger.error(f"Failed to backup file {file_path}: {e}")
             return None
 
-    def restore_file(self, file_path: str, session_id: Optional[str] = None) -> bool:
+    def restore_file(self, file_path: str, session_id: str | None = None) -> bool:
         """Restore a file from backup."""
         session_id = session_id or self.current_session
         if not session_id or session_id not in self.sessions:
@@ -135,7 +130,7 @@ class BackupManager:
             logger.error(f"Failed to restore {file_path}: {e}")
             return False
 
-    def rollback_session(self, session_id: Optional[str] = None) -> Dict[str, bool]:
+    def rollback_session(self, session_id: str | None = None) -> dict[str, bool]:
         """Rollback all files in a session."""
         session_id = session_id or self.current_session
         if not session_id or session_id not in self.sessions:
@@ -159,8 +154,8 @@ class BackupManager:
         return results
 
     def validate_file_changes(
-        self, file_path: str, session_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, file_path: str, session_id: str | None = None
+    ) -> dict[str, Any]:
         """Validate changes made to a file since backup."""
         session_id = session_id or self.current_session
         if not session_id or session_id not in self.sessions:
@@ -174,7 +169,7 @@ class BackupManager:
 
         try:
             # Read current content
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 current_content = f.read()
 
             # Compare with backup
@@ -192,7 +187,7 @@ class BackupManager:
                 lines_removed = len(original_lines) - len(current_lines)
 
             # Check for modifications in existing lines
-            for i, (orig, curr) in enumerate(zip(original_lines, current_lines)):
+            for i, (orig, curr) in enumerate(zip(original_lines, current_lines, strict=False)):
                 if orig != curr:
                     lines_modified += 1
 
@@ -212,7 +207,7 @@ class BackupManager:
         except Exception as e:
             return {"error": str(e)}
 
-    def get_session_stats(self, session_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_session_stats(self, session_id: str | None = None) -> dict[str, Any]:
         """Get statistics for a backup session."""
         session_id = session_id or self.current_session
         if not session_id or session_id not in self.sessions:
@@ -221,9 +216,7 @@ class BackupManager:
         session = self.sessions[session_id]
 
         total_backups = len(session.backups)
-        total_size = sum(
-            len(backup.original_content) for backup in session.backups.values()
-        )
+        total_size = sum(len(backup.original_content) for backup in session.backups.values())
 
         return {
             "session_id": session_id,
@@ -258,7 +251,7 @@ class BackupManager:
         except Exception as e:
             logger.error(f"Failed to cleanup session {session_id}: {e}")
 
-    def export_session_metadata(self, session_id: str) -> Optional[str]:
+    def export_session_metadata(self, session_id: str) -> str | None:
         """Export session metadata to JSON file."""
         if session_id not in self.sessions:
             return None

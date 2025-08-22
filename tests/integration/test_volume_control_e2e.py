@@ -19,7 +19,7 @@ from autopr.enums import QualityMode
 class TestVolumeControlE2E:
     """End-to-end tests for volume control feature."""
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_llm_provider(self):
         """Mock LLM provider to avoid actual API calls."""
         with patch("autopr.agents.crew.get_llm_provider_manager") as mock_manager:
@@ -27,7 +27,7 @@ class TestVolumeControlE2E:
             mock_manager.return_value.get_llm.return_value = mock_llm
             yield mock_llm
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_agents(self):
         """Mock agent classes to avoid actual LLM calls."""
         with (
@@ -46,7 +46,7 @@ class TestVolumeControlE2E:
                 "linting": mock_lint_agent.return_value,
             }
 
-    @pytest.fixture
+    @pytest.fixture()
     def test_repo(self):
         """Create a temporary test repository."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -166,9 +166,9 @@ class TestVolumeControlE2E:
                         volume_contexts.append(kwargs["context"]["volume"])
 
                 # Verify we found volume context in the calls
-                assert len(volume_contexts) > 0, (
-                    f"Expected volume context in analyze_code calls for {agent_name}"
-                )
+                assert (
+                    len(volume_contexts) > 0
+                ), f"Expected volume context in analyze_code calls for {agent_name}"
 
     def test_volume_affects_auto_fix_behavior(self, test_repo, mock_llm_provider, mock_agents):
         """Test that volume affects whether auto-fixes are applied."""
@@ -211,9 +211,9 @@ class TestVolumeControlE2E:
 
         # Verify that auto-fix behavior is controlled by the auto_fix parameter
         # and that volume affects the agent's behavior
-        assert not report_low["applied_fixes"], (
-            "Expected no fixes to be applied with auto_fix=False"
-        )
+        assert not report_low[
+            "applied_fixes"
+        ], "Expected no fixes to be applied with auto_fix=False"
         assert report_high["applied_fixes"], "Expected fixes to be applied with auto_fix=True"
 
         # Verify that the linting agent was called with the correct parameters

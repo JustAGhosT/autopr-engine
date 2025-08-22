@@ -4,11 +4,10 @@ Performance Tracker Module
 This module tracks performance metrics for the AI linting fixer.
 """
 
-import time
-from datetime import datetime
-from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 import logging
+import time
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +18,10 @@ class PerformanceMetric:
 
     operation: str
     start_time: float
-    end_time: Optional[float] = None
+    end_time: float | None = None
     success: bool = False
-    error_message: Optional[str] = None
-    metadata: Dict[str, str] = field(default_factory=dict)
+    error_message: str | None = None
+    metadata: dict[str, str] = field(default_factory=dict)
 
     @property
     def duration(self) -> float:
@@ -42,13 +41,11 @@ class PerformanceTracker:
 
     def __init__(self):
         """Initialize the performance tracker."""
-        self.metrics: List[PerformanceMetric] = []
+        self.metrics: list[PerformanceMetric] = []
         self.session_start = time.time()
         self.session_id = f"session_{int(self.session_start)}"
 
-    def start_operation(
-        self, operation: str, metadata: Optional[Dict[str, str]] = None
-    ) -> str:
+    def start_operation(self, operation: str, metadata: dict[str, str] | None = None) -> str:
         """Start tracking an operation."""
         metric = PerformanceMetric(
             operation=operation, start_time=time.time(), metadata=metadata or {}
@@ -60,7 +57,7 @@ class PerformanceTracker:
         self,
         operation_id: str,
         success: bool = True,
-        error_message: Optional[str] = None,
+        error_message: str | None = None,
     ) -> None:
         """End tracking an operation."""
         for metric in self.metrics:
@@ -70,7 +67,7 @@ class PerformanceTracker:
                 metric.error_message = error_message
                 break
 
-    def get_operation_stats(self, operation: str) -> Dict[str, float]:
+    def get_operation_stats(self, operation: str) -> dict[str, float]:
         """Get statistics for a specific operation."""
         operation_metrics = [m for m in self.metrics if m.operation == operation]
 
@@ -89,15 +86,13 @@ class PerformanceTracker:
             "total_operations": len(operation_metrics),
             "completed_operations": len(completed_metrics),
             "successful_operations": len(successes),
-            "success_rate": (
-                len(successes) / len(completed_metrics) if completed_metrics else 0.0
-            ),
+            "success_rate": (len(successes) / len(completed_metrics) if completed_metrics else 0.0),
             "average_duration": sum(durations) / len(durations),
             "min_duration": min(durations),
             "max_duration": max(durations),
         }
 
-    def get_session_summary(self) -> Dict[str, any]:
+    def get_session_summary(self) -> dict[str, any]:
         """Get a summary of the current session."""
         if not self.metrics:
             return {
@@ -117,9 +112,7 @@ class PerformanceTracker:
             "successful_operations": len(successful_metrics),
             "session_duration": time.time() - self.session_start,
             "success_rate": (
-                len(successful_metrics) / len(completed_metrics)
-                if completed_metrics
-                else 0.0
+                len(successful_metrics) / len(completed_metrics) if completed_metrics else 0.0
             ),
             "average_operation_duration": (
                 sum(m.duration for m in completed_metrics) / len(completed_metrics)
@@ -138,10 +131,12 @@ class PerformanceTracker:
         report += f"Total Operations: {summary['total_operations']}\n"
         report += f"Completed Operations: {summary['completed_operations']}\n"
         report += f"Success Rate: {summary['success_rate']:.1%}\n"
-        report += f"Average Operation Duration: {summary['average_operation_duration']:.3f} seconds\n\n"
+        report += (
+            f"Average Operation Duration: {summary['average_operation_duration']:.3f} seconds\n\n"
+        )
 
         # Group by operation type
-        operation_groups: Dict[str, List[PerformanceMetric]] = {}
+        operation_groups: dict[str, list[PerformanceMetric]] = {}
         for metric in self.metrics:
             if metric.operation not in operation_groups:
                 operation_groups[metric.operation] = []
