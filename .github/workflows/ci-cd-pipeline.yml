@@ -216,18 +216,21 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        run: poetry install --no-interaction --no-root
 
       - name: Run performance benchmarks
         run: |
-          python -m pytest tests/test_performance_optimized_file_splitter.py::TestPerformanceOptimizedFileSplitter::test_performance_metrics_collection -v
-          python -m pytest tests/test_quality_pipeline.py::TestQualityPipeline::test_performance_benchmark -v
+          poetry run python -m pytest tests/test_performance_optimized_file_splitter.py::TestPerformanceOptimizedFileSplitter::test_performance_metrics_collection -v
+          poetry run python -m pytest tests/test_quality_pipeline.py::TestQualityPipeline::test_performance_benchmark -v
         continue-on-error: true
 
       - name: Generate performance report
@@ -256,16 +259,24 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
 
       - name: Install build dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install build twine
+          poetry run pip install build twine
 
       - name: Build package
         run: |
-          python -m build
+          poetry run python -m build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -290,7 +301,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -300,12 +320,12 @@ jobs:
 
       - name: Install package in staging
         run: |
-          pip install dist/*.whl --force-reinstall
+          poetry run pip install dist/*.whl --force-reinstall
 
       - name: Run staging tests
         run: |
-          python -m autopr.actions.quality_engine --mode fast --files autopr/
-          python -m pytest tests/test_quality_pipeline.py::TestQualityPipeline::test_fast_mode -v
+          poetry run python -m autopr.actions.quality_engine --mode fast --files autopr/
+          poetry run python -m pytest tests/test_quality_pipeline.py::TestQualityPipeline::test_fast_mode -v
 
       - name: Deploy to staging environment
         run: |
@@ -334,7 +354,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -344,13 +373,13 @@ jobs:
 
       - name: Install package in production
         run: |
-          pip install dist/*.whl --force-reinstall
+          poetry run pip install dist/*.whl --force-reinstall
 
       - name: Run production validation
         run: |
-          python -m autopr.actions.quality_engine --mode comprehensive --files autopr/
-          python -m pytest tests/test_quality_pipeline.py -v
-          python -m pytest tests/test_performance_optimized_file_splitter.py -v
+          poetry run python -m autopr.actions.quality_engine --mode comprehensive --files autopr/
+          poetry run python -m pytest tests/test_quality_pipeline.py -v
+          poetry run python -m pytest tests/test_performance_optimized_file_splitter.py -v
 
       - name: Deploy to production environment
         run: |
@@ -400,17 +429,25 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
 
       - name: Install documentation dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install sphinx sphinx-rtd-theme myst-parser
+          poetry run pip install sphinx sphinx-rtd-theme myst-parser
 
       - name: Generate API documentation
         run: |
-          sphinx-apidoc -o docs/source/ autopr/
-          sphinx-build -b html docs/source/ docs/build/html
+          poetry run sphinx-apidoc -o docs/source/ autopr/
+          poetry run sphinx-build -b html docs/source/ docs/build/html
 
       - name: Upload documentation
         uses: actions/upload-artifact@v4
