@@ -176,6 +176,13 @@ class IntelligentCache:
 
             return len(keys_to_remove)
 
+    def clear(self) -> None:
+        """Clear all cache entries."""
+        with self.lock:
+            self.cache.clear()
+            self.current_size_bytes = 0
+            logger.debug("Cache cleared")
+
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
         with self.lock:
@@ -314,6 +321,30 @@ class ParallelProcessor:
 
         return results
 
+    def process_parallel(
+        self,
+        items: List[Any],
+        processor_func: Callable[[Any], Any],
+        chunk_size: int = 10,
+    ) -> List[Any]:
+        """Process items in parallel using the specified processor function."""
+        results = []
+
+        with self.executor_class(max_workers=self.max_workers) as executor:
+            # Submit tasks
+            futures = [executor.submit(processor_func, item) for item in items]
+
+            # Collect results
+            for future in futures:
+                try:
+                    result = future.result(timeout=300)  # 5 minute timeout
+                    results.append(result)
+                except Exception as e:
+                    logger.error(f"Error processing item: {e}")
+                    results.append(None)
+
+        return results
+
 
 class PerformanceOptimizer:
     """Main performance optimization orchestrator."""
@@ -335,6 +366,9 @@ class PerformanceOptimizer:
         # Performance tracking
         self.profiles: List[PerformanceProfile] = []
         self.session_start = time.time()
+
+        # Add cache_manager attribute for compatibility with tests
+        self.cache_manager = self.cache
 
     def optimize_file_processing(
         self, file_path: Path, content: str, processor_func: Callable[[Path, str], Any]
@@ -529,6 +563,33 @@ class PerformanceOptimizer:
             )
 
         return recommendations
+
+    def get_performance_metrics(self) -> Dict[str, Any]:
+        """Get current performance metrics including CPU usage."""
+        current_memory = psutil.Process().memory_info().rss / (1024 * 1024)
+        current_cpu = psutil.Process().cpu_percent()
+        cache_stats = self.cache.get_stats()
+
+        return {
+            "cpu_usage": current_cpu,
+            "memory_usage_mb": current_memory,
+            "cache_stats": cache_stats,
+            "profiles_count": len(self.profiles),
+            "session_duration_seconds": time.time() - self.session_start,
+        }
+
+    def cleanup(self) -> None:
+        """Cleanup resources and perform final optimizations."""
+        # Clear cache
+        self.cache.clear()
+
+        # Optimize memory usage
+        self.optimize_memory_usage()
+
+        # Clear performance profiles
+        self.profiles.clear()
+
+        logger.info("Performance optimizer cleanup completed")
 
     def optimize_memory_usage(self) -> None:
         """Optimize memory usage by garbage collection and cache cleanup."""

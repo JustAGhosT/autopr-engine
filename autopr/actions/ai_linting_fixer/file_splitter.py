@@ -389,6 +389,9 @@ class FileSplitter:
             processing_time = time.time() - start_time
             cache_stats = self.performance_optimizer.cache.get_stats()
 
+            # Get performance metrics from optimizer
+            perf_metrics = self.performance_optimizer.get_performance_metrics()
+
             logger.info(f"Performance Summary:")
             logger.info(f"  - Processing time: {processing_time:.3f}s")
             logger.info(f"  - Cache hits: {cache_stats.get('hits', 0)}")
@@ -407,7 +410,7 @@ class FileSplitter:
                 processing_time=processing_time,
                 cache_hits=cache_stats.get("hits", 0),
                 cache_misses=cache_stats.get("misses", 0),
-                memory_usage_mb=0.0,  # Simplified for now
+                memory_usage_mb=perf_metrics.get("memory_usage_mb", 0.0),
                 performance_metrics={
                     "complexity_analysis": complexity,
                     "ai_decision": {
@@ -417,6 +420,9 @@ class FileSplitter:
                     },
                     "split_strategy": self._choose_splitting_strategy(complexity),
                     "cache_stats": cache_stats,
+                    "cpu_usage": perf_metrics.get("cpu_usage", 0.0),
+                    "memory_usage": perf_metrics.get("memory_usage_mb", 0.0),
+                    "execution_time": processing_time,
                 },
             )
 
@@ -483,7 +489,9 @@ class FileSplitter:
                 # Save previous function
                 if current_function:
                     function_count += 1
-                    logger.debug(f"Found function {function_count}: {current_function} (lines {function_start+1}-{i})")
+                    logger.debug(
+                        f"Found function {function_count}: {current_function} (lines {function_start+1}-{i})"
+                    )
                     components.append(
                         self._create_function_component(
                             current_function, function_start, i - 1, lines, config
@@ -497,7 +505,9 @@ class FileSplitter:
         # Add last function
         if current_function:
             function_count += 1
-            logger.debug(f"Found function {function_count}: {current_function} (lines {function_start+1}-{len(lines)})")
+            logger.debug(
+                f"Found function {function_count}: {current_function} (lines {function_start+1}-{len(lines)})"
+            )
             components.append(
                 self._create_function_component(
                     current_function, function_start, len(lines) - 1, lines, config
