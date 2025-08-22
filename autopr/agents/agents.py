@@ -76,8 +76,8 @@ class BaseAgent:
         self.goal = goal
         self.backstory = backstory
         self.volume_config = VolumeConfig(**kwargs)
-        self._platform_detector = None
-        self._quality_engine = None
+        self._platform_detector: Any = None
+        self._quality_engine: Any = None
 
     @property
     def platform_detector(self) -> Any:
@@ -129,10 +129,14 @@ class LintingAgent(BaseAgent):
         linting_config = {}
         if self.volume_config.config:
             linting_config.update(
-                {k: v for k, v in self.volume_config.config.items() if k.startswith("linting_")}
+                {
+                    k: v
+                    for k, v in self.volume_config.config.items()
+                    if k.startswith("linting_")
+                }
             )
 
-        self._linting_fixer = _AILintingFixer(**linting_config)  # type: ignore[call-arg]
+        self._linting_fixer = _AILintingFixer(**linting_config)  # type: ignore[call-arg,misc]
 
         # Adjust verbosity based on volume
         self._verbose = False
@@ -178,11 +182,20 @@ class LintingAgent(BaseAgent):
                         file_path=file_path,
                         line_number=0,
                         message=f"Unicode decode error: {e}",
-                        severity=IssueSeverity.ERROR,
+                        severity=IssueSeverity.CRITICAL,
                     )
                 ]
 
             # Process the file with the linting fixer
+            if self._linting_fixer is None:
+                return [
+                    CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        message="Linting fixer not initialized",
+                        severity=IssueSeverity.CRITICAL,
+                    )
+                ]
             result = await self._linting_fixer.fix_file(file_path, file_content)
 
             if result.success:
@@ -192,7 +205,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message=f"Linting failed: {result.error_message}",
-                    severity=IssueSeverity.ERROR,
+                    severity=IssueSeverity.CRITICAL,
                 )
             ]
 
@@ -202,7 +215,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message="File not found",
-                    severity=IssueSeverity.ERROR,
+                    severity=IssueSeverity.CRITICAL,
                 )
             ]
         except PermissionError:
@@ -211,17 +224,19 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message="Permission denied",
-                    severity=IssueSeverity.ERROR,
+                    severity=IssueSeverity.CRITICAL,
                 )
             ]
         except Exception as e:
-            logging.exception(f"Unexpected error fixing code issues in {file_path}: {e}")
+            logging.exception(
+                f"Unexpected error fixing code issues in {file_path}: {e}"
+            )
             return [
                 CodeIssue(
                     file_path=file_path,
                     line_number=0,
                     message=f"Unexpected error: {e}",
-                    severity=IssueSeverity.ERROR,
+                    severity=IssueSeverity.CRITICAL,
                 )
             ]
 
@@ -245,7 +260,7 @@ class LintingAgent(BaseAgent):
                         file_path=file_path,
                         line_number=0,
                         message=f"Unicode decode error: {e}",
-                        severity=IssueSeverity.ERROR,
+                        severity=IssueSeverity.CRITICAL,
                     )
                 ]
 
@@ -259,18 +274,20 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message=f"Analysis failed: {result.error_message}",
-                    severity=IssueSeverity.ERROR,
+                    severity=IssueSeverity.CRITICAL,
                 )
             ]
 
         except Exception as e:
-            logging.exception(f"Unexpected error analyzing code quality in {file_path}: {e}")
+            logging.exception(
+                f"Unexpected error analyzing code quality in {file_path}: {e}"
+            )
             return [
                 CodeIssue(
                     file_path=file_path,
                     line_number=0,
                     message=f"Unexpected error: {e}",
-                    severity=IssueSeverity.ERROR,
+                    severity=IssueSeverity.CRITICAL,
                 )
             ]
 
@@ -296,10 +313,14 @@ class QualityAgent(BaseAgent):
         quality_config = {}
         if self.volume_config.config:
             quality_config.update(
-                {k: v for k, v in self.volume_config.config.items() if k.startswith("quality_")}
+                {
+                    k: v
+                    for k, v in self.volume_config.config.items()
+                    if k.startswith("quality_")
+                }
             )
 
-        self._quality_engine = QualityEngine()
+        self._quality_engine: QualityEngine = QualityEngine()
 
     @property
     def quality_engine(self) -> QualityEngine:
@@ -310,12 +331,12 @@ class QualityAgent(BaseAgent):
         """Analyze code quality across the repository."""
         try:
             inputs = QualityInputs(
-                repository_path=repo_path,
                 mode=self.volume_config.quality_mode,
+                files=[repo_path],  # Use files parameter instead of repository_path
                 **self.volume_config.config,
             )
 
-            return await self._quality_engine.execute(inputs)
+            return await self._quality_engine.execute(inputs, {})
 
         except Exception as e:
             logging.exception(f"Error analyzing quality: {e}")
