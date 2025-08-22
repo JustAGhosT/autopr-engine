@@ -3,8 +3,9 @@
   "displayName": "AutoPR",
   "description": "AI-Powered Code Quality and Automation for VS Code",
   "version": "1.0.0",
+  "publisher": "autopr",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
     "Other",
@@ -112,7 +113,13 @@
         },
         "autopr.qualityMode": {
           "type": "string",
-          "enum": ["ultra-fast", "fast", "smart", "comprehensive", "ai-enhanced"],
+          "enum": [
+            "ultra-fast",
+            "fast",
+            "smart",
+            "comprehensive",
+            "ai-enhanced"
+          ],
           "default": "fast",
           "description": "Default quality analysis mode"
         },
@@ -139,24 +146,6 @@
       }
     },
     "views": {
-      "explorer": [
-        {
-          "id": "autoprIssues",
-          "name": "AutoPR Issues",
-          "when": "autopr.hasIssues"
-        }
-      ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "autopr",
-          "title": "AutoPR",
-          "icon": "resources/autopr-icon.svg"
-        }
-      ]
-    },
-    "views": {
       "autopr": [
         {
           "id": "autoprIssues",
@@ -172,6 +161,15 @@
           "name": "History"
         }
       ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "autopr",
+          "title": "AutoPR",
+          "icon": "resources/autopr-icon.svg"
+        }
+      ]
     }
   },
   "scripts": {
@@ -181,25 +179,25 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "package": "vsce package",
-    "publish": "vsce publish",
+    "package": "@vscode/vsce package",
+    "publish": "@vscode/vsce publish",
     "clean": "rimraf out",
     "build": "npm run clean && npm run compile"
   },
   "devDependencies": {
-    "@types/vscode": "^1.74.0",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.85.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^2.32.0",
     "eslint": "^8.26.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "rimraf": "^5.0.0",
-    "typescript": "^4.8.4",
-    "vscode-test": "^2.3.0",
-    "vsce": "^2.15.0"
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "axios": "^1.4.0"
