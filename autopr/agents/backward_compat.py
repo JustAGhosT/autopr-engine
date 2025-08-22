@@ -30,7 +30,7 @@ from autopr.agents.platform_analysis_agent import (
     PlatformAnalysisInputs,
     PlatformAnalysisOutputs,
 )
-from autopr.models import (
+from autopr.agents.models import (
     CodeAnalysisReport,
     CodeIssue,
     IssueSeverity,

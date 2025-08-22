@@ -103,7 +103,7 @@ class AutoPRCrew:
             self.llm_provider = injected_llm_provider
         else:
             settings = get_settings()
-            ctx = (context or "").lower()
+            ctx = (str(context) if context else "").lower()
 
             if "pr" in ctx:
                 resolved = settings.volume_defaults.pr
@@ -124,7 +124,9 @@ class AutoPRCrew:
             except ImportError:
                 self.llm_provider = None
 
-    def _create_platform_analysis_task(self, repo_path: Path, _context: dict[str, Any]) -> Any:
+    def _create_platform_analysis_task(
+        self, repo_path: Path, _context: dict[str, Any]
+    ) -> Any:
         """Create platform analysis task."""
         agent = self.platform_agent
 
@@ -135,13 +137,13 @@ class AutoPRCrew:
         # Execute platform analysis
         return analyze(repo_path)
 
-    def _create_code_quality_task(self, repo_path: Path, context: dict[str, Any]) -> Any:
+    def _create_code_quality_task(
+        self, repo_path: Path, context: dict[str, Any]
+    ) -> Any:
         """Create code quality analysis task."""
         agent = self.code_quality_agent
         agent.role = "Senior Code Quality Engineer"
-        agent.goal = (
-            "Analyze code quality, maintainability, and technical debt with configurable depth"
-        )
+        agent.goal = "Analyze code quality, maintainability, and technical debt with configurable depth"
 
         # Determine analysis depth based on volume
         current_volume = context.get("volume", self.volume)
@@ -153,7 +155,9 @@ class AutoPRCrew:
 
         # Create task
         tasks_mod = _importlib.import_module("autopr.agents.crew.tasks")
-        task = tasks_mod.create_code_quality_task(repo_path, context, self.code_quality_agent)
+        task = tasks_mod.create_code_quality_task(
+            repo_path, context, self.code_quality_agent
+        )
 
         # Update task description with volume context
         desc = getattr(task, "description", "") or ""
@@ -181,7 +185,9 @@ class AutoPRCrew:
                 merged_ctx = {}
                 merged_ctx.update(context)
                 merged_ctx.update(task_ctx)
-                _ = analyze_code(repo_path=context.get("repo_path", repo_path), context=merged_ctx)
+                _ = analyze_code(
+                    repo_path=context.get("repo_path", repo_path), context=merged_ctx
+                )
 
         # Update task with volume context
         task_ctx = getattr(task, "context", None)
@@ -284,7 +290,10 @@ class AutoPRCrew:
         return volume if volume is not None else self.volume
 
     def _build_context(
-        self, repo_path: Path, current_volume: int, analysis_kwargs: dict[str, Any]
+        self,
+        repo_path: Path | str,
+        current_volume: int,
+        analysis_kwargs: dict[str, Any],
     ) -> dict[str, Any]:
         """Build context for analysis."""
         repo_path = Path(repo_path) if isinstance(repo_path, str) else repo_path
@@ -297,7 +306,9 @@ class AutoPRCrew:
             **analysis_kwargs,
         }
 
-    def _create_tasks(self, repo_path: Path, context: dict[str, Any]) -> list[Any]:
+    def _create_tasks(
+        self, repo_path: Path | str, context: dict[str, Any]
+    ) -> list[Any]:
         """Create analysis tasks."""
         current = context.get("volume", self.volume)
 
@@ -311,12 +322,17 @@ class AutoPRCrew:
             params = [
                 p
                 for p in sig.parameters.values()
-                if p.name != "self" and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
+                if p.name != "self"
+                and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
             ]
             return builder(*args[: len(params)])
 
-        code_quality_task = _call_builder(self._create_code_quality_task, repo_path, ctx)
-        platform_task = _call_builder(self._create_platform_analysis_task, repo_path, ctx)
+        code_quality_task = _call_builder(
+            self._create_code_quality_task, repo_path, ctx
+        )
+        platform_task = _call_builder(
+            self._create_platform_analysis_task, repo_path, ctx
+        )
         linting_task = _call_builder(self._create_linting_task, repo_path, ctx)
 
         # Create task pairs
@@ -377,7 +393,9 @@ class AutoPRCrew:
             linting_issues = self._normalize_linting_result(linting_result)
 
         # Generate summary
-        summary = self._generate_summary(code_quality, platform_analysis, linting_issues, context)
+        summary = self._generate_summary(
+            code_quality, platform_analysis, linting_issues, context
+        )
 
         return self._build_final_result(
             code_quality=code_quality,
@@ -439,7 +457,7 @@ class AutoPRCrew:
     def _generate_summary(
         self,
         code_quality: dict[str, Any],
-        platform_analysis: dict[str, Any],
+        platform_analysis: dict[str, Any] | None,
         linting_issues: list[dict[str, Any]],
         context: dict[str, Any],
     ) -> str:
@@ -448,14 +466,14 @@ class AutoPRCrew:
 
         summary_data = crew_tasks.generate_analysis_summary(
             code_quality=code_quality,
-            platform_analysis=platform_analysis,
+            platform_analysis=platform_analysis or {},
             linting_issues=linting_issues,
             volume=context["volume"],
         )
 
         _importlib.import_module("autopr.agents.crew.models").build_platform_model(
             summary_data=summary_data,
-            platform_analysis=platform_analysis,
+            platform_analysis=platform_analysis or {},
             last_platform_str=getattr(self, "_last_platform_str", None),
         )
 
