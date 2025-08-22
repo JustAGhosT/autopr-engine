@@ -502,28 +502,29 @@ class PerformanceOptimizer:
             self.profiles
         )
 
+        suggestions: List[str] = []
         recommendations = {
             "average_processing_time_seconds": avg_processing_time,
             "average_file_size_mb": avg_file_size / (1024 * 1024),
             "average_cache_hit_rate": avg_cache_hit_rate,
             "total_files_processed": len(self.profiles),
             "session_duration_seconds": time.time() - self.session_start,
-            "suggestions": [],
+            "suggestions": suggestions,
         }
 
         # Generate recommendations
         if avg_processing_time > 5.0:
-            recommendations["suggestions"].append(
+            suggestions.append(
                 "Consider enabling parallel processing for faster file handling"
             )
 
         if avg_file_size > 5 * 1024 * 1024:  # > 5MB
-            recommendations["suggestions"].append(
+            suggestions.append(
                 "Large files detected - enable memory mapping for better performance"
             )
 
         if avg_cache_hit_rate < 0.3:
-            recommendations["suggestions"].append(
+            suggestions.append(
                 "Low cache hit rate - consider increasing cache size or TTL"
             )
 

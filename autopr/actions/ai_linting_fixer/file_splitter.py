@@ -86,10 +86,12 @@ class FileComplexityAnalyzer:
         cached_result = self.cache_manager.get(cache_key)
         if cached_result:
             logger.debug(f"Cache hit for complexity analysis: {file_path}")
+            logger.info(f"Using cached complexity analysis for {file_path}")
             return cached_result
 
         # Perform analysis
         start_time = time.time()
+        logger.debug(f"Performing complexity analysis for {file_path}...")
         result = self._perform_complexity_analysis(content)
         analysis_time = time.time() - start_time
 
@@ -99,6 +101,11 @@ class FileComplexityAnalyzer:
         logger.debug(
             f"Complexity analysis completed in {analysis_time:.3f}s: {file_path}"
         )
+        logger.info(f"Complexity analysis for {file_path}:")
+        logger.info(f"  - File size: {result['file_size_bytes'] / 1024:.1f} KB")
+        logger.info(f"  - Cyclomatic complexity: {result['cyclomatic_complexity']}")
+        logger.info(f"  - Overall complexity score: {result['complexity_score']:.2f}")
+
         return result
 
     def _perform_complexity_analysis(self, content: str) -> Dict[str, Any]:
@@ -175,6 +182,7 @@ class AISplitDecisionEngine:
         cached_result = self.cache_manager.get(cache_key)
         if cached_result:
             logger.debug(f"Cache hit for split decision: {file_path}")
+            logger.info(f"Using cached decision: {cached_result['reason']}")
             return (
                 cached_result["should_split"],
                 cached_result["confidence"],
@@ -183,6 +191,7 @@ class AISplitDecisionEngine:
 
         # AI analysis
         try:
+            logger.debug("Performing AI analysis for split decision...")
             prompt = self._create_split_decision_prompt(content, complexity)
             # Use the LLM manager's complete method
             request = {
@@ -199,17 +208,43 @@ class AISplitDecisionEngine:
             response = self.llm_manager.complete(request)
 
             if response and response.content:
-                # Parse AI response (simplified)
-                should_split = (
-                    complexity["total_lines"] > 200
-                    or complexity["complexity_score"] > 8.0
-                )
-                confidence = 0.8 if should_split else 0.6
-                reason = (
-                    "High complexity and line count"
-                    if should_split
-                    else "Within acceptable limits"
-                )
+                logger.debug(f"AI response received: {response.content[:100]}...")
+
+                # Enhanced rule-based decision with detailed reasoning
+                should_split = False
+                confidence = 0.5
+                reasons = []
+
+                # Check various criteria
+                if complexity["total_lines"] > 200:
+                    should_split = True
+                    confidence += 0.2
+                    reasons.append(f"Large file ({complexity['total_lines']} lines)")
+
+                if complexity["complexity_score"] > 8.0:
+                    should_split = True
+                    confidence += 0.3
+                    reasons.append(
+                        f"High complexity score ({complexity['complexity_score']:.2f})"
+                    )
+
+                if complexity["total_functions"] > 15:
+                    should_split = True
+                    confidence += 0.2
+                    reasons.append(f"Many functions ({complexity['total_functions']})")
+
+                if complexity["total_classes"] > 3:
+                    should_split = True
+                    confidence += 0.2
+                    reasons.append(f"Multiple classes ({complexity['total_classes']})")
+
+                # Cap confidence at 0.95
+                confidence = min(confidence, 0.95)
+
+                reason = "; ".join(reasons) if reasons else "Within acceptable limits"
+
+                if not should_split:
+                    reason = "File is well-structured and within acceptable size/complexity limits"
 
                 result = {
                     "should_split": should_split,
@@ -219,6 +254,9 @@ class AISplitDecisionEngine:
 
                 # Cache result
                 self.cache_manager.set(cache_key, result, ttl_seconds=3600)
+                logger.info(
+                    f"AI analysis complete: {reason} (confidence: {confidence:.2f})"
+                )
 
                 return should_split, confidence, reason
 
@@ -226,10 +264,19 @@ class AISplitDecisionEngine:
             logger.warning(f"AI split decision failed: {e}")
 
         # Fallback to rule-based decision
+        logger.info("Using fallback rule-based decision")
         should_split = (
             complexity["total_lines"] > 150 or complexity["complexity_score"] > 7.0
         )
-        return should_split, 0.7, "Rule-based fallback"
+        fallback_reason = "Rule-based fallback: "
+        if complexity["total_lines"] > 150:
+            fallback_reason += f"Large file ({complexity['total_lines']} lines)"
+        elif complexity["complexity_score"] > 7.0:
+            fallback_reason += f"High complexity ({complexity['complexity_score']:.2f})"
+        else:
+            fallback_reason += "No specific criteria met"
+
+        return should_split, 0.7, fallback_reason
 
     def _create_split_decision_prompt(
         self, content: str, complexity: Dict[str, Any]
@@ -285,32 +332,67 @@ class FileSplitter:
         start_time = time.time()
 
         try:
+            logger.info(f"Starting file split analysis for: {file_path}")
+
             # Analyze complexity
+            logger.debug("Analyzing file complexity...")
             complexity = self.complexity_analyzer.analyze_file_complexity(
                 file_path, content
             )
 
+            logger.info(f"Complexity analysis complete:")
+            logger.info(f"  - Lines: {complexity['total_lines']}")
+            logger.info(f"  - Functions: {complexity['total_functions']}")
+            logger.info(f"  - Classes: {complexity['total_classes']}")
+            logger.info(f"  - Complexity Score: {complexity['complexity_score']:.2f}")
+
             # AI decision
+            logger.debug("Making AI-powered split decision...")
             should_split, confidence, reason = (
                 await self.ai_decision_engine.should_split_file(
                     file_path, content, complexity
                 )
             )
 
+            logger.info(
+                f"AI Decision: {'SPLIT' if should_split else 'KEEP'} (confidence: {confidence:.2f})"
+            )
+            logger.info(f"Reason: {reason}")
+
             if not should_split:
+                logger.info("File does not need splitting - keeping as is")
                 return SplitResult(
                     success=True,
                     components=[],
                     processing_time=time.time() - start_time,
-                    performance_metrics={},
+                    performance_metrics={
+                        "complexity_analysis": complexity,
+                        "ai_decision": {
+                            "should_split": should_split,
+                            "confidence": confidence,
+                            "reason": reason,
+                        },
+                    },
                 )
 
             # Split the file
+            logger.info("Proceeding with file splitting...")
             components = await self._split_file_components(content, config)
+
+            logger.info(f"Split complete! Created {len(components)} components:")
+            for i, component in enumerate(components, 1):
+                logger.info(
+                    f"  {i}. {component.name} ({component.component_type}) - Lines {component.start_line}-{component.end_line} (complexity: {component.complexity_score:.2f})"
+                )
 
             # Performance metrics
             processing_time = time.time() - start_time
             cache_stats = self.performance_optimizer.cache.get_stats()
+
+            logger.info(f"Performance Summary:")
+            logger.info(f"  - Processing time: {processing_time:.3f}s")
+            logger.info(f"  - Cache hits: {cache_stats.get('hits', 0)}")
+            logger.info(f"  - Cache misses: {cache_stats.get('misses', 0)}")
 
             # Record metrics
             self.metrics_collector.record_metric(
@@ -326,7 +408,16 @@ class FileSplitter:
                 cache_hits=cache_stats.get("hits", 0),
                 cache_misses=cache_stats.get("misses", 0),
                 memory_usage_mb=0.0,  # Simplified for now
-                performance_metrics={},
+                performance_metrics={
+                    "complexity_analysis": complexity,
+                    "ai_decision": {
+                        "should_split": should_split,
+                        "confidence": confidence,
+                        "reason": reason,
+                    },
+                    "split_strategy": self._choose_splitting_strategy(complexity),
+                    "cache_stats": cache_stats,
+                },
             )
 
         except Exception as e:
@@ -346,8 +437,13 @@ class FileSplitter:
         lines = content.split("\n")
         components = []
 
+        logger.debug(f"Splitting file into components (lines: {len(lines)})")
+
         # Use parallel processing for large files
         if len(lines) > 500 and config.enable_parallel_processing:
+            logger.info(
+                f"Using parallel processing for large file ({len(lines)} lines)"
+            )
             # Use the correct method name from ParallelProcessor
             components = self.parallel_processor.process_file_chunks_parallel(
                 Path("temp"),  # Temporary path for processing
@@ -356,10 +452,18 @@ class FileSplitter:
                 chunk_size=500,
             )
             if components:
+                logger.info(
+                    f"Parallel processing complete, found {len(components[0])} components"
+                )
                 return components[0]  # Return first result
 
         # Fallback to sequential processing
-        return self._split_by_functions(content, config)
+        logger.info("Using sequential processing for component splitting")
+        components = self._split_by_functions(content, config)
+        logger.info(
+            f"Sequential processing complete, found {len(components)} components"
+        )
+        return components
 
     def _split_by_functions(
         self, content: str, config: SplitConfig
@@ -370,11 +474,16 @@ class FileSplitter:
 
         current_function = None
         function_start = 0
+        function_count = 0
+
+        logger.debug(f"Analyzing {len(lines)} lines for function definitions...")
 
         for i, line in enumerate(lines):
             if line.strip().startswith("def "):
                 # Save previous function
                 if current_function:
+                    function_count += 1
+                    logger.debug(f"Found function {function_count}: {current_function} (lines {function_start+1}-{i})")
                     components.append(
                         self._create_function_component(
                             current_function, function_start, i - 1, lines, config
@@ -387,12 +496,15 @@ class FileSplitter:
 
         # Add last function
         if current_function:
+            function_count += 1
+            logger.debug(f"Found function {function_count}: {current_function} (lines {function_start+1}-{len(lines)})")
             components.append(
                 self._create_function_component(
                     current_function, function_start, len(lines) - 1, lines, config
                 )
             )
 
+        logger.info(f"Function analysis complete: found {len(components)} functions")
         return components
 
     def _create_function_component(
