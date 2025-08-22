@@ -1,4 +1,4 @@
-name: PR Checks
+name: Pull Request Checks
 
 on:
   pull_request:
@@ -7,18 +7,15 @@ on:
 env:
   PYTHON_VERSION: "3.13"
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
-  essential-checks:
-    name: Essential Checks
+  quality-checks:
+    name: Quality Checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,38 +26,67 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install pre-commit pytest pytest-asyncio
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
 
-      - name: Detect changed files
-        id: changed
+      - name: Run pre-commit hooks
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}... | tr '\n' ' ')
-          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          pre-commit install
+          pre-commit run --all-files
 
-      - name: Run volume-aware pre-commit (fast/quiet)
-        env:
-          AUTOPR_PRECOMMIT_VOLUME: "100"
-          PRECOMMIT_DISABLE_PRETTIER: "1"
+      - name: Run Quality Engine (Fast Mode)
         run: |
-          FILES="${{ steps.changed.outputs.files }}"
-          if [ -z "$FILES" ]; then echo "No changed files to lint"; exit 0; fi
-          pre-commit run volume-precommit --hook-stage manual --files $FILES
+          python -m autopr.actions.quality_engine --mode fast --files autopr/
 
-      - name: Run minimal tests
-        run: pytest tests/unit/ -v --tb=short --maxfail=3
+      - name: Run basic tests
+        run: |
+          python -m pytest tests/test_quality_pipeline.py::TestQualityPipeline::test_fast_mode -v
+          python -m pytest tests/test_performance_optimized_file_splitter.py::TestPerformanceOptimizedFileSplitter::test_performance_optimizer_initialization -v
 
-  draft-validation:
-    name: Draft PR Validation
-    needs: essential-checks
-    if: github.event.pull_request.draft == true
+  security-scan:
+    name: Security Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    continue-on-error: true
+    timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install security tools
+        run: |
+          pip install bandit safety
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r autopr/ -f json -o bandit-report.json || true
+
+      - name: Run Safety check
+        run: |
+          safety check --json --output safety-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+          retention-days: 7
+
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -71,29 +97,27 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
 
-      - name: Quick syntax check
+      - name: Run tests with coverage
         run: |
-          python -c "import autopr; print('✅ Import successful')"
+          pytest tests/ -v --cov=autopr --cov-report=xml --cov-report=html
+          coverage report --show-missing
 
-      - name: Comment draft status
-        uses: actions/github-script@v6
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
-          script: |
-            const comment = `## Draft PR Quick Check ✅
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
-            **Status:** Draft PR validation completed
-            **Essential Checks:** ✅ Passed
-
-            **Note:** Comprehensive checks will run when PR is marked as ready for review.
-
-            ---
-            *Draft validation completed*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            htmlcov/
+          retention-days: 7
