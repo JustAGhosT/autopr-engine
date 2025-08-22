@@ -7,24 +7,28 @@ The AI Enhanced File Splitter is a sophisticated component of the AutoPR system 
 ## Key Features
 
 ### 🧠 **AI-Powered Intelligence**
+
 - **Learning Memory System**: Remembers successful splitting patterns
 - **Complexity Analysis**: AST-based parsing for accurate code structure analysis
 - **Confidence Scoring**: AI-driven decision making with confidence thresholds
 - **Pattern Recognition**: Learns from historical split success rates
 
 ### 🔧 **Multiple Splitting Strategies**
+
 - **Function-Based**: Splits by individual functions and methods
 - **Class-Based**: Separates classes into individual files
 - **Section-Based**: Splits by logical code sections
 - **Module-Based**: Creates separate modules for different concerns
 
 ### 🛡️ **Safety & Reliability**
+
 - **Automatic Backups**: Creates backups before any file modifications
 - **Syntax Validation**: Ensures split files maintain valid syntax
 - **Rollback Capability**: Automatic restoration if validation fails
 - **Error Recovery**: Graceful handling of edge cases and failures
 
 ### 📊 **Performance & Monitoring**
+
 - **Real-time Metrics**: Tracks split success rates and performance
 - **Processing Statistics**: Detailed analytics on split operations
 - **Volume Control Integration**: Adapts behavior based on volume settings
@@ -117,7 +121,7 @@ The file splitter automatically adapts its behavior based on volume settings:
 
 ## File Structure
 
-```
+```text
 autopr/actions/ai_linting_fixer/
 ├── file_splitter.py          # Main file splitter implementation
 ├── models.py                 # Data models and types
@@ -180,24 +184,28 @@ splitter = FileSplitter(config)
 ## Best Practices
 
 ### 1. **Configuration Guidelines**
+
 - Start with conservative limits and adjust based on results
 - Enable AI analysis for complex codebases
 - Always use backup and validation in production
 - Monitor success rates and adjust confidence thresholds
 
 ### 2. **Performance Optimization**
+
 - Use appropriate volume levels for your use case
 - Monitor processing times and adjust limits
 - Enable learning for repeated operations
 - Use batch processing for multiple files
 
 ### 3. **Safety Considerations**
+
 - Always test splitting on non-critical files first
 - Review generated components before committing
 - Keep backups for critical files
 - Monitor validation results
 
 ### 4. **Integration Tips**
+
 - Use with AI fixer for comprehensive code processing
 - Integrate with volume controls for adaptive behavior
 - Monitor metrics for continuous improvement
@@ -208,21 +216,25 @@ splitter = FileSplitter(config)
 ### Common Issues
 
 1. **Split Fails with Syntax Error**
+
    - Check if `validate_syntax=True` is enabled
    - Review the original file for syntax issues
    - Try different splitting strategies
 
 2. **AI Analysis Not Working**
+
    - Verify `use_ai_analysis=True` is set
    - Check LLM provider configuration
    - Ensure confidence threshold is appropriate
 
 3. **Performance Issues**
+
    - Reduce `max_lines_per_file` limit
    - Disable AI analysis for simple files
    - Use lower volume settings
 
 4. **Backup Creation Fails**
+
    - Check file permissions
    - Verify backup directory exists
    - Ensure sufficient disk space
