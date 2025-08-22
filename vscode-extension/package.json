@@ -4,6 +4,11 @@
   "description": "AI-Powered Code Quality and Automation for VS Code",
   "version": "1.0.0",
   "publisher": "autopr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autopr/autopr-engine.git"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -59,6 +64,61 @@
         "command": "autopr.configure",
         "title": "AutoPR: Configure",
         "category": "AutoPR"
+      },
+      {
+        "command": "autopr.setVolume",
+        "title": "AutoPR: Set Volume Level",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.toggleTool",
+        "title": "AutoPR: Toggle Tool",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.performanceCheck",
+        "title": "AutoPR: Performance Analysis",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.dependencyScan",
+        "title": "AutoPR: Dependency Scan",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.securityScan",
+        "title": "AutoPR: Security Scan",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.complexityAnalysis",
+        "title": "AutoPR: Complexity Analysis",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.documentationCheck",
+        "title": "AutoPR: Documentation Check",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.learningMemory",
+        "title": "AutoPR: Learning Memory",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.clearCache",
+        "title": "AutoPR: Clear Cache",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.exportResults",
+        "title": "AutoPR: Export Results",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.importConfig",
+        "title": "AutoPR: Import Configuration",
+        "category": "AutoPR"
       }
     ],
     "menus": {
@@ -88,6 +148,39 @@
         },
         {
           "command": "autopr.configure"
+        },
+        {
+          "command": "autopr.setVolume"
+        },
+        {
+          "command": "autopr.toggleTool"
+        },
+        {
+          "command": "autopr.performanceCheck"
+        },
+        {
+          "command": "autopr.dependencyScan"
+        },
+        {
+          "command": "autopr.securityScan"
+        },
+        {
+          "command": "autopr.complexityAnalysis"
+        },
+        {
+          "command": "autopr.documentationCheck"
+        },
+        {
+          "command": "autopr.learningMemory"
+        },
+        {
+          "command": "autopr.clearCache"
+        },
+        {
+          "command": "autopr.exportResults"
+        },
+        {
+          "command": "autopr.importConfig"
         }
       ],
       "editor/context": [
@@ -98,6 +191,16 @@
         },
         {
           "command": "autopr.autoFix",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+          "group": "navigation"
+        },
+        {
+          "command": "autopr.complexityAnalysis",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+          "group": "navigation"
+        },
+        {
+          "command": "autopr.documentationCheck",
           "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
           "group": "navigation"
         }
@@ -142,6 +245,114 @@
           "type": "number",
           "default": 10000,
           "description": "Maximum file size (in lines) for analysis"
+        },
+        "autopr.volume": {
+          "type": "number",
+          "default": 500,
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "Volume level (0-1000) that automatically configures quality settings"
+        },
+        "autopr.maxFixes": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of fixes to apply automatically"
+        },
+        "autopr.maxIssues": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum issues to report before stopping"
+        },
+        "autopr.enableAIAgents": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI agents for enhanced analysis"
+        },
+        "autopr.aiProvider": {
+          "type": "string",
+          "default": "openai",
+          "enum": ["openai", "azure_openai", "anthropic", "local"],
+          "description": "AI provider for enhanced analysis"
+        },
+        "autopr.aiModel": {
+          "type": "string",
+          "default": "gpt-4",
+          "description": "AI model to use for analysis"
+        },
+        "autopr.verbose": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose logging"
+        },
+        "autopr.configPath": {
+          "type": "string",
+          "default": "pyproject.toml",
+          "description": "Path to configuration file"
+        },
+        "autopr.fileSplitter": {
+          "type": "object",
+          "default": {
+            "maxLinesPerFile": 500,
+            "maxFunctionsPerFile": 10,
+            "maxClassesPerFile": 2,
+            "useAIAnalysis": true,
+            "confidenceThreshold": 0.7,
+            "createBackup": true,
+            "validateSyntax": true,
+            "enableLearning": true
+          },
+          "description": "File splitter configuration"
+        },
+        "autopr.performanceOptimization": {
+          "type": "object",
+          "default": {
+            "enableCaching": true,
+            "enableParallelProcessing": true,
+            "enableMemoryOptimization": true,
+            "cacheTTL": 3600,
+            "maxParallelWorkers": 4,
+            "memoryLimitMB": 512
+          },
+          "description": "Performance optimization settings"
+        },
+        "autopr.tools": {
+          "type": "object",
+          "default": {
+            "ruff": { "enabled": true },
+            "mypy": { "enabled": true },
+            "bandit": { "enabled": true },
+            "interrogate": { "enabled": true },
+            "radon": { "enabled": true },
+            "pytest": { "enabled": true },
+            "codeql": { "enabled": true },
+            "sonarqube": { "enabled": true },
+            "ai_feedback": { "enabled": true },
+            "eslint": { "enabled": true },
+            "dependency_scanner": { "enabled": true },
+            "performance_analyzer": { "enabled": true }
+          },
+          "description": "Individual tool configuration"
+        },
+        "autopr.autoFix": {
+          "type": "object",
+          "default": {
+            "enabled": false,
+            "fixTypes": ["high_priority", "medium_priority"],
+            "dryRun": false,
+            "maxFixes": 50,
+            "confidenceThreshold": 0.8
+          },
+          "description": "Auto-fix configuration"
+        },
+        "autopr.dashboard": {
+          "type": "object",
+          "default": {
+            "port": 8080,
+            "host": "localhost",
+            "autoStart": false,
+            "theme": "dark"
+          },
+          "description": "Dashboard configuration"
         }
       }
     },
