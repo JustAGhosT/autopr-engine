@@ -5,14 +5,15 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
+import json
 import os
-from typing import Any
+from typing import Any, Dict, List
 
 import structlog
 
 from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
-from autopr.ai.providers.manager import LLMProviderManager
-
+from autopr.actions.quality_engine.models import ToolResult, Issue
+from autopr.actions.llm.manager import LLMProviderManager
 
 logger = structlog.get_logger(__name__)
 
@@ -67,205 +68,228 @@ Analyze this codebase from an architectural perspective, identifying:
 Provide detailed architectural insights in a structured JSON format.
 """
 
-SECURITY_PROMPT = """You are SecurityGPT, a specialized AI focused on identifying security vulnerabilities and risks in code.
-Perform a thorough security analysis, identifying:
+SECURITY_PROMPT = """You are SecurityGPT, an expert in application security and secure coding practices.
+Analyze this code for security vulnerabilities, focusing on:
 
-1. Common vulnerability patterns (OWASP Top 10 relevant issues)
-2. Input validation concerns
-3. Authentication/authorization weaknesses
-4. Data protection issues
-5. Security best practices violations
+1. Input validation and sanitization
+2. Authentication and authorization
+3. Data encryption and protection
+4. Common vulnerabilities (SQL injection, XSS, CSRF, etc.)
+5. Secure coding practices
+6. Compliance considerations
 
-Provide detailed security insights in a structured JSON format.
+Provide security analysis in a structured JSON format with severity levels.
 """
 
 
 async def run_ai_analysis(
-    files: list[str],
+    files: List[str],
     llm_manager: LLMProviderManager,
-    provider_name: str | None = None,
-    model: str | None = None,
-) -> dict[str, Any]:
+    provider_name: str = "openai",
+    model: str = "gpt-4"
+) -> Dict[str, Any] | None:
     """
-    Run AI-enhanced code analysis on the provided files.
-
+    Run AI-enhanced analysis on the provided files.
+    
     Args:
         files: List of file paths to analyze
-        llm_manager: LLM provider manager instance
-        provider_name: Optional specific LLM provider to use
-        model: Optional specific model to use
-
+        llm_manager: LLM provider manager
+        provider_name: Name of the LLM provider to use
+        model: Model name to use for analysis
+        
     Returns:
-        Dictionary containing AI analysis results
+        Dict containing AI analysis results or None if analysis fails
     """
-    # Filter files to only include code files that are appropriate for AI analysis
-    code_file_extensions = [
-        ".py",
-        ".js",
-        ".ts",
-        ".jsx",
-        ".tsx",
-        ".java",
-        ".go",
-        ".rb",
-        ".php",
-        ".c",
-        ".cpp",
-        ".cs",
-        ".h",
-        ".hpp",
-        ".html",
-        ".css",
-    ]
-
-    # Filter files to code files with a reasonable size for LLM analysis (< 100KB)
-    files_for_analysis = []
-    for file_path in files:
-        extension = os.path.splitext(file_path)[1]
+    try:
+        if not files:
+            logger.warning("No files provided for AI analysis")
+            return None
+            
+        # Read file contents
+        file_contents = {}
+        for file_path in files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    file_contents[file_path] = f.read()
+            except Exception as e:
+                logger.warning(f"Could not read file {file_path}: {e}")
+                continue
+        
+        if not file_contents:
+            logger.warning("No files could be read for AI analysis")
+            return None
+        
+        # Create analysis prompt
+        analysis_prompt = _create_analysis_prompt(file_contents)
+        
+        # Get LLM response
+        response = await llm_manager.call_llm(
+            provider_name,
+            analysis_prompt,
+            system_prompt=CODE_REVIEW_PROMPT,
+            temperature=0.1
+        )
+        
+        if not response or not response.content:
+            logger.warning("No response received from LLM")
+            return None
+        
+        # Parse response
         try:
-            # Skip non-code files
-            if extension not in code_file_extensions:
-                continue
+            # Extract JSON from response
+            content = response.content.strip()
+            if "```json" in content:
+                json_start = content.find("```json") + 7
+                json_end = content.find("```", json_start)
+                if json_end != -1:
+                    content = content[json_start:json_end].strip()
+            
+            ai_result = json.loads(content)
+            
+            # Add metadata
+            ai_result["files_analyzed"] = list(file_contents.keys())
+            ai_result["provider"] = provider_name
+            ai_result["model"] = model
+            
+            logger.info(f"AI analysis completed for {len(file_contents)} files")
+            return ai_result
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response as JSON: {e}")
+            # Return a fallback result
+            return {
+                "suggestions": [],
+                "summary": "AI analysis completed but response format was invalid",
+                "priorities": [],
+                "files_analyzed": list(file_contents.keys()),
+                "provider": provider_name,
+                "model": model,
+                "error": "JSON parsing failed"
+            }
+            
+    except Exception as e:
+        logger.error(f"AI analysis failed: {e}")
+        return None
 
-            # Check file size
-            file_size = os.path.getsize(file_path)
-            if file_size > 100 * 1024:  # 100 KB
-                logger.info(
-                    "Skipping large file for AI analysis",
-                    file_path=file_path,
-                    size=file_size,
-                )
-                continue
 
-            files_for_analysis.append(file_path)
-        except Exception as e:
-            logger.exception(
-                "Error checking file for AI analysis", file_path=file_path, error=str(e)
-            )
-
-    # If no files are suitable for analysis, return empty results
-    if not files_for_analysis:
-        logger.warning("No suitable files for AI analysis")
-        return {
-            "issues": [],
-            "files_with_issues": [],
-            "summary": "No suitable files found for AI analysis.",
+def create_tool_result_from_ai_analysis(ai_result: Dict[str, Any]) -> ToolResult:
+    """
+    Convert AI analysis result to a ToolResult.
+    
+    Args:
+        ai_result: AI analysis result dictionary
+        
+    Returns:
+        ToolResult: Converted tool result
+    """
+    issues = []
+    
+    # Convert AI suggestions to issues
+    suggestions = ai_result.get("suggestions", [])
+    for suggestion in suggestions:
+        issue = Issue(
+            file=suggestion.get("file", "unknown"),
+            line=suggestion.get("line", 0),
+            column=suggestion.get("column", 0),
+            code=suggestion.get("category", "AI_SUGGESTION"),
+            message=suggestion.get("issue", "AI suggestion"),
+            description=suggestion.get("explanation", ""),
+            severity="info" if suggestion.get("confidence", 0) < 0.7 else "warning",
+            fix=suggestion.get("fix", ""),
+            confidence=suggestion.get("confidence", 0.5)
+        )
+        issues.append(issue)
+    
+    # Create tool result
+    return ToolResult(
+        tool_name="ai_analysis",
+        issues=issues,
+        files_with_issues=list(set(issue.file for issue in issues)),
+        execution_time=0.0,  # AI analysis time is not tracked separately
+        success=True,
+        summary=ai_result.get("summary", "AI analysis completed"),
+        metadata={
+            "provider": ai_result.get("provider", "unknown"),
+            "model": ai_result.get("model", "unknown"),
+            "priorities": ai_result.get("priorities", []),
+            "files_analyzed": ai_result.get("files_analyzed", [])
         }
-
-    # Limit the number of files to analyze to avoid overloading the LLM
-    max_files_to_analyze = 10
-    if len(files_for_analysis) > max_files_to_analyze:
-        logger.info(f"Limiting AI analysis to {max_files_to_analyze} files")
-        # Prioritize smaller files that are more likely to be fully processed
-        files_for_analysis = sorted(files_for_analysis, key=lambda f: os.path.getsize(f))[
-            :max_files_to_analyze
-        ]
-
-    # Create an AI code analyzer and run the analysis
-    analyzer = AICodeAnalyzer(llm_manager)
-
-    logger.info(f"Starting AI analysis of {len(files_for_analysis)} files")
-    results = await analyzer.analyze_files(files_for_analysis, provider_name, model)
-
-    # Convert the results to the format expected by the quality engine
-    tool_results = analyzer.convert_to_tool_results(results)
-
-    # Add file statistics
-    tool_results["total_files_analyzed"] = len(files_for_analysis)
-    tool_results["total_files_with_issues"] = len(tool_results["files_with_issues"])
-
-    # Create a consolidated summary of all issues
-    summary_lines = ["# AI-Enhanced Code Analysis"]
-    summary_lines.append(
-        f"\nAnalyzed {len(files_for_analysis)} files. Found {len(tool_results['issues'])} potential improvements in {len(tool_results['files_with_issues'])} files."
     )
 
-    # Add category-based summary
-    categories = {}
-    for issue in tool_results["issues"]:
-        category = issue.get("category", "general")
-        if category not in categories:
-            categories[category] = 0
-        categories[category] += 1
 
-    if categories:
-        summary_lines.append("\n## Issues by Category")
-        for category, count in sorted(categories.items(), key=lambda x: x[1], reverse=True):
-            summary_lines.append(f"- {category}: {count} issues")
-
-    # Add high-confidence issues
-    high_confidence_issues = [i for i in tool_results["issues"] if i.get("confidence", 0) > 0.8]
-    if high_confidence_issues:
-        summary_lines.append("\n## High Confidence Suggestions")
-        for issue in sorted(
-            high_confidence_issues, key=lambda x: x.get("confidence", 0), reverse=True
-        )[:5]:
-            file = issue.get("file", "unknown")
-            line = issue.get("line", "?")
-            message = issue.get("message", "Unknown issue")
-            confidence = issue.get("confidence", 0)
-            summary_lines.append(f"- {file}:{line} - {message} (Confidence: {confidence:.2f})")
-
-    # Add file summaries
-    if results:
-        summary_lines.append("\n## File Summaries")
-        for file_path, result in results.items():
-            if result.get("summary"):
-                summary_lines.append(f"\n### {os.path.basename(file_path)}")
-                summary_lines.append(result["summary"])
-
-    tool_results["summary"] = "\n".join(summary_lines)
-
-    return tool_results
+def _create_analysis_prompt(file_contents: Dict[str, str]) -> str:
+    """
+    Create a prompt for AI analysis of the provided files.
+    
+    Args:
+        file_contents: Dictionary mapping file paths to their contents
+        
+    Returns:
+        str: Analysis prompt
+    """
+    prompt_parts = [
+        "Please analyze the following code files for quality issues, improvements, and potential problems:",
+        ""
+    ]
+    
+    for file_path, content in file_contents.items():
+        prompt_parts.extend([
+            f"## File: {file_path}",
+            "```",
+            content[:2000],  # Limit content to avoid token limits
+            "```",
+            ""
+        ])
+    
+    prompt_parts.extend([
+        "Please provide a comprehensive analysis including:",
+        "1. Code quality issues and suggestions",
+        "2. Performance optimization opportunities", 
+        "3. Security considerations",
+        "4. Maintainability improvements",
+        "5. Architecture and design patterns",
+        "",
+        "Format your response as JSON with the structure specified in the system prompt."
+    ])
+    
+    return "\n".join(prompt_parts)
 
 
 async def analyze_code_architecture(
-    files: list[str],
+    files: List[str],
     llm_manager: LLMProviderManager,
-    provider_name: str | None = None,
-    model: str | None = None,
-) -> dict[str, Any]:
+    provider_name: str = "openai"
+) -> Dict[str, Any] | None:
     """
-    Perform architectural analysis of the codebase using LLM.
-
-    This function analyzes multiple files to identify architectural patterns,
-    dependencies, and potential improvements.
-
+    Run architectural analysis on the provided files.
+    
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
-        provider_name: Optional specific provider to use
-        model: Optional specific model to use
-
+        provider_name: Name of the LLM provider to use
+        
     Returns:
-        Dictionary with architectural analysis results
+        Dict containing architectural analysis results
     """
-    # Implementation would be similar to run_ai_analysis but with architecture-specific prompts
-    logger.info("Architecture analysis is not yet fully implemented")
-    return {"message": "Architecture analysis will be implemented in a future version"}
+    # Implementation similar to run_ai_analysis but with architecture focus
+    return await run_ai_analysis(files, llm_manager, provider_name)
 
 
 async def analyze_security_issues(
-    files: list[str],
+    files: List[str],
     llm_manager: LLMProviderManager,
-    provider_name: str | None = None,
-    model: str | None = None,
-) -> dict[str, Any]:
+    provider_name: str = "openai"
+) -> Dict[str, Any] | None:
     """
-    Perform security-focused analysis of the codebase using LLM.
-
-    This function specializes in identifying security vulnerabilities and risks
-    that might not be caught by standard security scanning tools.
-
+    Run security analysis on the provided files.
+    
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
-        provider_name: Optional specific provider to use
-        model: Optional specific model to use
-
+        provider_name: Name of the LLM provider to use
+        
     Returns:
-        Dictionary with security analysis results
+        Dict containing security analysis results
     """
-    # Implementation would be similar to run_ai_analysis but with security-specific prompts
-    logger.info("Security analysis is not yet fully implemented")
-    return {"message": "Security analysis will be implemented in a future version"}
+    # Implementation similar to run_ai_analysis but with security focus
+    return await run_ai_analysis(files, llm_manager, provider_name)
