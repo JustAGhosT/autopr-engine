@@ -44,12 +44,15 @@ async def initialize_llm_manager() -> LLMProviderManager | None:
         llm_manager = LLMProviderManager(config)
 
         # Test the connection
-        test_response = await llm_manager.call_llm(
-            "openai",
-            "Test message",
-            system_prompt="You are a helpful assistant.",
-            temperature=0.1,
-        )
+        test_request = {
+            "provider": "openai",
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Test message"},
+            ],
+            "temperature": 0.1,
+        }
+        test_response = llm_manager.complete(test_request)
 
         if test_response and test_response.content:
             logger.info("LLM manager initialized successfully")

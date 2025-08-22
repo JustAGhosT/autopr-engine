@@ -16,8 +16,8 @@ logger = structlog.get_logger(__name__)
 async def run_ai_analysis(
     files: list[str],
     llm_manager: Any,
-    provider_name: str | None = None,
-    model: str | None = None,
+    provider_name: str = "openai",
+    model: str = "gpt-4",
 ) -> dict[str, Any] | None:
     """Run AI-enhanced code analysis.
 
@@ -41,6 +41,10 @@ async def run_ai_analysis(
 
         # Run the AI analysis
         result = await run_analysis(files, llm_manager, provider_name, model)
+
+        if result is None:
+            logger.warning("AI analysis returned None result")
+            return None
 
         execution_time = time.time() - start_time
         logger.info(
@@ -66,15 +70,34 @@ async def initialize_llm_manager() -> Any | None:
         Initialized LLM manager or None if initialization fails
     """
     try:
-        from autopr.ai.providers.manager import LLMProviderManager
-        from autopr.config.settings import AutoPRConfig
+        from autopr.actions.llm.manager import LLMProviderManager
 
-        config = AutoPRConfig()
+        # Basic configuration for quality analysis
+        config = {
+            "providers": {
+                "openai": {
+                    "api_key": "${OPENAI_API_KEY}",
+                    "default_model": "gpt-4",
+                    "max_tokens": 4000,
+                    "temperature": 0.1,
+                },
+                "anthropic": {
+                    "api_key": "${ANTHROPIC_API_KEY}",
+                    "default_model": "claude-3-sonnet-20240229",
+                    "max_tokens": 4000,
+                    "temperature": 0.1,
+                },
+            },
+            "fallback_order": ["openai", "anthropic"],
+            "default_provider": "openai",
+        }
+
         llm_manager = LLMProviderManager(config)
-        await llm_manager.initialize()
 
         available_providers = llm_manager.get_available_providers()
-        logger.info("Initialized LLM provider manager", available_providers=available_providers)
+        logger.info(
+            "Initialized LLM provider manager", available_providers=available_providers
+        )
 
         if not available_providers:
             logger.warning("No LLM providers available for AI-enhanced analysis")
