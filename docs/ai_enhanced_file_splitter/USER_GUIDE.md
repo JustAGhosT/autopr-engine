@@ -370,6 +370,7 @@ print(f"Success rate: {stats['success_rate']:.2%}")
 **Problem**: File splitting fails due to syntax errors in the original file.
 
 **Solution**:
+
 ```python
 # Check if the original file has syntax issues
 import ast
@@ -395,6 +396,7 @@ if not validate_file_syntax("large_file.py"):
 **Problem**: AI analysis features are not functioning properly.
 
 **Solution**:
+
 ```python
 # Check LLM configuration
 def check_llm_config():
@@ -434,6 +436,7 @@ if not check_llm_config():
 **Problem**: File splitting is too slow or uses too much memory.
 
 **Solution**:
+
 ```python
 # Performance-optimized configuration
 performance_config = SplitConfig(
@@ -477,6 +480,7 @@ def split_with_monitoring(file_path, content):
 **Problem**: Backup files cannot be created.
 
 **Solution**:
+
 ```python
 # Check backup directory permissions
 def check_backup_permissions():

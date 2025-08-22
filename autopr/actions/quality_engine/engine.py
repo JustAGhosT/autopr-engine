@@ -75,7 +75,7 @@ class QualityEngine(Action):
 
         self.handler_registry = handler_registry
         self.config = config or load_config(config_path)
-        self.llm_manager = None
+        self.llm_manager: Any = None
 
         logger.info(
             "Quality Engine initialized",
@@ -140,9 +140,14 @@ class QualityEngine(Action):
 
         # Fallback to dictionary access
         try:
-            return self.config.get("tools", {}).get(
-                tool_name, {"enabled": True, "config": {}}
-            )
+            if hasattr(self.config, "get") and callable(
+                getattr(self.config, "get", None)
+            ):
+                return self.config.get("tools", {}).get(
+                    tool_name, {"enabled": True, "config": {}}
+                )
+            else:
+                return {"enabled": True, "config": {}}
         except (AttributeError, TypeError):
             return {"enabled": True, "config": {}}
 
@@ -187,8 +192,20 @@ class QualityEngine(Action):
             )
 
             # Run the AI Linting Fixer
-            with AILintingFixer() as fixer:
-                fix_result = fixer.run(fixer_inputs)
+            try:
+                with AILintingFixer() as fixer:
+                    fix_result = fixer.run(fixer_inputs)
+            except Exception as fixer_error:
+                logger.error(
+                    "Failed to initialize AILintingFixer", error=str(fixer_error)
+                )
+                return (
+                    False,
+                    0,
+                    [],
+                    None,
+                    [f"Fixer initialization failed: {fixer_error}"],
+                )
 
             # Update results with fix information
             total_issues_fixed = fix_result.issues_fixed
@@ -476,7 +493,7 @@ class QualityEngine(Action):
         fix_summary = None
         fix_errors = None
         total_issues_fixed = 0
-        files_modified = []
+        files_modified: list[str] = []
 
         if inputs.auto_fix and inputs.enable_ai_agents:
             (
