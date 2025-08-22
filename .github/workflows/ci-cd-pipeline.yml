@@ -36,7 +36,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -44,11 +43,23 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
 
       - name: Install Node.js dependencies
         run: npm ci
@@ -60,11 +71,11 @@ jobs:
 
       - name: Run Quality Engine (Fast Mode)
         run: |
-          python -m autopr.actions.quality_engine --mode fast --files autopr/
+          poetry run python -m autopr.actions.quality_engine --mode fast --files autopr/
 
       - name: Run Quality Engine (Comprehensive Mode)
         run: |
-          python -m autopr.actions.quality_engine --mode comprehensive --files autopr/
+          poetry run python -m autopr.actions.quality_engine --mode comprehensive --files autopr/
         continue-on-error: true
 
       - name: Upload Quality Reports
@@ -95,28 +106,31 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
+        run: poetry install --no-interaction --no-root
 
       - name: Run unit tests
         run: |
-          pytest tests/ -v --cov=autopr --cov-report=xml --cov-report=html
-          coverage report --show-missing
+          poetry run pytest tests/ -v --cov=autopr --cov-report=xml --cov-report=html
+          poetry run coverage report --show-missing
 
       - name: Run integration tests
         run: |
-          pytest tests/test_quality_pipeline.py -v
-          pytest tests/test_performance_optimized_file_splitter.py -v
+          poetry run pytest tests/test_quality_pipeline.py -v
+          poetry run pytest tests/test_performance_optimized_file_splitter.py -v
         continue-on-error: true
 
       - name: Run AI Enhanced File Splitter tests
         run: |
-          python test_file_splitter.py
+          poetry run python test_file_splitter.py
         continue-on-error: true
 
       - name: Upload test coverage
@@ -151,19 +165,28 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
 
       - name: Install security tools
         run: |
-          pip install bandit safety semgrep
+          poetry run pip install bandit safety semgrep
 
       - name: Run Bandit security scan
         run: |
-          bandit -r autopr/ -f json -o bandit-report.json || true
+          poetry run bandit -r autopr/ -f json -o bandit-report.json || true
 
       - name: Run Safety check
         run: |
-          safety check --json --output safety-report.json || true
+          poetry run safety check --json --output safety-report.json || true
 
       - name: Run Semgrep security scan
         run: |
