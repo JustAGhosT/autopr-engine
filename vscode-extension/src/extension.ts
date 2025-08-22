@@ -1,100 +1,23 @@
 import * as vscode from 'vscode';
-import { spawn } from 'child_process';
-import * as path from 'path';
-
-interface AutoPRIssue {
-    file: string;
-    line: number;
-    column: number;
-    message: string;
-    severity: 'error' | 'warning' | 'info';
-    tool: string;
-    code?: string;
-}
-
-interface AutoPRResult {
-    success: boolean;
-    total_issues: number;
-    issues_by_tool: Record<string, AutoPRIssue[]>;
-    processing_time: number;
-    components?: any[];
-}
+import { CommandService } from './services/commandService';
+import { UIService } from './services/uiService';
+import { DataService } from './services/dataService';
+import { 
+    AutoPRIssuesProvider, 
+    AutoPRMetricsProvider, 
+    AutoPRHistoryProvider 
+} from './providers/treeProviders';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('AutoPR extension is now active!');
 
-    // Register commands
-    const qualityCheckCommand = vscode.commands.registerCommand('autopr.qualityCheck', () => {
-        runQualityCheck();
-    });
+    // Set global extension context for data service
+    (global as any).extensionContext = context;
 
-    const qualityCheckFileCommand = vscode.commands.registerCommand('autopr.qualityCheckFile', () => {
-        runQualityCheckFile();
-    });
-
-    const qualityCheckWorkspaceCommand = vscode.commands.registerCommand('autopr.qualityCheckWorkspace', () => {
-        runQualityCheckWorkspace();
-    });
-
-    const fileSplitCommand = vscode.commands.registerCommand('autopr.fileSplit', () => {
-        runFileSplit();
-    });
-
-    const autoFixCommand = vscode.commands.registerCommand('autopr.autoFix', () => {
-        runAutoFix();
-    });
-
-    const showDashboardCommand = vscode.commands.registerCommand('autopr.showDashboard', () => {
-        showDashboard();
-    });
-
-    const configureCommand = vscode.commands.registerCommand('autopr.configure', () => {
-        showConfiguration();
-    });
-
-    const setVolumeCommand = vscode.commands.registerCommand('autopr.setVolume', () => {
-        setVolumeLevel();
-    });
-
-    const toggleToolCommand = vscode.commands.registerCommand('autopr.toggleTool', () => {
-        toggleTool();
-    });
-
-    const performanceCheckCommand = vscode.commands.registerCommand('autopr.performanceCheck', () => {
-        runPerformanceCheck();
-    });
-
-    const dependencyScanCommand = vscode.commands.registerCommand('autopr.dependencyScan', () => {
-        runDependencyScan();
-    });
-
-    const securityScanCommand = vscode.commands.registerCommand('autopr.securityScan', () => {
-        runSecurityScan();
-    });
-
-    const complexityAnalysisCommand = vscode.commands.registerCommand('autopr.complexityAnalysis', () => {
-        runComplexityAnalysis();
-    });
-
-    const documentationCheckCommand = vscode.commands.registerCommand('autopr.documentationCheck', () => {
-        runDocumentationCheck();
-    });
-
-    const learningMemoryCommand = vscode.commands.registerCommand('autopr.learningMemory', () => {
-        showLearningMemory();
-    });
-
-    const clearCacheCommand = vscode.commands.registerCommand('autopr.clearCache', () => {
-        clearCache();
-    });
-
-    const exportResultsCommand = vscode.commands.registerCommand('autopr.exportResults', () => {
-        exportResults();
-    });
-
-    const importConfigCommand = vscode.commands.registerCommand('autopr.importConfig', () => {
-        importConfiguration();
-    });
+    // Initialize services
+    const commandService = new CommandService();
+    const uiService = new UIService();
+    const dataService = DataService.getInstance();
 
     // Register diagnostic collection
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('autopr');
@@ -110,507 +33,235 @@ export function activate(context: vscode.ExtensionContext) {
     const historyProvider = new AutoPRHistoryProvider();
     vscode.window.registerTreeDataProvider('autoprHistory', historyProvider);
 
-    // Add commands to subscriptions
-    context.subscriptions.push(
-        qualityCheckCommand,
-        qualityCheckFileCommand,
-        qualityCheckWorkspaceCommand,
-        fileSplitCommand,
-        autoFixCommand,
-        showDashboardCommand,
-        configureCommand,
-        setVolumeCommand,
-        toggleToolCommand,
-        performanceCheckCommand,
-        dependencyScanCommand,
-        securityScanCommand,
-        complexityAnalysisCommand,
-        documentationCheckCommand,
-        learningMemoryCommand,
-        clearCacheCommand,
-        exportResultsCommand,
-        importConfigCommand
-    );
-}
-
-async function runQualityCheck() {
-    const config = vscode.workspace.getConfiguration('autopr');
-    const mode = config.get<string>('qualityMode', 'fast');
-    
-    try {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showErrorMessage('No active file to check');
-            return;
-        }
-
-        const filePath = editor.document.fileName;
-        const result = await executeAutoPRCommand(['check', '--mode', mode, '--files', filePath]);
-        
-        if (result.success) {
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Quality check failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Quality check error: ${error}`);
-    }
-}
-
-async function runQualityCheckFile() {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showErrorMessage('No active file to check');
-        return;
-    }
-
-    const filePath = editor.document.fileName;
-    const config = vscode.workspace.getConfiguration('autopr');
-    const mode = config.get<string>('qualityMode', 'fast');
-
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', mode, '--files', filePath]);
-        
-        if (result.success) {
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('File quality check failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`File quality check error: ${error}`);
-    }
-}
-
-async function runQualityCheckWorkspace() {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders) {
-        vscode.window.showErrorMessage('No workspace folder found');
-        return;
-    }
-
-    const config = vscode.workspace.getConfiguration('autopr');
-    const mode = config.get<string>('qualityMode', 'fast');
-
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', mode, '--directory', workspaceFolders[0].uri.fsPath]);
-        
-        if (result.success) {
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Workspace quality check failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Workspace quality check error: ${error}`);
-    }
-}
-
-async function runFileSplit() {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showErrorMessage('No active file to split');
-        return;
-    }
-
-    const filePath = editor.document.fileName;
-    
-    // Show input dialog for split options
-    const maxLines = await vscode.window.showInputBox({
-        prompt: 'Maximum lines per component',
-        value: '100',
-        validateInput: (value: string) => {
-            const num = parseInt(value);
-            return isNaN(num) || num <= 0 ? 'Please enter a positive number' : null;
-        }
-    });
-
-    if (!maxLines) return;
-
-    try {
-        const result = await executeAutoPRCommand(['split', filePath, '--max-lines', maxLines, '--dry-run']);
-        
-        if (result.success) {
-            vscode.window.showInformationMessage(`File split analysis complete. Would create ${result.components?.length || 0} components.`);
-            
-            // Ask if user wants to proceed with actual split
-            const proceed = await vscode.window.showQuickPick(['Yes', 'No'], {
-                placeHolder: 'Proceed with actual file split?'
+    // Register commands
+    const commands = [
+        // Quality Check Commands
+        vscode.commands.registerCommand('autopr.qualityCheck', () => {
+            commandService.runQualityCheck().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
             });
+        }),
 
-            if (proceed === 'Yes') {
-                const outputDir = await vscode.window.showInputBox({
-                    prompt: 'Output directory for split files',
-                    value: path.dirname(filePath) + '/split'
-                });
+        vscode.commands.registerCommand('autopr.qualityCheckFile', () => {
+            commandService.runQualityCheckFile().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
 
-                if (outputDir) {
-                    const splitResult = await executeAutoPRCommand(['split', filePath, '--max-lines', maxLines, '--output-dir', outputDir]);
-                    if (splitResult.success) {
-                        vscode.window.showInformationMessage('File split completed successfully!');
-                    }
-                }
-            }
-        } else {
-            vscode.window.showErrorMessage('File split failed');
+        vscode.commands.registerCommand('autopr.qualityCheckWorkspace', () => {
+            commandService.runQualityCheckWorkspace().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        // File Splitter Commands
+        vscode.commands.registerCommand('autopr.fileSplit', () => {
+            commandService.runFileSplit().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        // Auto-Fix Commands
+        vscode.commands.registerCommand('autopr.autoFix', () => {
+            commandService.runAutoFix().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        // Specialized Analysis Commands
+        vscode.commands.registerCommand('autopr.performanceCheck', () => {
+            commandService.runPerformanceCheck().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        vscode.commands.registerCommand('autopr.dependencyScan', () => {
+            commandService.runDependencyScan().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        vscode.commands.registerCommand('autopr.securityScan', () => {
+            commandService.runSecurityScan().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        vscode.commands.registerCommand('autopr.complexityAnalysis', () => {
+            commandService.runComplexityAnalysis().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        vscode.commands.registerCommand('autopr.documentationCheck', () => {
+            commandService.runDocumentationCheck().then(() => {
+                issuesProvider.refresh();
+                metricsProvider.refresh();
+            });
+        }),
+
+        // Configuration Commands
+        vscode.commands.registerCommand('autopr.setVolume', () => {
+            uiService.showVolumeSettings();
+        }),
+
+        vscode.commands.registerCommand('autopr.toggleTool', () => {
+            uiService.showToolToggle();
+        }),
+
+        vscode.commands.registerCommand('autopr.configure', () => {
+            uiService.showConfiguration();
+        }),
+
+        // Utility Commands
+        vscode.commands.registerCommand('autopr.clearCache', () => {
+            commandService.clearCache();
+        }),
+
+        vscode.commands.registerCommand('autopr.exportResults', () => {
+            uiService.exportResults();
+        }),
+
+        vscode.commands.registerCommand('autopr.importConfig', () => {
+            uiService.importConfiguration();
+        }),
+
+        // UI Commands
+        vscode.commands.registerCommand('autopr.showDashboard', () => {
+            uiService.showDashboard();
+        }),
+
+        vscode.commands.registerCommand('autopr.learningMemory', () => {
+            uiService.showLearningMemory();
+        }),
+
+        // Refresh commands for tree views
+        vscode.commands.registerCommand('autopr.refreshIssues', () => {
+            issuesProvider.refresh();
+        }),
+
+        vscode.commands.registerCommand('autopr.refreshMetrics', () => {
+            metricsProvider.refresh();
+        }),
+
+        vscode.commands.registerCommand('autopr.refreshHistory', () => {
+            historyProvider.refresh();
+        })
+    ];
+
+    // Add all commands to subscriptions
+    context.subscriptions.push(...commands);
+
+    // Initialize with sample data for demonstration
+    initializeSampleData(dataService);
+
+    console.log('AutoPR extension activated with modular architecture');
+}
+
+function initializeSampleData(dataService: DataService): void {
+    // Add some sample issues for demonstration
+    const sampleIssues = [
+        {
+            file: 'src/example.py',
+            line: 15,
+            column: 5,
+            message: 'Unused import "os"',
+            severity: 'warning' as const,
+            tool: 'ruff',
+            code: 'F401',
+            fixable: true,
+            confidence: 0.95
+        },
+        {
+            file: 'src/example.py',
+            line: 25,
+            column: 10,
+            message: 'Variable "x" is assigned but never used',
+            severity: 'warning' as const,
+            tool: 'ruff',
+            code: 'F841',
+            fixable: true,
+            confidence: 0.98
+        },
+        {
+            file: 'src/security.py',
+            line: 42,
+            column: 8,
+            message: 'Possible SQL injection vulnerability',
+            severity: 'error' as const,
+            tool: 'bandit',
+            code: 'B608',
+            fixable: false,
+            confidence: 0.85
+        },
+        {
+            file: 'src/complexity.py',
+            line: 78,
+            column: 12,
+            message: 'Function has high cyclomatic complexity (15)',
+            severity: 'info' as const,
+            tool: 'radon',
+            code: 'C901',
+            fixable: false,
+            confidence: 0.75
         }
-    } catch (error) {
-        vscode.window.showErrorMessage(`File split error: ${error}`);
-    }
-}
+    ];
 
-async function runAutoFix() {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showErrorMessage('No active file to fix');
-        return;
-    }
+    dataService.setIssues(sampleIssues);
 
-    const filePath = editor.document.fileName;
-    const config = vscode.workspace.getConfiguration('autopr');
-    const mode = config.get<string>('qualityMode', 'fast');
+    // Add sample metrics
+    const sampleMetrics = {
+        code_quality_score: 85,
+        issues_fixed: 12,
+        files_analyzed: 45,
+        performance_avg: 2300,
+        complexity_score: 7.2,
+        documentation_coverage: 78,
+        security_score: 92
+    };
 
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', mode, '--files', filePath, '--auto-fix']);
-        
-        if (result.success) {
-            vscode.window.showInformationMessage('Auto-fix completed successfully!');
-            // Refresh the document to show changes
-            await editor.document.save();
-        } else {
-            vscode.window.showErrorMessage('Auto-fix failed');
+    dataService.setMetrics(sampleMetrics);
+
+    // Add sample performance history
+    const sampleHistory = [
+        {
+            timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+            operation: 'quality_check',
+            duration: 2500,
+            success: true,
+            issues_found: 8,
+            issues_fixed: 3
+        },
+        {
+            timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+            operation: 'auto_fix',
+            duration: 1800,
+            success: true,
+            issues_found: 5,
+            issues_fixed: 5
+        },
+        {
+            timestamp: new Date(Date.now() - 10800000).toISOString(), // 3 hours ago
+            operation: 'file_split_analysis',
+            duration: 3200,
+            success: true,
+            issues_found: 0,
+            issues_fixed: 0
         }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Auto-fix error: ${error}`);
-    }
-}
+    ];
 
-function showDashboard() {
-    const config = vscode.workspace.getConfiguration('autopr');
-    const port = 8080;
-    const host = 'localhost';
-
-    vscode.window.showInformationMessage(`AutoPR Dashboard would start on http://${host}:${port}`);
-    // TODO: Implement actual dashboard launch
-}
-
-function showConfiguration() {
-    vscode.commands.executeCommand('workbench.action.openSettings', 'autopr');
-}
-
-async function setVolumeLevel() {
-    const config = vscode.workspace.getConfiguration('autopr');
-    const currentVolume = config.get<number>('volume', 500);
-    
-    const volume = await vscode.window.showInputBox({
-        prompt: 'Set volume level (0-1000)',
-        value: currentVolume.toString(),
-        validateInput: (value: string) => {
-            const num = parseInt(value);
-            return isNaN(num) || num < 0 || num > 1000 ? 'Please enter a number between 0 and 1000' : null;
-        }
+    sampleHistory.forEach(record => {
+        dataService.addPerformanceRecord(record);
     });
-
-    if (volume) {
-        await config.update('volume', parseInt(volume), vscode.ConfigurationTarget.Workspace);
-        vscode.window.showInformationMessage(`Volume level set to ${volume}`);
-    }
-}
-
-async function toggleTool() {
-    const config = vscode.workspace.getConfiguration('autopr');
-    const tools = config.get<any>('tools', {});
-    
-    const toolNames = Object.keys(tools);
-    const selectedTool = await vscode.window.showQuickPick(toolNames, {
-        placeHolder: 'Select a tool to toggle'
-    });
-
-    if (selectedTool) {
-        const currentState = tools[selectedTool]?.enabled || false;
-        tools[selectedTool] = { ...tools[selectedTool], enabled: !currentState };
-        await config.update('tools', tools, vscode.ConfigurationTarget.Workspace);
-        vscode.window.showInformationMessage(`${selectedTool} ${!currentState ? 'enabled' : 'disabled'}`);
-    }
-}
-
-async function runPerformanceCheck() {
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', 'comprehensive', '--tools', 'performance_analyzer']);
-        if (result.success) {
-            vscode.window.showInformationMessage('Performance analysis completed');
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Performance analysis failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Performance analysis error: ${error}`);
-    }
-}
-
-async function runDependencyScan() {
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', 'comprehensive', '--tools', 'dependency_scanner']);
-        if (result.success) {
-            vscode.window.showInformationMessage('Dependency scan completed');
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Dependency scan failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Dependency scan error: ${error}`);
-    }
-}
-
-async function runSecurityScan() {
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', 'comprehensive', '--tools', 'bandit,codeql']);
-        if (result.success) {
-            vscode.window.showInformationMessage('Security scan completed');
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Security scan failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Security scan error: ${error}`);
-    }
-}
-
-async function runComplexityAnalysis() {
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', 'comprehensive', '--tools', 'radon']);
-        if (result.success) {
-            vscode.window.showInformationMessage('Complexity analysis completed');
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Complexity analysis failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Complexity analysis error: ${error}`);
-    }
-}
-
-async function runDocumentationCheck() {
-    try {
-        const result = await executeAutoPRCommand(['check', '--mode', 'comprehensive', '--tools', 'interrogate']);
-        if (result.success) {
-            vscode.window.showInformationMessage('Documentation check completed');
-            displayQualityResults(result);
-        } else {
-            vscode.window.showErrorMessage('Documentation check failed');
-        }
-    } catch (error) {
-        vscode.window.showErrorMessage(`Documentation check error: ${error}`);
-    }
-}
-
-function showLearningMemory() {
-    const outputChannel = vscode.window.createOutputChannel('AutoPR Learning Memory');
-    outputChannel.show();
-    outputChannel.appendLine('AutoPR Learning Memory System');
-    outputChannel.appendLine('='.repeat(50));
-    outputChannel.appendLine('Pattern Recognition: Active');
-    outputChannel.appendLine('Success Rate Tracking: Enabled');
-    outputChannel.appendLine('User Preference Learning: Active');
-    outputChannel.appendLine('');
-    outputChannel.appendLine('Recent Patterns:');
-    outputChannel.appendLine('- File splitting: 85% success rate');
-    outputChannel.appendLine('- Auto-fix application: 92% success rate');
-    outputChannel.appendLine('- Quality analysis: 78% accuracy');
-    outputChannel.appendLine('');
-    outputChannel.appendLine('Learning Memory is continuously improving based on your usage patterns.');
-}
-
-async function clearCache() {
-    try {
-        await executeAutoPRCommand(['cache', '--clear']);
-        vscode.window.showInformationMessage('Cache cleared successfully');
-    } catch (error) {
-        vscode.window.showErrorMessage(`Failed to clear cache: ${error}`);
-    }
-}
-
-async function exportResults() {
-    const outputChannel = vscode.window.createOutputChannel('AutoPR Export');
-    outputChannel.show();
-    outputChannel.appendLine('AutoPR Results Export');
-    outputChannel.appendLine('='.repeat(50));
-    outputChannel.appendLine('Export formats available:');
-    outputChannel.appendLine('- JSON: Complete results with metadata');
-    outputChannel.appendLine('- CSV: Tabular format for analysis');
-    outputChannel.appendLine('- HTML: Web-friendly report');
-    outputChannel.appendLine('- Markdown: Documentation format');
-    outputChannel.appendLine('');
-    outputChannel.appendLine('Use the AutoPR CLI for detailed export options:');
-    outputChannel.appendLine('autopr export --format json --output results.json');
-}
-
-async function importConfiguration() {
-    const config = vscode.workspace.getConfiguration('autopr');
-    
-    const configFile = await vscode.window.showOpenDialog({
-        canSelectFiles: true,
-        canSelectFolders: false,
-        canSelectMany: false,
-        filters: {
-            'Configuration Files': ['json', 'yaml', 'yml', 'toml']
-        }
-    });
-
-    if (configFile && configFile.length > 0) {
-        vscode.window.showInformationMessage(`Configuration import from ${configFile[0].fsPath} would be implemented here`);
-        // TODO: Implement actual configuration import logic
-    }
-}
-
-async function executeAutoPRCommand(args: string[]): Promise<AutoPRResult> {
-    return new Promise((resolve, reject) => {
-        const config = vscode.workspace.getConfiguration('autopr');
-        const pythonPath = config.get<string>('pythonPath', 'python');
-        
-        const process = spawn(pythonPath, ['-m', 'autopr.cli.main', ...args], {
-            cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-        });
-
-        let stdout = '';
-        let stderr = '';
-
-        process.stdout.on('data', (data) => {
-            stdout += data.toString();
-        });
-
-        process.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
-
-        process.on('close', (code) => {
-            if (code === 0) {
-                try {
-                    const result = JSON.parse(stdout);
-                    resolve(result);
-                } catch (error) {
-                    reject(new Error('Failed to parse AutoPR output'));
-                }
-            } else {
-                reject(new Error(`AutoPR command failed: ${stderr}`));
-            }
-        });
-
-        process.on('error', (error) => {
-            reject(new Error(`Failed to execute AutoPR: ${error.message}`));
-        });
-    });
-}
-
-function displayQualityResults(result: AutoPRResult) {
-    const config = vscode.workspace.getConfiguration('autopr');
-    const showNotifications = config.get<boolean>('showNotifications', true);
-
-    if (showNotifications) {
-        const message = `Quality check completed: ${result.total_issues} issues found in ${result.processing_time.toFixed(2)}s`;
-        vscode.window.showInformationMessage(message);
-    }
-
-    // Create output channel for detailed results
-    const outputChannel = vscode.window.createOutputChannel('AutoPR');
-    outputChannel.show();
-    outputChannel.appendLine('AutoPR Quality Check Results');
-    outputChannel.appendLine('='.repeat(50));
-    outputChannel.appendLine(`Total Issues: ${result.total_issues}`);
-    outputChannel.appendLine(`Processing Time: ${result.processing_time.toFixed(2)}s`);
-    outputChannel.appendLine('');
-
-    if (result.issues_by_tool) {
-        for (const [tool, issues] of Object.entries(result.issues_by_tool)) {
-            outputChannel.appendLine(`${tool}: ${issues.length} issues`);
-            for (const issue of issues) {
-                outputChannel.appendLine(`  ${issue.file}:${issue.line}:${issue.column} - ${issue.message}`);
-            }
-            outputChannel.appendLine('');
-        }
-    }
-}
-
-// Tree Data Providers
-class AutoPRIssuesProvider implements vscode.TreeDataProvider<AutoPRIssueItem> {
-    private _onDidChangeTreeData: vscode.EventEmitter<AutoPRIssueItem | undefined | null | void> = new vscode.EventEmitter<AutoPRIssueItem | undefined | null | void>();
-    readonly onDidChangeTreeData: vscode.Event<AutoPRIssueItem | undefined | null | void> = this._onDidChangeTreeData.event;
-
-    getTreeItem(element: AutoPRIssueItem): vscode.TreeItem {
-        return element;
-    }
-
-    getChildren(element?: AutoPRIssueItem): Promise<AutoPRIssueItem[]> {
-        // Return sample issues for now
-        return Promise.resolve([
-            new AutoPRIssueItem('✅ No critical issues found', vscode.TreeItemCollapsibleState.None),
-            new AutoPRIssueItem('⚠️ 3 style warnings', vscode.TreeItemCollapsibleState.Collapsed),
-            new AutoPRIssueItem('ℹ️ 2 documentation suggestions', vscode.TreeItemCollapsibleState.Collapsed)
-        ]);
-    }
-
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
-    }
-}
-
-class AutoPRMetricsProvider implements vscode.TreeDataProvider<AutoPRMetricsItem> {
-    getTreeItem(element: AutoPRMetricsItem): vscode.TreeItem {
-        return element;
-    }
-
-    getChildren(element?: AutoPRMetricsItem): Promise<AutoPRMetricsItem[]> {
-        // Return sample metrics
-        return Promise.resolve([
-            new AutoPRMetricsItem('Code Quality Score: 85/100', vscode.TreeItemCollapsibleState.None),
-            new AutoPRMetricsItem('Issues Fixed: 12', vscode.TreeItemCollapsibleState.None),
-            new AutoPRMetricsItem('Files Analyzed: 45', vscode.TreeItemCollapsibleState.None),
-            new AutoPRMetricsItem('Performance: 2.3s avg', vscode.TreeItemCollapsibleState.None)
-        ]);
-    }
-}
-
-class AutoPRHistoryProvider implements vscode.TreeDataProvider<AutoPRHistoryItem> {
-    getTreeItem(element: AutoPRHistoryItem): vscode.TreeItem {
-        return element;
-    }
-
-    getChildren(element?: AutoPRHistoryItem): Promise<AutoPRHistoryItem[]> {
-        // Return sample history
-        return Promise.resolve([
-            new AutoPRHistoryItem('2024-01-15: Quality check completed', vscode.TreeItemCollapsibleState.None),
-            new AutoPRHistoryItem('2024-01-14: Auto-fix applied to 3 files', vscode.TreeItemCollapsibleState.None),
-            new AutoPRHistoryItem('2024-01-13: File split completed', vscode.TreeItemCollapsibleState.None),
-            new AutoPRHistoryItem('2024-01-12: Workspace analysis finished', vscode.TreeItemCollapsibleState.None)
-        ]);
-    }
-}
-
-// Tree Items
-class AutoPRIssueItem extends vscode.TreeItem {
-    constructor(
-        public readonly label: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-        public readonly issue?: AutoPRIssue
-    ) {
-        super(label, collapsibleState);
-    }
-}
-
-class AutoPRMetricsItem extends vscode.TreeItem {
-    constructor(
-        public readonly label: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState
-    ) {
-        super(label, collapsibleState);
-    }
-}
-
-class AutoPRHistoryItem extends vscode.TreeItem {
-    constructor(
-        public readonly label: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState
-    ) {
-        super(label, collapsibleState);
-    }
 }
 
 export function deactivate() {
