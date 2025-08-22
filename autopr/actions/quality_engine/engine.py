@@ -194,7 +194,12 @@ class QualityEngine(Action):
             # Run the AI Linting Fixer
             try:
                 with AILintingFixer() as fixer:
-                    fix_result = fixer.run(fixer_inputs)
+                    if hasattr(fixer, "run") and callable(getattr(fixer, "run", None)):
+                        fix_result = fixer.run(fixer_inputs)
+                    else:
+                        raise RuntimeError(
+                            "AILintingFixer does not have a callable 'run' method"
+                        )
             except Exception as fixer_error:
                 logger.error(
                     "Failed to initialize AILintingFixer", error=str(fixer_error)
@@ -474,8 +479,8 @@ class QualityEngine(Action):
                 ai_result = await run_ai_analysis(
                     files_to_check,
                     self.llm_manager,
-                    provider_name=inputs.ai_provider,
-                    model=inputs.ai_model,
+                    provider_name=inputs.ai_provider or "openai",
+                    model=inputs.ai_model or "gpt-4",
                 )
 
                 if ai_result:
