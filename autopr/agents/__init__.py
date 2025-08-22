@@ -44,13 +44,7 @@ from autopr.agents.platform_analysis_agent import (
 
 
 # Import linting agent and its types
-try:
-    from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
-except ImportError:
-    # Fallback if linting agent is not available
-    LintingAgent = None
-    LintingInputs = None
-    LintingOutputs = None
+from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
 
 # Show deprecation warning for old import path
 warnings.warn(

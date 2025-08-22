@@ -12,7 +12,8 @@ from typing import Any, Dict, List
 import structlog
 
 from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
-from autopr.actions.quality_engine.models import ToolResult, Issue
+from autopr.actions.quality_engine.models import ToolResult
+from autopr.agents.models import CodeIssue
 from autopr.actions.llm.manager import LLMProviderManager
 
 logger = structlog.get_logger(__name__)
@@ -86,17 +87,17 @@ async def run_ai_analysis(
     files: List[str],
     llm_manager: LLMProviderManager,
     provider_name: str = "openai",
-    model: str = "gpt-4"
+    model: str = "gpt-4",
 ) -> Dict[str, Any] | None:
     """
     Run AI-enhanced analysis on the provided files.
-    
+
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
         provider_name: Name of the LLM provider to use
         model: Model name to use for analysis
-        
+
     Returns:
         Dict containing AI analysis results or None if analysis fails
     """
@@ -104,36 +105,39 @@ async def run_ai_analysis(
         if not files:
             logger.warning("No files provided for AI analysis")
             return None
-            
+
         # Read file contents
         file_contents = {}
         for file_path in files:
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     file_contents[file_path] = f.read()
             except Exception as e:
                 logger.warning(f"Could not read file {file_path}: {e}")
                 continue
-        
+
         if not file_contents:
             logger.warning("No files could be read for AI analysis")
             return None
-        
+
         # Create analysis prompt
         analysis_prompt = _create_analysis_prompt(file_contents)
-        
+
         # Get LLM response
-        response = await llm_manager.call_llm(
-            provider_name,
-            analysis_prompt,
-            system_prompt=CODE_REVIEW_PROMPT,
-            temperature=0.1
-        )
-        
+        request = {
+            "provider": provider_name,
+            "messages": [
+                {"role": "system", "content": CODE_REVIEW_PROMPT},
+                {"role": "user", "content": analysis_prompt},
+            ],
+            "temperature": 0.1,
+        }
+        response = llm_manager.complete(request)
+
         if not response or not response.content:
             logger.warning("No response received from LLM")
             return None
-        
+
         # Parse response
         try:
             # Extract JSON from response
@@ -143,17 +147,17 @@ async def run_ai_analysis(
                 json_end = content.find("```", json_start)
                 if json_end != -1:
                     content = content[json_start:json_end].strip()
-            
+
             ai_result = json.loads(content)
-            
+
             # Add metadata
             ai_result["files_analyzed"] = list(file_contents.keys())
             ai_result["provider"] = provider_name
             ai_result["model"] = model
-            
+
             logger.info(f"AI analysis completed for {len(file_contents)} files")
             return ai_result
-            
+
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse AI response as JSON: {e}")
             # Return a fallback result
@@ -164,9 +168,9 @@ async def run_ai_analysis(
                 "files_analyzed": list(file_contents.keys()),
                 "provider": provider_name,
                 "model": model,
-                "error": "JSON parsing failed"
+                "error": "JSON parsing failed",
             }
-            
+
     except Exception as e:
         logger.error(f"AI analysis failed: {e}")
         return None
@@ -175,99 +179,99 @@ async def run_ai_analysis(
 def create_tool_result_from_ai_analysis(ai_result: Dict[str, Any]) -> ToolResult:
     """
     Convert AI analysis result to a ToolResult.
-    
+
     Args:
         ai_result: AI analysis result dictionary
-        
+
     Returns:
         ToolResult: Converted tool result
     """
     issues = []
-    
+
     # Convert AI suggestions to issues
     suggestions = ai_result.get("suggestions", [])
     for suggestion in suggestions:
-        issue = Issue(
-            file=suggestion.get("file", "unknown"),
-            line=suggestion.get("line", 0),
+        issue = CodeIssue(
+            file_path=suggestion.get("file", "unknown"),
+            line_number=suggestion.get("line", 0),
             column=suggestion.get("column", 0),
-            code=suggestion.get("category", "AI_SUGGESTION"),
             message=suggestion.get("issue", "AI suggestion"),
-            description=suggestion.get("explanation", ""),
             severity="info" if suggestion.get("confidence", 0) < 0.7 else "warning",
-            fix=suggestion.get("fix", ""),
-            confidence=suggestion.get("confidence", 0.5)
+            rule_id=suggestion.get("category", "AI_SUGGESTION"),
+            category="ai_suggestion",
+            fix=(
+                {
+                    "suggestion": suggestion.get("fix", ""),
+                    "confidence": suggestion.get("confidence", 0.5),
+                }
+                if suggestion.get("fix")
+                else None
+            ),
         )
         issues.append(issue)
-    
+
     # Create tool result
     return ToolResult(
-        tool_name="ai_analysis",
-        issues=issues,
-        files_with_issues=list(set(issue.file for issue in issues)),
-        execution_time=0.0,  # AI analysis time is not tracked separately
-        success=True,
+        issues=[issue.model_dump() for issue in issues],
+        files_with_issues=list(set(issue.file_path for issue in issues)),
         summary=ai_result.get("summary", "AI analysis completed"),
-        metadata={
-            "provider": ai_result.get("provider", "unknown"),
-            "model": ai_result.get("model", "unknown"),
-            "priorities": ai_result.get("priorities", []),
-            "files_analyzed": ai_result.get("files_analyzed", [])
-        }
+        execution_time=0.0,  # AI analysis time is not tracked separately
     )
 
 
 def _create_analysis_prompt(file_contents: Dict[str, str]) -> str:
     """
     Create a prompt for AI analysis of the provided files.
-    
+
     Args:
         file_contents: Dictionary mapping file paths to their contents
-        
+
     Returns:
         str: Analysis prompt
     """
     prompt_parts = [
         "Please analyze the following code files for quality issues, improvements, and potential problems:",
-        ""
-    ]
-    
-    for file_path, content in file_contents.items():
-        prompt_parts.extend([
-            f"## File: {file_path}",
-            "```",
-            content[:2000],  # Limit content to avoid token limits
-            "```",
-            ""
-        ])
-    
-    prompt_parts.extend([
-        "Please provide a comprehensive analysis including:",
-        "1. Code quality issues and suggestions",
-        "2. Performance optimization opportunities", 
-        "3. Security considerations",
-        "4. Maintainability improvements",
-        "5. Architecture and design patterns",
         "",
-        "Format your response as JSON with the structure specified in the system prompt."
-    ])
-    
+    ]
+
+    for file_path, content in file_contents.items():
+        prompt_parts.extend(
+            [
+                f"## File: {file_path}",
+                "```",
+                content[:2000],  # Limit content to avoid token limits
+                "```",
+                "",
+            ]
+        )
+
+    prompt_parts.extend(
+        [
+            "Please provide a comprehensive analysis including:",
+            "1. Code quality issues and suggestions",
+            "2. Performance optimization opportunities",
+            "3. Security considerations",
+            "4. Maintainability improvements",
+            "5. Architecture and design patterns",
+            "",
+            "Format your response as JSON with the structure specified in the system prompt.",
+        ]
+    )
+
     return "\n".join(prompt_parts)
 
 
 async def analyze_code_architecture(
-    files: List[str],
-    llm_manager: LLMProviderManager,
-    provider_name: str = "openai"
+    files: List[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
 ) -> Dict[str, Any] | None:
     """
     Run architectural analysis on the provided files.
-    
+
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
         provider_name: Name of the LLM provider to use
-        
+
     Returns:
         Dict containing architectural analysis results
     """
@@ -276,18 +280,16 @@ async def analyze_code_architecture(
 
 
 async def analyze_security_issues(
-    files: List[str],
-    llm_manager: LLMProviderManager,
-    provider_name: str = "openai"
+    files: List[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
 ) -> Dict[str, Any] | None:
     """
     Run security analysis on the provided files.
-    
+
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
         provider_name: Name of the LLM provider to use
-        
+
     Returns:
         Dict containing security analysis results
     """
