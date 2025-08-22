@@ -19,10 +19,6 @@
     "Testing"
   ],
   "activationEvents": [
-    "onCommand:autopr.qualityCheck",
-    "onCommand:autopr.fileSplit",
-    "onCommand:autopr.autoFix",
-    "onCommand:autopr.showDashboard",
     "onLanguage:python",
     "onLanguage:javascript",
     "onLanguage:typescript"
