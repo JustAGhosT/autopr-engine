@@ -397,6 +397,49 @@ class CommandService {
             }
         }
     }
+    async runQuickFix() {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showErrorMessage('No active file to fix');
+                return;
+            }
+            const filePath = editor.document.fileName;
+            const startTime = Date.now();
+            const result = await this.executeAutoPRCommand(['fix', '--quick', '--files', filePath]);
+            if (result.success) {
+                this.processQualityResults(result, 'quick_fix', startTime);
+                vscode.window.showInformationMessage('Quick fixes applied successfully');
+            }
+            else {
+                vscode.window.showErrorMessage('Quick fix failed');
+            }
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Quick fix error: ${error}`);
+        }
+    }
+    async runWorkspaceAnalysis() {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            vscode.window.showErrorMessage('No workspace folder found');
+            return;
+        }
+        try {
+            const startTime = Date.now();
+            const result = await this.executeAutoPRCommand(['analyze', '--workspace', workspaceFolders[0].uri.fsPath]);
+            if (result.success) {
+                this.processQualityResults(result, 'workspace_analysis', startTime);
+                vscode.window.showInformationMessage('Workspace analysis completed');
+            }
+            else {
+                vscode.window.showErrorMessage('Workspace analysis failed');
+            }
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Workspace analysis error: ${error}`);
+        }
+    }
 }
 exports.CommandService = CommandService;
 //# sourceMappingURL=commandService.js.map

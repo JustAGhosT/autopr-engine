@@ -89,19 +89,54 @@ class AutoPRDashboard:
                 if not files and not directory:
                     return jsonify({"error": "No files or directory specified"}), 400
 
+                # Normalize mode: lowercase and replace hyphens with underscores
+                normalized_mode = mode.lower().replace("-", "_").strip()
+
+                # Map normalized mode to QualityMode enum
+                try:
+                    quality_mode = QualityMode(normalized_mode)
+                except ValueError:
+                    return jsonify({"error": f"Unknown quality mode: {mode}"}), 400
+
+                # Set AI flag based on normalized mode
+                enable_ai_agents = normalized_mode == "ai_enhanced"
+
+                # Handle directory scanning if no files provided
+                if not files and directory:
+                    import glob
+
+                    # Scan directory for relevant files
+                    extensions = ["*.py", "*.js", "*.ts", "*.jsx", "*.tsx"]
+                    scanned_files = []
+                    for ext in extensions:
+                        pattern = str(Path(directory) / "**" / ext)
+                        scanned_files.extend(glob.glob(pattern, recursive=True))
+
+                    if not scanned_files:
+                        return (
+                            jsonify(
+                                {
+                                    "error": f"No relevant files found in directory: {directory}"
+                                }
+                            ),
+                            400,
+                        )
+
+                    files = scanned_files
+
                 # Run quality check
                 inputs = QualityInputs(
-                    mode=QualityMode(mode),
-                    files=files if files else [],
-                    enable_ai_agents=(mode == "ai-enhanced"),
+                    mode=quality_mode,
+                    files=files,
+                    enable_ai_agents=enable_ai_agents,
                 )
 
                 # Note: This would need to be async in a real implementation
                 # For now, we'll simulate the result
                 result = self._simulate_quality_check(inputs)
 
-                # Update dashboard data
-                self._update_dashboard_data(result, mode)
+                # Update dashboard data with normalized mode
+                self._update_dashboard_data(result, normalized_mode)
 
                 return jsonify(result)
 
@@ -223,16 +258,23 @@ class AutoPRDashboard:
         self.dashboard_data["total_checks"] += 1
         self.dashboard_data["total_issues"] += result.get("total_issues_found", 0)
 
-        # Update success rate
+        # Update success rate (unconditionally)
+        successful_checks = sum(
+            1
+            for activity in self.dashboard_data["recent_activity"]
+            if activity.get("success", False)
+        )
+        # Add 1 if current result is successful (since recent_activity excludes current result)
         if result.get("success", False):
-            successful_checks = sum(
-                1
-                for activity in self.dashboard_data["recent_activity"]
-                if activity.get("success", False)
-            )
+            successful_checks += 1
+
+        # Guard against division by zero
+        if self.dashboard_data["total_checks"] > 0:
             self.dashboard_data["success_rate"] = (
-                successful_checks + 1
-            ) / self.dashboard_data["total_checks"]
+                successful_checks / self.dashboard_data["total_checks"]
+            )
+        else:
+            self.dashboard_data["success_rate"] = 0.0
 
         # Update average processing time
         current_avg = self.dashboard_data["average_processing_time"]

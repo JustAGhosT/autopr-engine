@@ -1,17 +1,23 @@
-from autopr.actions.quality_engine.registry import HandlerRegistry
-from autopr.actions.quality_engine.results import LintIssue
+from autopr.actions.quality_engine.handler_registry import HandlerRegistry
+from autopr.actions.quality_engine.handler_base import Handler
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
 
 
 registry = HandlerRegistry()
 
 
-@registry.register(LintIssue)
-def handle_lint(results: list[LintIssue]):
+@registry.register_for_result(LintIssue)
+class LintIssueHandler(Handler[LintIssue]):
     """
-    Handle lint issues.
+    Handler for lint issues.
+    """
 
-    Args:
-        results: The lint issues to process.
-    """
-    for _issue in results:
-        pass
+    def handle(self, results: list[LintIssue]) -> None:
+        """
+        Handle lint issues.
+
+        Args:
+            results: The lint issues to process.
+        """
+        for _issue in results:
+            pass

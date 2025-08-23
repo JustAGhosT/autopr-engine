@@ -405,6 +405,7 @@ class Test{cls["name"]}:
 
     def _run_tests_on_content(self, test_file_path: str, content: str) -> dict[str, Any]:
         """Run tests on a specific content version."""
+        temp_file_path = None
         try:
             # Create temporary file with the content
             with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
@@ -420,9 +421,6 @@ class Test{cls["name"]}:
                 cwd=Path(temp_file_path).parent,
             )
 
-            # Clean up
-            Path(temp_file_path).unlink(missing_ok=True)
-
             return {
                 "passed": result.returncode == 0,
                 "output": result.stdout + result.stderr,
@@ -432,6 +430,10 @@ class Test{cls["name"]}:
         except Exception as e:
             logger.error(f"Failed to run tests: {e}")
             return {"passed": False, "output": str(e), "returncode": -1}
+        finally:
+            # Ensure cleanup happens even if an exception occurs
+            if temp_file_path and Path(temp_file_path).exists():
+                Path(temp_file_path).unlink(missing_ok=True)
 
     def cleanup_generated_tests(self, file_path: str | None = None):
         """Clean up generated test files."""

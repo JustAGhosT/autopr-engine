@@ -3,7 +3,7 @@
   "python.linting.enabled": true,
   "python.formatting.enabled": true,
   "python.analysis.enabled": true,
-  "python.languageServer": "None",
+  "python.languageServer": "Pylance",
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,
   "python.linting.pylintEnabled": false,
@@ -94,9 +94,9 @@
   "monica.enabled": false,
   "monica.telemetryEnabled": false,
   "monica.autoComplete": false,
-  "ruff.enable": false,
-  "ruff.lint.enable": false,
-  "ruff.format.enable": false,
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
   "ruff.organizeImports.enable": false,
   "ruff.server.enable": false,
   "eslint.enable": false,
@@ -113,8 +113,24 @@
   },
   "editor.suggestOnTriggerCharacters": false,
   "editor.acceptSuggestionOnEnter": "off",
-  "python.analysis.exclude": ["**/*", "*"],
-  "python.analysis.ignore": ["**/*", "*"],
+  "python.analysis.exclude": [
+    "**/node_modules/**",
+    "**/venv/**",
+    "**/.venv/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/__pycache__/**",
+    "**/*.pyc"
+  ],
+  "python.analysis.ignore": [
+    "**/node_modules/**",
+    "**/venv/**",
+    "**/.venv/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/__pycache__/**",
+    "**/*.pyc"
+  ],
   "files.watcherExclude": {
     "**/node_modules/**": true,
     "**/__pycache__/**": true,
@@ -136,12 +152,12 @@
     "**/*.pyc": true
   },
   "python.defaultInterpreterPath": "",
-  "python.autoComplete.enabled": false,
+  "python.autoComplete.enabled": true,
   "python.jediEnabled": false,
-  "pylance.enabled": false,
+  "pylance.enabled": true,
   "ms-python.python.enabled": false,
   "ms-python.vscode-pylance.enabled": false,
-  "pyright.enabled": false,
+  "pyright.enabled": true,
   "python.analysis.completeFunctionParens": false,
   "python.analysis.packageIndexDepths": [],
   "python.analysis.userFileIndexingLimit": 0,
@@ -209,5 +225,6 @@
   "problems.autoReveal": true,
   "git.suggestSmartCommit": true,
   "git.enableCommitSigning": true,
-  "typescript.preferences.importModuleSpecifier": "relative"
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "autopr.qualityMode": "smart"
 }

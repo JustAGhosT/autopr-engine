@@ -93,15 +93,14 @@ def check_availability() -> tuple[bool, str]:
 
     for endpoint in endpoints:
         try:
-            with suppress(Exception):
-                response = requests.get(f"{endpoint}/models", timeout=5)
-                if response.status_code == 200:
-                    models = response.json().get("data", [])
-                    for model in models:
-                        model_id = model.get("id", "").lower()
-                        if "llama" in model_id and ("3.3" in model_id or "70b" in model_id):
-                            return True, f"Available at {endpoint}"
-        except:
+            response = requests.get(f"{endpoint}/models", timeout=5)
+            response.raise_for_status()
+            models = response.json().get("data", [])
+            for model in models:
+                model_id = model.get("id", "").lower()
+                if "llama" in model_id and ("3.3" in model_id or "70b" in model_id):
+                    return True, f"Available at {endpoint}"
+        except (requests.RequestException, ValueError) as e:
             continue
 
     return False, "No local Llama 3.3 70B endpoint found"

@@ -5,10 +5,11 @@ This module provides initialization and configuration for the LLM provider manag
 used in AI-enhanced quality analysis.
 """
 
+import os
 import logging
 from typing import Any
 
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.ai.providers.manager import LLMProviderManager
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +26,13 @@ async def initialize_llm_manager() -> LLMProviderManager | None:
         config = {
             "providers": {
                 "openai": {
-                    "api_key": "${OPENAI_API_KEY}",
+                    "api_key": os.getenv("OPENAI_API_KEY", ""),
                     "default_model": "gpt-4",
                     "max_tokens": 4000,
                     "temperature": 0.1,
                 },
                 "anthropic": {
-                    "api_key": "${ANTHROPIC_API_KEY}",
+                    "api_key": os.getenv("ANTHROPIC_API_KEY", ""),
                     "default_model": "claude-3-sonnet-20240229",
                     "max_tokens": 4000,
                     "temperature": 0.1,
@@ -41,18 +42,33 @@ async def initialize_llm_manager() -> LLMProviderManager | None:
             "default_provider": "openai",
         }
 
-        llm_manager = LLMProviderManager(config)
+        # Create a simple config object with the required attributes
+        class SimpleConfig:
+            def __init__(self, config_dict):
+                self.openai_api_key = config_dict["providers"]["openai"]["api_key"]
+                self.anthropic_api_key = config_dict["providers"]["anthropic"][
+                    "api_key"
+                ]
+                self.default_llm_provider = config_dict.get(
+                    "default_provider", "openai"
+                )
+
+        config_obj = SimpleConfig(config)
+        llm_manager = LLMProviderManager(config_obj)
+        await llm_manager.initialize()
 
         # Test the connection
-        test_request = {
-            "provider": "openai",
-            "messages": [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Test message"},
-            ],
-            "temperature": 0.1,
-        }
-        test_response = llm_manager.complete(test_request)
+        from autopr.ai.base import LLMMessage
+
+        test_messages = [
+            LLMMessage(role="system", content="You are a helpful assistant."),
+            LLMMessage(role="user", content="Test message"),
+        ]
+        test_response = await llm_manager.generate_completion(
+            messages=test_messages,
+            provider_name="openai",
+            temperature=0.1,
+        )
 
         if test_response and test_response.content:
             logger.info("LLM manager initialized successfully")

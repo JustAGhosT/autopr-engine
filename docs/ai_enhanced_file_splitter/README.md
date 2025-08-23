@@ -122,13 +122,15 @@ The file splitter automatically adapts its behavior based on volume settings:
 ## File Structure
 
 ```text
+autopr/actions/
+├── learning_memory_system.py # AI learning and pattern recognition
+
 autopr/actions/ai_linting_fixer/
 ├── file_splitter.py          # Main file splitter implementation
 ├── models.py                 # Data models and types
 ├── ai_fix_applier.py         # Integration with AI fixer
 ├── backup_manager.py         # Backup and rollback functionality
-├── validation_manager.py     # Syntax validation
-└── learning_memory_system.py # AI learning and pattern recognition
+└── validation_manager.py     # Syntax validation
 ```
 
 ## Examples
@@ -172,8 +174,8 @@ def get_split_config(volume: int) -> SplitConfig:
         max_functions_per_file=20 - (volume // 50),
         use_ai_analysis=volume >= 600,
         confidence_threshold=0.5 + (volume / 2000),
-        create_backups=volume >= 400,
-        validate_splits=volume >= 200
+        create_backup=volume >= 400,
+        validate_syntax=volume >= 200
     )
 
 # Use with different volume levels

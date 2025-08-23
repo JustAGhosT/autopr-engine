@@ -1,8 +1,9 @@
 name: Quality Feedback
-
 on:
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+      - develop
 
 permissions:
   contents: read

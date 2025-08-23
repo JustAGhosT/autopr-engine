@@ -232,4 +232,16 @@ export class DataService {
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
             .slice(0, limit);
     }
+
+    public initializeWorkspace(workspacePath: string): void {
+        // Initialize workspace-specific data
+        this.cache.set('workspace_path', workspacePath);
+        this.cache.set('initialized_at', new Date().toISOString());
+        
+        // Set workspace-specific learning memory
+        this.learningMemory.userPreferences['workspace_path'] = workspacePath;
+        this.learningMemory.userPreferences['last_initialized'] = new Date().toISOString();
+        
+        this.saveStoredData();
+    }
 }

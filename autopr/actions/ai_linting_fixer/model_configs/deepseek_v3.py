@@ -92,17 +92,14 @@ def check_availability() -> tuple[bool, str]:
     endpoints = get_deepseek_v3_endpoints()
 
     for endpoint in endpoints:
-        try:
-            with suppress(Exception):
-                response = requests.get(f"{endpoint}/models", timeout=5)
-                if response.status_code == 200:
-                    models = response.json().get("data", [])
-                    for model in models:
-                        model_id = model.get("id", "").lower()
-                        if "deepseek" in model_id and "v3" in model_id:
-                            return True, f"Available at {endpoint}"
-        except:
-            continue
+        with suppress(Exception):
+            response = requests.get(f"{endpoint}/models", timeout=5)
+            if response.status_code == 200:
+                models = response.json().get("data", [])
+                for model in models:
+                    model_id = model.get("id", "").lower()
+                    if "deepseek" in model_id and "v3" in model_id:
+                        return True, f"Available at {endpoint}"
 
     return False, "No local DeepSeek-V3 endpoint found"
 

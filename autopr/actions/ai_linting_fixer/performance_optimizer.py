@@ -15,6 +15,7 @@ import hashlib
 import logging
 import mmap
 import os
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from dataclasses import dataclass, field
@@ -388,7 +389,12 @@ class PerformanceOptimizer:
         self, file_path: Path, content: str, processor_func: Callable[[Path, str], Any]
     ) -> Any:
         """Process small files with caching."""
-        cache_key = self.cache._generate_key(str(file_path), content[:1000])
+        # Generate collision-resistant cache key using SHA-256 hash of entire content
+        content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+        content_length = len(content)
+        cache_key = self.cache._generate_key(
+            str(file_path), content_hash, content_length
+        )
 
         # Check cache first
         cached_result = self.cache.get(cache_key)
@@ -419,14 +425,22 @@ class PerformanceOptimizer:
 
         # Process in parallel chunks
         def chunk_processor(chunk: str) -> Any:
-            # Create temporary file for chunk
-            temp_path = file_path.with_suffix(f".chunk_{hash(chunk) % 1000}")
+            # Create secure unique temp file using NamedTemporaryFile
+            temp_file = tempfile.NamedTemporaryFile(
+                mode="w+", suffix=".chunk", delete=False, encoding="utf-8"
+            )
+            temp_path = Path(temp_file.name)
             try:
-                temp_path.write_text(chunk, encoding="utf-8")
+                temp_file.write(chunk)
+                temp_file.flush()
+                temp_file.close()
                 return processor_func(temp_path, chunk)
             finally:
-                if temp_path.exists():
-                    temp_path.unlink()
+                try:
+                    if temp_path.exists():
+                        temp_path.unlink()
+                except Exception as e:
+                    logger.warning(f"Failed to remove temp chunk file {temp_path}: {e}")
 
         results = self.parallel_processor.process_file_chunks_parallel(
             file_path, content, chunk_processor, chunk_size=500
@@ -451,10 +465,15 @@ class PerformanceOptimizer:
 
         start_time = time.time()
 
-        # Write content to temporary file for memory mapping
-        temp_path = file_path.with_suffix(".temp")
+        # Write content to a unique temp file for memory mapping
+        temp_file = tempfile.NamedTemporaryFile(
+            mode="w+", suffix=".mmap", delete=False, encoding="utf-8"
+        )
         try:
-            temp_path.write_text(content, encoding="utf-8")
+            temp_file.write(content)
+            temp_file.flush()
+            temp_file.close()
+            temp_path = Path(temp_file.name)
 
             def memory_mapped_processor(chunk: bytes) -> Any:
                 chunk_str = chunk.decode("utf-8", errors="ignore")
@@ -465,8 +484,11 @@ class PerformanceOptimizer:
             )
 
         finally:
-            if temp_path.exists():
-                temp_path.unlink()
+            try:
+                if temp_path.exists():
+                    temp_path.unlink()
+            except Exception as e:
+                logger.warning(f"Failed to remove mmap temp file {temp_path}: {e}")
 
         processing_time = time.time() - start_time
 

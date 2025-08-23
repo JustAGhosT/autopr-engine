@@ -131,48 +131,51 @@ set -e
 
 echo "🔍 AutoPR: Running pre-commit quality checks..."
 
-# Get staged files
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(py|js|ts|jsx|tsx)$' || true)
+# Get staged files using NUL-separated output for safety
+files_array=()
+while IFS= read -r -d '' file; do
+    # Only process relevant file types
+    if [[ "$file" =~ \\.(py|js|ts|jsx|tsx)$ ]]; then
+        files_array+=("$file")
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACM -z)
 
-if [ -z "$STAGED_FILES" ]; then
+if [ ${{#files_array[@]}} -eq 0 ]; then
     echo "✅ No relevant files staged for commit"
     exit 0
 fi
 
-# Create temporary file list
-TEMP_FILE=$(mktemp)
-echo "$STAGED_FILES" > "$TEMP_FILE"
+echo "📁 Processing ${{#files_array[@]}} staged files..."
 
-# Run AutoPR quality check
-python -m autopr.cli.main check \\
+# Run AutoPR quality check with proper array expansion
+if python -m autopr.cli.main check \\
     --mode {mode} \\
-    --files $(cat "$TEMP_FILE" | tr '\\n' ' ') \\
+    --files "${{files_array[@]}}" \\
     --format json \\
-    --output /tmp/autopr_precommit_result.json
-
-# Check if quality check passed
-if [ $? -eq 0 ]; then
+    --output /tmp/autopr_precommit_result.json; then
+    
     echo "✅ AutoPR quality checks passed"
     
     # Apply auto-fixes if enabled
     if [ "{str(auto_fix).lower()}" = "true" ]; then
         echo "🔧 AutoPR: Applying automatic fixes..."
-        python -m autopr.cli.main check \\
+        if python -m autopr.cli.main check \\
             --mode {mode} \\
-            --files $(cat "$TEMP_FILE" | tr '\\n' ' ') \\
-            --auto-fix
-        
-        # Re-stage fixed files
-        git add $(cat "$TEMP_FILE" | tr '\\n' ' ')
-        echo "✅ Auto-fixes applied and staged"
+            --files "${{files_array[@]}}" \\
+            --auto-fix; then
+            
+            # Re-stage fixed files using proper array expansion
+            git add -- "${{files_array[@]}}"
+            echo "✅ Auto-fixes applied and staged"
+        else
+            echo "⚠️  Auto-fix failed, but continuing with commit"
+        fi
     fi
     
-    rm -f "$TEMP_FILE"
     exit 0
 else
     echo "❌ AutoPR quality checks failed"
     echo "Please fix the issues before committing"
-    rm -f "$TEMP_FILE"
     exit 1
 fi
 """
@@ -276,11 +279,42 @@ echo "✅ Commit message validation passed"
         try:
             # Create temporary test environment
             with tempfile.TemporaryDirectory() as temp_dir:
-                # Simulate git environment
-                os.environ["GIT_DIR"] = str(self.git_dir)
-
-                # Test pre-commit hook with dry run
+                # Test pre-commit hook with proper git setup
                 if hook_name == "pre-commit":
+                    # Initialize git repository in temp directory
+                    subprocess.run(
+                        ["git", "init"],
+                        cwd=temp_dir,
+                        capture_output=True,
+                        check=True,
+                    )
+
+                    # Set git user config
+                    subprocess.run(
+                        ["git", "config", "user.name", "AutoPR Test"],
+                        cwd=temp_dir,
+                        capture_output=True,
+                        check=True,
+                    )
+                    subprocess.run(
+                        ["git", "config", "user.email", "test@autopr.local"],
+                        cwd=temp_dir,
+                        capture_output=True,
+                        check=True,
+                    )
+
+                    # Create a test file and stage it
+                    test_file = Path(temp_dir) / "test.py"
+                    test_file.write_text("# Test file for AutoPR pre-commit hook\n")
+
+                    subprocess.run(
+                        ["git", "add", str(test_file)],
+                        cwd=temp_dir,
+                        capture_output=True,
+                        check=True,
+                    )
+
+                    # Run the pre-commit hook in the git repository
                     result = subprocess.run(
                         [str(hook_path)],
                         cwd=temp_dir,

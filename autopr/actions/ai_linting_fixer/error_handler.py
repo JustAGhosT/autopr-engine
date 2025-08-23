@@ -94,6 +94,11 @@ class ErrorHandler:
         else:
             strategy = ErrorRecoveryStrategy.SKIP
 
+        # Increment recovery count for non-abort strategies (actual recoveries)
+        if strategy != ErrorRecoveryStrategy.ABORT:
+            self.recovery_count += 1
+            logger.info(f"Recovery strategy applied: {strategy.value} (recovery #{self.recovery_count})")
+
         # Notify callbacks
         for callback in self.on_recovery_callbacks:
             try:
@@ -109,16 +114,18 @@ class ErrorHandler:
         """Add a recovery callback."""
         self.on_recovery_callbacks.append(callback)
 
-    def get_error_stats(self) -> dict[str, int]:
+    def get_error_stats(self) -> dict[str, Any]:
         """Get error handling statistics."""
+        if self.error_count > 0:
+            # Calculate success rate as recoveries / total errors, clamped to max 1.0
+            success_rate = min(float(self.recovery_count) / float(self.error_count), 1.0)
+        else:
+            success_rate = 1.0
+            
         return {
             "total_errors": self.error_count,
             "recoveries": self.recovery_count,
-            "success_rate": (
-                (self.error_count - self.recovery_count) / self.error_count
-                if self.error_count > 0
-                else 1.0
-            ),
+            "success_rate": success_rate,
         }
 
 

@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/JustAGhosT/autopr-engine/workflows/CI/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3ACI)
 [![Quality](https://github.com/JustAGhosT/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
-[![PR Checks](https://github.com/JustAGhosT/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22PR+Checks%22)
+[![PR Checks](https://github.com/JustAGhosT/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Pull+Request+Checks%22)
 
 AutoPR Engine is a comprehensive AI-powered automation platform that transforms GitHub pull request
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
@@ -82,12 +82,20 @@ pip install autopr-engine
 # Or install with all features
 pip install "autopr-engine[full]"
 
-# Docker deployment
+# Docker deployment (if image is published)
 docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
   justaghost/autopr-engine:latest
+
+# Or build locally (recommended)
+docker build -t autopr-engine:latest .
+docker run -d \
+  -e GITHUB_TOKEN=your_token \
+  -e OPENAI_API_KEY=your_key \
+  -p 8080:8080 \
+  autopr-engine:latest
 ```
 
 ### **Basic Configuration**
@@ -471,11 +479,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 **Support**
 
-- **Documentation**: [https://autopr-engine.readthedocs.io](<https://autopr-engine.readthedocs.io)>
-- **GitHub Issues**: [Report bugs and request
-  features](<https://github.com/JustAGhosT/autopr-engine/issues)>
-- **Discussions**: [Community
-  discussions](<https://github.com/JustAGhosT/autopr-engine/discussions)>
+- **Documentation**: [https://autopr-engine.readthedocs.io](https://autopr-engine.readthedocs.io)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/JustAGhosT/autopr-engine/issues)
+- **Discussions**: [Community discussions](https://github.com/JustAGhosT/autopr-engine/discussions)
 - **Email**: [support@justaghost.com](mailto:support@justaghost.com)
 
 ---

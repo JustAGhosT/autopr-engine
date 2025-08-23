@@ -2,12 +2,13 @@
 AI-enhanced analysis functionality for the quality engine
 """
 
+import os
 import time
 from typing import Any
 
 import structlog
 
-from autopr.actions.quality_engine.ai.models import ToolResult
+from autopr.actions.quality_engine.models import ToolResult
 
 
 logger = structlog.get_logger(__name__)
@@ -70,19 +71,19 @@ async def initialize_llm_manager() -> Any | None:
         Initialized LLM manager or None if initialization fails
     """
     try:
-        from autopr.actions.llm.manager import LLMProviderManager
+        from autopr.ai.providers.manager import LLMProviderManager
 
         # Basic configuration for quality analysis
         config = {
             "providers": {
                 "openai": {
-                    "api_key": "${OPENAI_API_KEY}",
+                    "api_key": os.getenv("OPENAI_API_KEY", ""),
                     "default_model": "gpt-4",
                     "max_tokens": 4000,
                     "temperature": 0.1,
                 },
                 "anthropic": {
-                    "api_key": "${ANTHROPIC_API_KEY}",
+                    "api_key": os.getenv("ANTHROPIC_API_KEY", ""),
                     "default_model": "claude-3-sonnet-20240229",
                     "max_tokens": 4000,
                     "temperature": 0.1,
@@ -92,11 +93,28 @@ async def initialize_llm_manager() -> Any | None:
             "default_provider": "openai",
         }
 
-        llm_manager = LLMProviderManager(config)
+        # Create a simple config object with the required attributes
+        class SimpleConfig:
+            def __init__(self, config_dict):
+                self.openai_api_key = config_dict["providers"]["openai"]["api_key"]
+                self.anthropic_api_key = config_dict["providers"]["anthropic"]["api_key"]
+                self.default_llm_provider = config_dict.get("default_provider", "openai")
 
+        config_obj = SimpleConfig(config)
+        llm_manager = LLMProviderManager(config_obj)
+
+        # Initialize the LLM manager
+        try:
+            await llm_manager.initialize()
+            logger.info("LLM provider manager initialized successfully")
+        except Exception as init_error:
+            logger.error(f"Failed to initialize LLM manager: {init_error}")
+            return None
+
+        # Get available providers after initialization
         available_providers = llm_manager.get_available_providers()
         logger.info(
-            "Initialized LLM provider manager", available_providers=available_providers
+            "LLM provider manager ready", available_providers=available_providers
         )
 
         if not available_providers:

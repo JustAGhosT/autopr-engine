@@ -17,7 +17,7 @@ from autopr.actions.ai_linting_fixer.validation_manager import (
     ValidationConfig,
     ValidationManager,
 )
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.ai.providers.manager import LLMProviderManager
 
 
 logger = logging.getLogger(__name__)
@@ -36,15 +36,17 @@ class AIFixApplier:
         """Initialize the AI fix applier."""
         self.llm_manager = llm_manager
         self.backup_manager = backup_manager or BackupManager()
-        self.validation_manager = ValidationManager(validation_config or ValidationConfig())
-        self.file_splitter = FileSplitter(split_config or SplitConfig())
+        self.validation_manager = ValidationManager(
+            validation_config or ValidationConfig()
+        )
+        self.file_splitter = FileSplitter(self.llm_manager, None, None)
         self.test_generator = TestGenerator()
         self.enable_validation = True
         self.enable_backup = True
         self.enable_splitting = True
         self.enable_test_generation = True
 
-    def apply_specialist_fix_with_validation(
+    async def apply_specialist_fix_with_validation(
         self,
         agent: Any,
         file_path: str,
@@ -66,7 +68,7 @@ class AIFixApplier:
                 }
 
         # 2. Apply the fix
-        fix_result = self.apply_specialist_fix(agent, file_path, content, issues)
+        fix_result = await self.apply_specialist_fix(agent, file_path, content, issues)
 
         if not fix_result.get("success", False):
             return fix_result
@@ -78,11 +80,13 @@ class AIFixApplier:
         if self.enable_validation:
             try:
                 error_codes = [issue.error_code.split("(")[0] for issue in issues]
-                should_keep_fix, validation_checks = self.validation_manager.validate_file_fix(
-                    file_path,
-                    content,
-                    fix_result.get("fixed_content", ""),
-                    error_codes,
+                should_keep_fix, validation_checks = (
+                    self.validation_manager.validate_file_fix(
+                        file_path,
+                        content,
+                        fix_result.get("fixed_content", ""),
+                        error_codes,
+                    )
                 )
             except Exception as e:
                 logger.error(f"Validation failed for {file_path}: {e}")
@@ -121,7 +125,7 @@ class AIFixApplier:
 
         return fix_result
 
-    def apply_specialist_fix_with_comprehensive_workflow(
+    async def apply_specialist_fix_with_comprehensive_workflow(
         self,
         agent: Any,
         file_path: str,
@@ -146,22 +150,36 @@ class AIFixApplier:
         # 2. Check if file should be split
         split_result = None
         if self.enable_splitting:
-            should_split, split_reason = self.file_splitter.should_split_file(file_path, content)
+            # Get complexity analysis first
+            complexity = self.file_splitter.complexity_analyzer.analyze_file_complexity(
+                file_path, content
+            )
+            should_split, confidence, split_reason = (
+                await self.file_splitter.ai_decision_engine.should_split_file(
+                    file_path, content, complexity
+                )
+            )
             if should_split:
                 logger.info(f"Splitting file {file_path}: {split_reason}")
-                split_result = self.file_splitter.split_file(file_path, content)
+                split_result = await self.file_splitter.split_file(file_path, content)
                 if split_result.success:
-                    logger.info(f"File split into {len(split_result.components)} components")
+                    logger.info(
+                        f"File split into {len(split_result.components)} components"
+                    )
 
         # 3. Generate tests if needed
         test_result = None
         if self.enable_test_generation:
-            test_result = self.test_generator.generate_tests_if_needed(file_path, content)
+            test_result = self.test_generator.generate_tests_if_needed(
+                file_path, content
+            )
             if test_result.success and test_result.test_file_path:
                 logger.info(f"Generated tests for {file_path}")
 
         # 4. Let AI choose the best strategy
-        strategy_result = self._select_fix_strategy(agent, file_path, content, issues)
+        strategy_result = await self._select_fix_strategy(
+            agent, file_path, content, issues
+        )
         if not strategy_result.get("success", False):
             return strategy_result
 
@@ -170,9 +188,13 @@ class AIFixApplier:
 
         # 5. Apply the fix using selected strategy
         if strategy == "full_file":
-            fix_result = self.apply_specialist_fix(agent, file_path, content, issues)
+            fix_result = await self.apply_specialist_fix(
+                agent, file_path, content, issues
+            )
         else:  # targeted
-            fix_result = self.apply_targeted_fix(agent, file_path, content, issues)
+            fix_result = await self.apply_targeted_fix(
+                agent, file_path, content, issues
+            )
 
         if not fix_result.get("success", False):
             return fix_result
@@ -186,17 +208,21 @@ class AIFixApplier:
             try:
                 # Standard validation
                 error_codes = [issue.error_code.split("(")[0] for issue in issues]
-                should_keep_fix, validation_checks = self.validation_manager.validate_file_fix(
-                    file_path,
-                    content,
-                    fix_result.get("fixed_content", ""),
-                    error_codes,
+                should_keep_fix, validation_checks = (
+                    self.validation_manager.validate_file_fix(
+                        file_path,
+                        content,
+                        fix_result.get("fixed_content", ""),
+                        error_codes,
+                    )
                 )
 
                 # Test validation if tests exist
                 if test_result and test_result.test_file_path:
-                    test_validation_result = self.test_generator.validate_fix_with_tests(
-                        file_path, content, fix_result.get("fixed_content", "")
+                    test_validation_result = (
+                        self.test_generator.validate_fix_with_tests(
+                            file_path, content, fix_result.get("fixed_content", "")
+                        )
                     )
                     if not test_validation_result.tests_passed:
                         logger.warning(f"Tests failed after fix for {file_path}")
@@ -222,8 +248,11 @@ class AIFixApplier:
             {
                 "strategy_used": strategy,
                 "strategy_reasoning": strategy_result.get("reasoning", ""),
-                "file_split_performed": split_result is not None and split_result.success,
-                "split_components_created": (len(split_result.components) if split_result else 0),
+                "file_split_performed": split_result is not None
+                and split_result.success,
+                "split_components_created": (
+                    len(split_result.components) if split_result else 0
+                ),
                 "tests_generated": test_result.success if test_result else False,
                 "test_file_path": test_result.test_file_path if test_result else None,
                 "validation_performed": self.enable_validation,
@@ -240,7 +269,9 @@ class AIFixApplier:
                 "test_validation": (
                     {
                         "tests_passed": (
-                            test_validation_result.tests_passed if test_validation_result else None
+                            test_validation_result.tests_passed
+                            if test_validation_result
+                            else None
                         ),
                         "original_tests_passed": (
                             test_validation_result.original_tests_passed
@@ -264,7 +295,7 @@ class AIFixApplier:
 
         return fix_result
 
-    def apply_specialist_fix_with_strategy_selection(
+    async def apply_specialist_fix_with_strategy_selection(
         self,
         agent: Any,
         file_path: str,
@@ -286,7 +317,9 @@ class AIFixApplier:
                 }
 
         # 2. Let AI choose the best strategy
-        strategy_result = self._select_fix_strategy(agent, file_path, content, issues)
+        strategy_result = await self._select_fix_strategy(
+            agent, file_path, content, issues
+        )
         if not strategy_result.get("success", False):
             return strategy_result
 
@@ -295,9 +328,13 @@ class AIFixApplier:
 
         # 3. Apply the fix using selected strategy
         if strategy == "full_file":
-            fix_result = self.apply_specialist_fix(agent, file_path, content, issues)
+            fix_result = await self.apply_specialist_fix(
+                agent, file_path, content, issues
+            )
         else:  # targeted
-            fix_result = self.apply_targeted_fix(agent, file_path, content, issues)
+            fix_result = await self.apply_targeted_fix(
+                agent, file_path, content, issues
+            )
 
         if not fix_result.get("success", False):
             return fix_result
@@ -309,11 +346,13 @@ class AIFixApplier:
         if self.enable_validation:
             try:
                 error_codes = [issue.error_code.split("(")[0] for issue in issues]
-                should_keep_fix, validation_checks = self.validation_manager.validate_file_fix(
-                    file_path,
-                    content,
-                    fix_result.get("fixed_content", ""),
-                    error_codes,
+                should_keep_fix, validation_checks = (
+                    self.validation_manager.validate_file_fix(
+                        file_path,
+                        content,
+                        fix_result.get("fixed_content", ""),
+                        error_codes,
+                    )
                 )
             except Exception as e:
                 logger.error(f"Validation failed for {file_path}: {e}")
@@ -354,7 +393,7 @@ class AIFixApplier:
 
         return fix_result
 
-    def apply_specialist_fix(
+    async def apply_specialist_fix(
         self, agent: Any, file_path: str, content: str, issues: list[LintingIssue]
     ) -> dict[str, Any]:
         """Apply fix using a specialist agent with real AI integration and model fallback."""
@@ -372,7 +411,9 @@ class AIFixApplier:
 
             for model_name, provider_name in fallback_sequence:
                 try:
-                    logger.info(f"Trying {model_name} via {provider_name} for {primary_error}")
+                    logger.info(
+                        f"Trying {model_name} via {provider_name} for {primary_error}"
+                    )
 
                     # Create the request for the LLM
                     request = {
@@ -387,10 +428,18 @@ class AIFixApplier:
                     }
 
                     # Call the LLM
-                    response = self.llm_manager.complete(request)
+                    response = await self.llm_manager.generate_completion(
+                        messages=request["messages"],
+                        provider_name=request["provider"],
+                        model=request["model"],
+                        temperature=request["temperature"],
+                        max_tokens=request["max_tokens"],
+                    )
 
-                    if response.error:
-                        logger.warning(f"LLM error with {model_name}: {response.error}")
+                    if not response:
+                        logger.warning(
+                            f"LLM error with {model_name}: No response received"
+                        )
                         continue
 
                     # Extract the fixed code from the response
@@ -400,7 +449,9 @@ class AIFixApplier:
                         continue
 
                     # Validate the fix
-                    validation_result = self._validate_fix(content, fixed_content, issues)
+                    validation_result = self._validate_fix(
+                        content, fixed_content, issues
+                    )
                     if validation_result["is_valid"]:
                         # Calculate confidence based on model competency
                         confidence = competency_manager.calculate_confidence(
@@ -440,7 +491,7 @@ class AIFixApplier:
             logger.exception(f"Error in specialist fix: {e}")
             return {"success": False, "error": str(e)}
 
-    def _select_fix_strategy(
+    async def _select_fix_strategy(
         self, agent: Any, file_path: str, content: str, issues: list[LintingIssue]
     ) -> dict[str, Any]:
         """Let AI choose between full file replacement or targeted section fixes."""
@@ -473,15 +524,23 @@ File content:
 """
 
             # Get strategy from AI
-            response = self.llm_manager.call_llm(
-                "gpt-4o",  # Use a reliable model for strategy selection
-                strategy_prompt,
-                system_prompt="You are a code analysis expert. Provide clear, reasoned strategy selection.",
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a code analysis expert. Provide clear, reasoned strategy selection.",
+                },
+                {"role": "user", "content": strategy_prompt},
+            ]
+            response = await self.llm_manager.generate_completion(
+                messages=messages,
+                model="gpt-4o",  # Use a reliable model for strategy selection
                 temperature=0.1,  # Low temperature for consistent decisions
             )
 
             if not response or not response.content:
-                logger.warning("No response from AI for strategy selection, defaulting to targeted")
+                logger.warning(
+                    "No response from AI for strategy selection, defaulting to targeted"
+                )
                 return {
                     "success": True,
                     "strategy": "targeted",
@@ -497,7 +556,9 @@ File content:
                 reasoning = strategy_data.get("reasoning", "No reasoning provided")
 
                 if strategy not in ["targeted", "full_file"]:
-                    logger.warning(f"Invalid strategy '{strategy}', defaulting to targeted")
+                    logger.warning(
+                        f"Invalid strategy '{strategy}', defaulting to targeted"
+                    )
                     strategy = "targeted"
 
                 return {"success": True, "strategy": strategy, "reasoning": reasoning}
@@ -517,7 +578,7 @@ File content:
                 "reasoning": f"Error fallback: {e}",
             }
 
-    def apply_targeted_fix(
+    async def apply_targeted_fix(
         self, agent: Any, file_path: str, content: str, issues: list[LintingIssue]
     ) -> dict[str, Any]:
         """Apply targeted fixes to specific sections only."""
@@ -564,21 +625,26 @@ Line Y: [fixed content]
 """
 
             # Get fix from AI
-            response = self.llm_manager.call_llm(
-                "gpt-4o",
-                targeted_prompt,
-                system_prompt=agent.get_system_prompt(),
+            messages = [
+                {"role": "system", "content": agent.get_system_prompt()},
+                {"role": "user", "content": targeted_prompt},
+            ]
+            response = await self.llm_manager.generate_completion(
+                messages=messages,
+                model="gpt-4o",
                 temperature=0.1,
             )
 
-            if not response or not response.content:
+            if not response:
                 return {
                     "success": False,
                     "error": "No response from AI for targeted fix",
                 }
 
             # Apply targeted changes
-            fixed_content = self._apply_targeted_changes(content, response.content, issue_lines)
+            fixed_content = self._apply_targeted_changes(
+                content, response.content, issue_lines
+            )
 
             if fixed_content == content:
                 return {
@@ -624,7 +690,9 @@ Line Y: [fixed content]
 
                     # Validate line number
                     if 1 <= line_num <= len(lines):
-                        line_changes[line_num - 1] = new_content  # Convert to 0-based index
+                        line_changes[line_num - 1] = (
+                            new_content  # Convert to 0-based index
+                        )
                 except (ValueError, IndexError):
                     continue
 
@@ -668,7 +736,8 @@ Line Y: [fixed content]
         # If no code blocks, try to extract the entire response if it looks like code
         lines = response_content.strip().split("\n")
         if len(lines) > 3 and any(
-            "def " in line or "import " in line or "class " in line for line in lines[:5]
+            "def " in line or "import " in line or "class " in line
+            for line in lines[:5]
         ):
             return response_content.strip()
 
@@ -684,11 +753,14 @@ Line Y: [fixed content]
         # 3. Is longer than 10 lines
         # 4. Doesn't start with partial constructs
 
-        has_imports = any(line.strip().startswith(("import ", "from ")) for line in lines[:10])
+        has_imports = any(
+            line.strip().startswith(("import ", "from ")) for line in lines[:10]
+        )
         has_definitions = any("def " in line or "class " in line for line in lines)
         is_substantial = len(lines) > 10
         starts_cleanly = not any(
-            lines[0].strip().startswith(prefix) for prefix in ["...", "# Fix:", "# Change:"]
+            lines[0].strip().startswith(prefix)
+            for prefix in ["...", "# Fix:", "# Change:"]
         )
 
         return has_imports and has_definitions and is_substantial and starts_cleanly
@@ -718,7 +790,9 @@ Line Y: [fixed content]
                         if line_num in line:
                             if i + 1 < len(response_lines):
                                 change_line = response_lines[i + 1].strip()
-                                if change_line and not change_line.startswith(("#", "//")):
+                                if change_line and not change_line.startswith(
+                                    ("#", "//")
+                                ):
                                     changes.append(f"Line {line_num}: {change_line}")
                             break
 
@@ -761,7 +835,9 @@ Line Y: [fixed content]
             # Get the error codes to fix
             error_codes = [issue.error_code.split("(")[0] for issue in issues]
 
-            logger.info(f"Applying ruff auto-fix to {file_path} for codes: {error_codes}")
+            logger.info(
+                f"Applying ruff auto-fix to {file_path} for codes: {error_codes}"
+            )
 
             # Run ruff check --fix for these specific codes
             import subprocess

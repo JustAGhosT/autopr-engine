@@ -49,7 +49,9 @@ class LLMProvider(ABC):
     Provides a unified interface for different AI/LLM services.
     """
 
-    def __init__(self, name: str, description: str = "", version: str = "1.0.0") -> None:
+    def __init__(
+        self, name: str, description: str = "", version: str = "1.0.0"
+    ) -> None:
         """
         Initialize the LLM provider.
 
@@ -173,7 +175,9 @@ class OpenAIProvider(LLMProvider):
     """OpenAI LLM provider implementation."""
 
     def __init__(self) -> None:
-        super().__init__(name="openai", description="OpenAI GPT models provider", version="1.0.0")
+        super().__init__(
+            name="openai", description="OpenAI GPT models provider", version="1.0.0"
+        )
         self.supported_models: list[str] = [
             "gpt-4",
             "gpt-4-turbo",
@@ -221,6 +225,27 @@ class OpenAIProvider(LLMProvider):
             raise RuntimeError(msg)
 
         model = model or self.default_model
+
+        # Handle response_format parameter
+        response_format = kwargs.pop("response_format", None)
+        if response_format:
+            if response_format.get("type") == "json":
+                # Add JSON instruction to the last user message
+                if messages and messages[-1].role == "user":
+                    messages[
+                        -1
+                    ].content += "\n\nIMPORTANT: Respond with valid JSON only. Do not include any markdown formatting or explanatory text."
+                else:
+                    # Add a system message for JSON requirement
+                    messages.insert(
+                        0,
+                        LLMMessage(
+                            role="system",
+                            content="You must respond with valid JSON only. Do not include any markdown formatting or explanatory text.",
+                        ),
+                    )
+            else:
+                raise ValueError(f"Unsupported response_format: {response_format}")
 
         # TODO: Implement actual OpenAI API call
         # For now, return a placeholder response
@@ -324,6 +349,27 @@ class AnthropicProvider(LLMProvider):
             raise RuntimeError(msg)
 
         model = model or self.default_model
+
+        # Handle response_format parameter
+        response_format = kwargs.pop("response_format", None)
+        if response_format:
+            if response_format.get("type") == "json":
+                # Add JSON instruction to the last user message
+                if messages and messages[-1].role == "user":
+                    messages[
+                        -1
+                    ].content += "\n\nIMPORTANT: Respond with valid JSON only. Do not include any markdown formatting or explanatory text."
+                else:
+                    # Add a system message for JSON requirement
+                    messages.insert(
+                        0,
+                        LLMMessage(
+                            role="system",
+                            content="You must respond with valid JSON only. Do not include any markdown formatting or explanatory text.",
+                        ),
+                    )
+            else:
+                raise ValueError(f"Unsupported response_format: {response_format}")
 
         # TODO: Implement actual Anthropic API call
         return LLMResponse(

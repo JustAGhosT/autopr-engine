@@ -343,6 +343,9 @@ docstring-code-format = true
 # Allow print statements in scripts
 "scripts/**/*.py" = ["T201"]
 
+# Allow all issues in volume control scripts
+"scripts/volume-control/volume_knob.py" = ["ALL"]
+
 # Allow various issues in test files
 "tests/**/*.py" = [
     "S101", "ERA001",  # assert statements and commented code

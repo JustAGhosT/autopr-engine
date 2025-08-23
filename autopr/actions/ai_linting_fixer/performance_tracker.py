@@ -7,6 +7,8 @@ This module tracks performance metrics for the AI linting fixer.
 from dataclasses import dataclass, field
 import logging
 import time
+from typing import Any
+from uuid import uuid4
 
 
 logger = logging.getLogger(__name__)
@@ -22,6 +24,7 @@ class PerformanceMetric:
     success: bool = False
     error_message: str | None = None
     metadata: dict[str, str] = field(default_factory=dict)
+    operation_id: str | None = None
 
     @property
     def duration(self) -> float:
@@ -44,14 +47,20 @@ class PerformanceTracker:
         self.metrics: list[PerformanceMetric] = []
         self.session_start = time.time()
         self.session_id = f"session_{int(self.session_start)}"
+        self._by_id: dict[str, PerformanceMetric] = {}
 
-    def start_operation(self, operation: str, metadata: dict[str, str] | None = None) -> str:
+    def start_operation(
+        self, operation: str, metadata: dict[str, str] | None = None
+    ) -> str:
         """Start tracking an operation."""
+        operation_id = f"{operation}_{uuid4().hex[:8]}"
         metric = PerformanceMetric(
             operation=operation, start_time=time.time(), metadata=metadata or {}
         )
+        metric.operation_id = operation_id
         self.metrics.append(metric)
-        return f"{operation}_{len(self.metrics)}"
+        self._by_id[operation_id] = metric
+        return operation_id
 
     def end_operation(
         self,
@@ -60,12 +69,13 @@ class PerformanceTracker:
         error_message: str | None = None,
     ) -> None:
         """End tracking an operation."""
-        for metric in self.metrics:
-            if metric.operation == operation_id.split("_")[0]:
-                metric.end_time = time.time()
-                metric.success = success
-                metric.error_message = error_message
-                break
+        metric = self._by_id.get(operation_id)
+        if metric:
+            metric.end_time = time.time()
+            metric.success = success
+            metric.error_message = error_message
+        else:
+            logger.warning(f"Operation ID not found: {operation_id}")
 
     def get_operation_stats(self, operation: str) -> dict[str, float]:
         """Get statistics for a specific operation."""
@@ -86,13 +96,15 @@ class PerformanceTracker:
             "total_operations": len(operation_metrics),
             "completed_operations": len(completed_metrics),
             "successful_operations": len(successes),
-            "success_rate": (len(successes) / len(completed_metrics) if completed_metrics else 0.0),
+            "success_rate": (
+                len(successes) / len(completed_metrics) if completed_metrics else 0.0
+            ),
             "average_duration": sum(durations) / len(durations),
             "min_duration": min(durations),
             "max_duration": max(durations),
         }
 
-    def get_session_summary(self) -> dict[str, any]:
+    def get_session_summary(self) -> dict[str, Any]:
         """Get a summary of the current session."""
         if not self.metrics:
             return {
@@ -112,7 +124,9 @@ class PerformanceTracker:
             "successful_operations": len(successful_metrics),
             "session_duration": time.time() - self.session_start,
             "success_rate": (
-                len(successful_metrics) / len(completed_metrics) if completed_metrics else 0.0
+                len(successful_metrics) / len(completed_metrics)
+                if completed_metrics
+                else 0.0
             ),
             "average_operation_duration": (
                 sum(m.duration for m in completed_metrics) / len(completed_metrics)
@@ -129,11 +143,9 @@ class PerformanceTracker:
         report += "=" * 50 + "\n"
         report += f"Session Duration: {summary['session_duration']:.2f} seconds\n"
         report += f"Total Operations: {summary['total_operations']}\n"
-        report += f"Completed Operations: {summary['completed_operations']}\n"
+        report += f"Completed Operations: {summary.get('completed_operations', 0)}\n"
         report += f"Success Rate: {summary['success_rate']:.1%}\n"
-        report += (
-            f"Average Operation Duration: {summary['average_operation_duration']:.3f} seconds\n\n"
-        )
+        report += f"Average Operation Duration: {summary.get('average_operation_duration', 0.0):.3f} seconds\n\n"
 
         # Group by operation type
         operation_groups: dict[str, list[PerformanceMetric]] = {}
@@ -155,5 +167,6 @@ class PerformanceTracker:
     def reset(self) -> None:
         """Reset the performance tracker."""
         self.metrics.clear()
+        self._by_id.clear()
         self.session_start = time.time()
         self.session_id = f"session_{int(self.session_start)}"

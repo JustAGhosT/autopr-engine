@@ -18,7 +18,7 @@ from autopr.actions.ai_linting_fixer.performance_optimizer import (
     IntelligentCache,
     ParallelProcessor,
 )
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 
 
@@ -205,7 +205,11 @@ class AISplitDecisionEngine:
                 ],
                 "temperature": 0.1,
             }
-            response = self.llm_manager.complete(request)
+            response = await self.llm_manager.generate_completion(
+                messages=request["messages"],
+                provider_name=request["provider"],
+                temperature=request["temperature"],
+            )
 
             if response and response.content:
                 logger.debug(f"AI response received: {response.content[:100]}...")

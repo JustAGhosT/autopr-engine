@@ -7,8 +7,10 @@ This module handles the processing of linting issues through the AI fixer pipeli
 import logging
 from typing import Any, Dict, List, Optional
 
-from autopr.actions.ai_linting_fixer.agents import specialist_manager
-from autopr.actions.ai_linting_fixer.database import IssueQueueManager
+from autopr.actions.ai_linting_fixer.specialists.specialist_manager import (
+    specialist_manager,
+)
+from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
 from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
@@ -33,7 +35,7 @@ class IssueProcessor:
         self.ai_fix_applier = ai_fix_applier
         self.session_id = session_id
 
-    def process_issues(
+    async def process_issues(
         self,
         issues: List[Dict[str, Any]],
         max_fixes_per_run: int,
@@ -49,20 +51,48 @@ class IssueProcessor:
                 self.metrics.start_operation(f"fix_issue_{i}")
 
                 # Apply AI fix with comprehensive workflow
-                success = self._apply_ai_fix_with_comprehensive_workflow(issue_data)
+                success = await self._apply_ai_fix_with_comprehensive_workflow(
+                    issue_data
+                )
 
                 if success:
                     total_fixed += 1
                     modified_files.append(issue_data.get("file_path", "unknown"))
 
-                    # Update database
-                    self.queue_manager.update_issue_status(
-                        issue_data["id"],
-                        "completed",
-                        fix_result={"fix_successful": True, "confidence_score": 0.85},
+                    # Extract actual confidence and success from the result
+                    confidence_score = (
+                        success.get("confidence_score", 0.85)
+                        if isinstance(success, dict)
+                        else 0.85
+                    )
+                    fix_successful = (
+                        success.get("final_success", True)
+                        if isinstance(success, dict)
+                        else True
                     )
 
-                    self.metrics.record_fix_attempt(success=True, confidence=0.85)
+                    # Safely get issue ID and update database
+                    issue_id = issue_data.get("id")
+                    if issue_id:
+                        try:
+                            self.queue_manager.update_issue_status(
+                                issue_id,
+                                "completed",
+                                fix_result={
+                                    "fix_successful": fix_successful,
+                                    "confidence_score": confidence_score,
+                                },
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Failed to update issue status for ID {issue_id}: {e}"
+                            )
+                    else:
+                        logger.warning(f"No issue ID found in issue_data: {issue_data}")
+
+                    self.metrics.record_fix_attempt(
+                        success=fix_successful, confidence=confidence_score
+                    )
                 else:
                     self.metrics.record_fix_attempt(success=False)
 
@@ -84,7 +114,7 @@ class IssueProcessor:
             "modified_files": modified_files,
         }
 
-    def _apply_ai_fix(self, issue_data: Dict[str, Any]) -> bool:
+    async def _apply_ai_fix(self, issue_data: Dict[str, Any]) -> bool:
         """Apply AI fix to a single issue."""
         try:
             file_path = issue_data.get("file_path")
@@ -116,7 +146,7 @@ class IssueProcessor:
                 return False
 
             # Apply the fix using the specialist agent with real AI integration
-            fix_result = self.ai_fix_applier.apply_specialist_fix(
+            fix_result = await self.ai_fix_applier.apply_specialist_fix(
                 agent, file_path, content, [issue]
             )
 
@@ -133,7 +163,9 @@ class IssueProcessor:
             logger.exception(f"Error applying AI fix: {e}")
             return False
 
-    def _apply_ai_fix_with_comprehensive_workflow(self, issue_data: Dict[str, Any]) -> bool:
+    async def _apply_ai_fix_with_comprehensive_workflow(
+        self, issue_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Apply AI fix using the comprehensive workflow with splitting, test generation, and validation."""
         try:
             file_path = issue_data.get("file_path")
@@ -165,8 +197,8 @@ class IssueProcessor:
                 return False
 
             # Apply the fix using comprehensive workflow
-            result = self.ai_fix_applier.apply_specialist_fix_with_comprehensive_workflow(
-                agent, file_path, content, [issue]
+            result = await self.ai_fix_applier.apply_specialist_fix_with_comprehensive_workflow(
+                agent, file_path, content, [issue], self.session_id
             )
 
             # Log comprehensive results
@@ -185,7 +217,7 @@ class IssueProcessor:
                     f"   Validation passed: {validation_passed}"
                 )
 
-                return True
+                return result
             else:
                 # Log detailed failure information
                 error = result.get("error", "Unknown error")
@@ -199,11 +231,11 @@ class IssueProcessor:
                     f"   Validation passed: {validation_passed}"
                 )
 
-                return False
+                return result
 
         except Exception as e:
             logger.exception(f"Error applying comprehensive AI fix: {e}")
-            return False
+            return {"final_success": False, "error": str(e)}
 
     def _file_exists(self, file_path: str) -> bool:
         """Check if a file exists."""

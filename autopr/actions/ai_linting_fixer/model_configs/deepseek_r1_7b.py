@@ -91,17 +91,14 @@ def check_availability() -> tuple[bool, str]:
     endpoints = get_deepseek_r1_endpoints()
 
     for endpoint in endpoints:
-        try:
-            with suppress(Exception):
-                response = requests.get(f"{endpoint}/models", timeout=5)
-                if response.status_code == 200:
-                    models = response.json().get("data", [])
-                    for model in models:
-                        model_id = model.get("id", "").lower()
-                        if "deepseek" in model_id and "r1" in model_id:
-                            return True, f"Available at {endpoint}"
-        except:
-            continue
+        with suppress(Exception):
+            response = requests.get(f"{endpoint}/models", timeout=5)
+            if response.status_code == 200:
+                models = response.json().get("data", [])
+                for model in models:
+                    model_id = model.get("id", "").lower()
+                    if "deepseek" in model_id and "r1" in model_id:
+                        return True, f"Available at {endpoint}"
 
     return False, "No local DeepSeek-R1 7B endpoint found"
 

@@ -17,7 +17,7 @@ import click
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
 from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
 

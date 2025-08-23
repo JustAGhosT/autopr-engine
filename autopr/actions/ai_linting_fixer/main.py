@@ -304,7 +304,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 "issues_addressed": 0,
             }
 
-    def queue_detected_issues(self, issues: list[LintingIssue], *, quiet: bool = False) -> int:
+    def queue_detected_issues(
+        self, issues: list[LintingIssue], *, quiet: bool = False
+    ) -> int:
         """Queue detected linting issues for database-first processing."""
         if not quiet:
             logger.info("Queueing %d issues for processing", len(issues))
@@ -347,7 +349,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
         base_code = error_code.split("(")[0]  # Remove any parenthetical info
         return priority_map.get(base_code, 5)  # Default to medium priority
 
-    def process_queued_issues(
+    async def process_queued_issues(
         self,
         provider: str | None = None,
         model: str | None = None,
@@ -387,7 +389,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             session_id=self.session_id,
         )
 
-        result = issue_processor.process_issues(
+        result = await issue_processor.process_issues(
             issues=issues,
             max_fixes_per_run=max_fixes,
             filter_types=filter_types,
@@ -415,7 +417,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
         - FileOperations for safe file handling
         - Database module for logging
         """
-        self.emit_event("started", {"total_issues": len(issues), "max_fixes": max_fixes})
+        self.emit_event(
+            "started", {"total_issues": len(issues), "max_fixes": max_fixes}
+        )
 
         # Simplified implementation for demonstration
         # In full version, this would use the agent manager
@@ -454,7 +458,8 @@ class AILintingFixer(WorkflowIntegrationMixin):
             success=len(fixed_issues) > 0,
             fixed_issues=fixed_issues,
             remaining_issues=[
-                f"{issue.error_code}:{issue.line_number}" for issue in issues[max_fixes:]
+                f"{issue.error_code}:{issue.line_number}"
+                for issue in issues[max_fixes:]
             ],
             modified_files=modified_files,
         )
@@ -564,7 +569,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
         success_rate = success_rates.get(base_code, 0.5)
         return random.random() < success_rate  # - Used for simulation, not security
 
-    def _apply_real_ai_fix(
+    async def _apply_real_ai_fix(
         self, issue_data: dict[str, Any], provider: str | None, model: str | None
     ) -> bool:
         """Apply real AI fix using modular components."""
@@ -602,7 +607,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 return False
 
             # Apply the fix using the modular AI fix applier
-            fix_result = self.ai_fix_applier.apply_specialist_fix(
+            fix_result = await self.ai_fix_applier.apply_specialist_fix(
                 agent, file_path, content, [issue]
             )
 
@@ -665,9 +670,9 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 redis_stats = self.redis_manager.get_statistics()  # type: ignore[attr-defined]
 
         # Calculate success rate
-        total_attempts = metrics_summary.get("successful_fixes", 0) + metrics_summary.get(
-            "failed_fixes", 0
-        )
+        total_attempts = metrics_summary.get(
+            "successful_fixes", 0
+        ) + metrics_summary.get("failed_fixes", 0)
         success_rate = (
             (metrics_summary.get("successful_fixes", 0) / total_attempts)
             if total_attempts > 0
@@ -704,7 +709,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
 # =============================================================================
 
 
-def ai_linting_fixer(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
+async def ai_linting_fixer(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
     """
     Main AI linting function with clean modular architecture using new display system.
 
@@ -806,7 +811,7 @@ def ai_linting_fixer(inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
         processing_mode = "redis" if fixer.redis_manager else "local"
         display.operation.show_processing_start(len(legacy_issues))
 
-        process_results = fixer.process_queued_issues(
+        process_results = await fixer.process_queued_issues(
             filter_types=inputs.fix_types,
             max_fixes=inputs.max_fixes_per_run,
             quiet=inputs.quiet,  # type: ignore[attr-defined]
@@ -886,7 +891,9 @@ def print_feature_status() -> None:
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())
-        features["temporal_integration"] = available_orchestrators.get("temporal", False)
+        features["temporal_integration"] = available_orchestrators.get(
+            "temporal", False
+        )
         features["celery_integration"] = available_orchestrators.get("celery", False)
         features["prefect_integration"] = available_orchestrators.get("prefect", False)
     except Exception:

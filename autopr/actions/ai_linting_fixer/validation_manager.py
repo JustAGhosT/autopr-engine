@@ -79,7 +79,9 @@ class ValidationManager:
                 syntax_check.result == ValidationResult.FAILED
                 and self.config.rollback_on_syntax_error
             ):
-                logger.warning(f"Syntax error detected, recommending rollback for {file_path}")
+                logger.warning(
+                    f"Syntax error detected, recommending rollback for {file_path}"
+                )
                 return False, checks
 
         # 2. Import validation
@@ -91,7 +93,9 @@ class ValidationManager:
                 import_check.result == ValidationResult.FAILED
                 and self.config.rollback_on_import_error
             ):
-                logger.warning(f"Import error detected, recommending rollback for {file_path}")
+                logger.warning(
+                    f"Import error detected, recommending rollback for {file_path}"
+                )
                 return False, checks
 
         # 3. Linting validation (check if issues were actually fixed)
@@ -110,11 +114,15 @@ class ValidationManager:
                 test_check.result == ValidationResult.FAILED
                 and self.config.rollback_on_test_failure
             ):
-                logger.warning(f"Test failure detected, recommending rollback for {file_path}")
+                logger.warning(
+                    f"Test failure detected, recommending rollback for {file_path}"
+                )
                 return False, checks
 
         # Calculate overall validation score
-        passed_checks = sum(1 for check in checks if check.result == ValidationResult.PASSED)
+        passed_checks = sum(
+            1 for check in checks if check.result == ValidationResult.PASSED
+        )
         total_checks = len([c for c in checks if c.result != ValidationResult.SKIPPED])
 
         if total_checks == 0:
@@ -136,7 +144,9 @@ class ValidationManager:
                 for check in checks
             ],
             "recommended_action": (
-                "keep" if validation_score >= self.config.rollback_threshold else "rollback"
+                "keep"
+                if validation_score >= self.config.rollback_threshold
+                else "rollback"
             ),
         }
         self.validation_history.append(validation_record)
@@ -193,10 +203,13 @@ class ValidationManager:
         import time
 
         start_time = time.time()
+        temp_file_path = None
 
         try:
             # Create a temporary file to test imports
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as temp_file:
                 temp_file.write(content)
                 temp_file_path = temp_file.name
 
@@ -207,10 +220,6 @@ class ValidationManager:
                 text=True,
                 timeout=10,
             )
-
-            # Clean up
-            Path(temp_file_path).unlink(missing_ok=True)
-            Path(temp_file_path + "c").unlink(missing_ok=True)  # Remove .pyc file
 
             if result.returncode == 0:
                 return ValidationCheck(
@@ -249,6 +258,17 @@ class ValidationManager:
                 details={"file_path": file_path, "error": str(e)},
                 execution_time=time.time() - start_time,
             )
+        finally:
+            # Clean up temporary files
+            if temp_file_path:
+                Path(temp_file_path).unlink(missing_ok=True)
+                Path(temp_file_path + "c").unlink(missing_ok=True)  # Remove .pyc file
+                # Also clean up __pycache__ directory if created
+                pycache_dir = Path(temp_file_path).parent / "__pycache__"
+                if pycache_dir.exists():
+                    import shutil
+
+                    shutil.rmtree(pycache_dir, ignore_errors=True)
 
     def _validate_linting_improvements(
         self,
@@ -285,7 +305,9 @@ class ValidationManager:
 
             if issues_fixed > 0 and new_issues <= 2:  # Allow up to 2 new minor issues
                 result = ValidationResult.PASSED
-                message = f"Fixed {issues_fixed} issues, {new_issues} new issues introduced"
+                message = (
+                    f"Fixed {issues_fixed} issues, {new_issues} new issues introduced"
+                )
             elif issues_fixed == 0 and new_issues == 0:
                 result = ValidationResult.WARNING
                 message = "No issues fixed, but no new issues introduced"
@@ -319,8 +341,11 @@ class ValidationManager:
 
     def _get_ruff_issues(self, content: str) -> list[str]:
         """Get ruff issues for content."""
+        temp_file_path = None
         try:
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as temp_file:
                 temp_file.write(content)
                 temp_file_path = temp_file.name
 
@@ -330,9 +355,6 @@ class ValidationManager:
                 text=True,
                 timeout=30,
             )
-
-            # Clean up
-            Path(temp_file_path).unlink(missing_ok=True)
 
             # Parse ruff output
             issues = []
@@ -351,6 +373,10 @@ class ValidationManager:
         except Exception as e:
             logger.warning(f"Failed to get ruff issues: {e}")
             return []
+        finally:
+            # Clean up temporary file
+            if temp_file_path:
+                Path(temp_file_path).unlink(missing_ok=True)
 
     def _validate_tests(self, file_path: str) -> ValidationCheck:
         """Validate that tests still pass for the file."""
@@ -464,8 +490,13 @@ class ValidationManager:
             return {}
 
         total_validations = len(self.validation_history)
-        kept_fixes = sum(1 for v in self.validation_history if v["recommended_action"] == "keep")
-        avg_score = sum(v["validation_score"] for v in self.validation_history) / total_validations
+        kept_fixes = sum(
+            1 for v in self.validation_history if v["recommended_action"] == "keep"
+        )
+        avg_score = (
+            sum(v["validation_score"] for v in self.validation_history)
+            / total_validations
+        )
 
         check_stats = {}
         for validation in self.validation_history:

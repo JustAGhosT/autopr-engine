@@ -174,14 +174,14 @@ def create_adaptive_config(volume: int) -> SplitConfig:
     # Base configuration
     config = SplitConfig()
     
-    # Adjust limits based on volume
-    config.max_lines_per_file = 1000 - (volume // 10)
-    config.max_functions_per_file = 20 - (volume // 50)
-    config.max_classes_per_file = 10 - (volume // 100)
+    # Adjust limits based on volume with proper clamping
+    config.max_lines_per_file = max(10, 1000 - (volume // 10))  # Minimum 10 lines
+    config.max_functions_per_file = max(1, 20 - (volume // 50))  # Minimum 1 function
+    config.max_classes_per_file = max(1, 10 - (volume // 100))   # Minimum 1 class
     
     # AI settings based on volume
     config.use_ai_analysis = volume >= 600
-    config.confidence_threshold = 0.5 + (volume / 2000)
+    config.confidence_threshold = min(1.0, max(0.0, 0.5 + (volume / 2000)))  # Clamp to [0, 1]
     config.enable_learning = volume >= 500
     
     # Safety settings

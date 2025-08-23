@@ -235,11 +235,13 @@ def _create_analysis_prompt(file_contents: Dict[str, str]) -> str:
     ]
 
     for file_path, content in file_contents.items():
+        # Use smart truncation to preserve syntactic boundaries
+        truncated_content = _smart_truncate_content(content, max_length=2000)
         prompt_parts.extend(
             [
                 f"## File: {file_path}",
                 "```",
-                content[:2000],  # Limit content to avoid token limits
+                truncated_content,
                 "```",
                 "",
             ]
@@ -259,6 +261,124 @@ def _create_analysis_prompt(file_contents: Dict[str, str]) -> str:
     )
 
     return "\n".join(prompt_parts)
+
+
+def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
+    """
+    Smartly truncate content while preserving syntactic boundaries.
+    
+    Args:
+        content: The content to truncate
+        max_length: Maximum length in characters
+        
+    Returns:
+        Truncated content that preserves code structure
+    """
+    if len(content) <= max_length:
+        return content
+    
+    # Try to find a good truncation point
+    lines = content.split('\n')
+    current_length = 0
+    truncated_lines = []
+    
+    for line in lines:
+        # Check if adding this line would exceed the limit
+        if current_length + len(line) + 1 > max_length:
+            # Try to find a better break point within this line
+            if len(line) > 100:  # Long line, try to break at word boundary
+                words = line.split()
+                partial_line = ""
+                for word in words:
+                    if current_length + len(partial_line) + len(word) + 1 <= max_length:
+                        partial_line += (word + " ")
+                    else:
+                        break
+                if partial_line.strip():
+                    truncated_lines.append(partial_line.strip())
+                break
+            else:
+                # Line is short, just add it and stop
+                truncated_lines.append(line)
+                break
+        else:
+            truncated_lines.append(line)
+            current_length += len(line) + 1
+    
+    truncated_content = '\n'.join(truncated_lines)
+    
+    # Add truncation indicator if content was actually truncated
+    if len(content) > len(truncated_content):
+        truncated_content += f"\n\n... (content truncated, showing first {len(truncated_content)} characters)"
+    
+    return truncated_content
+
+
+def _create_chunked_analysis_prompt(file_contents: Dict[str, str], max_chunk_size: int = 2000) -> List[str]:
+    """
+    Create multiple analysis prompts for large files by chunking them intelligently.
+    
+    Args:
+        file_contents: Dictionary mapping file paths to their contents
+        max_chunk_size: Maximum size per chunk in characters
+        
+    Returns:
+        List of analysis prompts for different chunks
+    """
+    prompts = []
+    
+    for file_path, content in file_contents.items():
+        if len(content) <= max_chunk_size:
+            # Small file, create single prompt
+            prompts.append(_create_analysis_prompt({file_path: content}))
+        else:
+            # Large file, split into chunks
+            chunks = _split_content_into_chunks(content, max_chunk_size)
+            for i, chunk in enumerate(chunks):
+                chunk_prompt = _create_analysis_prompt({f"{file_path} (part {i+1}/{len(chunks)})": chunk})
+                prompts.append(chunk_prompt)
+    
+    return prompts
+
+
+def _split_content_into_chunks(content: str, max_chunk_size: int) -> List[str]:
+    """
+    Split content into overlapping chunks while preserving code structure.
+    
+    Args:
+        content: The content to split
+        max_chunk_size: Maximum size per chunk
+        
+    Returns:
+        List of content chunks
+    """
+    if len(content) <= max_chunk_size:
+        return [content]
+    
+    lines = content.split('\n')
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    overlap_lines = 10  # Number of lines to overlap between chunks
+    
+    for line in lines:
+        if current_length + len(line) + 1 > max_chunk_size and current_chunk:
+            # Current chunk is full, save it and start a new one
+            chunks.append('\n'.join(current_chunk))
+            
+            # Start new chunk with overlap
+            overlap_start = max(0, len(current_chunk) - overlap_lines)
+            current_chunk = current_chunk[overlap_start:]
+            current_length = sum(len(l) + 1 for l in current_chunk)
+        
+        current_chunk.append(line)
+        current_length += len(line) + 1
+    
+    # Add the last chunk
+    if current_chunk:
+        chunks.append('\n'.join(current_chunk))
+    
+    return chunks
 
 
 async def analyze_code_architecture(
