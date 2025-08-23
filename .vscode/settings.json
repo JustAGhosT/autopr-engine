@@ -226,5 +226,9 @@
   "git.suggestSmartCommit": true,
   "git.enableCommitSigning": true,
   "typescript.preferences.importModuleSpecifier": "relative",
-  "autopr.qualityMode": "smart"
+  "autopr.qualityMode": "smart",
+  "autopr.autoMode": false,
+  "autopr.showNotifications": true,
+  "autopr.notificationLevel": "warnings",
+  "autopr.initialized": true
 }
