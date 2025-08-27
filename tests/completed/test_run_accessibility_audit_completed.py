@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
     # Import the module being tested
-    module = __import__(f"autopr.C:\Users\smitj\repos\autopr\autopr-engine\autopr\actions\run_accessibility_audit.py", fromlist=['*'])
+    module = __import__(f"autopr.autopr\actions\run_accessibility_audit.py", fromlist=[\'*\'])
 except ImportError as e:
     pytest.skip(f"Could not import module: {e}")
 

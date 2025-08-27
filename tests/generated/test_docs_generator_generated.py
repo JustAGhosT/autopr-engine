@@ -1,11 +1,12 @@
 """
-Generated tests for C:\Users\smitj\repos\autopr\autopr-engine\autopr\actions\prototype_enhancement\generators\docs_generator.py
+Generated tests for docs_generator module.
 """
 
-import pytest
-from unittest.mock import Mock, patch
 import sys
 from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
 
 # Add the parent directory to sys.path to import the module
 sys.path.insert(0, str(Path(__file__).parent.parent))
