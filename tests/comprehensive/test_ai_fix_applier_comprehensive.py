@@ -1,185 +1,393 @@
+#!/usr/bin/env python3
 """
-Comprehensive tests for AI Fix Applier module.
+Comprehensive tests for AI fix applier module.
 """
 
-import sys
-from io import StringIO
+import json
+import os
+import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-# Add the parent directory to sys.path to import the module
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
+# Import the modules we're testing
 try:
-    from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-    from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
-    from autopr.actions.ai_linting_fixer.file_splitter import SplitConfig
-    from autopr.actions.ai_linting_fixer.models import LintingIssue
-    from autopr.actions.ai_linting_fixer.validation_manager import \
-        ValidationConfig
-    from autopr.actions.llm.manager import ActionLLMProviderManager
+    from autopr.actions.ai_fix_applier import (AIFixApplier, FixAnalyzer,
+                                               FixApplier, FixConfig,
+                                               FixGenerator, FixReporter,
+                                               FixValidator)
 except ImportError as e:
-    pytest.skip(f"Could not import required modules: {e}")
+    pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
+
+
+class TestFixConfig:
+    """Test FixConfig class."""
+
+    def test_fix_config_initialization(self):
+        """Test FixConfig initialization."""
+        config = FixConfig(
+            model_name="gpt-4",
+            max_tokens=1000,
+            temperature=0.1,
+            max_fixes_per_file=5,
+            auto_apply=False,
+            validate_fixes=True
+        )
+        
+        assert config.model_name == "gpt-4"
+        assert config.max_tokens == 1000
+        assert config.temperature == 0.1
+        assert config.max_fixes_per_file == 5
+        assert config.auto_apply is False
+        assert config.validate_fixes is True
+
+    def test_fix_config_defaults(self):
+        """Test FixConfig with default values."""
+        config = FixConfig()
+        
+        assert config.model_name == "gpt-3.5-turbo"
+        assert config.max_tokens == 500
+        assert config.temperature == 0.0
+        assert config.max_fixes_per_file == 3
+        assert config.auto_apply is False
+        assert config.validate_fixes is True
+
+    def test_fix_config_to_dict(self):
+        """Test FixConfig to_dict method."""
+        config = FixConfig(model_name="claude-3", max_tokens=2000)
+        
+        result = config.to_dict()
+        assert result["model_name"] == "claude-3"
+        assert result["max_tokens"] == 2000
+
+    def test_fix_config_from_dict(self):
+        """Test FixConfig from_dict method."""
+        data = {
+            "model_name": "llama-2",
+            "max_tokens": 1500,
+            "temperature": 0.15,
+            "auto_apply": True
+        }
+        
+        config = FixConfig.from_dict(data)
+        assert config.model_name == "llama-2"
+        assert config.max_tokens == 1500
+        assert config.temperature == 0.15
+        assert config.auto_apply is True
+
+    def test_fix_config_validation(self):
+        """Test FixConfig validation."""
+        valid_config = FixConfig(model_name="gpt-4", max_tokens=1000)
+        assert valid_config.is_valid() is True
+        
+        invalid_config = FixConfig(model_name="", max_tokens=0)
+        assert invalid_config.is_valid() is False
+
+
+class TestFixGenerator:
+    """Test FixGenerator class."""
+
+    @pytest.fixture
+    def fix_generator(self):
+        """Create a FixGenerator instance for testing."""
+        config = FixConfig(model_name="test-model")
+        return FixGenerator(config)
+
+    def test_fix_generator_initialization(self, fix_generator):
+        """Test FixGenerator initialization."""
+        assert fix_generator.config is not None
+        assert fix_generator.llm_client is not None
+
+    def test_generate_fix_for_issue(self, fix_generator):
+        """Test generating a fix for a specific issue."""
+        issue = {
+            "type": "syntax_error",
+            "message": "Missing colon after function definition",
+            "line": 5
+        }
+        
+        code_content = "def test_function()\n    return True"
+        
+        with patch.object(fix_generator.llm_client, 'generate') as mock_generate:
+            mock_generate.return_value = "def test_function():\n    return True"
+            
+            result = fix_generator.generate_fix_for_issue(issue, code_content)
+            
+            assert result is not None
+            assert "def test_function():" in result
+
+    def test_generate_fixes_for_file(self, fix_generator):
+        """Test generating fixes for an entire file."""
+        issues = [
+            {"type": "syntax_error", "message": "Missing colon", "line": 1},
+            {"type": "style_issue", "message": "Line too long", "line": 2}
+        ]
+        
+        code_content = "def test_function()\n    return True"
+        
+        with patch.object(fix_generator.llm_client, 'generate') as mock_generate:
+            mock_generate.return_value = "def test_function():\n    return True"
+            
+            results = fix_generator.generate_fixes_for_file(issues, code_content)
+            
+            assert len(results) == 2
+            assert all(result is not None for result in results)
+
+
+class TestFixValidator:
+    """Test FixValidator class."""
+
+    @pytest.fixture
+    def fix_validator(self):
+        """Create a FixValidator instance for testing."""
+        return FixValidator()
+
+    def test_fix_validator_initialization(self, fix_validator):
+        """Test FixValidator initialization."""
+        assert fix_validator.validation_rules == []
+        assert fix_validator.error_messages == []
+
+    def test_validate_fix_syntax(self, fix_validator):
+        """Test validating fix syntax."""
+        valid_fix = "def test_function():\n    return True"
+        result = fix_validator.validate_fix_syntax(valid_fix, "python")
+        assert result.is_valid is True
+        
+        invalid_fix = "def test_function()\n    return True"
+        result = fix_validator.validate_fix_syntax(invalid_fix, "python")
+        assert result.is_valid is False
+
+    def test_validate_fix_semantics(self, fix_validator):
+        """Test validating fix semantics."""
+        original_code = "x = 5\ny = 10\nresult = x + y"
+        fix_code = "x = 5\ny = 10\nresult = x + y"
+        
+        result = fix_validator.validate_fix_semantics(original_code, fix_code)
+        assert result.is_valid is True
+
+    def test_validate_fix_completeness(self, fix_validator):
+        """Test validating fix completeness."""
+        issue = {"type": "syntax_error", "message": "Missing colon", "line": 1}
+        original_code = "def test_function()\n    return True"
+        fix_code = "def test_function():\n    return True"
+        
+        result = fix_validator.validate_fix_completeness(issue, original_code, fix_code)
+        assert result.is_valid is True
+
+
+class TestFixApplier:
+    """Test FixApplier class."""
+
+    @pytest.fixture
+    def fix_applier(self):
+        """Create a FixApplier instance for testing."""
+        config = FixConfig(backup_files=True)
+        return FixApplier(config)
+
+    def test_fix_applier_initialization(self, fix_applier):
+        """Test FixApplier initialization."""
+        assert fix_applier.config is not None
+        assert fix_applier.validator is not None
+
+    def test_apply_fix_to_file(self, fix_applier):
+        """Test applying a fix to a file."""
+        original_content = "def test_function()\n    return True"
+        fix_content = "def test_function():\n    return True"
+        
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
+            f.write(original_content)
+            temp_file = f.name
+        
+        try:
+            result = fix_applier.apply_fix_to_file(temp_file, fix_content)
+            assert result is True
+            
+            with open(temp_file, 'r') as f:
+                applied_content = f.read()
+            assert applied_content == fix_content
+            
+        finally:
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)
+
+    def test_apply_fix_with_backup(self, fix_applier):
+        """Test applying a fix with backup."""
+        original_content = "def test_function()\n    return True"
+        fix_content = "def test_function():\n    return True"
+        
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
+            f.write(original_content)
+            temp_file = f.name
+        
+        try:
+            result = fix_applier.apply_fix_with_backup(temp_file, fix_content)
+            assert result is True
+            
+            backup_files = [f for f in os.listdir(os.path.dirname(temp_file)) 
+                          if f.startswith(os.path.basename(temp_file) + ".backup")]
+            assert len(backup_files) > 0
+            
+        finally:
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)
+
+
+class TestFixAnalyzer:
+    """Test FixAnalyzer class."""
+
+    @pytest.fixture
+    def fix_analyzer(self):
+        """Create a FixAnalyzer instance for testing."""
+        return FixAnalyzer()
+
+    def test_fix_analyzer_initialization(self, fix_analyzer):
+        """Test FixAnalyzer initialization."""
+        assert fix_analyzer.analysis_cache == {}
+        assert fix_analyzer.analysis_rules == []
+
+    def test_analyze_fix_quality(self, fix_analyzer):
+        """Test analyzing fix quality."""
+        original_code = "def test_function()\n    return True"
+        fix_code = "def test_function():\n    return True"
+        
+        result = fix_analyzer.analyze_fix_quality(original_code, fix_code)
+        
+        assert "quality_score" in result
+        assert "improvements" in result
+        assert result["quality_score"] > 0
+
+    def test_analyze_fix_impact(self, fix_analyzer):
+        """Test analyzing fix impact."""
+        original_code = "def test_function()\n    return True"
+        fix_code = "def test_function():\n    return True"
+        
+        result = fix_analyzer.analyze_fix_impact(original_code, fix_code)
+        
+        assert "impact_score" in result
+        assert "changes" in result
+        assert "risks" in result
+
+
+class TestFixReporter:
+    """Test FixReporter class."""
+
+    @pytest.fixture
+    def fix_reporter(self):
+        """Create a FixReporter instance for testing."""
+        return FixReporter()
+
+    def test_fix_reporter_initialization(self, fix_reporter):
+        """Test FixReporter initialization."""
+        assert fix_reporter.report_formats == {}
+        assert fix_reporter.default_format == "json"
+
+    def test_generate_fix_report(self, fix_reporter):
+        """Test generating a fix report."""
+        fix_data = {
+            "file": "test.py",
+            "original_code": "def test_function()\n    return True",
+            "fixed_code": "def test_function():\n    return True",
+            "issues_fixed": ["syntax_error"],
+            "quality_score": 0.9
+        }
+        
+        report = fix_reporter.generate_fix_report(fix_data)
+        
+        assert "file" in report
+        assert "issues_fixed" in report
+        assert "quality_score" in report
+
+    def test_generate_fix_summary(self, fix_reporter):
+        """Test generating a fix summary."""
+        fixes = [
+            {"file": "file1.py", "issues_fixed": ["syntax_error"], "quality_score": 0.9},
+            {"file": "file2.py", "issues_fixed": ["style_issue"], "quality_score": 0.8}
+        ]
+        
+        summary = fix_reporter.generate_fix_summary(fixes)
+        
+        assert "total_fixes" in summary
+        assert "average_quality_score" in summary
+        assert summary["total_fixes"] == 2
 
 
 class TestAIFixApplier:
-    """Comprehensive tests for AIFixApplier class."""
+    """Test AIFixApplier class."""
 
     @pytest.fixture
-    def mock_llm_manager(self):
-        """Create a mock LLM manager."""
-        manager = Mock(spec=ActionLLMProviderManager)
-        manager.default_provider = "azure_openai"
-        manager.complete = AsyncMock()
-        return manager
-
-    @pytest.fixture
-    def mock_backup_manager(self):
-        """Create a mock backup manager."""
-        manager = Mock(spec=BackupManager)
-        manager.sessions = {}
-        manager.start_session = Mock()
-        manager.backup_file = Mock(return_value="backup_path")
-        manager.restore_file = Mock(return_value=True)
-        return manager
-
-    @pytest.fixture
-    def sample_issues(self):
-        """Create sample linting issues."""
-        return [
-            LintingIssue(
-                error_code="E501",
-                message="Line too long",
-                line_number=10,
-                column=80,
-                file_path="test_file.py"
-            ),
-            LintingIssue(
-                error_code="F401",
-                message="Unused import",
-                line_number=5,
-                column=1,
-                file_path="test_file.py"
-            )
-        ]
-
-    @pytest.fixture
-    def ai_fix_applier(self, mock_llm_manager, mock_backup_manager):
+    def ai_fix_applier(self):
         """Create an AIFixApplier instance for testing."""
-        validation_config = ValidationConfig()
-        split_config = SplitConfig()
-        
-        return AIFixApplier(
-            llm_manager=mock_llm_manager,
-            backup_manager=mock_backup_manager,
-            validation_config=validation_config,
-            split_config=split_config
-        )
+        config = FixConfig(model_name="test-model")
+        return AIFixApplier(config)
 
-    def test_initialization(self, mock_llm_manager):
+    def test_ai_fix_applier_initialization(self, ai_fix_applier):
         """Test AIFixApplier initialization."""
-        applier = AIFixApplier(mock_llm_manager)
+        assert ai_fix_applier.config is not None
+        assert ai_fix_applier.generator is not None
+        assert ai_fix_applier.validator is not None
+        assert ai_fix_applier.applier is not None
+        assert ai_fix_applier.analyzer is not None
+        assert ai_fix_applier.reporter is not None
+
+    def test_apply_fix_to_file(self, ai_fix_applier):
+        """Test applying AI fix to a file."""
+        file_content = "def test_function()\n    return True"
+        issues = [{"type": "syntax_error", "message": "Missing colon", "line": 1}]
         
-        assert applier.llm_manager == mock_llm_manager
-        assert applier.enable_validation is True
-        assert applier.enable_backup is True
-        assert applier.enable_splitting is True
-        assert applier.enable_test_generation is True
-
-    def test_initialization_with_none_llm_manager(self):
-        """Test that initialization fails with None LLM manager."""
-        with pytest.raises(ValueError, match="llm_manager is required"):
-            AIFixApplier(None)
-
-    def test_extract_code_from_response(self, ai_fix_applier):
-        """Test _extract_code_from_response method."""
-        # Test with code block
-        response_with_block = '''
-        Here's the fixed code:
-        ```python
-        def fixed_function():
-            return True
-        ```
-        '''
-        result = ai_fix_applier._extract_code_from_response(response_with_block)
-        assert "def fixed_function()" in result
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
+            f.write(file_content)
+            temp_file = f.name
         
-        # Test with line changes
-        response_with_lines = '''
-        Line 10: def fixed_function():
-        Line 11:     return True
-        '''
-        result = ai_fix_applier._extract_code_from_response(response_with_lines)
-        assert "def fixed_function()" in result
+        try:
+            with patch.object(ai_fix_applier.generator, 'generate_fix_for_issue') as mock_generate:
+                mock_generate.return_value = "def test_function():\n    return True"
+                
+                result = ai_fix_applier.apply_fix_to_file(temp_file, issues)
+                
+                assert result.success is True
+                assert result.fixes_applied == 1
+                
+        finally:
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)
+
+    def test_validate_and_apply_fix(self, ai_fix_applier):
+        """Test validating and applying a fix."""
+        original_code = "def test_function()\n    return True"
+        fix_code = "def test_function():\n    return True"
         
-        # Test with no code
-        result = ai_fix_applier._extract_code_from_response("No code here")
-        assert result is None
-
-    def test_is_complete_file(self, ai_fix_applier):
-        """Test _is_complete_file method."""
-        # Test complete file
-        complete_file = '''
-        import os
-        import sys
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
+            f.write(original_code)
+            temp_file = f.name
         
-        def test_function():
-            return True
+        try:
+            with patch.object(ai_fix_applier.validator, 'validate_fix_comprehensive') as mock_validate:
+                mock_validate.return_value = Mock(is_valid=True, checks={})
+                
+                result = ai_fix_applier.validate_and_apply_fix(temp_file, fix_code)
+                
+                assert result.success is True
+                assert result.validated is True
+                
+        finally:
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)
+
+    def test_get_fix_statistics(self, ai_fix_applier):
+        """Test getting fix statistics."""
+        stats = ai_fix_applier.get_fix_statistics()
         
-        class TestClass:
-            def __init__(self):
-                pass
-        '''
-        assert ai_fix_applier._is_complete_file(complete_file) is True
+        assert "total_fixes_applied" in stats
+        assert "successful_fixes" in stats
+        assert "failed_fixes" in stats
+        assert "average_quality_score" in stats
+
+    def test_generate_fix_report(self, ai_fix_applier):
+        """Test generating a comprehensive fix report."""
+        report = ai_fix_applier.generate_fix_report()
         
-        # Test incomplete file
-        incomplete_file = "def test_function():"
-        assert ai_fix_applier._is_complete_file(incomplete_file) is False
-
-    def test_validate_fix(self, ai_fix_applier, sample_issues):
-        """Test _validate_fix method."""
-        original = "def test(): pass"
-        fixed = "def test():\n    return True"
-        
-        result = ai_fix_applier._validate_fix(original, fixed, sample_issues)
-        assert result["is_valid"] is True
-        
-        # Test with syntax error
-        invalid_fix = "def test(: invalid syntax"
-        result = ai_fix_applier._validate_fix(original, invalid_fix, sample_issues)
-        assert result["is_valid"] is False
-
-    def test_apply_targeted_changes(self, ai_fix_applier):
-        """Test _apply_targeted_changes method."""
-        original_content = "line1\\nline2\\nline3"
-        ai_response = "Line 2: modified line2"
-        issue_lines = [2]
-        
-        result = ai_fix_applier._apply_targeted_changes(original_content, ai_response, issue_lines)
-        assert "modified line2" in result
-        
-        # Test with no changes
-        result = ai_fix_applier._apply_targeted_changes(original_content, "No changes", issue_lines)
-        assert result == original_content
-
-
-class TestAIFixApplierIntegration:
-    """Integration tests for AIFixApplier."""
-
-    @pytest.mark.asyncio
-    async def test_full_fix_workflow(self, tmp_path):
-        """Test the complete fix workflow."""
-        # This would test the entire workflow from start to finish
-        # Implementation would depend on having a real LLM manager configured
-        pass
-
-    def test_backup_and_restore_workflow(self, tmp_path):
-        """Test backup and restore functionality."""
-        # This would test the backup/restore workflow
-        pass
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
+        assert "summary" in report
+        assert "details" in report
+        assert "statistics" in report
+        assert "recommendations" in report

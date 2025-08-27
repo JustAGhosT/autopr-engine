@@ -3,20 +3,21 @@
 Comprehensive tests for engine module.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
-import os
-import json
 import asyncio
+import json
+import os
+import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.engine import (
-        AutoPREngine, EngineConfig, EngineState, EngineManager,
-        EngineRunner, EngineValidator, EngineMonitor
-    )
+    from autopr.actions.engine import (AutoPREngine, EngineConfig,
+                                       EngineManager, EngineMonitor,
+                                       EngineRunner, EngineState,
+                                       EngineValidator)
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
