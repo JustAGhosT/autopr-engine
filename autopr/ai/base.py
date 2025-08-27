@@ -13,6 +13,13 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
+# JSON response format instruction constant
+JSON_INSTRUCTION = (
+    "You must respond with valid JSON only. "
+    "Do not include any markdown formatting or explanatory text."
+)
+
+
 @dataclass
 class LLMMessage:
     """Represents a message in an LLM conversation."""
@@ -170,6 +177,52 @@ class LLMProvider(ABC):
     def __repr__(self) -> str:
         return self.__str__()
 
+    def _apply_response_format(
+        self, messages: list[LLMMessage], response_format: dict[str, Any] | None
+    ) -> list[LLMMessage]:
+        """
+        Apply response format to messages without mutating the original list.
+
+        Args:
+            messages: Original list of messages
+            response_format: Response format specification
+
+        Returns:
+            New list of messages with response format applied
+
+        Raises:
+            ValueError: If response format is unsupported
+        """
+        if not response_format:
+            return messages
+
+        rtype = (response_format.get("type") or "").lower()
+
+        # Create shallow copies of messages with cloned metadata
+        msgs = [
+            LLMMessage(
+                role=m.role, content=str(m.content), metadata=dict(m.metadata or {})
+            )
+            for m in messages
+        ]
+
+        if rtype in {"json", "json_object"}:
+            # Insert JSON instruction as system message at the beginning
+            msgs.insert(
+                0,
+                LLMMessage(
+                    role="system",
+                    content=JSON_INSTRUCTION,
+                ),
+            )
+            return msgs
+        elif rtype == "json_schema":
+            # Pass through without modification for json_schema
+            return msgs
+        else:
+            msg = f"Unsupported response_format: {response_format}"
+            raise ValueError(msg)
+
 
 class OpenAIProvider(LLMProvider):
     """OpenAI LLM provider implementation."""
@@ -228,24 +281,7 @@ class OpenAIProvider(LLMProvider):
 
         # Handle response_format parameter
         response_format = kwargs.pop("response_format", None)
-        if response_format:
-            if response_format.get("type") == "json":
-                # Add JSON instruction to the last user message
-                if messages and messages[-1].role == "user":
-                    messages[
-                        -1
-                    ].content += "\n\nIMPORTANT: Respond with valid JSON only. Do not include any markdown formatting or explanatory text."
-                else:
-                    # Add a system message for JSON requirement
-                    messages.insert(
-                        0,
-                        LLMMessage(
-                            role="system",
-                            content="You must respond with valid JSON only. Do not include any markdown formatting or explanatory text.",
-                        ),
-                    )
-            else:
-                raise ValueError(f"Unsupported response_format: {response_format}")
+        messages = self._apply_response_format(messages, response_format)
 
         # TODO: Implement actual OpenAI API call
         # For now, return a placeholder response
@@ -352,24 +388,11 @@ class AnthropicProvider(LLMProvider):
 
         # Handle response_format parameter
         response_format = kwargs.pop("response_format", None)
-        if response_format:
-            if response_format.get("type") == "json":
-                # Add JSON instruction to the last user message
-                if messages and messages[-1].role == "user":
-                    messages[
-                        -1
-                    ].content += "\n\nIMPORTANT: Respond with valid JSON only. Do not include any markdown formatting or explanatory text."
-                else:
-                    # Add a system message for JSON requirement
-                    messages.insert(
-                        0,
-                        LLMMessage(
-                            role="system",
-                            content="You must respond with valid JSON only. Do not include any markdown formatting or explanatory text.",
-                        ),
-                    )
-            else:
-                raise ValueError(f"Unsupported response_format: {response_format}")
+        messages = self._apply_response_format(messages, response_format)
+
+        # Optional provider hint for real client later:
+        # if response_format and response_format.get("type") in {"json", "json_object"}:
+        #     kwargs["format"] = "json"
 
         # TODO: Implement actual Anthropic API call
         return LLMResponse(

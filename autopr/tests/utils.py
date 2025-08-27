@@ -17,7 +17,9 @@ async def run_action_manually(action: type[Any], inputs: Any) -> None:
     """
     action_instance = action()
     # Prefer 'run', fallback to 'execute'
-    runner = getattr(action_instance, "run", None) or getattr(action_instance, "execute", None)
+    runner = getattr(action_instance, "run", None) or getattr(
+        action_instance, "execute", None
+    )
     if runner is None:
         msg = f"Action {action.__name__} has no 'run' or 'execute' method."
         raise AttributeError(msg)

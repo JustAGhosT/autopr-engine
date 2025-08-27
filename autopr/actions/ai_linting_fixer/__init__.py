@@ -9,15 +9,16 @@ from typing import Any
 
 
 # Optional CodeAnalyzer (psutil optional dep)
+CODE_ANALYZER_AVAILABLE = False
 try:
     from autopr.actions.ai_linting_fixer.code_analyzer import (
         CodeAnalyzer as _CodeAnalyzer,
     )
-
     CODE_ANALYZER_AVAILABLE = True
 except Exception:
     _CodeAnalyzer = None  # type: ignore[assignment]
-    CODE_ANALYZER_AVAILABLE = False
+
+# Import all module components for re-export
 from autopr.actions.ai_linting_fixer.detection import IssueDetector
 from autopr.actions.ai_linting_fixer.display import (
     DisplayConfig,
@@ -66,6 +67,7 @@ create_ai_linting_fixer: Callable[..., Any] | None = None
 run_ai_linting_fixer: Callable[..., Any] | None = None
 
 # AI Components (optional imports)
+AI_COMPONENTS_AVAILABLE = False
 try:
     from autopr.actions.ai_linting_fixer.ai_agent_manager import (
         AIAgentManager as _AIAgentManager,
@@ -74,9 +76,10 @@ try:
     AIAgentManager = _AIAgentManager
     AI_COMPONENTS_AVAILABLE = True
 except ImportError:
-    AI_COMPONENTS_AVAILABLE = False
+    pass
 
 # Main class (optional AI imports)
+AI_LINTING_FIXER_AVAILABLE = False
 try:
     from autopr.actions.ai_linting_fixer.ai_linting_fixer import (
         AILintingFixer as _AILintingFixer,
@@ -93,60 +96,68 @@ try:
     run_ai_linting_fixer = _run_ai_linting_fixer
     AI_LINTING_FIXER_AVAILABLE = True
 except ImportError:
-    AI_LINTING_FIXER_AVAILABLE = False
+    pass
 
+# Define __all__ directly - we'll modify it later
 __all__ = [
+    # Main components
     "AIAgentManager",
     "AILintingFixer",
     "AILintingFixerInputs",
     "AILintingFixerOutputs",
     "CodeAnalyzer",
+    # Display components
     "DisplayConfig",
     "DisplayFormatter",
+    "ErrorDisplay",
+    "OutputMode",
+    # Error handling
     "ErrorCategory",
     "ErrorContext",
-    "ErrorDisplay",
     "ErrorHandler",
     "ErrorInfo",
     "ErrorRecoveryStrategy",
     "ErrorSeverity",
+    "create_error_context",
+    "get_default_error_handler",
+    # Core components
     "FileManager",
     "FixAttemptLog",
     "IssueDetector",
     "IssueFixer",
     "LintingFixResult",
     "LintingIssue",
+    # Orchestration
     "OrchestrationConfig",
-    "OutputMode",
     "PerformanceMetrics",
-    "PerformanceTracker",
     "WorkflowContext",
     "WorkflowEvent",
     "WorkflowResult",
-    "create_ai_linting_fixer",
-    "create_error_context",
     "create_workflow_context",
     "detect_available_orchestrators",
     "execute_with_orchestration",
-    "get_default_error_handler",
     "get_orchestration_config",
-    "run_ai_linting_fixer",
     "validate_orchestration_config",
+    # Performance
+    "PerformanceTracker",
 ]
 
-# Remove optional components from __all__ if not available
+# Remove optional components from __all__ 
+_all_set = set(__all__)
+
 if not AI_COMPONENTS_AVAILABLE:
-    __all__ = [item for item in __all__ if item != "AIAgentManager"]
+    _all_set.discard("AIAgentManager")
 
 if not AI_LINTING_FIXER_AVAILABLE:
-    __all__ = [
-        item
-        for item in __all__
-        if item not in ["AILintingFixer", "create_ai_linting_fixer", "run_ai_linting_fixer"]
-    ]
+    _all_set.discard("AILintingFixer")
+    _all_set.discard("create_ai_linting_fixer")
+    _all_set.discard("run_ai_linting_fixer")
 
 if not CODE_ANALYZER_AVAILABLE:
-    __all__ = [item for item in __all__ if item != "CodeAnalyzer"]
+    _all_set.discard("CodeAnalyzer")
+
+# Rebuild __all__ from the modified set
+__all__ = sorted(list(_all_set))
 
 # Public name binding (if available)
 if CODE_ANALYZER_AVAILABLE:

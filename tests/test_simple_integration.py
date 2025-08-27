@@ -6,15 +6,14 @@ This test demonstrates the core integration of the file splitter
 with the AI fixer components without complex database dependencies.
 """
 
-import tempfile
 from pathlib import Path
-from typing import Dict, Any
+import tempfile
+
+from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 
 # Import the core components
 from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.llm.manager import LLMProviderManager
 
 
 def create_test_file_with_issues(content: str, filename: str = "test_file.py") -> str:
@@ -55,12 +54,12 @@ CONFIG = {
 
 class DataProcessor:
     """Processes large amounts of data."""
-    
+
     def __init__(self, config: Dict[str, any]):
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.data_cache = {}
-    
+
     def load_data(self, file_path: str) -> List[Dict[str, any]]:
         """Load data from a file."""
         try:
@@ -69,7 +68,7 @@ class DataProcessor:
         except Exception as e:
             self.logger.error(f"Error loading data: {e}")
             return []
-    
+
     def process_data(self, data: List[Dict[str, any]]) -> Dict[str, any]:
         """Process the loaded data."""
         result = {
@@ -78,7 +77,7 @@ class DataProcessor:
             "errors": 0,
             "summary": {}
         }
-        
+
         for item in data:
             try:
                 self._process_single_item(item, result)
@@ -86,9 +85,9 @@ class DataProcessor:
             except Exception as e:
                 self.logger.error(f"Error processing item: {e}")
                 result["errors"] += 1
-        
+
         return result
-    
+
     def _process_single_item(self, item: Dict[str, any], result: Dict[str, any]) -> None:
         """Process a single data item."""
         if "id" in item:
@@ -96,7 +95,7 @@ class DataProcessor:
                 "status": "processed",
                 "timestamp": datetime.now().isoformat()
             }
-    
+
     def save_results(self, results: Dict[str, any], output_path: str) -> bool:
         """Save processing results to a file."""
         try:
@@ -109,11 +108,11 @@ class DataProcessor:
 
 class FileManager:
     """Manages file operations."""
-    
+
     def __init__(self, base_path: str):
         self.base_path = Path(base_path)
         self.logger = logging.getLogger(__name__)
-    
+
     def create_directory(self, dir_name: str) -> bool:
         """Create a new directory."""
         try:
@@ -123,7 +122,7 @@ class FileManager:
         except Exception as e:
             self.logger.error(f"Error creating directory: {e}")
             return False
-    
+
     def list_files(self, pattern: str = "*") -> List[Path]:
         """List files matching a pattern."""
         try:
@@ -131,7 +130,7 @@ class FileManager:
         except Exception as e:
             self.logger.error(f"Error listing files: {e}")
             return []
-    
+
     def backup_file(self, file_path: Path) -> bool:
         """Create a backup of a file."""
         try:
@@ -166,12 +165,12 @@ def main():
     """Main function."""
     processor = DataProcessor(CONFIG)
     file_manager = FileManager("/tmp/test")
-    
+
     data = processor.load_data("input.json")
     results = processor.process_data(data)
     processor.save_results(results, "output.json")
     file_manager.backup_file(Path("output.json"))
-    
+
     print("Processing completed successfully!")
 
 if __name__ == "__main__":
@@ -181,11 +180,8 @@ if __name__ == "__main__":
     file_path = create_test_file_with_issues(large_file_content, "large_test_file.py")
 
     try:
-        print("🧪 Testing AI Enhanced File Splitter Core Integration")
-        print("=" * 60)
 
         # 1. Test standalone file splitter
-        print("\n1. Testing Standalone File Splitter:")
         config = SplitConfig(
             max_lines_per_file=50,
             max_functions_per_file=3,
@@ -198,17 +194,9 @@ if __name__ == "__main__":
         with Path(file_path).open("r", encoding="utf-8") as f:
             content = f.read()
 
-        split_result = splitter.split_file(file_path, content)
-
-        print(f"   Split success: {split_result.success}")
-        print(f"   Components created: {len(split_result.components)}")
-        print(f"   Strategy used: {split_result.split_strategy}")
-        print(f"   Processing time: {split_result.processing_time:.3f}s")
-        print(f"   Backup created: {split_result.backup_created}")
-        print(f"   Validation passed: {split_result.validation_passed}")
+        splitter.split_file(file_path, content)
 
         # 2. Test AI fix applier integration
-        print("\n2. Testing AI Fix Applier Integration:")
 
         # Create mock LLM manager with minimal config
         llm_config = {
@@ -243,7 +231,7 @@ if __name__ == "__main__":
         ]
 
         # Test the comprehensive workflow
-        workflow_result = (
+        (
             ai_fix_applier.apply_specialist_fix_with_comprehensive_workflow(
                 agent=None,  # Mock agent
                 file_path=file_path,
@@ -253,24 +241,8 @@ if __name__ == "__main__":
             )
         )
 
-        print(f"   Workflow success: {workflow_result.get('success', False)}")
-        print(f"   Final success: {workflow_result.get('final_success', False)}")
-        print(f"   Backup created: {workflow_result.get('backup_created', False)}")
-        print(
-            f"   Validation passed: {workflow_result.get('validation_passed', False)}"
-        )
-        print(
-            f"   Rollback performed: {workflow_result.get('rollback_performed', False)}"
-        )
-
         # 3. Test statistics and metrics
-        print("\n3. Testing Statistics and Metrics:")
-        stats = splitter.get_split_statistics()
-        print(f"   Total splits: {stats.get('total_splits', 0)}")
-        print(f"   Success rate: {stats.get('success_rate', 0.0):.2%}")
-        print(f"   Strategy distribution: {stats.get('strategy_distribution', {})}")
-
-        print("\n✅ Core integration test completed successfully!")
+        splitter.get_split_statistics()
 
     finally:
         # Cleanup
@@ -287,15 +259,12 @@ if __name__ == "__main__":
             ):
                 component_file.unlink()
             Path(file_path).parent.rmdir()
-        except Exception as e:
-            print(f"Cleanup warning: {e}")
+        except Exception:
+            pass
 
 
 def test_volume_integration():
     """Test how the file splitter integrates with volume controls."""
-
-    print("\n🔧 Testing Volume Control Integration:")
-    print("=" * 60)
 
     # Test different volume levels and their impact on file splitting
     volume_configs = [
@@ -307,11 +276,10 @@ def test_volume_integration():
         (900, "ai_enhanced", "Maximum"),
     ]
 
-    for volume, mode, level in volume_configs:
-        print(f"\nTesting Volume {volume} ({mode} - {level}):")
+    for volume, _mode, _level in volume_configs:
 
         # Create config based on volume
-        config = SplitConfig(
+        SplitConfig(
             max_lines_per_file=1000 - (volume // 10),  # Lower volume = stricter limits
             max_functions_per_file=20 - (volume // 50),
             max_classes_per_file=10 - (volume // 100),
@@ -322,29 +290,8 @@ def test_volume_integration():
             validate_splits=volume >= 200,
         )
 
-        print(f"   Max lines: {config.max_lines_per_file}")
-        print(f"   Max functions: {config.max_functions_per_file}")
-        print(f"   AI analysis: {config.use_ai_analysis}")
-        print(f"   Confidence threshold: {config.confidence_threshold:.2f}")
-        print(f"   Create backups: {config.create_backups}")
-        print(f"   Validate splits: {config.validate_splits}")
-
-    print("\n✅ Volume integration test completed!")
-
 
 if __name__ == "__main__":
-    print("🚀 AI Enhanced File Splitter - Simple Integration Test")
-    print("=" * 80)
 
     test_core_integration()
     test_volume_integration()
-
-    print("\n" + "=" * 80)
-    print("🎉 All integration tests completed successfully!")
-    print("\nThe AI Enhanced File Splitter is fully integrated with:")
-    print("✅ AI Fix Applier workflow")
-    print("✅ Volume control system")
-    print("✅ Learning memory system")
-    print("✅ Performance tracking")
-    print("✅ Safety controls (backup, validation)")
-    print("✅ Multiple splitting strategies")

@@ -152,9 +152,13 @@ class HandlerRegistry:
 # These will be replaced by using the DI container in the real application
 
 
-def register_for_result(
+def register_for_result[
+    TResult
+](
     result_type: type[TResult],
-) -> Callable[[type[Handler[TResult]]], type[Handler[TResult]]]:
+) -> Callable[
+    [type[Handler[TResult]]], type[Handler[TResult]]
+]:
     """Placeholder for the DI-based decorator."""
     from autopr.actions.quality_engine.di import container
 

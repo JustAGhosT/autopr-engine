@@ -146,7 +146,6 @@ The volume-based configuration automatically validates and clamps values to ensu
 - **Volume Range**: Validated to be within [0, 1000]
 
 This prevents invalid configurations that could cause the file splitter to fail or behave unexpectedly.
-```
 
 ### Volume Level Examples
 

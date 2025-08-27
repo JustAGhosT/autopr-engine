@@ -58,7 +58,7 @@ jobs:
 
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
@@ -72,8 +72,8 @@ jobs:
 
       - name: Run pre-commit hooks
         run: |
-          pre-commit install
-          pre-commit run --all-files
+          poetry run pre-commit install
+          poetry run pre-commit run --all-files
 
       - name: Run Quality Engine (Fast Mode)
         run: |
@@ -136,16 +136,16 @@ jobs:
 
       - name: Run AI Enhanced File Splitter tests
         run: |
-          poetry run python test_file_splitter.py
-        continue-on-error: true
+          poetry run pytest tests/test_file_splitter.py -v
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v4
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+          use_oidc: true
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
@@ -196,7 +196,7 @@ jobs:
 
       - name: Run Semgrep security scan
         run: |
-          semgrep ci --config auto --json --output semgrep-report.json || true
+          poetry run semgrep ci --config auto --json --output semgrep-report.json || true
 
       - name: Upload security reports
         uses: actions/upload-artifact@v4
@@ -452,6 +452,7 @@ jobs:
 
       - name: Generate API documentation
         run: |
+          mkdir -p docs/build/html
           poetry run sphinx-apidoc -o docs/source/ autopr/
           poetry run sphinx-build -b html docs/source/ docs/build/html
 

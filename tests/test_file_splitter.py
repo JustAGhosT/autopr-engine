@@ -6,15 +6,16 @@ This script demonstrates the capabilities of the AI enhanced file splitter
 by testing it with various file types and complexity levels.
 """
 
-import tempfile
 from pathlib import Path
+import tempfile
+
+import pytest
 
 # Import the file splitter components
 from autopr.actions.ai_linting_fixer.file_splitter import (
+    FileComplexityAnalyzer,
     FileSplitter,
     SplitConfig,
-    FileComplexityAnalyzer,
-    SplitComponent,
 )
 
 
@@ -43,19 +44,19 @@ from typing import List, Dict, Optional
 
 class TestClass:
     """A test class with multiple methods."""
-    
+
     def __init__(self, name: str):
         self.name = name
         self.data = []
-    
+
     def add_data(self, item: str) -> None:
         """Add an item to the data list."""
         self.data.append(item)
-    
+
     def get_data(self) -> List[str]:
         """Get all data items."""
         return self.data.copy()
-    
+
     def process_data(self) -> Dict[str, int]:
         """Process the data and return statistics."""
         result = {}
@@ -101,21 +102,12 @@ if __name__ == "__main__":
             content = f.read()
         complexity = analyzer.analyze_file_complexity(file_path, content)
 
-        print(f"File: {file_path}")
-        print(f"Lines: {complexity['total_lines']}")
-        print(f"Functions: {complexity['total_functions']}")
-        print(f"Classes: {complexity['total_classes']}")
-        print(f"Size (bytes): {complexity['file_size_bytes']}")
-        print(f"Cyclomatic Complexity: {complexity['cyclomatic_complexity']}")
-
         # Verify the analysis
-        assert complexity['total_lines'] > 0
-        assert complexity['total_functions'] > 0
-        assert complexity['total_classes'] > 0
-        assert complexity['file_size_bytes'] > 0
-        assert complexity['cyclomatic_complexity'] >= 0
-
-        print("✅ Complexity analysis test passed!")
+        assert complexity["total_lines"] > 0
+        assert complexity["total_functions"] > 0
+        assert complexity["total_classes"] > 0
+        assert complexity["file_size_bytes"] > 0
+        assert complexity["cyclomatic_complexity"] >= 0
 
     finally:
         # Cleanup
@@ -123,7 +115,8 @@ if __name__ == "__main__":
         Path(file_path).parent.rmdir()
 
 
-def test_file_splitting():
+@pytest.mark.asyncio
+async def test_file_splitting():
     """Test the file splitting functionality."""
     # Create a large test file that should be split
     large_content = '''
@@ -149,12 +142,12 @@ CONFIG = {
 
 class DataProcessor:
     """Processes large amounts of data."""
-    
+
     def __init__(self, config: Dict[str, any]):
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.data_cache = {}
-    
+
     def load_data(self, file_path: str) -> List[Dict[str, any]]:
         """Load data from a file."""
         try:
@@ -163,7 +156,7 @@ class DataProcessor:
         except Exception as e:
             self.logger.error(f"Error loading data: {e}")
             return []
-    
+
     def process_data(self, data: List[Dict[str, any]]) -> Dict[str, any]:
         """Process the loaded data."""
         result = {
@@ -172,7 +165,7 @@ class DataProcessor:
             "errors": 0,
             "summary": {}
         }
-        
+
         for item in data:
             try:
                 self._process_single_item(item, result)
@@ -180,9 +173,9 @@ class DataProcessor:
             except Exception as e:
                 self.logger.error(f"Error processing item: {e}")
                 result["errors"] += 1
-        
+
         return result
-    
+
     def _process_single_item(self, item: Dict[str, any], result: Dict[str, any]) -> None:
         """Process a single data item."""
         # Simulate complex processing
@@ -191,7 +184,7 @@ class DataProcessor:
                 "status": "processed",
                 "timestamp": datetime.now().isoformat()
             }
-    
+
     def save_results(self, results: Dict[str, any], output_path: str) -> bool:
         """Save processing results to a file."""
         try:
@@ -204,11 +197,11 @@ class DataProcessor:
 
 class FileManager:
     """Manages file operations."""
-    
+
     def __init__(self, base_path: str):
         self.base_path = Path(base_path)
         self.logger = logging.getLogger(__name__)
-    
+
     def create_directory(self, dir_name: str) -> bool:
         """Create a new directory."""
         try:
@@ -218,7 +211,7 @@ class FileManager:
         except Exception as e:
             self.logger.error(f"Error creating directory: {e}")
             return False
-    
+
     def list_files(self, pattern: str = "*") -> List[Path]:
         """List files matching a pattern."""
         try:
@@ -226,7 +219,7 @@ class FileManager:
         except Exception as e:
             self.logger.error(f"Error listing files: {e}")
             return []
-    
+
     def backup_file(self, file_path: Path) -> bool:
         """Create a backup of a file."""
         try:
@@ -239,11 +232,11 @@ class FileManager:
 
 class NetworkManager:
     """Manages network operations."""
-    
+
     def __init__(self, timeout: int = 30):
         self.timeout = timeout
         self.logger = logging.getLogger(__name__)
-    
+
     def download_file(self, url: str, local_path: str) -> bool:
         """Download a file from a URL."""
         try:
@@ -253,7 +246,7 @@ class NetworkManager:
         except Exception as e:
             self.logger.error(f"Error downloading file: {e}")
             return False
-    
+
     def upload_file(self, local_path: str, url: str) -> bool:
         """Upload a file to a URL."""
         try:
@@ -290,17 +283,17 @@ def main():
     processor = DataProcessor(CONFIG)
     file_manager = FileManager("/tmp/test")
     network_manager = NetworkManager()
-    
+
     # Process data
     data = processor.load_data("input.json")
     results = processor.process_data(data)
-    
+
     # Save results
     processor.save_results(results, "output.json")
-    
+
     # Create backup
     file_manager.backup_file(Path("output.json"))
-    
+
     print("Processing completed successfully!")
 
 if __name__ == "__main__":
@@ -308,58 +301,72 @@ if __name__ == "__main__":
 '''
 
     file_path = create_test_file(large_content, "large_test_file.py")
+    result = None
 
     try:
         # Test file splitting
         config = SplitConfig(
-            max_lines_per_file=50,
-            max_functions_per_file=3,
-            max_classes_per_file=1,
-            create_backup=True,
-            validate_syntax=True,
+            max_lines=50,
+            max_functions=3,
+            max_classes=1,
         )
 
-        splitter = FileSplitter(config)
+        # Create a mock LLM manager for testing
+        from autopr.ai.providers.manager import LLMProviderManager
+
+        llm_config = {
+            "providers": {
+                "openai": {
+                    "api_key": "test_key",
+                    "default_model": "gpt-4",
+                    "max_tokens": 1000,
+                    "temperature": 0.1,
+                }
+            },
+            "fallback_order": ["openai"],
+            "default_provider": "openai",
+        }
+        llm_manager = LLMProviderManager(llm_config)
+
+        splitter = FileSplitter(llm_manager)
         with Path(file_path).open("r", encoding="utf-8") as f:
             content = f.read()
-        result = splitter.split_file(file_path, content)
-
-        print(f"Split result: {result.success}")
-        print(f"Components created: {len(result.components)}")
-        print(f"Processing time: {result.processing_time:.2f}s")
+        result = await splitter.split_file(file_path, content, config)
 
         if result.success:
-            for i, component in enumerate(result.components):
-                print(f"Component {i+1}: {component.name}")
-                print(f"  - Type: {component.component_type}")
-                print(f"  - Lines: {component.end_line - component.start_line + 1}")
-                print(f"  - Complexity: {component.complexity_score}")
+            for _i, component in enumerate(result.components):
+                pass
 
         # Verify the splitting
         assert result.success
         assert len(result.components) > 0
         assert result.processing_time > 0
 
-        print("✅ File splitting test passed!")
-
     finally:
         # Cleanup
         try:
             Path(file_path).unlink()
             # Also clean up backup files
-            backup_pattern = Path(file_path).parent / f"{Path(file_path).name}.backup_*"
-            for backup_file in Path(file_path).parent.glob(f"{Path(file_path).name}.backup_*"):
+            Path(file_path).parent / f"{Path(file_path).name}.backup_*"
+            for backup_file in Path(file_path).parent.glob(
+                f"{Path(file_path).name}.backup_*"
+            ):
                 backup_file.unlink()
             # Clean up split components
-            for component in result.components:
-                if hasattr(component, 'file_path') and Path(component.file_path).exists():
-                    Path(component.file_path).unlink()
+            if result is not None:
+                for component in result.components:
+                    if (
+                        hasattr(component, "file_path")
+                        and Path(component.file_path).exists()
+                    ):
+                        Path(component.file_path).unlink()
             Path(file_path).parent.rmdir()
-        except Exception as e:
-            print(f"Cleanup warning: {e}")
+        except Exception:
+            pass
 
 
-def test_integration():
+@pytest.mark.asyncio
+async def test_integration():
     """Test the complete integration of the file splitter."""
     # Create a test file
     test_content = '''
@@ -373,7 +380,7 @@ from typing import List
 class TestClass:
     def method1(self):
         return "method1"
-    
+
     def method2(self):
         return "method2"
 
@@ -390,26 +397,36 @@ def function3():
     file_path = create_test_file(test_content, "integration_test.py")
 
     try:
+        # Create a mock LLM manager for testing
+        from autopr.ai.providers.manager import LLMProviderManager
+
+        llm_config = {
+            "providers": {
+                "openai": {
+                    "api_key": "test_key",
+                    "default_model": "gpt-4",
+                    "max_tokens": 1000,
+                    "temperature": 0.1,
+                }
+            },
+            "fallback_order": ["openai"],
+            "default_provider": "openai",
+        }
+        llm_manager = LLMProviderManager(llm_config)
+
         # Test with different configurations
         configs = [
-            SplitConfig(max_lines_per_file=10, max_functions_per_file=1),
-            SplitConfig(max_lines_per_file=20, max_functions_per_file=2),
-            SplitConfig(max_lines_per_file=50, max_functions_per_file=5),
+            SplitConfig(max_lines=10, max_functions=1),
+            SplitConfig(max_lines=20, max_functions=2),
+            SplitConfig(max_lines=50, max_functions=5),
         ]
 
-        for i, config in enumerate(configs):
-            print(f"Testing config {i+1}: max_lines={config.max_lines_per_file}, max_functions={config.max_functions_per_file}")
-            
-            splitter = FileSplitter(config)
+        for _i, config in enumerate(configs):
+
+            splitter = FileSplitter(llm_manager)
             with Path(file_path).open("r", encoding="utf-8") as f:
                 content = f.read()
-            result = splitter.split_file(file_path, content)
-            
-            print(f"  Success: {result.success}")
-            print(f"  Components: {len(result.components)}")
-            print(f"  Time: {result.processing_time:.3f}s")
-
-        print("✅ Integration test passed!")
+            await splitter.split_file(file_path, content, config)
 
     finally:
         # Cleanup
@@ -418,12 +435,11 @@ def function3():
 
 
 if __name__ == "__main__":
-    print("🧪 Running AI Enhanced File Splitter Tests")
-    print("=" * 50)
+    import asyncio
 
+    # Run sync test
     test_complexity_analysis()
-    test_file_splitting()
-    test_integration()
 
-    print("=" * 50)
-    print("🎉 All tests completed successfully!")
+    # Run async tests
+    asyncio.run(test_file_splitting())
+    asyncio.run(test_integration())

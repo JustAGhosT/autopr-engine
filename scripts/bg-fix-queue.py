@@ -62,7 +62,9 @@ def _volume() -> int:
     return 500
 
 
-def _group_issues_by_file_and_code(issues: Iterable[dict[str, Any]]) -> dict[str, set[str]]:
+def _group_issues_by_file_and_code(
+    issues: Iterable[dict[str, Any]]
+) -> dict[str, set[str]]:
     mapping: dict[str, set[str]] = defaultdict(set)
     for issue in issues:
         file_path = str(issue.get("file_path", ""))
@@ -110,7 +112,9 @@ def main() -> int:
     allowed = _get_env_list("AUTOPR_BG_TYPES")
     worker_id = os.getenv("AUTOPR_BG_WORKER_ID", "local")
 
-    issues = queue.get_next_issues(limit=batch, worker_id=worker_id, filter_types=allowed or None)
+    issues = queue.get_next_issues(
+        limit=batch, worker_id=worker_id, filter_types=allowed or None
+    )
     if not issues:
         return 0
 

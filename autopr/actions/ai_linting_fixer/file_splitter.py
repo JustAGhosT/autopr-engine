@@ -5,18 +5,14 @@ This module provides intelligent file splitting capabilities with advanced perfo
 including caching, parallel processing, and memory optimization.
 """
 
-import asyncio
-import logging
-import os
-import time
 from dataclasses import dataclass, field
+import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+import time
+from typing import Any
 
 from autopr.actions.ai_linting_fixer.performance_optimizer import (
     PerformanceOptimizer,
-    IntelligentCache,
-    ParallelProcessor,
 )
 from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
@@ -35,8 +31,8 @@ class SplitComponent:
     end_line: int
     content: str
     complexity_score: float
-    dependencies: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    dependencies: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -62,23 +58,23 @@ class SplitResult:
     """Result of a file splitting operation."""
 
     success: bool
-    components: List[SplitComponent]
+    components: list[SplitComponent]
     processing_time: float
     cache_hits: int = 0
     cache_misses: int = 0
     memory_usage_mb: float = 0.0
-    performance_metrics: Dict[str, Any] = field(default_factory=dict)
-    errors: List[str] = field(default_factory=list)
+    performance_metrics: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
 
 
 class FileComplexityAnalyzer:
     """Analyzes file complexity using AST parsing."""
 
-    def __init__(self, performance_optimizer: Optional[PerformanceOptimizer] = None):
+    def __init__(self, performance_optimizer: PerformanceOptimizer | None = None):
         self.performance_optimizer = performance_optimizer or PerformanceOptimizer()
         self.cache_manager = self.performance_optimizer.cache
 
-    def analyze_file_complexity(self, file_path: str, content: str) -> Dict[str, Any]:
+    def analyze_file_complexity(self, file_path: str, content: str) -> dict[str, Any]:
         """Analyze file complexity with caching support."""
         cache_key = f"complexity_analysis:{file_path}:{hash(content)}"
 
@@ -108,7 +104,7 @@ class FileComplexityAnalyzer:
 
         return result
 
-    def _perform_complexity_analysis(self, content: str) -> Dict[str, Any]:
+    def _perform_complexity_analysis(self, content: str) -> dict[str, Any]:
         """Perform actual complexity analysis."""
         lines = content.split("\n")
 
@@ -166,15 +162,15 @@ class AISplitDecisionEngine:
     def __init__(
         self,
         llm_manager: LLMProviderManager,
-        performance_optimizer: Optional[PerformanceOptimizer] = None,
+        performance_optimizer: PerformanceOptimizer | None = None,
     ):
         self.llm_manager = llm_manager
         self.performance_optimizer = performance_optimizer or PerformanceOptimizer()
         self.cache_manager = self.performance_optimizer.cache
 
     async def should_split_file(
-        self, file_path: str, content: str, complexity: Dict[str, Any]
-    ) -> Tuple[bool, float, str]:
+        self, file_path: str, content: str, complexity: dict[str, Any]
+    ) -> tuple[bool, float, str]:
         """Determine if a file should be split using AI analysis."""
         cache_key = f"split_decision:{file_path}:{hash(content)}"
 
@@ -283,7 +279,7 @@ class AISplitDecisionEngine:
         return should_split, 0.7, fallback_reason
 
     def _create_split_decision_prompt(
-        self, content: str, complexity: Dict[str, Any]
+        self, content: str, complexity: dict[str, Any]
     ) -> str:
         """Create prompt for AI split decision."""
         return f"""
@@ -314,8 +310,8 @@ class FileSplitter:
     def __init__(
         self,
         llm_manager: LLMProviderManager,
-        metrics_collector: Optional[MetricsCollector] = None,
-        performance_optimizer: Optional[PerformanceOptimizer] = None,
+        metrics_collector: MetricsCollector | None = None,
+        performance_optimizer: PerformanceOptimizer | None = None,
     ):
         self.llm_manager = llm_manager
         self.metrics_collector = metrics_collector or MetricsCollector()
@@ -329,7 +325,7 @@ class FileSplitter:
         self.parallel_processor = self.performance_optimizer.parallel_processor
 
     async def split_file(
-        self, file_path: str, content: str, config: Optional[SplitConfig] = None
+        self, file_path: str, content: str, config: SplitConfig | None = None
     ) -> SplitResult:
         """Split a file with performance optimization."""
         config = config or SplitConfig()
@@ -344,7 +340,7 @@ class FileSplitter:
                 file_path, content
             )
 
-            logger.info(f"Complexity analysis complete:")
+            logger.info("Complexity analysis complete:")
             logger.info(f"  - Lines: {complexity['total_lines']}")
             logger.info(f"  - Functions: {complexity['total_functions']}")
             logger.info(f"  - Classes: {complexity['total_classes']}")
@@ -396,7 +392,7 @@ class FileSplitter:
             # Get performance metrics from optimizer
             perf_metrics = self.performance_optimizer.get_performance_metrics()
 
-            logger.info(f"Performance Summary:")
+            logger.info("Performance Summary:")
             logger.info(f"  - Processing time: {processing_time:.3f}s")
             logger.info(f"  - Cache hits: {cache_stats.get('hits', 0)}")
             logger.info(f"  - Cache misses: {cache_stats.get('misses', 0)}")
@@ -442,7 +438,7 @@ class FileSplitter:
 
     async def _split_file_components(
         self, content: str, config: SplitConfig
-    ) -> List[SplitComponent]:
+    ) -> list[SplitComponent]:
         """Split file into components using parallel processing."""
         lines = content.split("\n")
         components = []
@@ -477,7 +473,7 @@ class FileSplitter:
 
     def _split_by_functions(
         self, content: str, config: SplitConfig
-    ) -> List[SplitComponent]:
+    ) -> list[SplitComponent]:
         """Split file by functions."""
         components = []
         lines = content.split("\n")
@@ -526,7 +522,7 @@ class FileSplitter:
         function_name: str,
         start_line: int,
         end_line: int,
-        lines: List[str],
+        lines: list[str],
         config: SplitConfig,
     ) -> SplitComponent:
         """Create a function component."""
@@ -548,7 +544,7 @@ class FileSplitter:
             complexity_score=complexity / 10.0,
         )
 
-    def _choose_splitting_strategy(self, complexity: Dict[str, Any]) -> str:
+    def _choose_splitting_strategy(self, complexity: dict[str, Any]) -> str:
         """Choose the best splitting strategy based on complexity."""
         if complexity["total_classes"] > 3:
             return "class-based"

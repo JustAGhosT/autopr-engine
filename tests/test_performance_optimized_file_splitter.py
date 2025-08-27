@@ -4,27 +4,20 @@ Tests for Performance-Optimized File Splitter
 Tests caching, parallel processing, memory optimization, and performance monitoring.
 """
 
-import asyncio
+from pathlib import Path
 import tempfile
 import time
-from pathlib import Path
-from typing import Any
 
 import pytest
 
 from autopr.actions.ai_linting_fixer.file_splitter import (
+    AISplitDecisionEngine,
+    FileComplexityAnalyzer,
     FileSplitter,
     SplitConfig,
-    SplitResult,
-    FileComplexityAnalyzer,
-    AISplitDecisionEngine,
 )
-from autopr.actions.ai_linting_fixer.performance_optimizer import (
-    PerformanceOptimizer,
-    IntelligentCache,
-    ParallelProcessor,
-)
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
+from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 
 
@@ -89,15 +82,15 @@ class TestPerformanceOptimizedFileSplitter:
         for i in range(50):
             content.append(f"def function_{i}(param: str) -> str:")
             content.append(f'    """Function {i} with some complexity."""')
-            content.append(f"    if param == 'test':")
+            content.append("    if param == 'test':")
             content.append(f"        return f'result_{i}'")
-            content.append(f"    elif param == 'complex':")
-            content.append(f"        for j in range(10):")
-            content.append(f"            if j % 2 == 0:")
-            content.append(f"                continue")
-            content.append(f"        return 'complex_result'")
-            content.append(f"    else:")
-            content.append(f"        return 'default'")
+            content.append("    elif param == 'complex':")
+            content.append("        for j in range(10):")
+            content.append("            if j % 2 == 0:")
+            content.append("                continue")
+            content.append("        return 'complex_result'")
+            content.append("    else:")
+            content.append("        return 'default'")
             content.append("")
 
         # Add a class
@@ -183,7 +176,7 @@ class TestClass:
         assert result1 == result2
 
         # Check cache stats
-        cache_stats = performance_optimizer.cache_manager.get_stats()
+        cache_stats = performance_optimizer.cache.get_stats()
         assert cache_stats["hits"] > 0
 
     @pytest.mark.asyncio
@@ -220,7 +213,7 @@ class TestClass:
     @pytest.mark.asyncio
     async def test_file_splitter_with_small_file(self, file_splitter, small_test_file):
         """Test file splitter with a small file that shouldn't be split."""
-        with open(small_test_file, "r") as f:
+        with open(small_test_file) as f:
             content = f.read()
 
         config = SplitConfig(
@@ -245,7 +238,7 @@ class TestClass:
     @pytest.mark.asyncio
     async def test_file_splitter_with_large_file(self, file_splitter, large_test_file):
         """Test file splitter with a large file that should be split."""
-        with open(large_test_file, "r") as f:
+        with open(large_test_file) as f:
             content = f.read()
 
         config = SplitConfig(
@@ -319,7 +312,7 @@ class TestClass:
     @pytest.mark.asyncio
     async def test_performance_metrics_collection(self, file_splitter, large_test_file):
         """Test that performance metrics are properly collected."""
-        with open(large_test_file, "r") as f:
+        with open(large_test_file) as f:
             content = f.read()
 
         config = SplitConfig(performance_monitoring=True)

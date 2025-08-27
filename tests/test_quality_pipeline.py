@@ -4,17 +4,14 @@ Comprehensive tests for the Quality Pipeline
 Tests all quality modes, edge cases, and integration scenarios.
 """
 
-import asyncio
-import tempfile
-import os
 from pathlib import Path
-from typing import Any
+import tempfile
 
 import pytest
 
+from autopr.actions.quality_engine.config import load_config
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
-from autopr.actions.quality_engine.config import load_config
 
 
 class TestQualityPipeline:
@@ -52,7 +49,7 @@ def function_with_issues():
 class TestClass:
     def __init__(self):
         self.value = None
-    
+
     def method_with_issues(self):
         """Method with various issues."""
         unused_var = "unused"
@@ -143,20 +140,18 @@ var unused = "unused";
     async def test_fast_mode(self, quality_engine, sample_python_file):
         """Test Fast mode with basic checks."""
         inputs = QualityInputs(
-            mode=QualityMode.FAST,
-            files=[sample_python_file],
-            enable_ai_agents=False
+            mode=QualityMode.FAST, files=[sample_python_file], enable_ai_agents=False
         )
-        
+
         result = await quality_engine.execute(inputs, {})
-        
+
         assert result is not None
-        assert hasattr(result, 'success')
-        assert hasattr(result, 'total_issues_found')
-        assert hasattr(result, 'issues_by_tool')
-        
+        assert hasattr(result, "success")
+        assert hasattr(result, "total_issues_found")
+        assert hasattr(result, "issues_by_tool")
+
         # Fast mode should execute successfully (tools may fail on Windows)
-        assert hasattr(result, 'tool_execution_times')
+        assert hasattr(result, "tool_execution_times")
         assert isinstance(result.tool_execution_times, dict)
 
     @pytest.mark.asyncio
@@ -165,17 +160,17 @@ var unused = "unused";
         inputs = QualityInputs(
             mode=QualityMode.COMPREHENSIVE,
             files=[sample_python_file],
-            enable_ai_agents=False
+            enable_ai_agents=False,
         )
-        
+
         result = await quality_engine.execute(inputs, {})
-        
+
         assert result is not None
-        assert hasattr(result, 'success')
-        assert hasattr(result, 'total_issues_found')
-        
+        assert hasattr(result, "success")
+        assert hasattr(result, "total_issues_found")
+
         # Comprehensive mode should execute successfully (tools may fail on Windows)
-        assert hasattr(result, 'tool_execution_times')
+        assert hasattr(result, "tool_execution_times")
         assert isinstance(result.tool_execution_times, dict)
 
     @pytest.mark.asyncio

@@ -4,20 +4,19 @@ AutoPR Dashboard Server
 Flask-based web server for AutoPR monitoring and configuration.
 """
 
+from datetime import datetime, timedelta
 import json
-import os
+from pathlib import Path
 import threading
 import time
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
-from autopr.quality.metrics_collector import MetricsCollector
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
+from autopr.quality.metrics_collector import MetricsCollector
 
 
 class AutoPRDashboard:
@@ -81,10 +80,19 @@ class AutoPRDashboard:
         def api_quality_check():
             """API endpoint for running quality checks."""
             try:
-                data = request.get_json()
+                # Get JSON data with fallback to empty dict
+                data = request.get_json(silent=True) or {}
+
+                # Extract and validate parameters
                 mode = data.get("mode", "fast")
                 files = data.get("files", [])
                 directory = data.get("directory", "")
+
+                # Validate types
+                if not isinstance(files, list):
+                    return jsonify({"error": "files must be a list"}), 400
+                if not isinstance(directory, str):
+                    return jsonify({"error": "directory must be a string"}), 400
 
                 if not files and not directory:
                     return jsonify({"error": "No files or directory specified"}), 400
@@ -105,12 +113,42 @@ class AutoPRDashboard:
                 if not files and directory:
                     import glob
 
-                    # Scan directory for relevant files
+                    # Validate and resolve directory
+                    try:
+                        resolved_dir = Path(directory).expanduser().resolve()
+                        if not resolved_dir.exists():
+                            return (
+                                jsonify(
+                                    {"error": f"Directory does not exist: {directory}"}
+                                ),
+                                400,
+                            )
+                        if not resolved_dir.is_dir():
+                            return (
+                                jsonify(
+                                    {"error": f"Path is not a directory: {directory}"}
+                                ),
+                                400,
+                            )
+                    except Exception:
+                        return (
+                            jsonify({"error": f"Invalid directory path: {directory}"}),
+                            400,
+                        )
+
+                    # Scan directory for relevant files with limit
+                    max_scan_files = 1000
                     extensions = ["*.py", "*.js", "*.ts", "*.jsx", "*.tsx"]
                     scanned_files = []
+
                     for ext in extensions:
-                        pattern = str(Path(directory) / "**" / ext)
+                        pattern = str(resolved_dir / "**" / ext)
                         scanned_files.extend(glob.glob(pattern, recursive=True))
+
+                        # Check if we've hit the limit
+                        if len(scanned_files) >= max_scan_files:
+                            scanned_files = scanned_files[:max_scan_files]
+                            break
 
                     if not scanned_files:
                         return (
@@ -120,6 +158,14 @@ class AutoPRDashboard:
                                 }
                             ),
                             400,
+                        )
+
+                    # Warn if results were limited
+                    if len(scanned_files) == max_scan_files:
+                        self.app.logger.warning(
+                            "Directory scan limited to %d files for: %s",
+                            max_scan_files,
+                            directory,
                         )
 
                     files = scanned_files
@@ -140,8 +186,10 @@ class AutoPRDashboard:
 
                 return jsonify(result)
 
-            except Exception as e:
-                return jsonify({"error": str(e)}), 500
+            except Exception:
+                # Log the full exception for debugging
+                self.app.logger.exception("Error in quality check endpoint")
+                return jsonify({"error": "Internal server error"}), 500
 
         @self.app.route("/api/config", methods=["GET", "POST"])
         def api_config():
@@ -149,12 +197,22 @@ class AutoPRDashboard:
             if request.method == "GET":
                 return jsonify(self._get_config())
             else:
+                # Handle malformed JSON as client error
                 try:
                     config = request.get_json()
+                    if config is None:
+                        return jsonify({"error": "Invalid JSON"}), 400
+                except Exception:
+                    return jsonify({"error": "Invalid JSON"}), 400
+
+                # Handle internal errors
+                try:
                     self._save_config(config)
                     return jsonify({"success": True})
-                except Exception as e:
-                    return jsonify({"error": str(e)}), 500
+                except Exception:
+                    # Log the full exception for debugging
+                    self.app.logger.exception("Error saving configuration")
+                    return jsonify({"error": "Internal server error"}), 500
 
         @self.app.route("/api/history")
         def api_history():
@@ -174,7 +232,7 @@ class AutoPRDashboard:
                 }
             )
 
-    def _get_status(self) -> Dict[str, Any]:
+    def _get_status(self) -> dict[str, Any]:
         """Get current dashboard status."""
         uptime = datetime.now() - self.dashboard_data["start_time"]
 
@@ -188,7 +246,7 @@ class AutoPRDashboard:
             "quality_stats": self.dashboard_data["quality_stats"],
         }
 
-    def _get_metrics(self) -> Dict[str, Any]:
+    def _get_metrics(self) -> dict[str, Any]:
         """Get metrics data."""
         # In a real implementation, this would fetch from MetricsCollector
         return {
@@ -197,7 +255,7 @@ class AutoPRDashboard:
             "quality_mode_usage": self._get_quality_mode_usage_data(),
         }
 
-    def _get_processing_times_data(self) -> List[Dict[str, Any]]:
+    def _get_processing_times_data(self) -> list[dict[str, Any]]:
         """Get processing times data for charts."""
         # Simulate processing times data
         data = []
@@ -211,7 +269,7 @@ class AutoPRDashboard:
             )
         return data
 
-    def _get_issue_counts_data(self) -> List[Dict[str, Any]]:
+    def _get_issue_counts_data(self) -> list[dict[str, Any]]:
         """Get issue counts data for charts."""
         # Simulate issue counts data
         data = []
@@ -225,14 +283,14 @@ class AutoPRDashboard:
             )
         return data
 
-    def _get_quality_mode_usage_data(self) -> Dict[str, int]:
+    def _get_quality_mode_usage_data(self) -> dict[str, int]:
         """Get quality mode usage data."""
         return {
             mode: stats["count"]
             for mode, stats in self.dashboard_data["quality_stats"].items()
         }
 
-    def _simulate_quality_check(self, inputs: QualityInputs) -> Dict[str, Any]:
+    def _simulate_quality_check(self, inputs: QualityInputs) -> dict[str, Any]:
         """Simulate a quality check result."""
         # In a real implementation, this would call the actual quality engine
         import random
@@ -253,7 +311,7 @@ class AutoPRDashboard:
             },
         }
 
-    def _update_dashboard_data(self, result: Dict[str, Any], mode: str):
+    def _update_dashboard_data(self, result: dict[str, Any], mode: str):
         """Update dashboard data with new quality check result."""
         self.dashboard_data["total_checks"] += 1
         self.dashboard_data["total_issues"] += result.get("total_issues_found", 0)
@@ -310,19 +368,19 @@ class AutoPRDashboard:
                 "recent_activity"
             ][-50:]
 
-    def _get_config(self) -> Dict[str, Any]:
+    def _get_config(self) -> dict[str, Any]:
         """Get current configuration."""
         config_path = Path.home() / ".autopr" / "dashboard_config.json"
         if config_path.exists():
             try:
-                with open(config_path, "r") as f:
+                with open(config_path) as f:
                     return json.load(f)
             except Exception:
                 pass
 
         return self._get_default_config()
 
-    def _save_config(self, config: Dict[str, Any]):
+    def _save_config(self, config: dict[str, Any]):
         """Save configuration."""
         config_path = Path.home() / ".autopr" / "dashboard_config.json"
         config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -330,7 +388,7 @@ class AutoPRDashboard:
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
 
-    def _get_default_config(self) -> Dict[str, Any]:
+    def _get_default_config(self) -> dict[str, Any]:
         """Get default configuration."""
         return {
             "quality_mode": "fast",
@@ -340,7 +398,7 @@ class AutoPRDashboard:
             "refresh_interval": 30,
         }
 
-    def _get_history(self) -> List[Dict[str, Any]]:
+    def _get_history(self) -> list[dict[str, Any]]:
         """Get activity history."""
         return self.dashboard_data["recent_activity"]
 
@@ -353,21 +411,14 @@ class AutoPRDashboard:
                     # Update metrics every 30 seconds
                     time.sleep(30)
                     # In a real implementation, this would update from MetricsCollector
-                except Exception as e:
-                    print(f"Error in background metrics update: {e}")
+                except Exception:
+                    pass
 
         metrics_thread = threading.Thread(target=update_metrics, daemon=True)
         metrics_thread.start()
 
     def run(self):
         """Run the dashboard server."""
-        print(f"🚀 Starting AutoPR Dashboard on http://{self.host}:{self.port}")
-        print("📊 Dashboard features:")
-        print("   - Real-time quality metrics")
-        print("   - Quality check execution")
-        print("   - Configuration management")
-        print("   - Activity history")
-        print("   - Health monitoring")
 
         self.app.run(
             host=self.host, port=self.port, debug=self.debug, use_reloader=False

@@ -6,6 +6,22 @@ Simple CLI script to run the AI Linting Fixer
 import argparse
 from pathlib import Path
 import sys
+import os
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # If python-dotenv is not available, try to load .env manually
+    env_file = Path(__file__).parent / ".env"
+    if env_file.exists():
+        with open(env_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ[key] = value
 
 
 # Add the project root to the path
@@ -51,38 +67,21 @@ async def main():
     inputs = AILintingFixerInputs(**kwargs)
 
     # Run the fixer
-    print(f"Running AI Linting Fixer on {args.target_path}")
-    print(f"Fix types: {kwargs.get('fix_types', 'all')}")
-    print(f"Max fixes per run: {args.max_fixes_per_run}")
-    print(f"Verbose: {args.verbose}")
-    print(f"Dry run: {args.dry_run}")
-    print("-" * 50)
 
     try:
         result = await ai_linting_fixer(inputs)
 
-        print("\n" + "=" * 50)
-        print("RESULTS SUMMARY")
-        print("=" * 50)
-        print(f"Success: {result.success}")
-        print(f"Total issues found: {result.total_issues_found}")
-        print(f"Issues fixed: {result.issues_fixed}")
-        print(f"Files modified: {len(result.files_modified)}")
-
         if result.files_modified:
-            print("\nModified files:")
-            for file in result.files_modified:
-                print(f"  - {file}")
+            for _file in result.files_modified:
+                pass
 
         if result.errors:
-            print("\nErrors:")
-            for error in result.errors:
-                print(f"  - {error}")
+            for _error in result.errors:
+                pass
 
         return 0 if result.success else 1
 
-    except Exception as e:
-        print(f"Error running AI linting fixer: {e}")
+    except Exception:
         return 1
 
 

@@ -38,10 +38,14 @@ class UpdateDocsFile(Action[Inputs, Outputs]):
 
             replacement = f"\\1{inputs.content}\\3"
 
-            new_content, num_replacements = re.subn(pattern, replacement, original_content)
+            new_content, num_replacements = re.subn(
+                pattern, replacement, original_content
+            )
 
             if num_replacements == 0:
-                return Outputs(success=False, error=f"Markers not found in file: {inputs.filepath}")
+                return Outputs(
+                    success=False, error=f"Markers not found in file: {inputs.filepath}"
+                )
 
             with open(inputs.filepath, "w", encoding="utf-8") as f:
                 f.write(new_content)

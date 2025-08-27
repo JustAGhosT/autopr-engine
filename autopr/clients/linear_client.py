@@ -31,7 +31,9 @@ class LinearClient:
             "Content-Type": "application/json",
         }
 
-    async def query(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+    async def query(
+        self, query: str, variables: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Execute a GraphQL query against the Linear API."""
         data = {"query": query, "variables": variables or {}}
 

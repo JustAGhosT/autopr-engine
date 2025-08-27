@@ -19,7 +19,7 @@ from autopr.enums import QualityMode
 class TestVolumeControlE2E:
     """End-to-end tests for volume control feature."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def mock_llm_provider(self):
         """Mock LLM provider to avoid actual API calls."""
         with patch("autopr.agents.crew.get_llm_provider_manager") as mock_manager:
@@ -27,7 +27,7 @@ class TestVolumeControlE2E:
             mock_manager.return_value.get_llm.return_value = mock_llm
             yield mock_llm
 
-    @pytest.fixture()
+    @pytest.fixture
     def mock_agents(self):
         """Mock agent classes to avoid actual LLM calls."""
         with (
@@ -46,7 +46,7 @@ class TestVolumeControlE2E:
                 "linting": mock_lint_agent.return_value,
             }
 
-    @pytest.fixture()
+    @pytest.fixture
     def test_repo(self):
         """Create a temporary test repository."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -91,9 +91,13 @@ class TestVolumeControlE2E:
         )
 
         # Configure mock agent responses
-        mock_agents["code_quality"].analyze_code.return_value = []  # No code quality issues
-        mock_agents["platform_analysis"].analyze_platform.return_value = PlatformAnalysis(
-            platform="python", components=[], confidence=0.9, metadata={}
+        mock_agents["code_quality"].analyze_code.return_value = (
+            []
+        )  # No code quality issues
+        mock_agents["platform_analysis"].analyze_platform.return_value = (
+            PlatformAnalysis(
+                platform="python", components=[], confidence=0.9, metadata={}
+            )
         )
         mock_agents["linting"].analyze_code.return_value = []  # No linting issues
 
@@ -115,7 +119,9 @@ class TestVolumeControlE2E:
         assert report["current_volume"] == volume
         # Note: volume_level is not included in the report, so we'll skip that assertion
 
-    def test_volume_affects_analysis_depth(self, test_repo, mock_llm_provider, mock_agents):
+    def test_volume_affects_analysis_depth(
+        self, test_repo, mock_llm_provider, mock_agents
+    ):
         """Test that volume affects the depth and thoroughness of analysis."""
         # Test with low volume (fast mode)
         crew_low = AutoPRCrew(
@@ -170,7 +176,9 @@ class TestVolumeControlE2E:
                     len(volume_contexts) > 0
                 ), f"Expected volume context in analyze_code calls for {agent_name}"
 
-    def test_volume_affects_auto_fix_behavior(self, test_repo, mock_llm_provider, mock_agents):
+    def test_volume_affects_auto_fix_behavior(
+        self, test_repo, mock_llm_provider, mock_agents
+    ):
         """Test that volume affects whether auto-fixes are applied."""
         # Create a linting issue that could be auto-fixed
         lint_issue = CodeIssue(
@@ -214,7 +222,9 @@ class TestVolumeControlE2E:
         assert not report_low[
             "applied_fixes"
         ], "Expected no fixes to be applied with auto_fix=False"
-        assert report_high["applied_fixes"], "Expected fixes to be applied with auto_fix=True"
+        assert report_high[
+            "applied_fixes"
+        ], "Expected fixes to be applied with auto_fix=True"
 
         # Verify that the linting agent was called with the correct parameters
         # Note: The actual implementation may not call analyze_code if the task context is not properly set up

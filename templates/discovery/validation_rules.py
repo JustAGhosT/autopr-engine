@@ -199,7 +199,9 @@ class ValidationRuleLoader:
                     description="Category should be valid",
                     check_function="check_category_validity",
                     weight=1.0,
-                    parameters={"valid_categories": ["platform", "use_case", "integration"]},
+                    parameters={
+                        "valid_categories": ["platform", "use_case", "integration"]
+                    },
                 ),
             ],
             variables_rules=[
@@ -316,15 +318,27 @@ class ValidationRuleLoader:
 
         default_rules = self._load_default_rules()
         rules_data = {
-            "structure": [self._rule_to_dict(rule) for rule in default_rules.structure_rules],
-            "metadata": [self._rule_to_dict(rule) for rule in default_rules.metadata_rules],
-            "variables": [self._rule_to_dict(rule) for rule in default_rules.variables_rules],
+            "structure": [
+                self._rule_to_dict(rule) for rule in default_rules.structure_rules
+            ],
+            "metadata": [
+                self._rule_to_dict(rule) for rule in default_rules.metadata_rules
+            ],
+            "variables": [
+                self._rule_to_dict(rule) for rule in default_rules.variables_rules
+            ],
             "documentation": [
                 self._rule_to_dict(rule) for rule in default_rules.documentation_rules
             ],
-            "examples": [self._rule_to_dict(rule) for rule in default_rules.examples_rules],
-            "security": [self._rule_to_dict(rule) for rule in default_rules.security_rules],
-            "performance": [self._rule_to_dict(rule) for rule in default_rules.performance_rules],
+            "examples": [
+                self._rule_to_dict(rule) for rule in default_rules.examples_rules
+            ],
+            "security": [
+                self._rule_to_dict(rule) for rule in default_rules.security_rules
+            ],
+            "performance": [
+                self._rule_to_dict(rule) for rule in default_rules.performance_rules
+            ],
         }
 
         with open(template_file, "w", encoding="utf-8") as f:

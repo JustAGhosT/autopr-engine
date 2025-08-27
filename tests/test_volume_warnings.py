@@ -11,7 +11,9 @@ def generate_test_warnings():
     warnings.warn("This is a UserWarning", UserWarning, stacklevel=2)
     warnings.warn("This is a DeprecationWarning", DeprecationWarning, stacklevel=2)
     warnings.warn("This is a ResourceWarning", ResourceWarning, stacklevel=2)
-    warnings.warn("This is a PendingDeprecationWarning", PendingDeprecationWarning, stacklevel=2)
+    warnings.warn(
+        "This is a PendingDeprecationWarning", PendingDeprecationWarning, stacklevel=2
+    )
 
 
 @mark.volume(0)
@@ -34,9 +36,15 @@ def test_quiet_volume():
 
         # At volume 100, only DeprecationWarning and ResourceWarning should be shown
         warning_types = {type(warning.message) for warning in w}
-        assert DeprecationWarning in warning_types, "Expected DeprecationWarning at volume 100"
-        assert ResourceWarning in warning_types, "Expected ResourceWarning at volume 100"
-        assert UserWarning not in warning_types, "UserWarning should be suppressed at volume 100"
+        assert (
+            DeprecationWarning in warning_types
+        ), "Expected DeprecationWarning at volume 100"
+        assert (
+            ResourceWarning in warning_types
+        ), "Expected ResourceWarning at volume 100"
+        assert (
+            UserWarning not in warning_types
+        ), "UserWarning should be suppressed at volume 100"
 
 
 @mark.volume(500)

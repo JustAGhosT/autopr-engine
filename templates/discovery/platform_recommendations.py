@@ -15,7 +15,9 @@ from discovery.template_models import PlatformRequirements, TemplateInfo
 class PlatformRecommendationEngine:
     """Generates platform recommendations based on requirements."""
 
-    def __init__(self, templates: list[TemplateInfo], platform_categories: dict[str, Any]) -> None:
+    def __init__(
+        self, templates: list[TemplateInfo], platform_categories: dict[str, Any]
+    ) -> None:
         """Initialize the recommendation engine."""
         self.templates = templates
         self.platform_categories = platform_categories
@@ -51,7 +53,9 @@ class PlatformRecommendationEngine:
             platform_reasoning[platform] = reasons
 
         # Sort by score and return top recommendations
-        sorted_platforms = sorted(platform_scores.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_platforms = sorted(
+            platform_scores.items(), key=operator.itemgetter(1), reverse=True
+        )
 
         recommendations: list[tuple[str, float, str]] = []
         for platform, score in sorted_platforms[:5]:  # Top 5 recommendations
@@ -95,7 +99,9 @@ class PlatformRecommendationEngine:
             )
             score += expertise_score * 1.5
             if expertise_score > 0.5:
-                reasons.append(f"Matches {requirements.technical_expertise} skill level")
+                reasons.append(
+                    f"Matches {requirements.technical_expertise} skill level"
+                )
 
         # Budget scoring
         if requirements.budget:

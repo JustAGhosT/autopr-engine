@@ -154,7 +154,7 @@ class PerformanceTracker:
                 operation_groups[metric.operation] = []
             operation_groups[metric.operation].append(metric)
 
-        for operation, metrics in operation_groups.items():
+        for operation, _metrics in operation_groups.items():
             stats = self.get_operation_stats(operation)
             if stats:
                 report += f"Operation: {operation}\n"

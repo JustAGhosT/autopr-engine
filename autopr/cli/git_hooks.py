@@ -5,13 +5,12 @@ Provides functionality to install, manage, and execute git hooks
 for automated quality checks and file operations.
 """
 
-import os
-import shutil
+import logging
+from pathlib import Path
 import subprocess
 import tempfile
-from pathlib import Path
-from typing import List, Optional, Dict, Any
-import logging
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +18,37 @@ logger = logging.getLogger(__name__)
 class GitHooksManager:
     """Manages git hooks for AutoPR automation."""
 
-    def __init__(self, git_dir: Optional[str] = None):
+    def __init__(self, git_dir: str | None = None):
         self.git_dir = git_dir or self._find_git_dir()
-        self.hooks_dir = Path(self.git_dir) / "hooks" if self.git_dir else None
+        self.hooks_dir = self._resolve_hooks_dir() if self.git_dir else None
 
-    def _find_git_dir(self) -> Optional[str]:
+    def _resolve_hooks_dir(self) -> Path | None:
+        """Resolve the hooks directory, honoring core.hooksPath and worktrees."""
+        try:
+            # 1) Respect core.hooksPath if set
+            cfg = subprocess.run(
+                ["git", "config", "--get", "core.hooksPath"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            path = cfg.stdout.strip()
+            if path:
+                return Path(path).expanduser().resolve()
+
+            # 2) Ask git for the hooks path (works with worktrees)
+            gp = subprocess.run(
+                ["git", "rev-parse", "--git-path", "hooks"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return Path(gp.stdout.strip()).resolve()
+        except Exception:
+            # 3) Fallback to <git_dir>/hooks
+            return Path(self.git_dir).resolve() / "hooks" if self.git_dir else None
+
+    def _find_git_dir(self) -> str | None:
         """Find the git directory for the current repository."""
         try:
             result = subprocess.run(
@@ -36,7 +61,7 @@ class GitHooksManager:
         except (subprocess.CalledProcessError, FileNotFoundError):
             return None
 
-    def install_hooks(self, config: Optional[Dict[str, Any]] = None) -> bool:
+    def install_hooks(self, config: dict[str, Any] | None = None) -> bool:
         """Install AutoPR git hooks."""
         if not self.hooks_dir:
             logger.error("Not in a git repository")
@@ -46,20 +71,39 @@ class GitHooksManager:
             # Create hooks directory if it doesn't exist
             self.hooks_dir.mkdir(parents=True, exist_ok=True)
 
-            # Install pre-commit hook
-            self._install_pre_commit_hook(config)
+            # Get enabled hooks from config
+            config = config or {}
+            enabled_hooks = config.get(
+                "enabled_hooks", ["pre-commit", "post-commit", "commit-msg"]
+            )
 
-            # Install post-commit hook
-            self._install_post_commit_hook(config)
+            # Map hook names to install functions
+            hook_installers = {
+                "pre-commit": self._install_pre_commit_hook,
+                "post-commit": self._install_post_commit_hook,
+                "commit-msg": self._install_commit_msg_hook,
+            }
 
-            # Install commit-msg hook
-            self._install_commit_msg_hook(config)
+            # Install only enabled hooks
+            installed_hooks = []
+            for hook_name in enabled_hooks:
+                if hook_name in hook_installers:
+                    hook_installers[hook_name](config)
+                    installed_hooks.append(hook_name)
+                    logger.info(f"Installed {hook_name} hook")
+                else:
+                    logger.warning(f"Unknown hook type: {hook_name}")
 
-            logger.info("AutoPR git hooks installed successfully")
+            if installed_hooks:
+                logger.info(
+                    f"AutoPR git hooks installed successfully: {', '.join(installed_hooks)}"
+                )
+            else:
+                logger.info("No hooks were installed (none enabled in configuration)")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to install git hooks: {e}")
+            logger.exception(f"Failed to install git hooks: {e}")
             return False
 
     def uninstall_hooks(self) -> bool:
@@ -81,10 +125,10 @@ class GitHooksManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to uninstall git hooks: {e}")
+            logger.exception(f"Failed to uninstall git hooks: {e}")
             return False
 
-    def _install_pre_commit_hook(self, config: Optional[Dict[str, Any]] = None):
+    def _install_pre_commit_hook(self, config: dict[str, Any] | None = None):
         """Install pre-commit hook for quality checks."""
         hook_content = self._generate_pre_commit_hook(config)
         hook_path = self.hooks_dir / "pre-commit"
@@ -95,7 +139,7 @@ class GitHooksManager:
         # Make executable
         hook_path.chmod(0o755)
 
-    def _install_post_commit_hook(self, config: Optional[Dict[str, Any]] = None):
+    def _install_post_commit_hook(self, config: dict[str, Any] | None = None):
         """Install post-commit hook for metrics collection."""
         hook_content = self._generate_post_commit_hook(config)
         hook_path = self.hooks_dir / "post-commit"
@@ -106,7 +150,7 @@ class GitHooksManager:
         # Make executable
         hook_path.chmod(0o755)
 
-    def _install_commit_msg_hook(self, config: Optional[Dict[str, Any]] = None):
+    def _install_commit_msg_hook(self, config: dict[str, Any] | None = None):
         """Install commit-msg hook for commit message validation."""
         hook_content = self._generate_commit_msg_hook(config)
         hook_path = self.hooks_dir / "commit-msg"
@@ -117,7 +161,7 @@ class GitHooksManager:
         # Make executable
         hook_path.chmod(0o755)
 
-    def _generate_pre_commit_hook(self, config: Optional[Dict[str, Any]] = None) -> str:
+    def _generate_pre_commit_hook(self, config: dict[str, Any] | None = None) -> str:
         """Generate pre-commit hook content."""
         config = config or {}
         mode = config.get("quality_mode", "fast")
@@ -153,9 +197,9 @@ if python -m autopr.cli.main check \\
     --files "${{files_array[@]}}" \\
     --format json \\
     --output /tmp/autopr_precommit_result.json; then
-    
+
     echo "✅ AutoPR quality checks passed"
-    
+
     # Apply auto-fixes if enabled
     if [ "{str(auto_fix).lower()}" = "true" ]; then
         echo "🔧 AutoPR: Applying automatic fixes..."
@@ -163,7 +207,7 @@ if python -m autopr.cli.main check \\
             --mode {mode} \\
             --files "${{files_array[@]}}" \\
             --auto-fix; then
-            
+
             # Re-stage fixed files using proper array expansion
             git add -- "${{files_array[@]}}"
             echo "✅ Auto-fixes applied and staged"
@@ -171,7 +215,7 @@ if python -m autopr.cli.main check \\
             echo "⚠️  Auto-fix failed, but continuing with commit"
         fi
     fi
-    
+
     exit 0
 else
     echo "❌ AutoPR quality checks failed"
@@ -180,9 +224,7 @@ else
 fi
 """
 
-    def _generate_post_commit_hook(
-        self, config: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def _generate_post_commit_hook(self, config: dict[str, Any] | None = None) -> str:
         """Generate post-commit hook content."""
         return """#!/bin/bash
 # AutoPR Post-commit Hook
@@ -205,7 +247,7 @@ python -m autopr.cli.main metrics collect \\
 echo "✅ AutoPR post-commit metrics collection started"
 """
 
-    def _generate_commit_msg_hook(self, config: Optional[Dict[str, Any]] = None) -> str:
+    def _generate_commit_msg_hook(self, config: dict[str, Any] | None = None) -> str:
         """Generate commit-msg hook content."""
         return """#!/bin/bash
 # AutoPR Commit Message Hook
@@ -219,7 +261,8 @@ COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 echo "📝 AutoPR: Validating commit message..."
 
 # Basic commit message validation
-if [[ ! "$COMMIT_MSG" =~ ^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\\(.+\\))?: .+ ]]; then
+COMMIT_PATTERN="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\\(.+\\))?: .+"
+if [[ ! "$COMMIT_MSG" =~ $COMMIT_PATTERN ]]; then
     echo "❌ Invalid commit message format"
     echo "Expected format: <type>(<scope>): <description>"
     echo "Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
@@ -236,7 +279,7 @@ fi
 echo "✅ Commit message validation passed"
 """
 
-    def get_hooks_status(self) -> Dict[str, bool]:
+    def get_hooks_status(self) -> dict[str, bool]:
         """Get status of installed hooks."""
         if not self.hooks_dir:
             return {}
@@ -250,7 +293,7 @@ echo "✅ Commit message validation passed"
 
         return status
 
-    def test_hooks(self) -> Dict[str, bool]:
+    def test_hooks(self) -> dict[str, bool]:
         """Test installed hooks."""
         status = self.get_hooks_status()
         results = {}
@@ -262,7 +305,7 @@ echo "✅ Commit message validation passed"
                     result = self._test_hook(hook_name)
                     results[hook_name] = result
                 except Exception as e:
-                    logger.error(f"Failed to test {hook_name} hook: {e}")
+                    logger.exception(f"Failed to test {hook_name} hook: {e}")
                     results[hook_name] = False
             else:
                 results[hook_name] = False
@@ -328,11 +371,11 @@ echo "✅ Commit message validation passed"
                 return hook_path.stat().st_mode & 0o111 != 0
 
         except Exception as e:
-            logger.error(f"Error testing {hook_name} hook: {e}")
+            logger.exception(f"Error testing {hook_name} hook: {e}")
             return False
 
 
-def install_hooks(config_path: Optional[str] = None) -> bool:
+def install_hooks(config_path: str | None = None) -> bool:
     """Install AutoPR git hooks."""
     config = _load_config(config_path) if config_path else {}
     manager = GitHooksManager()
@@ -345,27 +388,27 @@ def uninstall_hooks() -> bool:
     return manager.uninstall_hooks()
 
 
-def get_hooks_status() -> Dict[str, bool]:
+def get_hooks_status() -> dict[str, bool]:
     """Get status of installed hooks."""
     manager = GitHooksManager()
     return manager.get_hooks_status()
 
 
-def test_hooks() -> Dict[str, bool]:
+def test_hooks() -> dict[str, bool]:
     """Test installed hooks."""
     manager = GitHooksManager()
     return manager.test_hooks()
 
 
-def _load_config(config_path: str) -> Dict[str, Any]:
+def _load_config(config_path: str) -> dict[str, Any]:
     """Load configuration from file."""
     try:
         import json
 
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             return json.load(f)
     except Exception as e:
-        logger.error(f"Failed to load config from {config_path}: {e}")
+        logger.exception(f"Failed to load config from {config_path}: {e}")
         return {}
 
 
@@ -373,8 +416,8 @@ def create_hook_config(
     quality_mode: str = "fast",
     auto_fix: bool = False,
     max_file_size: int = 10000,
-    enabled_hooks: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    enabled_hooks: list[str] | None = None,
+) -> dict[str, Any]:
     """Create a hook configuration."""
     if enabled_hooks is None:
         enabled_hooks = ["pre-commit", "post-commit", "commit-msg"]
@@ -392,7 +435,7 @@ def create_hook_config(
     }
 
 
-def save_hook_config(config: Dict[str, Any], config_path: str) -> bool:
+def save_hook_config(config: dict[str, Any], config_path: str) -> bool:
     """Save hook configuration to file."""
     try:
         import json
@@ -401,5 +444,5 @@ def save_hook_config(config: Dict[str, Any], config_path: str) -> bool:
             json.dump(config, f, indent=2)
         return True
     except Exception as e:
-        logger.error(f"Failed to save config to {config_path}: {e}")
+        logger.exception(f"Failed to save config to {config_path}: {e}")
         return False

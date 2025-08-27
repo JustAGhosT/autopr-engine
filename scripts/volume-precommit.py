@@ -5,9 +5,9 @@ Volume Control Pre-commit Hook
 Runs the background fix queue with proper timeout and exit code handling.
 """
 
-import sys
-import subprocess
 from pathlib import Path
+import subprocess
+import sys
 
 
 def main():

@@ -7,9 +7,13 @@ class AxoloConfig(BaseModel):
     """Configuration for Axolo integration."""
 
     api_key: str = Field(..., description="API key for Axolo service")
-    base_url: str = Field("https://api.axolo.dev/v1", description="Base URL for Axolo API")
+    base_url: str = Field(
+        "https://api.axolo.dev/v1", description="Base URL for Axolo API"
+    )
     timeout: int = Field(30, description="Request timeout in seconds")
-    max_retries: int = Field(3, description="Maximum number of retries for failed requests")
+    max_retries: int = Field(
+        3, description="Maximum number of retries for failed requests"
+    )
     retry_delay: float = Field(1.0, description="Delay between retries in seconds")
     reminder_schedule: dict[str, str] = Field(
         default_factory=lambda: {

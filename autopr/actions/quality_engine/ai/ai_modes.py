@@ -6,15 +6,14 @@ integrating with the AutoPR LLM provider system.
 """
 
 import json
-import os
-from typing import Any, Dict, List
+from typing import Any
 
 import structlog
 
-from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
+from autopr.actions.llm.manager import LLMProviderManager
 from autopr.actions.quality_engine.models import ToolResult
 from autopr.agents.models import CodeIssue
-from autopr.actions.llm.manager import LLMProviderManager
+
 
 logger = structlog.get_logger(__name__)
 
@@ -84,11 +83,11 @@ Provide security analysis in a structured JSON format with severity levels.
 
 
 async def run_ai_analysis(
-    files: List[str],
+    files: list[str],
     llm_manager: LLMProviderManager,
     provider_name: str = "openai",
     model: str = "gpt-4",
-) -> Dict[str, Any] | None:
+) -> dict[str, Any] | None:
     """
     Run AI-enhanced analysis on the provided files.
 
@@ -110,7 +109,7 @@ async def run_ai_analysis(
         file_contents = {}
         for file_path in files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     file_contents[file_path] = f.read()
             except Exception as e:
                 logger.warning(f"Could not read file {file_path}: {e}")
@@ -159,7 +158,7 @@ async def run_ai_analysis(
             return ai_result
 
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse AI response as JSON: {e}")
+            logger.exception(f"Failed to parse AI response as JSON: {e}")
             # Return a fallback result
             return {
                 "suggestions": [],
@@ -172,11 +171,11 @@ async def run_ai_analysis(
             }
 
     except Exception as e:
-        logger.error(f"AI analysis failed: {e}")
+        logger.exception(f"AI analysis failed: {e}")
         return None
 
 
-def create_tool_result_from_ai_analysis(ai_result: Dict[str, Any]) -> ToolResult:
+def create_tool_result_from_ai_analysis(ai_result: dict[str, Any]) -> ToolResult:
     """
     Convert AI analysis result to a ToolResult.
 
@@ -213,13 +212,13 @@ def create_tool_result_from_ai_analysis(ai_result: Dict[str, Any]) -> ToolResult
     # Create tool result
     return ToolResult(
         issues=[issue.model_dump() for issue in issues],
-        files_with_issues=list(set(issue.file_path for issue in issues)),
+        files_with_issues=list({issue.file_path for issue in issues}),
         summary=ai_result.get("summary", "AI analysis completed"),
         execution_time=0.0,  # AI analysis time is not tracked separately
     )
 
 
-def _create_analysis_prompt(file_contents: Dict[str, str]) -> str:
+def _create_analysis_prompt(file_contents: dict[str, str]) -> str:
     """
     Create a prompt for AI analysis of the provided files.
 
@@ -266,22 +265,22 @@ def _create_analysis_prompt(file_contents: Dict[str, str]) -> str:
 def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
     """
     Smartly truncate content while preserving syntactic boundaries.
-    
+
     Args:
         content: The content to truncate
         max_length: Maximum length in characters
-        
+
     Returns:
         Truncated content that preserves code structure
     """
     if len(content) <= max_length:
         return content
-    
+
     # Try to find a good truncation point
-    lines = content.split('\n')
+    lines = content.split("\n")
     current_length = 0
     truncated_lines = []
-    
+
     for line in lines:
         # Check if adding this line would exceed the limit
         if current_length + len(line) + 1 > max_length:
@@ -291,7 +290,7 @@ def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
                 partial_line = ""
                 for word in words:
                     if current_length + len(partial_line) + len(word) + 1 <= max_length:
-                        partial_line += (word + " ")
+                        partial_line += word + " "
                     else:
                         break
                 if partial_line.strip():
@@ -304,29 +303,31 @@ def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
         else:
             truncated_lines.append(line)
             current_length += len(line) + 1
-    
-    truncated_content = '\n'.join(truncated_lines)
-    
+
+    truncated_content = "\n".join(truncated_lines)
+
     # Add truncation indicator if content was actually truncated
     if len(content) > len(truncated_content):
         truncated_content += f"\n\n... (content truncated, showing first {len(truncated_content)} characters)"
-    
+
     return truncated_content
 
 
-def _create_chunked_analysis_prompt(file_contents: Dict[str, str], max_chunk_size: int = 2000) -> List[str]:
+def _create_chunked_analysis_prompt(
+    file_contents: dict[str, str], max_chunk_size: int = 2000
+) -> list[str]:
     """
     Create multiple analysis prompts for large files by chunking them intelligently.
-    
+
     Args:
         file_contents: Dictionary mapping file paths to their contents
         max_chunk_size: Maximum size per chunk in characters
-        
+
     Returns:
         List of analysis prompts for different chunks
     """
     prompts = []
-    
+
     for file_path, content in file_contents.items():
         if len(content) <= max_chunk_size:
             # Small file, create single prompt
@@ -335,55 +336,57 @@ def _create_chunked_analysis_prompt(file_contents: Dict[str, str], max_chunk_siz
             # Large file, split into chunks
             chunks = _split_content_into_chunks(content, max_chunk_size)
             for i, chunk in enumerate(chunks):
-                chunk_prompt = _create_analysis_prompt({f"{file_path} (part {i+1}/{len(chunks)})": chunk})
+                chunk_prompt = _create_analysis_prompt(
+                    {f"{file_path} (part {i+1}/{len(chunks)})": chunk}
+                )
                 prompts.append(chunk_prompt)
-    
+
     return prompts
 
 
-def _split_content_into_chunks(content: str, max_chunk_size: int) -> List[str]:
+def _split_content_into_chunks(content: str, max_chunk_size: int) -> list[str]:
     """
     Split content into overlapping chunks while preserving code structure.
-    
+
     Args:
         content: The content to split
         max_chunk_size: Maximum size per chunk
-        
+
     Returns:
         List of content chunks
     """
     if len(content) <= max_chunk_size:
         return [content]
-    
-    lines = content.split('\n')
+
+    lines = content.split("\n")
     chunks = []
     current_chunk = []
     current_length = 0
     overlap_lines = 10  # Number of lines to overlap between chunks
-    
+
     for line in lines:
         if current_length + len(line) + 1 > max_chunk_size and current_chunk:
             # Current chunk is full, save it and start a new one
-            chunks.append('\n'.join(current_chunk))
-            
+            chunks.append("\n".join(current_chunk))
+
             # Start new chunk with overlap
             overlap_start = max(0, len(current_chunk) - overlap_lines)
             current_chunk = current_chunk[overlap_start:]
             current_length = sum(len(l) + 1 for l in current_chunk)
-        
+
         current_chunk.append(line)
         current_length += len(line) + 1
-    
+
     # Add the last chunk
     if current_chunk:
-        chunks.append('\n'.join(current_chunk))
-    
+        chunks.append("\n".join(current_chunk))
+
     return chunks
 
 
 async def analyze_code_architecture(
-    files: List[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
-) -> Dict[str, Any] | None:
+    files: list[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
+) -> dict[str, Any] | None:
     """
     Run architectural analysis on the provided files.
 
@@ -400,8 +403,8 @@ async def analyze_code_architecture(
 
 
 async def analyze_security_issues(
-    files: List[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
-) -> Dict[str, Any] | None:
+    files: list[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
+) -> dict[str, Any] | None:
     """
     Run security analysis on the provided files.
 

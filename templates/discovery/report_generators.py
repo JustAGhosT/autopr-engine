@@ -83,7 +83,9 @@ class JSONReportGenerator(ReportGenerator):
             "issues": [
                 {
                     "severity": (
-                        issue.severity.value if getattr(issue, "severity", None) else None
+                        issue.severity.value
+                        if getattr(issue, "severity", None)
+                        else None
                     ),
                     "category": getattr(issue, "category", None),
                     "message": getattr(issue, "message", None),
@@ -115,7 +117,8 @@ class JSONReportGenerator(ReportGenerator):
             "summary": {
                 "total_templates": len(enriched_metrics),
                 "average_score": (
-                    sum(m.overall_score for m in enriched_metrics) / len(enriched_metrics)
+                    sum(m.overall_score for m in enriched_metrics)
+                    / len(enriched_metrics)
                     if enriched_metrics
                     else 0
                 ),
@@ -193,7 +196,11 @@ class MarkdownReportGenerator(ReportGenerator):
             )
 
             for category, score in enriched_metrics.category_scores.items():
-                status = "✅ Good" if score >= 80 else "🟡 Fair" if score >= 60 else "🔴 Poor"
+                status = (
+                    "✅ Good"
+                    if score >= 80
+                    else "🟡 Fair" if score >= 60 else "🔴 Poor"
+                )
                 lines.append(f"| {category.title()} | {score:.1f}/100 | {status} |")
             lines.append("")
 
@@ -203,8 +210,12 @@ class MarkdownReportGenerator(ReportGenerator):
 
             # Group issues by severity
             errors = enriched_metrics.get_issues_by_severity(QMValidationSeverity.ERROR)
-            warnings = enriched_metrics.get_issues_by_severity(QMValidationSeverity.WARNING)
-            info_issues = enriched_metrics.get_issues_by_severity(QMValidationSeverity.INFO)
+            warnings = enriched_metrics.get_issues_by_severity(
+                QMValidationSeverity.WARNING
+            )
+            info_issues = enriched_metrics.get_issues_by_severity(
+                QMValidationSeverity.INFO
+            )
 
             for severity_name, issues_list, icon in [
                 ("Errors", errors, "🔴"),
@@ -212,7 +223,9 @@ class MarkdownReportGenerator(ReportGenerator):
                 ("Information", info_issues, "🔵"),
             ]:
                 if issues_list:
-                    lines.extend((f"### {icon} {severity_name} ({len(issues_list)})", ""))
+                    lines.extend(
+                        (f"### {icon} {severity_name} ({len(issues_list)})", "")
+                    )
                     for i, issue in enumerate(issues_list, 1):
                         lines.extend(
                             (
@@ -262,7 +275,9 @@ class MarkdownReportGenerator(ReportGenerator):
 
         # Summary Statistics
         if enriched_metrics:
-            avg_score = sum(m.overall_score for m in enriched_metrics) / len(enriched_metrics)
+            avg_score = sum(m.overall_score for m in enriched_metrics) / len(
+                enriched_metrics
+            )
             total_issues = sum(len(m.issues) for m in enriched_metrics)
 
             lines.extend(
@@ -286,14 +301,16 @@ class MarkdownReportGenerator(ReportGenerator):
             )
         )
 
-        for metrics in sorted(enriched_metrics, key=lambda m: m.overall_score, reverse=True):
-            template_name = Path(metrics.template_path).name if metrics.template_path else "Unknown"
+        for metrics in sorted(
+            enriched_metrics, key=lambda m: m.overall_score, reverse=True
+        ):
+            template_name = (
+                Path(metrics.template_path).name if metrics.template_path else "Unknown"
+            )
             status = (
                 "🔴 Critical"
                 if metrics.has_critical_issues
-                else "✅ Good"
-                if metrics.overall_score >= 80
-                else "🟡 Needs Work"
+                else "✅ Good" if metrics.overall_score >= 80 else "🟡 Needs Work"
             )
             lines.append(
                 f"| {template_name} | {metrics.overall_score:.1f} | {metrics.quality_grade} | {len(metrics.issues)} | {status} |"
@@ -400,14 +417,16 @@ class HTMLReportGenerator(ReportGenerator):
 
         content_html = "<h2>Template Overview</h2>"
 
-        for metrics in sorted(enriched_metrics, key=lambda m: m.overall_score, reverse=True):
-            template_name = Path(metrics.template_path).name if metrics.template_path else "Unknown"
+        for metrics in sorted(
+            enriched_metrics, key=lambda m: m.overall_score, reverse=True
+        ):
+            template_name = (
+                Path(metrics.template_path).name if metrics.template_path else "Unknown"
+            )
             status_class = (
                 "critical"
                 if metrics.has_critical_issues
-                else "good"
-                if metrics.overall_score >= 80
-                else "warning"
+                else "good" if metrics.overall_score >= 80 else "warning"
             )
 
             content_html += f"""

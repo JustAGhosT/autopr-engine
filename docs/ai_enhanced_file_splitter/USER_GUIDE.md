@@ -244,7 +244,7 @@ results = process_multiple_files(files_to_split, config)
 
 ```python
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.ai.providers.manager import LLMProviderManager
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 
 def process_with_ai_fixer(file_path: str, content: str, issues: list[LintingIssue]):
@@ -398,6 +398,8 @@ if not validate_file_syntax("large_file.py"):
 **Solution**:
 
 ```python
+from autopr.ai.providers.manager import LLMProviderManager
+
 # Check LLM configuration
 def check_llm_config():
     import os

@@ -5,15 +5,15 @@ This module handles the processing of linting issues through the AI fixer pipeli
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
+from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
+from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
+from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
 from autopr.actions.ai_linting_fixer.specialists.specialist_manager import (
     specialist_manager,
 )
-from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
-from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 
 
 logger = logging.getLogger(__name__)
@@ -37,10 +37,10 @@ class IssueProcessor:
 
     async def process_issues(
         self,
-        issues: List[Dict[str, Any]],
+        issues: list[dict[str, Any]],
         max_fixes_per_run: int,
-        filter_types: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        filter_types: list[str] | None = None,
+    ) -> dict[str, Any]:
         """Process a batch of issues through the AI fixer pipeline."""
         total_processed = 0
         total_fixed = 0
@@ -84,7 +84,7 @@ class IssueProcessor:
                                 },
                             )
                         except Exception as e:
-                            logger.error(
+                            logger.exception(
                                 f"Failed to update issue status for ID {issue_id}: {e}"
                             )
                     else:
@@ -114,58 +114,9 @@ class IssueProcessor:
             "modified_files": modified_files,
         }
 
-    async def _apply_ai_fix(self, issue_data: Dict[str, Any]) -> bool:
-        """Apply AI fix to a single issue."""
-        try:
-            file_path = issue_data.get("file_path")
-            error_code = issue_data.get("error_code", "")
-            line_number = issue_data.get("line_number", 0)
-            message = issue_data.get("message", "")
-
-            if not file_path or not self._file_exists(file_path):
-                return False
-
-            # Read the file content
-            content = self._read_file_content(file_path)
-            if content is None:
-                return False
-
-            # Create LintingIssue object
-            issue = LintingIssue(
-                file_path=file_path,
-                line_number=line_number,
-                column_number=issue_data.get("column_number", 0),
-                error_code=error_code,
-                message=message,
-            )
-
-            # Get the appropriate specialist agent for this issue type
-            agent = specialist_manager.get_specialist_for_issues([issue])
-            if not agent:
-                logger.warning(f"No suitable agent found for {error_code}")
-                return False
-
-            # Apply the fix using the specialist agent with real AI integration
-            fix_result = await self.ai_fix_applier.apply_specialist_fix(
-                agent, file_path, content, [issue]
-            )
-
-            if fix_result["success"]:
-                # Apply the fix to the file
-                return self._apply_fix_to_file(file_path, fix_result["fixed_content"])
-            else:
-                logger.warning(
-                    f"AI fix failed for {file_path}: {fix_result.get('error', 'Unknown error')}"
-                )
-                return False
-
-        except Exception as e:
-            logger.exception(f"Error applying AI fix: {e}")
-            return False
-
     async def _apply_ai_fix_with_comprehensive_workflow(
-        self, issue_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, issue_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Apply AI fix using the comprehensive workflow with splitting, test generation, and validation."""
         try:
             file_path = issue_data.get("file_path")
@@ -174,12 +125,20 @@ class IssueProcessor:
             message = issue_data.get("message", "")
 
             if not file_path or not self._file_exists(file_path):
-                return False
+                return {
+                    "final_success": False,
+                    "error": f"File not found or does not exist: {file_path}",
+                    "error_type": "file_not_found",
+                }
 
             # Read the file content
             content = self._read_file_content(file_path)
             if content is None:
-                return False
+                return {
+                    "final_success": False,
+                    "error": f"Failed to read file content: {file_path}",
+                    "error_type": "file_read_error",
+                }
 
             # Create LintingIssue object
             issue = LintingIssue(
@@ -194,7 +153,12 @@ class IssueProcessor:
             agent = specialist_manager.get_specialist_for_issues([issue])
             if not agent:
                 logger.warning(f"No suitable agent found for {error_code}")
-                return False
+                return {
+                    "final_success": False,
+                    "error": f"No suitable agent found for error code: {error_code}",
+                    "error_type": "no_agent_found",
+                    "error_code": error_code,
+                }
 
             # Apply the fix using comprehensive workflow
             result = await self.ai_fix_applier.apply_specialist_fix_with_comprehensive_workflow(
@@ -243,7 +207,7 @@ class IssueProcessor:
 
         return Path(file_path).exists()
 
-    def _read_file_content(self, file_path: str) -> Optional[str]:
+    def _read_file_content(self, file_path: str) -> str | None:
         """Read file content with error handling."""
         try:
             from pathlib import Path
@@ -264,17 +228,17 @@ class IssueProcessor:
             logger.info(f"Successfully applied fix to {file_path}")
             return True
         except Exception as e:
-            logger.error(f"Error applying fix to {file_path}: {e}")
+            logger.exception(f"Error applying fix to {file_path}: {e}")
             return False
 
     def get_next_issues(
-        self, limit: int = 50, filter_types: Optional[List[str]] = None
-    ) -> List[Dict[str, Any]]:
+        self, limit: int = 50, filter_types: list[str] | None = None
+    ) -> list[dict[str, Any]]:
         """Get the next batch of issues to process."""
         return self.queue_manager.get_next_issues(
             limit=limit, worker_id=f"worker_{id(self)}", filter_types=filter_types
         )
 
-    def queue_issues(self, issues: List[Dict[str, Any]]) -> int:
+    def queue_issues(self, issues: list[dict[str, Any]]) -> int:
         """Queue issues for processing."""
         return self.queue_manager.queue_issues(self.session_id, issues)

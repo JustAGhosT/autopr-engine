@@ -74,7 +74,9 @@ class ErrorHandler:
 
     def __init__(self):
         """Initialize the error handler."""
-        self.on_recovery_callbacks: list[Callable[[ErrorInfo, ErrorRecoveryStrategy], None]] = []
+        self.on_recovery_callbacks: list[
+            Callable[[ErrorInfo, ErrorRecoveryStrategy], None]
+        ] = []
         self.error_count = 0
         self.recovery_count = 0
 
@@ -82,7 +84,9 @@ class ErrorHandler:
         """Handle an error and determine recovery strategy."""
         self.error_count += 1
 
-        logger.warning(f"Error {self.error_count}: {error_info.error_type} - {error_info.message}")
+        logger.warning(
+            f"Error {self.error_count}: {error_info.error_type} - {error_info.message}"
+        )
 
         # Determine recovery strategy based on severity
         if error_info.severity == ErrorSeverity.CRITICAL:
@@ -97,14 +101,16 @@ class ErrorHandler:
         # Increment recovery count for non-abort strategies (actual recoveries)
         if strategy != ErrorRecoveryStrategy.ABORT:
             self.recovery_count += 1
-            logger.info(f"Recovery strategy applied: {strategy.value} (recovery #{self.recovery_count})")
+            logger.info(
+                f"Recovery strategy applied: {strategy.value} (recovery #{self.recovery_count})"
+            )
 
         # Notify callbacks
         for callback in self.on_recovery_callbacks:
             try:
                 callback(error_info, strategy)
             except Exception as e:
-                logger.error(f"Error in recovery callback: {e}")
+                logger.exception(f"Error in recovery callback: {e}")
 
         return strategy
 
@@ -118,10 +124,12 @@ class ErrorHandler:
         """Get error handling statistics."""
         if self.error_count > 0:
             # Calculate success rate as recoveries / total errors, clamped to max 1.0
-            success_rate = min(float(self.recovery_count) / float(self.error_count), 1.0)
+            success_rate = min(
+                float(self.recovery_count) / float(self.error_count), 1.0
+            )
         else:
             success_rate = 1.0
-            
+
         return {
             "total_errors": self.error_count,
             "recoveries": self.recovery_count,

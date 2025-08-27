@@ -130,7 +130,7 @@ class ToolRegistry:
 registry = ToolRegistry()
 
 
-def register_tool(tool_class: type[TTool]) -> type[TTool]:
+def register_tool[TTool: Tool](tool_class: type[TTool]) -> type[TTool]:
     """
     Decorator to register a tool with the registry.
 

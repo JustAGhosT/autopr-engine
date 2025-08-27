@@ -5,44 +5,38 @@ This package contains individual model configurations for AI linting with
 availability detection and performance characteristics.
 """
 
-from .deepseek_r1_7b import (
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import (
     DEEPSEEK_R1_7B_CONFIG,
 )
-from .deepseek_r1_7b import (
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import (
     update_availability as update_deepseek_r1_availability,
 )
-from .deepseek_v3 import (
-    DEEPSEEK_V3_CONFIG,
-)
-from .deepseek_v3 import (
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_v3 import DEEPSEEK_V3_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_v3 import (
     update_availability as update_deepseek_v3_availability,
 )
-from .gpt_5_chat import (
-    GPT_5_CHAT_CONFIG,
-)
-from .gpt_5_chat import (
+from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import GPT_5_CHAT_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import (
     update_availability as update_gpt5_availability,
 )
-from .llama_3_3_70b import (
+from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import (
     LLAMA_3_3_70B_CONFIG,
 )
-from .llama_3_3_70b import (
+from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import (
     update_availability as update_llama_availability,
 )
-from .mistral_7b import (
-    MISTRAL_7B_CONFIG,
-)
-from .mistral_7b import (
+from autopr.actions.ai_linting_fixer.model_configs.mistral_7b import MISTRAL_7B_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.mistral_7b import (
     update_availability as update_mistral_availability,
 )
-from .phi_4_mini import (
-    PHI_4_MINI_CONFIG,
-)
-from .phi_4_mini import (
+from autopr.actions.ai_linting_fixer.model_configs.phi_4_mini import PHI_4_MINI_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.phi_4_mini import (
     update_availability as update_phi_mini_availability,
 )
-from .qwen_2_5 import QWEN_2_5_CONFIG
-from .qwen_2_5 import update_availability as update_qwen_availability
+from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import QWEN_2_5_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import (
+    update_availability as update_qwen_availability,
+)
 
 
 # All model configurations
@@ -74,9 +68,8 @@ def update_all_availabilities():
     for model_name, updater in AVAILABILITY_UPDATERS.items():
         try:
             results[model_name] = updater()
-        except Exception as e:
+        except Exception:
             results[model_name] = False
-            print(f"Error updating {model_name}: {e}")
     return results
 
 

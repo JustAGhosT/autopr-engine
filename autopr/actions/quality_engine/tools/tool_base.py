@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import asyncio
 import shutil
 import time
-from typing import Any, TypedDict, TypeVar, Generic
+from typing import Any, TypedDict, TypeVar
 
 import structlog
 
@@ -29,7 +29,7 @@ class ToolExecutionResult(TypedDict):
     output_summary: str
 
 
-class Tool(ABC, Generic[TConfig, TIssue]):
+class Tool[TConfig: Any, TIssue](ABC):
     """Abstract base class for quality tools with enhanced error handling and timeouts."""
 
     def __init__(self) -> None:

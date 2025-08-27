@@ -5,6 +5,7 @@ This module provides specialized handling for import-related linting issues.
 """
 
 import ast
+
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
     AgentType,
@@ -123,7 +124,7 @@ Always maintain code functionality while improving import clarity and efficiency
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    imports.add(("import", alias.name, alias.asname, node.lineno, 0))
+                    imports.add(("import", alias.name, alias.asname, node.lineno, 0, 0))
             elif isinstance(node, ast.ImportFrom):
                 level = getattr(node, "level", 0)
                 module = node.module or ""
@@ -155,24 +156,21 @@ Always maintain code functionality while improving import clarity and efficiency
 
         elif issue.error_code == "TID252":  # Prefer absolute imports
             # Check if relative imports were converted to absolute
-            original_relative = {
-                imp for imp in original_imports if len(imp) > 5 and imp[5] > 0
-            }
-            fixed_relative = {
-                imp for imp in fixed_imports if len(imp) > 5 and imp[5] > 0
-            }
+            original_relative = {imp for imp in original_imports if imp[5] > 0}
+            fixed_relative = {imp for imp in fixed_imports if imp[5] > 0}
             return len(original_relative) > len(fixed_relative)
 
         elif issue.error_code == "E402":  # Module level import not at top
             # Check if imports were moved to top of file (before any non-import statements)
             # Get the earliest import line in both versions
-            original_earliest_import = min(
+            original_earliest_import_line = min(
                 (imp[3] for imp in original_imports), default=float("inf")
             )
-            fixed_earliest_import = min(
+            fixed_earliest_import_line = min(
                 (imp[3] for imp in fixed_imports), default=float("inf")
             )
-            return fixed_earliest_import < original_earliest_import
+            # E402 is fixed if the earliest import moved up (smaller line number)
+            return fixed_earliest_import_line < original_earliest_import_line
 
         else:
             # For other issues, any import change is considered relevant

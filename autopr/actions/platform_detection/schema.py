@@ -208,7 +208,9 @@ class PlatformConfig:
             raise ValueError(msg)
 
         # Handle enums and special types
-        status = PlatformStatus(data.get("status", "active")) if "status" in data else None
+        status = (
+            PlatformStatus(data.get("status", "active")) if "status" in data else None
+        )
         platform_type_val = data.get("type")
         if isinstance(platform_type_val, PlatformType):
             platform_type = platform_type_val

@@ -210,7 +210,9 @@ class ModelCompetencyManager:
 
         # If no models available from strategy, fall back to default available models
         if not available_sequence:
-            available_sequence = [(model, "local") for model in self.get_available_model_names()]
+            available_sequence = [
+                (model, "local") for model in self.get_available_model_names()
+            ]
 
         return available_sequence
 
@@ -227,7 +229,9 @@ class ModelCompetencyManager:
             # Reduce confidence for failed fixes
             return max(0.1, base_competency - 0.2)
 
-    def get_best_model_for_issue(self, error_code: str, available_models: list[str] = None) -> str:
+    def get_best_model_for_issue(
+        self, error_code: str, available_models: list[str] = None
+    ) -> str:
         """Get the best available model for a specific issue type."""
         if available_models is None:
             available_models = self.get_available_model_names()

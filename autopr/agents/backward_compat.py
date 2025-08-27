@@ -25,17 +25,17 @@ from autopr.agents.code_quality_agent import (
     CodeQualityOutputs,
 )
 from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
-from autopr.agents.platform_analysis_agent import (
-    PlatformAnalysisAgent,
-    PlatformAnalysisInputs,
-    PlatformAnalysisOutputs,
-)
 from autopr.agents.models import (
     CodeAnalysisReport,
     CodeIssue,
     IssueSeverity,
     PlatformAnalysis,
     PlatformComponent,
+)
+from autopr.agents.platform_analysis_agent import (
+    PlatformAnalysisAgent,
+    PlatformAnalysisInputs,
+    PlatformAnalysisOutputs,
 )
 
 

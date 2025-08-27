@@ -42,7 +42,7 @@ from autopr.actions.ai_linting_fixer.workflow import (
     WorkflowContext,
     WorkflowIntegrationMixin,
 )
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
 from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
 
 
@@ -106,7 +106,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
 
         # Database-first processing components
         self.db = AIInteractionDB()
-        self.queue_manager = IssueQueueManager(self.db)
+        self.queue_manager = IssueQueueManager("issue_queue.db")
         timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         self.session_id = f"session_{timestamp}_{id(self)}"
 
@@ -649,7 +649,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
     def get_queue_statistics(self) -> dict[str, Any]:
         """Get statistics about the issue queue."""
         if hasattr(self, "queue_manager"):
-            return self.queue_manager.get_queue_statistics()
+            return self.queue_manager.get_queue_stats()
         return {}
 
     def get_session_results(self) -> AILintingFixerOutputs:

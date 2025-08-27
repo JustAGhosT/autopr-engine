@@ -5,9 +5,13 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
-from .ai_analyzer import AICodeAnalyzer
-from .ai_modes import run_ai_analysis, create_tool_result_from_ai_analysis
-from .llm_manager import initialize_llm_manager
+from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
+from autopr.actions.quality_engine.ai.ai_modes import (
+    create_tool_result_from_ai_analysis,
+    run_ai_analysis,
+)
+from autopr.actions.quality_engine.ai.llm_manager import initialize_llm_manager
+
 
 __all__ = [
     "AICodeAnalyzer",

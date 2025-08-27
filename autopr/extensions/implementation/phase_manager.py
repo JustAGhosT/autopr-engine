@@ -107,12 +107,16 @@ class PhaseManager:
 
             # Determine phase status based on task results
             failed_tasks = [
-                task_id for task_id, execution in task_executions.items() if execution.is_failed
+                task_id
+                for task_id, execution in task_executions.items()
+                if execution.is_failed
             ]
 
             if failed_tasks:
                 phase_execution.status = "failed"
-                logger.error(f"Phase {phase_id} failed due to failed tasks: {failed_tasks}")
+                logger.error(
+                    f"Phase {phase_id} failed due to failed tasks: {failed_tasks}"
+                )
             else:
                 phase_execution.status = "completed"
                 logger.info(f"Phase {phase_id} completed successfully")
@@ -132,7 +136,9 @@ class PhaseManager:
     ) -> dict[str, PhaseExecution]:
         """Execute all phases in order."""
         # Get phases sorted by priority
-        phases = sorted(self.phase_definitions.items(), key=lambda x: x[1].get("priority", 999))
+        phases = sorted(
+            self.phase_definitions.items(), key=lambda x: x[1].get("priority", 999)
+        )
 
         for phase_id, _phase_definition in phases:
             try:
@@ -183,19 +189,27 @@ class PhaseManager:
             "description": phase_definition.get("description", ""),
             "status": execution.status,
             "progress_percentage": execution.progress_percentage,
-            "start_time": (execution.start_time.isoformat() if execution.start_time else None),
+            "start_time": (
+                execution.start_time.isoformat() if execution.start_time else None
+            ),
             "end_time": execution.end_time.isoformat() if execution.end_time else None,
             "duration_seconds": (
                 execution.duration.total_seconds() if execution.duration else None
             ),
             "total_tasks": len(phase_definition.get("tasks", [])),
-            "completed_tasks": sum(1 for e in execution.task_executions.values() if e.is_completed),
-            "failed_tasks": sum(1 for e in execution.task_executions.values() if e.is_failed),
+            "completed_tasks": sum(
+                1 for e in execution.task_executions.values() if e.is_completed
+            ),
+            "failed_tasks": sum(
+                1 for e in execution.task_executions.values() if e.is_failed
+            ),
             "task_status": {
                 task_id: {
                     "status": task_execution.status,
                     "duration_seconds": (
-                        task_execution.duration.total_seconds() if task_execution.duration else None
+                        task_execution.duration.total_seconds()
+                        if task_execution.duration
+                        else None
                     ),
                     "error": task_execution.error_message,
                 }
@@ -227,7 +241,9 @@ class PhaseManager:
                 weighted_progress += execution.progress_percentage * weight
                 total_weight += weight
 
-            overall_progress = weighted_progress / total_weight if total_weight > 0 else 0.0
+            overall_progress = (
+                weighted_progress / total_weight if total_weight > 0 else 0.0
+            )
 
         # Determine overall status
         if failed_phases > 0:
@@ -247,7 +263,8 @@ class PhaseManager:
             "completed_phases": completed_phases,
             "failed_phases": failed_phases,
             "phases": {
-                phase_id: self.get_phase_status(phase_id) for phase_id in self.phase_definitions
+                phase_id: self.get_phase_status(phase_id)
+                for phase_id in self.phase_definitions
             },
         }
 
@@ -265,7 +282,9 @@ class PhaseManager:
                         "action": f"Execute {phase_definition.get('name', phase_id)}",
                         "description": phase_definition.get("description", ""),
                         "priority": "high" if phase_id == "immediate" else "medium",
-                        "estimated_duration_days": phase_definition.get("duration_days", 0),
+                        "estimated_duration_days": phase_definition.get(
+                            "duration_days", 0
+                        ),
                     }
                 )
                 break

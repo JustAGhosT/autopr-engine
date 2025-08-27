@@ -62,14 +62,18 @@ STRATEGIES:
 
 BE CAREFUL: Some variables might be used for side effects or future functionality."""
 
-    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
+    def get_user_prompt(
+        self, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> str:
         """Get user prompt for variable fixes."""
         prompt = f"Please fix the following variable issues in the Python file '{file_path}':\n\n"
 
         # Add specific issue details
         for issue in issues:
             if issue.error_code in ["F841", "F821"]:
-                prompt += f"Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
+                prompt += (
+                    f"Line {issue.line_number}: {issue.error_code} - {issue.message}\n"
+                )
                 prompt += f"Content: {issue.line_content}\n\n"
 
         prompt += f"File content:\n```python\n{content}\n```\n\n"

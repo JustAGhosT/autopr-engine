@@ -5,11 +5,12 @@ This module provides initialization and configuration for the LLM provider manag
 used in AI-enhanced quality analysis.
 """
 
-import os
 import logging
+import os
 from typing import Any
 
 from autopr.ai.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ async def initialize_llm_manager() -> LLMProviderManager | None:
             return None
 
     except Exception as e:
-        logger.error(f"Failed to initialize LLM manager: {e}")
+        logger.exception(f"Failed to initialize LLM manager: {e}")
         return None
 
 

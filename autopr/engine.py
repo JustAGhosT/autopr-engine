@@ -68,7 +68,9 @@ class AutoPREngine:
             msg = f"Engine shutdown failed: {e}"
             raise AutoPRException(msg)
 
-    async def process_event(self, event_type: str, event_data: dict[str, Any]) -> dict[str, Any]:
+    async def process_event(
+        self, event_type: str, event_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Process an incoming event through the workflow engine.
 

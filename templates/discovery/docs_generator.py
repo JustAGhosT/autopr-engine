@@ -9,9 +9,9 @@ template types and output formats.
 """
 
 import argparse
-import sys
 from pathlib import Path
-from typing import Any, Optional
+import sys
+from typing import Any
 
 from discovery.content_analyzer import ContentAnalyzer, TemplateAnalysis
 from discovery.format_generators import FormatGeneratorFactory
@@ -42,6 +42,16 @@ class TemplateDocumentationGenerator:
         self.output_dir = Path(kwargs.get("output_dir", "docs"))
         self.output_dir.mkdir(exist_ok=True)
 
+    def _get_file_extension(self) -> str:
+        """Get file extension based on output format."""
+        format_extensions = {"markdown": "md", "html": "html", "json": "json"}
+        return format_extensions.get(self.output_format, "md")
+
+    def _get_output_filename(self) -> str:
+        """Get the output filename with correct extension."""
+        ext = self._get_file_extension()
+        return f"{self.template_name}.{ext}"
+
     def generate(self) -> str:
         """Generate documentation for the template.
 
@@ -55,9 +65,8 @@ class TemplateDocumentationGenerator:
             # Find the template file
             template_file = self._find_template_file()
             if not template_file:
-                raise FileNotFoundError(
-                    f"Template file not found for '{self.template_name}'"
-                )
+                msg = f"Template file not found for '{self.template_name}'"
+                raise FileNotFoundError(msg)
 
             # Analyze the template
             analysis = self.content_analyzer.analyze_template(template_file)
@@ -79,7 +88,7 @@ class TemplateDocumentationGenerator:
                 content = self._generate_generic_documentation(analysis)
 
             # Write to file
-            output_file = self.output_dir / f"{self.template_name}.md"
+            output_file = self.output_dir / self._get_output_filename()
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(content)
 
@@ -87,13 +96,10 @@ class TemplateDocumentationGenerator:
 
         except Exception as e:
             # Preserve previous exception behavior
-            error_content = (
-                f"# {self.template_name.title()} Integration Guide\n\n"
-                f"Error generating guide: {e}"
-            )
+            error_content = f"# {self.template_name.title()} Integration Guide\n\nError generating guide: {e}"
 
             # Write error content to file
-            output_file = self.output_dir / f"{self.template_name}.md"
+            output_file = self.output_dir / self._get_output_filename()
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(error_content)
 
@@ -103,7 +109,7 @@ class TemplateDocumentationGenerator:
         """Alias for generate() method for compatibility."""
         return self.generate()
 
-    def _find_template_file(self) -> Optional[Path]:
+    def _find_template_file(self) -> Path | None:
         """Find the template file for the given template name."""
         # Look in common template directories
         search_dirs = [
@@ -111,7 +117,7 @@ class TemplateDocumentationGenerator:
             Path("platforms"),
             Path("use_cases"),
             Path("integrations"),
-            Path("."),
+            Path(),
         ]
 
         for search_dir in search_dirs:
@@ -158,10 +164,10 @@ The following variables can be configured:
 
 ## Examples
 
-{chr(10).join(f"### Example {i+1}\n{example.get('description', 'No description')}" for i, example in enumerate(analysis.examples))}
+{chr(10).join(f"### Example {i + 1}\n{example.get('description', 'No description')}" for i, example in enumerate(analysis.examples))}
 
 ---
-*Generated on {analysis.metadata.get('generation_date', 'Unknown date')}*
+*Generated on {analysis.metadata.get("generation_date", "Unknown date")}*
 """
 
 
@@ -192,16 +198,16 @@ def main() -> None:
         )
 
         # Generate documentation
-        content = generator.generate()
+        generator.generate()
 
         if args.verbose:
-            print(f"Generated documentation for '{args.template_name}'")
-            print(f"Output written to: {args.output_dir}/{args.template_name}.md")
+            # Get the correct file extension for the format
+            format_extensions = {"markdown": "md", "html": "html", "json": "json"}
+            format_extensions.get(args.format, "md")
 
         sys.exit(0)
 
-    except Exception as e:
-        print(f"Error generating documentation: {e}", file=sys.stderr)
+    except Exception:
         sys.exit(1)
 
 

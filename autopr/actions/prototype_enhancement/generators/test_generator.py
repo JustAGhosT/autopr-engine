@@ -46,16 +46,22 @@ class TestGenerator(BaseGenerator):
 
         # Generate test examples based on language and framework
         if language == "typescript":
-            generated_files.extend(self._generate_typescript_tests(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_typescript_tests(output_dir, template_vars)
+            )
         elif language == "python":
-            generated_files.extend(self._generate_python_tests(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_python_tests(output_dir, template_vars)
+            )
 
         # Generate CI/CD configuration for tests
         generated_files.extend(self._generate_test_ci_config(output_dir, template_vars))
 
         return generated_files
 
-    def _generate_test_config(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_test_config(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate test configuration files."""
         generated_files = []
         language = variables.get("language", "")
@@ -66,12 +72,16 @@ class TestGenerator(BaseGenerator):
 
         if language == "typescript":
             if test_framework == "jest":
-                config_files.extend(["jest.config.js", "jest.setup.js", ".mocharc.json"])
+                config_files.extend(
+                    ["jest.config.js", "jest.setup.js", ".mocharc.json"]
+                )
             elif test_framework == "mocha":
                 config_files.extend([".mocharc.json", "test/setup.ts"])
         elif language == "python":
             if test_framework == "pytest":
-                config_files.extend(["pytest.ini", "conftest.py", "requirements-test.txt"])
+                config_files.extend(
+                    ["pytest.ini", "conftest.py", "requirements-test.txt"]
+                )
             elif test_framework == "unittest":
                 config_files.append("test_requirements.txt")
 
@@ -87,7 +97,9 @@ class TestGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_typescript_tests(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_typescript_tests(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate TypeScript test files."""
         generated_files = []
         test_framework = variables.get("test_framework", "")
@@ -124,7 +136,9 @@ class TestGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_python_tests(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_python_tests(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate Python test files."""
         generated_files = []
         test_framework = variables.get("test_framework", "pytest")
@@ -146,7 +160,9 @@ class TestGenerator(BaseGenerator):
 
         # Generate test files
         for test_file in test_files:
-            content = self._render_template(f"test/python/{test_framework}/{test_file}", variables)
+            content = self._render_template(
+                f"test/python/{test_framework}/{test_file}", variables
+            )
             if content:
                 file_path = test_dir_path / test_file
                 file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -155,7 +171,9 @@ class TestGenerator(BaseGenerator):
 
         return generated_files
 
-    def _generate_test_ci_config(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_test_ci_config(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate CI/CD configuration for running tests."""
         generated_files = []
         ci_provider = variables.get("ci_provider", "github")

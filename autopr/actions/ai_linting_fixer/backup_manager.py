@@ -44,7 +44,9 @@ class BackupManager:
 
     def __init__(self, backup_dir: str | None = None):
         """Initialize the backup manager."""
-        self.backup_dir = Path(backup_dir or tempfile.mkdtemp(prefix="ai_fixer_backup_"))
+        self.backup_dir = Path(
+            backup_dir or tempfile.mkdtemp(prefix="ai_fixer_backup_")
+        )
         self.backup_dir.mkdir(parents=True, exist_ok=True)
         self.sessions: dict[str, BackupSession] = {}
         self.current_session: str | None = None
@@ -53,11 +55,15 @@ class BackupManager:
 
     def start_session(self, session_id: str) -> None:
         """Start a new backup session."""
-        self.sessions[session_id] = BackupSession(session_id=session_id, start_time=datetime.now())
+        self.sessions[session_id] = BackupSession(
+            session_id=session_id, start_time=datetime.now()
+        )
         self.current_session = session_id
         logger.info(f"Started backup session: {session_id}")
 
-    def backup_file(self, file_path: str, session_id: str | None = None) -> FileBackup | None:
+    def backup_file(
+        self, file_path: str, session_id: str | None = None
+    ) -> FileBackup | None:
         """Create a backup of a file before modification."""
         session_id = session_id or self.current_session
         if not session_id or session_id not in self.sessions:
@@ -101,7 +107,7 @@ class BackupManager:
             return backup
 
         except Exception as e:
-            logger.error(f"Failed to backup file {file_path}: {e}")
+            logger.exception(f"Failed to backup file {file_path}: {e}")
             return None
 
     def restore_file(self, file_path: str, session_id: str | None = None) -> bool:
@@ -127,7 +133,7 @@ class BackupManager:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to restore {file_path}: {e}")
+            logger.exception(f"Failed to restore {file_path}: {e}")
             return False
 
     def rollback_session(self, session_id: str | None = None) -> dict[str, bool]:
@@ -140,12 +146,12 @@ class BackupManager:
         session = self.sessions[session_id]
         results = {}
 
-        for file_path, backup in session.backups.items():
+        for file_path, _backup in session.backups.items():
             try:
                 success = self.restore_file(file_path, session_id)
                 results[file_path] = success
             except Exception as e:
-                logger.error(f"Failed to rollback {file_path}: {e}")
+                logger.exception(f"Failed to rollback {file_path}: {e}")
                 results[file_path] = False
 
         logger.info(
@@ -187,7 +193,9 @@ class BackupManager:
                 lines_removed = len(original_lines) - len(current_lines)
 
             # Check for modifications in existing lines
-            for i, (orig, curr) in enumerate(zip(original_lines, current_lines, strict=False)):
+            for _i, (orig, curr) in enumerate(
+                zip(original_lines, current_lines, strict=False)
+            ):
                 if orig != curr:
                     lines_modified += 1
 
@@ -216,7 +224,9 @@ class BackupManager:
         session = self.sessions[session_id]
 
         total_backups = len(session.backups)
-        total_size = sum(len(backup.original_content) for backup in session.backups.values())
+        total_size = sum(
+            len(backup.original_content) for backup in session.backups.values()
+        )
 
         return {
             "session_id": session_id,
@@ -249,7 +259,7 @@ class BackupManager:
             logger.info(f"Cleaned up session {session_id}")
 
         except Exception as e:
-            logger.error(f"Failed to cleanup session {session_id}: {e}")
+            logger.exception(f"Failed to cleanup session {session_id}: {e}")
 
     def export_session_metadata(self, session_id: str) -> str | None:
         """Export session metadata to JSON file."""
@@ -280,5 +290,5 @@ class BackupManager:
             return str(export_path)
 
         except Exception as e:
-            logger.error(f"Failed to export session metadata: {e}")
+            logger.exception(f"Failed to export session metadata: {e}")
             return None

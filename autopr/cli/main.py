@@ -5,21 +5,19 @@ Provides command-line interface for AutoPR Engine with quality checks,
 file operations, and development tools.
 """
 
-import argparse
 import asyncio
 import logging
-import sys
 from pathlib import Path
-from typing import List, Optional
+import sys
 
 import click
 
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
-from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
 
 
 # Configure logging
@@ -163,7 +161,7 @@ async def _run_quality_check(
         _display_quality_results(result, output_format, output)
 
     except Exception as e:
-        logger.error(f"Quality check failed: {e}")
+        logger.exception(f"Quality check failed: {e}")
         sys.exit(1)
 
 
@@ -180,7 +178,7 @@ async def _run_file_split(
         splitter = FileSplitter(llm_manager, metrics_collector, performance_optimizer)
 
         # Read file content
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # Create config
@@ -200,7 +198,7 @@ async def _run_file_split(
             click.echo(f"❌ Split failed: {result.errors}")
 
     except Exception as e:
-        logger.error(f"File split failed: {e}")
+        logger.exception(f"File split failed: {e}")
         sys.exit(1)
 
 
@@ -214,7 +212,7 @@ def _manage_git_hooks(config: str, install: bool, uninstall: bool):
         else:
             _show_git_hooks_status()
     except Exception as e:
-        logger.error(f"Git hooks management failed: {e}")
+        logger.exception(f"Git hooks management failed: {e}")
         sys.exit(1)
 
 
@@ -225,7 +223,7 @@ def _start_dashboard(port: int, host: str, open_browser: bool):
         # TODO: Implement dashboard server
         click.echo("Dashboard feature coming soon!")
     except Exception as e:
-        logger.error(f"Dashboard failed to start: {e}")
+        logger.exception(f"Dashboard failed to start: {e}")
         sys.exit(1)
 
 
@@ -236,11 +234,11 @@ def _validate_config(file: str, fix: bool):
         # TODO: Implement configuration validation
         click.echo("Configuration validation feature coming soon!")
     except Exception as e:
-        logger.error(f"Configuration validation failed: {e}")
+        logger.exception(f"Configuration validation failed: {e}")
         sys.exit(1)
 
 
-def _get_files_from_directory(directory: str) -> List[str]:
+def _get_files_from_directory(directory: str) -> list[str]:
     """Get all Python files from directory recursively"""
     files = []
     for file_path in Path(directory).rglob("*.py"):

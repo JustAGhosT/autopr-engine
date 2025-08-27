@@ -13,32 +13,45 @@ from typing import Optional
 
 class VolumeKnob:
     """Base class for volume control knobs."""
-    
+
     def __init__(self, knob_type: str):
         self.knob_type = knob_type
-        self.config_file = Path(f"../../.volume-{knob_type}.json")
-    
+        # Build path relative to this source file, then resolve to absolute path
+        self.config_file = (
+            Path(__file__).resolve().parent.parent.parent / f".volume-{knob_type}.json"
+        )
+
     def get_volume(self) -> int:
         """Get current volume setting."""
         if self.config_file.exists():
             try:
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file, "r") as f:
                     data = json.load(f)
-                    return data.get('volume', 0)
+                    return data.get("volume", 0)
             except (json.JSONDecodeError, KeyError):
                 return 0
         return 0
-    
+
     def set_volume(self, volume: int) -> None:
         """Set volume to specified value."""
         # Ensure volume is a multiple of 5
         volume = (volume // 5) * 5
         volume = max(0, min(1000, volume))  # Clamp to 0-1000
-        
-        data = {'volume': volume}
-        with open(self.config_file, 'w') as f:
+
+        data = {"volume": volume}
+        with open(self.config_file, "w") as f:
             json.dump(data, f, indent=2)
-    
+
+    def volume_up(self, steps: int = 1) -> None:
+        """Backward compatibility shim for volume_up method."""
+        # No-op method to prevent AttributeError for existing callers
+        pass
+
+    def volume_down(self, steps: int = 1) -> None:
+        """Backward compatibility shim for volume_down method."""
+        # No-op method to prevent AttributeError for existing callers
+        pass
+
     def get_volume_level(self) -> str:
         """Get volume level description."""
         volume = self.get_volume()
@@ -66,7 +79,7 @@ class VolumeKnob:
             return "VERY LOUD"
         else:
             return "MAXIMUM"
-    
+
     def get_volume_description(self) -> str:
         """Get detailed volume description."""
         volume = self.get_volume()
@@ -98,13 +111,13 @@ class VolumeKnob:
 
 class DevVolumeKnob(VolumeKnob):
     """Development environment volume control."""
-    
+
     def __init__(self):
         super().__init__("dev")
 
 
 class CommitVolumeKnob(VolumeKnob):
     """Commit volume control."""
-    
+
     def __init__(self):
         super().__init__("commit")

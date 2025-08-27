@@ -48,13 +48,13 @@ class IssueQueueManager:
             )
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_session_status 
+                CREATE INDEX IF NOT EXISTS idx_session_status
                 ON issue_queue(session_id, status)
             """
             )
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_file_path 
+                CREATE INDEX IF NOT EXISTS idx_file_path
                 ON issue_queue(file_path)
             """
             )
@@ -69,7 +69,7 @@ class IssueQueueManager:
                     conn.execute(
                         """
                         INSERT INTO issue_queue (
-                            session_id, file_path, error_code, line_number, 
+                            session_id, file_path, error_code, line_number,
                             column_number, message, severity, metadata
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
@@ -86,7 +86,7 @@ class IssueQueueManager:
                     )
                     queued_count += 1
                 except Exception as e:
-                    logger.error(f"Failed to queue issue: {e}")
+                    logger.exception(f"Failed to queue issue: {e}")
 
         return queued_count
 
@@ -109,9 +109,9 @@ class IssueQueueManager:
                 params.extend(filter_types)
 
             query = f"""
-                SELECT * FROM issue_queue 
+                SELECT * FROM issue_queue
                 WHERE {' AND '.join(where_conditions)}
-                ORDER BY created_at ASC 
+                ORDER BY created_at ASC
                 LIMIT ?
             """
             params.append(limit)
@@ -125,7 +125,7 @@ class IssueQueueManager:
                 placeholders = ",".join("?" for _ in issue_ids)
                 conn.execute(
                     f"""
-                    UPDATE issue_queue 
+                    UPDATE issue_queue
                     SET status = 'processing', worker_id = ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id IN ({placeholders})
                 """,
@@ -141,7 +141,7 @@ class IssueQueueManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                UPDATE issue_queue 
+                UPDATE issue_queue
                 SET status = ?, fix_result = ?, updated_at = CURRENT_TIMESTAMP,
                     attempts = attempts + 1
                 WHERE id = ?
@@ -154,7 +154,7 @@ class IssueQueueManager:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT 
+                SELECT
                     COUNT(*) as total,
                     SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing,

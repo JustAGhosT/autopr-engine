@@ -43,7 +43,7 @@ class TestGitHubClient(TestCase):
         assert self.client.config.backoff_factor == 0.1
         assert self.client.config.user_agent == "Test-Agent/1.0"
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_request_success(self) -> None:
         """Test successful request with retry logic."""
         endpoint = "/test/endpoint"
@@ -84,7 +84,7 @@ class TestGitHubClient(TestCase):
             mock_response.json.assert_called_once()
             mock_response.raise_for_status.assert_called_once()
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_retry_on_transient_failure(self) -> None:
         """Test that the client retries on transient failures."""
         endpoint = "/test/endpoint"
@@ -113,7 +113,7 @@ class TestGitHubClient(TestCase):
                 mock_sleep.assert_called_once()
                 assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_rate_limit_handling(self) -> None:
         """Test that the client handles rate limits properly."""
         endpoint = "/test/endpoint"
@@ -157,7 +157,7 @@ class TestGitHubClient(TestCase):
                 mock_sleep.assert_called_once()
                 assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_max_retries_exceeded(self) -> None:
         """Test that the client gives up after max retries."""
         endpoint = "/test/endpoint"
@@ -177,7 +177,7 @@ class TestGitHubClient(TestCase):
                 # Verify it retried the correct number of times
                 assert mock_session.request.call_count == self.config.max_retries + 1
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_graphql_query(self) -> None:
         """Test GraphQL query execution."""
         query = """
@@ -192,21 +192,27 @@ class TestGitHubClient(TestCase):
         expected_response = {"data": {"repository": {"id": "R_123", "name": "repo"}}}
 
         # Mock the post method
-        with patch.object(self.client, "post", return_value=expected_response) as mock_post:
+        with patch.object(
+            self.client, "post", return_value=expected_response
+        ) as mock_post:
             # Execute the GraphQL query
             result = await self.client.graphql(query)
 
             # Verify the request was made correctly
-            mock_post.assert_called_once_with("/graphql", data={"query": query, "variables": None})
+            mock_post.assert_called_once_with(
+                "/graphql", data={"query": query, "variables": None}
+            )
 
             # Verify the result
             assert result == expected_response["data"]
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_graphql_errors(self) -> None:
         """Test GraphQL query with errors."""
         query = "INVALID_QUERY"
-        error_response = {"errors": [{"message": "Syntax Error: Expected Name, found '}'"}]}
+        error_response = {
+            "errors": [{"message": "Syntax Error: Expected Name, found '}'"}]
+        }
 
         # Mock the post method to return an error
         with patch.object(self.client, "post", return_value=error_response):
@@ -217,7 +223,7 @@ class TestGitHubClient(TestCase):
             # Verify the error message
             assert "Syntax Error" in str(context.value)
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_post_success(self) -> None:
         """Test successful POST request."""
         endpoint = "/test/endpoint"
@@ -241,7 +247,7 @@ class TestGitHubClient(TestCase):
             # Verify the response was handled correctly
             assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_http_error_handling(self) -> None:
         """Test handling of HTTP errors."""
         with patch("aiohttp.ClientSession.get") as mock_get:
@@ -255,7 +261,7 @@ class TestGitHubClient(TestCase):
                 await self.client._get("/nonexistent")
             assert context.value.status == 404
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_get_repo(self) -> None:
         """Test getting repository information."""
         owner = "testowner"
@@ -270,7 +276,7 @@ class TestGitHubClient(TestCase):
             mock_get.assert_called_once_with(expected_url)
             assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_create_issue(self) -> None:
         """Test creating an issue."""
         owner = "testowner"
@@ -291,12 +297,14 @@ class TestGitHubClient(TestCase):
         with patch.object(self.client, "_post") as mock_post:
             mock_post.return_value = self.mock_response
 
-            result = await self.client.create_issue(owner, repo, title, body, labels, assignees)
+            result = await self.client.create_issue(
+                owner, repo, title, body, labels, assignees
+            )
 
             mock_post.assert_called_once_with(expected_url, data=expected_data)
             assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_context_manager(self) -> None:
         """Test client can be used as a context manager."""
         async with GitHubClient(token=self.token) as client:
@@ -305,7 +313,7 @@ class TestGitHubClient(TestCase):
         # Session should be closed after context manager exits
         assert client.session.closed
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_put_request(self) -> None:
         """Test successful PUT request."""
         endpoint = "/test/endpoint/123"
@@ -334,7 +342,7 @@ class TestGitHubClient(TestCase):
             # Verify the response was handled correctly
             assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_patch_request(self) -> None:
         """Test successful PATCH request."""
         endpoint = "/test/endpoint/123"
@@ -363,7 +371,7 @@ class TestGitHubClient(TestCase):
             # Verify the response was handled correctly
             assert result == self.mock_response
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_delete_request(self) -> None:
         """Test successful DELETE request."""
         endpoint = "/test/endpoint/123"
@@ -390,7 +398,7 @@ class TestGitHubClient(TestCase):
             # Verify the response was handled correctly
             assert result is None
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_request_with_timeout(self) -> None:
         """Test that the request times out after the specified timeout."""
         endpoint = "/test/endpoint"
@@ -408,7 +416,7 @@ class TestGitHubClient(TestCase):
             # Verify it didn't retry on timeout
             assert mock_session.request.call_count == 1
 
-    @pytest.mark.asyncio()
+    @pytest.mark.asyncio
     async def test_custom_headers(self) -> None:
         """Test that custom headers are properly included in requests."""
         endpoint = "/test/endpoint"

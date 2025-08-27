@@ -14,10 +14,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def run_command(cmd: list[str], *, capture_output: bool = True) -> subprocess.CompletedProcess:
+def run_command(
+    cmd: list[str], *, capture_output: bool = True
+) -> subprocess.CompletedProcess:
     """Run a command and return the result."""
     try:
-        return subprocess.run(cmd, capture_output=capture_output, text=True, check=False)
+        return subprocess.run(
+            cmd, capture_output=capture_output, text=True, check=False
+        )
     except Exception as e:
         cmd_str = " ".join(cmd)
         logger.exception("Error running command %s: %s", cmd_str, e)

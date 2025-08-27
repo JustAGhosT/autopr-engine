@@ -109,7 +109,9 @@ class TemplateRegistry:
         """Get metadata for a specific template."""
         return self.metadata_cache.get(template_key)
 
-    def list_templates(self, platform: str | None = None, category: str | None = None) -> list[str]:
+    def list_templates(
+        self, platform: str | None = None, category: str | None = None
+    ) -> list[str]:
         """List available templates, optionally filtered."""
         templates = []
         for key, metadata in self.metadata_cache.items():
@@ -184,7 +186,9 @@ class TemplateRegistry:
 
         return content
 
-    def _apply_variants(self, content: str, metadata: TemplateMetadata, variants: list[str]) -> str:
+    def _apply_variants(
+        self, content: str, metadata: TemplateMetadata, variants: list[str]
+    ) -> str:
         """Apply variant modifications to template content."""
         lines = content.split("\n")
 

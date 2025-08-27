@@ -69,15 +69,16 @@ if result.success:
 
 ```python
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.ai.providers.manager import LLMProviderManager
+from autopr.ai.providers.config import LLMProviderConfig
 
-# Configure LLM manager
-llm_config = {
-    "providers": {"openai": {"api_key_env": "OPENAI_API_KEY"}},
-    "fallback_order": ["openai"],
-    "default_provider": "openai"
-}
+# Configure LLM manager with new API
+llm_config = LLMProviderConfig(
+    openai_api_key="your-openai-api-key",  # or use environment variable
+    # anthropic_api_key="your-anthropic-api-key",  # optional
+)
 llm_manager = LLMProviderManager(llm_config)
+llm_manager.initialize()
 
 # Create AI fix applier with file splitter
 ai_fix_applier = AIFixApplier(

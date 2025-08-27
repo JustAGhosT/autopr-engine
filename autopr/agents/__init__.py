@@ -29,6 +29,9 @@ from autopr.agents.code_quality_agent import CodeQualityInputs, CodeQualityOutpu
 # Import crew from the crew module
 from autopr.agents.crew.main import AutoPRCrew
 
+# Import linting agent and its types
+from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
+
 # Import models
 from autopr.agents.models import (
     CodeAnalysisReport,
@@ -42,9 +45,6 @@ from autopr.agents.platform_analysis_agent import (
     PlatformAnalysisOutputs,
 )
 
-
-# Import linting agent and its types
-from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
 
 # Show deprecation warning for old import path
 warnings.warn(

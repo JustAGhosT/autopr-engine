@@ -19,8 +19,8 @@ class ModelSpec:
     performance_tier: str
     availability: bool
     endpoint_available: bool = False
-    competency_ratings: dict[str, float] = None
-    recommended_use_cases: list = None
+    competency_ratings: dict[str, float] | None = None
+    recommended_use_cases: list[str] | None = None
 
 
 # DeepSeek-R1 7B Model Configuration

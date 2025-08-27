@@ -223,12 +223,16 @@ class AxoloIntegration:
 
         # Add detailed findings if any
         if analysis_result.get("issues_found"):
-            issues_block = self.messaging.create_issues_block(analysis_result["issues_found"])
+            issues_block = self.messaging.create_issues_block(
+                analysis_result["issues_found"]
+            )
             message["blocks"].append(issues_block)
 
         # Add next steps
         if analysis_result.get("next_steps"):
-            next_steps_block = self.messaging.create_next_steps_block(analysis_result["next_steps"])
+            next_steps_block = self.messaging.create_next_steps_block(
+                analysis_result["next_steps"]
+            )
             message["blocks"].append(next_steps_block)
 
         # Post to Slack

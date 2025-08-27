@@ -50,7 +50,9 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         self.agent = PlatformAnalysisAgent()
 
     @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
-    def test_get_platform_info_returns_none_for_unknown_platform(self, mock_config_manager):
+    def test_get_platform_info_returns_none_for_unknown_platform(
+        self, mock_config_manager
+    ):
         """Test that None is returned for unknown platform types."""
         # Setup mock to return None for unknown platform
         mock_manager = MagicMock()
@@ -157,7 +159,9 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
     def test_get_platform_info_unknown_platform(self):
         """Test getting platform info for an unknown platform value."""
         # Ensure the manager returns None for unknown platforms
-        with patch("autopr.agents.platform_analysis_agent.PlatformConfigManager") as MockMgr:
+        with patch(
+            "autopr.agents.platform_analysis_agent.PlatformConfigManager"
+        ) as MockMgr:
             instance = MockMgr.return_value
             instance.get_platform.return_value = None
 

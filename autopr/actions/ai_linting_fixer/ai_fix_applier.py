@@ -9,16 +9,14 @@ import re
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
+                                                           SplitConfig)
 from autopr.actions.ai_linting_fixer.model_competency import competency_manager
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.test_generator import TestGenerator
 from autopr.actions.ai_linting_fixer.validation_manager import (
-    ValidationConfig,
-    ValidationManager,
-)
+    ValidationConfig, ValidationManager)
 from autopr.ai.providers.manager import LLMProviderManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +31,29 @@ class AIFixApplier:
         validation_config: ValidationConfig | None = None,
         split_config: SplitConfig | None = None,
     ):
-        """Initialize the AI fix applier."""
+        """Initialize the AI fix applier.
+
+        Args:
+            llm_manager: Required LLM provider manager for AI operations. Cannot be None.
+            backup_manager: Optional backup manager for file operations.
+            validation_config: Optional validation configuration.
+            split_config: Optional file splitting configuration.
+
+        Raises:
+            ValueError: If llm_manager is None, as it's required for AI operations.
+        """
+        if llm_manager is None:
+            msg = (
+                "llm_manager is required and cannot be None. "
+                "AIFixApplier requires an LLMProviderManager to perform AI operations."
+            )
+            raise ValueError(msg)
         self.llm_manager = llm_manager
         self.backup_manager = backup_manager or BackupManager()
+        
+        # Note: Session will be started when needed with the session_id passed from the main fixer
+        self.session_id = None
+        
         self.validation_manager = ValidationManager(
             validation_config or ValidationConfig()
         )
@@ -58,7 +76,12 @@ class AIFixApplier:
         # 1. Create backup if enabled
         backup = None
         if self.enable_backup:
-            backup = self.backup_manager.backup_file(file_path, session_id)
+            # Start session if not already started
+            current_session_id = session_id or self.session_id
+            if current_session_id and current_session_id not in self.backup_manager.sessions:
+                self.backup_manager.start_session(current_session_id)
+            
+            backup = self.backup_manager.backup_file(file_path, current_session_id)
             if not backup:
                 logger.error(f"Failed to create backup for {file_path}")
                 return {
@@ -89,7 +112,7 @@ class AIFixApplier:
                     )
                 )
             except Exception as e:
-                logger.error(f"Validation failed for {file_path}: {e}")
+                logger.exception(f"Validation failed for {file_path}: {e}")
                 should_keep_fix = False
                 validation_checks = []
 
@@ -97,7 +120,7 @@ class AIFixApplier:
         rollback_performed = False
         if not should_keep_fix and backup:
             logger.info(f"Validation failed, rolling back {file_path}")
-            rollback_success = self.backup_manager.restore_file(file_path, session_id)
+            rollback_success = self.backup_manager.restore_file(file_path, session_id or self.session_id)
             rollback_performed = rollback_success
 
             if not rollback_success:
@@ -138,7 +161,12 @@ class AIFixApplier:
         # 1. Create backup if enabled
         backup = None
         if self.enable_backup:
-            backup = self.backup_manager.backup_file(file_path, session_id)
+            # Start session if not already started
+            current_session_id = session_id or self.session_id
+            if current_session_id and current_session_id not in self.backup_manager.sessions:
+                self.backup_manager.start_session(current_session_id)
+            
+            backup = self.backup_manager.backup_file(file_path, current_session_id)
             if not backup:
                 logger.error(f"Failed to create backup for {file_path}")
                 return {
@@ -154,10 +182,12 @@ class AIFixApplier:
             complexity = self.file_splitter.complexity_analyzer.analyze_file_complexity(
                 file_path, content
             )
-            should_split, confidence, split_reason = (
-                await self.file_splitter.ai_decision_engine.should_split_file(
-                    file_path, content, complexity
-                )
+            (
+                should_split,
+                confidence,
+                split_reason,
+            ) = await self.file_splitter.ai_decision_engine.should_split_file(
+                file_path, content, complexity
             )
             if should_split:
                 logger.info(f"Splitting file {file_path}: {split_reason}")
@@ -229,7 +259,7 @@ class AIFixApplier:
                         should_keep_fix = False
 
             except Exception as e:
-                logger.error(f"Validation failed for {file_path}: {e}")
+                logger.exception(f"Validation failed for {file_path}: {e}")
                 should_keep_fix = False
                 validation_checks = []
 
@@ -237,7 +267,7 @@ class AIFixApplier:
         rollback_performed = False
         if not should_keep_fix and backup:
             logger.info(f"Validation failed, rolling back {file_path}")
-            rollback_success = self.backup_manager.restore_file(file_path, session_id)
+            rollback_success = self.backup_manager.restore_file(file_path, session_id or self.session_id)
             rollback_performed = rollback_success
 
             if not rollback_success:
@@ -307,7 +337,12 @@ class AIFixApplier:
         # 1. Create backup if enabled
         backup = None
         if self.enable_backup:
-            backup = self.backup_manager.backup_file(file_path, session_id)
+            # Start session if not already started
+            current_session_id = session_id or self.session_id
+            if current_session_id and current_session_id not in self.backup_manager.sessions:
+                self.backup_manager.start_session(current_session_id)
+            
+            backup = self.backup_manager.backup_file(file_path, current_session_id)
             if not backup:
                 logger.error(f"Failed to create backup for {file_path}")
                 return {
@@ -355,7 +390,7 @@ class AIFixApplier:
                     )
                 )
             except Exception as e:
-                logger.error(f"Validation failed for {file_path}: {e}")
+                logger.exception(f"Validation failed for {file_path}: {e}")
                 should_keep_fix = False
                 validation_checks = []
 
@@ -363,7 +398,7 @@ class AIFixApplier:
         rollback_performed = False
         if not should_keep_fix and backup:
             logger.info(f"Validation failed, rolling back {file_path}")
-            rollback_success = self.backup_manager.restore_file(file_path, session_id)
+            rollback_success = self.backup_manager.restore_file(file_path, session_id or self.session_id)
             rollback_performed = rollback_success
 
             if not rollback_success:
@@ -428,13 +463,7 @@ class AIFixApplier:
                     }
 
                     # Call the LLM
-                    response = await self.llm_manager.generate_completion(
-                        messages=request["messages"],
-                        provider_name=request["provider"],
-                        model=request["model"],
-                        temperature=request["temperature"],
-                        max_tokens=request["max_tokens"],
-                    )
+                    response = self.llm_manager.complete(request)
 
                     if not response:
                         logger.warning(
@@ -531,11 +560,11 @@ File content:
                 },
                 {"role": "user", "content": strategy_prompt},
             ]
-            response = await self.llm_manager.generate_completion(
-                messages=messages,
-                model="gpt-4o",  # Use a reliable model for strategy selection
-                temperature=0.1,  # Low temperature for consistent decisions
-            )
+            response = self.llm_manager.complete({
+                "messages": messages,
+                "provider": self.llm_manager.default_provider,
+                "temperature": 0.1,  # Low temperature for consistent decisions
+            })
 
             if not response or not response.content:
                 logger.warning(
@@ -571,7 +600,7 @@ File content:
                 }
 
         except Exception as e:
-            logger.error(f"Strategy selection failed: {e}")
+            logger.exception(f"Strategy selection failed: {e}")
             return {
                 "success": True,
                 "strategy": "targeted",
@@ -601,7 +630,7 @@ File content:
             context_content = []
             for i in context_lines:
                 marker = ">>> " if i + 1 in issue_lines else "    "
-                context_content.append(f"{marker}{i+1:4d}: {lines[i]}")
+                context_content.append(f"{marker}{i + 1:4d}: {lines[i]}")
 
             targeted_prompt = f"""
 You are an expert code fixer. Fix ONLY the specific linting issues in the marked lines below.
@@ -609,7 +638,7 @@ You are an expert code fixer. Fix ONLY the specific linting issues in the marked
 File: {file_path}
 Issues: {[f"{issue.error_code} at line {issue.line_number}: {issue.message}" for issue in issues]}
 
-IMPORTANT: 
+IMPORTANT:
 - Only modify the lines marked with ">>> "
 - Keep all other lines exactly as they are
 - Provide ONLY the fixed lines, not the entire file
@@ -629,11 +658,11 @@ Line Y: [fixed content]
                 {"role": "system", "content": agent.get_system_prompt()},
                 {"role": "user", "content": targeted_prompt},
             ]
-            response = await self.llm_manager.generate_completion(
-                messages=messages,
-                model="gpt-4o",
-                temperature=0.1,
-            )
+            response = self.llm_manager.complete({
+                "messages": messages,
+                "provider": self.llm_manager.default_provider,
+                "temperature": 0.1,
+            })
 
             if not response:
                 return {
@@ -662,7 +691,7 @@ Line Y: [fixed content]
                 "changes_made": "targeted",
                 "lines_modified": issue_lines,
                 "agent_type": f"ai_{agent.agent_type.value}",
-                "model_used": "gpt-4o",
+                "model_used": "gpt-5-chat",  # Using the configured model
                 "provider_used": "azure_openai",
             }
 

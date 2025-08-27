@@ -39,7 +39,9 @@ class CodeLinter:
         self.total_issues_found = 0
         self.total_issues_fixed = 0
 
-    async def run(self, mode: LintMode, files: list[str] | None = None) -> dict[str, Any]:
+    async def run(
+        self, mode: LintMode, files: list[str] | None = None
+    ) -> dict[str, Any]:
         """Main entry point for consolidated linting"""
 
         if mode == LintMode.SMART:

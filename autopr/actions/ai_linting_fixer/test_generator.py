@@ -76,7 +76,9 @@ class TestGenerator:
                             "line": node.lineno,
                             "has_docstring": ast.get_docstring(node) is not None,
                             "is_async": isinstance(node, ast.AsyncFunctionDef),
-                            "args": [arg.arg for arg in node.args.args if arg.arg != "self"],
+                            "args": [
+                                arg.arg for arg in node.args.args if arg.arg != "self"
+                            ],
                         }
                     )
                 elif isinstance(node, ast.ClassDef):
@@ -86,7 +88,9 @@ class TestGenerator:
                             "line": node.lineno,
                             "has_docstring": ast.get_docstring(node) is not None,
                             "methods": [
-                                n.name for n in node.body if isinstance(n, ast.FunctionDef)
+                                n.name
+                                for n in node.body
+                                if isinstance(n, ast.FunctionDef)
                             ],
                         }
                     )
@@ -105,12 +109,13 @@ class TestGenerator:
                 "classes": classes,
                 "existing_tests": existing_tests,
                 "coverage_level": coverage_level.value,
-                "needs_tests": coverage_level in [TestCoverageLevel.NONE, TestCoverageLevel.LOW],
+                "needs_tests": coverage_level
+                in [TestCoverageLevel.NONE, TestCoverageLevel.LOW],
                 "testable_items": len(functions) + len(classes),
             }
 
         except Exception as e:
-            logger.error(f"Failed to analyze coverage for {file_path}: {e}")
+            logger.exception(f"Failed to analyze coverage for {file_path}: {e}")
             return {
                 "file_path": file_path,
                 "error": str(e),
@@ -136,7 +141,9 @@ class TestGenerator:
                 )
 
             # Generate tests
-            test_content = self._generate_test_content(file_path, content, coverage_analysis)
+            test_content = self._generate_test_content(
+                file_path, content, coverage_analysis
+            )
 
             if not test_content:
                 return TestGenerationResult(
@@ -163,7 +170,7 @@ class TestGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate tests for {file_path}: {e}")
+            logger.exception(f"Failed to generate tests for {file_path}: {e}")
             return TestGenerationResult(success=False, error_message=str(e))
 
     def validate_fix_with_tests(
@@ -188,7 +195,9 @@ class TestGenerator:
                 test_file_path = existing_tests[0]
 
             # Run tests on original content
-            original_result = self._run_tests_on_content(test_file_path, original_content)
+            original_result = self._run_tests_on_content(
+                test_file_path, original_content
+            )
 
             # Run tests on fixed content
             fixed_result = self._run_tests_on_content(test_file_path, fixed_content)
@@ -207,7 +216,7 @@ class TestGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to validate tests for {file_path}: {e}")
+            logger.exception(f"Failed to validate tests for {file_path}: {e}")
             return TestValidationResult(success=False, error_message=str(e))
 
     def _determine_coverage_level(
@@ -294,7 +303,7 @@ class TestGenerator:
             functions = coverage_analysis.get("functions", [])
             classes = coverage_analysis.get("classes", [])
 
-            test_prompt = f"""
+            f"""
 Generate comprehensive unit tests for the following Python file. Focus on testing all functions and classes.
 
 File: {file_path}
@@ -321,10 +330,12 @@ Generate only the test file content, no explanations.
 
             # For now, return a basic test template
             # In a real implementation, this would call an LLM
-            return self._generate_basic_test_template(file_path, functions, classes, content)
+            return self._generate_basic_test_template(
+                file_path, functions, classes, content
+            )
 
         except Exception as e:
-            logger.error(f"Failed to generate test content: {e}")
+            logger.exception(f"Failed to generate test content: {e}")
             return None
 
     def _generate_basic_test_template(
@@ -369,7 +380,7 @@ def test_{func["name"]}():
             test_content += f'''
 class Test{cls["name"]}:
     """Test {cls["name"]} class."""
-    
+
     def test_{cls["name"]}_initialization(self):
         """Test {cls["name"]} initialization."""
         # TODO: Implement actual test
@@ -400,15 +411,19 @@ class Test{cls["name"]}:
             return str(test_file_path)
 
         except Exception as e:
-            logger.error(f"Failed to write test file: {e}")
+            logger.exception(f"Failed to write test file: {e}")
             return None
 
-    def _run_tests_on_content(self, test_file_path: str, content: str) -> dict[str, Any]:
+    def _run_tests_on_content(
+        self, test_file_path: str, content: str
+    ) -> dict[str, Any]:
         """Run tests on a specific content version."""
         temp_file_path = None
         try:
             # Create temporary file with the content
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as temp_file:
                 temp_file.write(content)
                 temp_file_path = temp_file.name
 
@@ -428,7 +443,7 @@ class Test{cls["name"]}:
             }
 
         except Exception as e:
-            logger.error(f"Failed to run tests: {e}")
+            logger.exception(f"Failed to run tests: {e}")
             return {"passed": False, "output": str(e), "returncode": -1}
         finally:
             # Ensure cleanup happens even if an exception occurs

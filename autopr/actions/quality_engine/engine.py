@@ -16,7 +16,7 @@ from autopr.actions.quality_engine.models import (
     QualityOutputs,
 )
 from autopr.actions.quality_engine.platform_detector import PlatformDetector
-from autopr.actions.quality_engine.tool_runner import determine_smart_tools, run_tool
+from autopr.actions.quality_engine.tool_runner import run_tool
 from autopr.actions.quality_engine.tools.registry import ToolRegistry
 from autopr.utils.volume_utils import get_volume_level_name
 
@@ -197,11 +197,10 @@ class QualityEngine(Action):
                     if hasattr(fixer, "run") and callable(getattr(fixer, "run", None)):
                         fix_result = fixer.run(fixer_inputs)
                     else:
-                        raise RuntimeError(
-                            "AILintingFixer does not have a callable 'run' method"
-                        )
+                        msg = "AILintingFixer does not have a callable 'run' method"
+                        raise RuntimeError(msg)
             except Exception as fixer_error:
-                logger.error(
+                logger.exception(
                     "Failed to initialize AILintingFixer", error=str(fixer_error)
                 )
                 return (
@@ -287,7 +286,7 @@ class QualityEngine(Action):
 
             # Count lines (rough estimate)
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     total_lines += len(f.readlines())
             except Exception:
                 pass

@@ -1,30 +1,30 @@
 {
   "python.enabled": true,
-  "python.linting.enabled": true,
-  "python.formatting.enabled": true,
-  "python.analysis.enabled": true,
-  "python.languageServer": "Pylance",
-  "python.linting.flake8Enabled": true,
-  "python.linting.mypyEnabled": true,
+  "python.linting.enabled": false,
+  "python.formatting.enabled": false,
+  "python.analysis.enabled": false,
+  "python.languageServer": "None",
+  "python.linting.flake8Enabled": false,
+  "python.linting.mypyEnabled": false,
   "python.linting.pylintEnabled": false,
   "python.linting.pydocstyleEnabled": false,
-  "python.linting.banditEnabled": true,
-  "python.linting.ruffEnabled": true,
-  "python.formatting.provider": "black",
-  "python.formatting.blackEnabled": true,
-  "python.formatting.isortEnabled": true,
+  "python.linting.banditEnabled": false,
+  "python.linting.ruffEnabled": false,
+  "python.formatting.provider": "none",
+  "python.formatting.blackEnabled": false,
+  "python.formatting.isortEnabled": false,
   "python.formatting.ruffEnabled": false,
   "python.analysis.typeCheckingMode": "strict",
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.autoImportCompletions": true,
-  "python.analysis.useLibraryCodeForTypes": false,
-  "python.analysis.autoSearchPaths": false,
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.analysis.autoSearchPaths": true,
   "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
   "editor.formatOnType": false,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "never",
-    "source.fixAll": "never",
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit",
     "source.fixAll.eslint": "never"
   },
   "problems.decorations.enabled": true,
@@ -94,9 +94,9 @@
   "monica.enabled": false,
   "monica.telemetryEnabled": false,
   "monica.autoComplete": false,
-  "ruff.enable": true,
-  "ruff.lint.enable": true,
-  "ruff.format.enable": true,
+  "ruff.enable": false,
+  "ruff.lint.enable": false,
+  "ruff.format.enable": false,
   "ruff.organizeImports.enable": false,
   "ruff.server.enable": false,
   "eslint.enable": false,
@@ -105,14 +105,14 @@
   "css.validate": false,
   "html.validate.scripts": false,
   "html.validate.styles": false,
-  "editor.hover.enabled": false,
+  "editor.hover.enabled": true,
   "editor.quickSuggestions": {
-    "other": false,
+    "other": true,
     "comments": false,
-    "strings": false
+    "strings": true
   },
-  "editor.suggestOnTriggerCharacters": false,
-  "editor.acceptSuggestionOnEnter": "off",
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.acceptSuggestionOnEnter": "on",
   "python.analysis.exclude": [
     "**/node_modules/**",
     "**/venv/**",
@@ -155,12 +155,24 @@
   "python.autoComplete.enabled": true,
   "python.jediEnabled": false,
   "pylance.enabled": true,
-  "ms-python.python.enabled": false,
-  "ms-python.vscode-pylance.enabled": false,
+
   "pyright.enabled": true,
-  "python.analysis.completeFunctionParens": false,
-  "python.analysis.packageIndexDepths": [],
-  "python.analysis.userFileIndexingLimit": 0,
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.packageIndexDepths": [
+    {
+      "name": "sklearn",
+      "depth": 2
+    },
+    {
+      "name": "matplotlib",
+      "depth": 2
+    },
+    {
+      "name": "scipy",
+      "depth": 2
+    }
+  ],
+  "python.analysis.userFileIndexingLimit": 2000,
   "files.associations": {},
   "github-actions.workflows.pinned.workflows": [],
   "github-actions.workflows.pinned.refresh.enabled": true,
@@ -185,6 +197,14 @@
   "yaml-language-server.enabled": false,
   "ms-kubernetes-tools.vscode-kubernetes-tools": false,
   "vscode-yaml.enabled": false,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    }
+  },
   "[yaml]": {
     "editor.defaultFormatter": "none",
     "editor.formatOnSave": false,

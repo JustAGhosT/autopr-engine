@@ -97,8 +97,12 @@ async def initialize_llm_manager() -> Any | None:
         class SimpleConfig:
             def __init__(self, config_dict):
                 self.openai_api_key = config_dict["providers"]["openai"]["api_key"]
-                self.anthropic_api_key = config_dict["providers"]["anthropic"]["api_key"]
-                self.default_llm_provider = config_dict.get("default_provider", "openai")
+                self.anthropic_api_key = config_dict["providers"]["anthropic"][
+                    "api_key"
+                ]
+                self.default_llm_provider = config_dict.get(
+                    "default_provider", "openai"
+                )
 
         config_obj = SimpleConfig(config)
         llm_manager = LLMProviderManager(config_obj)
@@ -108,7 +112,7 @@ async def initialize_llm_manager() -> Any | None:
             await llm_manager.initialize()
             logger.info("LLM provider manager initialized successfully")
         except Exception as init_error:
-            logger.error(f"Failed to initialize LLM manager: {init_error}")
+            logger.exception(f"Failed to initialize LLM manager: {init_error}")
             return None
 
         # Get available providers after initialization

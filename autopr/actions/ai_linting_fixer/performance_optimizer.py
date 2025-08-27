@@ -9,22 +9,24 @@ This module provides advanced performance optimizations including:
 - Resource usage optimization
 """
 
-import asyncio
+from collections import OrderedDict
+from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from dataclasses import dataclass
 import functools
+import gc
 import hashlib
 import logging
 import mmap
 import os
-import tempfile
-import time
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+import tempfile
 import threading
-from collections import OrderedDict
+import time
+from typing import Any
+
 import psutil
-import gc
+
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +71,7 @@ class IntelligentCache:
         key_parts = []
 
         for arg in args:
-            if isinstance(arg, (str, int, float, bool)):
+            if isinstance(arg, str | int | float | bool):
                 key_parts.append(str(arg))
             elif isinstance(arg, Path):
                 key_parts.append(str(arg.absolute()))
@@ -88,7 +90,7 @@ class IntelligentCache:
                 return len(value.encode("utf-8"))
             elif isinstance(value, bytes):
                 return len(value)
-            elif isinstance(value, (list, tuple)):
+            elif isinstance(value, list | tuple):
                 return sum(self._estimate_size(item) for item in value)
             elif isinstance(value, dict):
                 return sum(
@@ -127,7 +129,7 @@ class IntelligentCache:
             self.current_size_bytes -= entry.size_bytes
             logger.debug(f"Removed expired cache entry: {key}")
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get a value from cache."""
         with self.lock:
             self._cleanup_expired()
@@ -143,7 +145,7 @@ class IntelligentCache:
             self.misses += 1
             return None
 
-    def set(self, key: str, value: Any, ttl_seconds: Optional[int] = None) -> None:
+    def set(self, key: str, value: Any, ttl_seconds: int | None = None) -> None:
         """Set a value in cache."""
         with self.lock:
             self._cleanup_expired()
@@ -169,7 +171,7 @@ class IntelligentCache:
     def invalidate(self, pattern: str) -> int:
         """Invalidate entries matching a pattern."""
         with self.lock:
-            keys_to_remove = [key for key in self.cache.keys() if pattern in key]
+            keys_to_remove = [key for key in self.cache if pattern in key]
 
             for key in keys_to_remove:
                 entry = self.cache.pop(key)
@@ -184,7 +186,7 @@ class IntelligentCache:
             self.current_size_bytes = 0
             logger.debug("Cache cleared")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         with self.lock:
             total_requests = self.hits + self.misses
@@ -223,7 +225,7 @@ class MemoryMappedFileProcessor:
 
     def process_large_file(
         self, file_path: Path, processor_func: Callable[[bytes], Any]
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Process a large file in chunks using memory mapping."""
         results = []
 
@@ -248,7 +250,7 @@ class MemoryMappedFileProcessor:
                             time.sleep(0.001)
 
         except Exception as e:
-            logger.error(f"Error processing large file {file_path}: {e}")
+            logger.exception(f"Error processing large file {file_path}: {e}")
             raise
 
         return results
@@ -257,9 +259,7 @@ class MemoryMappedFileProcessor:
 class ParallelProcessor:
     """Parallel processing utilities for file splitting operations."""
 
-    def __init__(
-        self, max_workers: Optional[int] = None, use_process_pool: bool = False
-    ):
+    def __init__(self, max_workers: int | None = None, use_process_pool: bool = False):
         self.max_workers = max_workers or min(32, (os.cpu_count() or 1) + 4)
         self.use_process_pool = use_process_pool
         self.executor_class = (
@@ -268,10 +268,10 @@ class ParallelProcessor:
 
     def process_files_parallel(
         self,
-        files: List[Tuple[Path, str]],
+        files: list[tuple[Path, str]],
         processor_func: Callable[[Path, str], Any],
         chunk_size: int = 10,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Process multiple files in parallel."""
         results = []
 
@@ -289,7 +289,7 @@ class ParallelProcessor:
                     results.append(result)
                 except Exception as e:
                     file_path = future_to_file[future]
-                    logger.error(f"Error processing {file_path}: {e}")
+                    logger.exception(f"Error processing {file_path}: {e}")
                     results.append(None)
 
         return results
@@ -300,7 +300,7 @@ class ParallelProcessor:
         content: str,
         chunk_processor: Callable[[str], Any],
         chunk_size: int = 1000,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Process a single file in parallel chunks."""
         lines = content.splitlines()
         chunks = [
@@ -317,17 +317,17 @@ class ParallelProcessor:
                     result = future.result(timeout=60)
                     results.append(result)
                 except Exception as e:
-                    logger.error(f"Error processing chunk: {e}")
+                    logger.exception(f"Error processing chunk: {e}")
                     results.append(None)
 
         return results
 
     def process_parallel(
         self,
-        items: List[Any],
+        items: list[Any],
         processor_func: Callable[[Any], Any],
         chunk_size: int = 10,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Process items in parallel using the specified processor function."""
         results = []
 
@@ -341,7 +341,7 @@ class ParallelProcessor:
                     result = future.result(timeout=300)  # 5 minute timeout
                     results.append(result)
                 except Exception as e:
-                    logger.error(f"Error processing item: {e}")
+                    logger.exception(f"Error processing item: {e}")
                     results.append(None)
 
         return results
@@ -353,7 +353,7 @@ class PerformanceOptimizer:
     def __init__(
         self,
         cache_size_mb: int = 100,
-        max_workers: Optional[int] = None,
+        max_workers: int | None = None,
         enable_memory_mapping: bool = True,
         enable_parallel_processing: bool = True,
     ):
@@ -365,7 +365,7 @@ class PerformanceOptimizer:
         self.enable_parallel_processing = enable_parallel_processing
 
         # Performance tracking
-        self.profiles: List[PerformanceProfile] = []
+        self.profiles: list[PerformanceProfile] = []
         self.session_start = time.time()
 
         # Add cache_manager attribute for compatibility with tests
@@ -500,7 +500,7 @@ class PerformanceOptimizer:
 
         return combined_result
 
-    def _combine_chunk_results(self, results: List[Any]) -> Any:
+    def _combine_chunk_results(self, results: list[Any]) -> Any:
         """Combine results from parallel processing."""
         # Filter out None results
         valid_results = [r for r in results if r is not None]
@@ -543,7 +543,7 @@ class PerformanceOptimizer:
 
         self.profiles.append(profile)
 
-    def get_optimization_recommendations(self) -> Dict[str, Any]:
+    def get_optimization_recommendations(self) -> dict[str, Any]:
         """Get optimization recommendations based on performance profiles."""
         if not self.profiles:
             return {"message": "No performance data available"}
@@ -558,7 +558,7 @@ class PerformanceOptimizer:
             self.profiles
         )
 
-        suggestions: List[str] = []
+        suggestions: list[str] = []
         recommendations = {
             "average_processing_time_seconds": avg_processing_time,
             "average_file_size_mb": avg_file_size / (1024 * 1024),
@@ -586,7 +586,7 @@ class PerformanceOptimizer:
 
         return recommendations
 
-    def get_performance_metrics(self) -> Dict[str, Any]:
+    def get_performance_metrics(self) -> dict[str, Any]:
         """Get current performance metrics including CPU usage."""
         current_memory = psutil.Process().memory_info().rss / (1024 * 1024)
         current_cpu = psutil.Process().cpu_percent()

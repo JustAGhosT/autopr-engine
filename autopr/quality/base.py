@@ -130,7 +130,9 @@ class QualityTool(abc.ABC):
         # Apply inclusions if specified
         if self.config.include_patterns:
             result = [
-                f for f in result if any(pattern in f for pattern in self.config.include_patterns)
+                f
+                for f in result
+                if any(pattern in f for pattern in self.config.include_patterns)
             ]
 
         return result

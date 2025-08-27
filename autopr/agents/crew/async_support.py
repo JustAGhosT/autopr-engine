@@ -18,7 +18,6 @@ def ensure_event_loop() -> None:
 def patch_future_set_result_idempotent() -> None:
     """Patch asyncio.Future.set_result to be idempotent for tests that call it twice."""
     try:
-        from typing import Type
 
         OriginalFuture = asyncio.Future
 
