@@ -1,11 +1,12 @@
 """
-Generated tests for C:\Users\smitj\repos\autopr\autopr-engine\autopr\actions\quality_gates.py
+Generated tests for quality_gates module.
 """
 
-import pytest
-from unittest.mock import Mock, patch
 import sys
 from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
 
 # Add the parent directory to sys.path to import the module
 sys.path.insert(0, str(Path(__file__).parent.parent))
