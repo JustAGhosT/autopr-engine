@@ -4,19 +4,16 @@ Tests for Performance-Optimized File Splitter
 Tests caching, parallel processing, memory optimization, and performance monitoring.
 """
 
-from pathlib import Path
 import tempfile
 import time
+from pathlib import Path
 
 import pytest
 
 from autopr.actions.ai_linting_fixer.file_splitter import (
-    AISplitDecisionEngine,
-    FileComplexityAnalyzer,
-    FileSplitter,
-    SplitConfig,
-)
-from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
+    AISplitDecisionEngine, FileComplexityAnalyzer, FileSplitter, SplitConfig)
+from autopr.actions.ai_linting_fixer.performance_optimizer import \
+    PerformanceOptimizer
 from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 
@@ -332,7 +329,7 @@ class TestClass:
 
     def test_cache_ttl_functionality(self, performance_optimizer):
         """Test cache TTL functionality."""
-        cache_manager = performance_optimizer.cache_manager
+        cache_manager = performance_optimizer.cache
 
         # Set with short TTL
         cache_manager.set("short_ttl", "value", ttl_seconds=1)
