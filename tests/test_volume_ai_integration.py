@@ -4,7 +4,8 @@ Test script to demonstrate AI fixer integration with volume control system
 """
 
 from autopr.actions.ai_linting_fixer.specialists import SpecialistManager
-from autopr.utils.volume_utils import _get_ai_fixer_issue_types, get_volume_config
+from autopr.utils.volume_utils import (_get_ai_fixer_issue_types,
+                                       get_volume_config)
 
 
 def test_volume_ai_integration():
@@ -23,7 +24,7 @@ def test_volume_ai_integration():
         # Show specialist coverage
         specialist_manager = SpecialistManager()
         covered_codes = set()
-        for specialist in specialist_manager.get_all_specialists().values():
+        for specialist in specialist_manager.specialists.values():
             if "*" in specialist.supported_codes:
                 covered_codes.update(issue_types)
             else:
@@ -72,7 +73,7 @@ def test_volume_ai_integration():
 
         if ai_fixer_enabled:
             # Show which specialists would handle these issues
-            for specialist in specialist_manager.get_all_specialists().values():
+            for specialist in specialist_manager.specialists.values():
                 if specialist.can_handle_issues_from_codes(issue_types):
                     pass
         else:
@@ -85,11 +86,13 @@ def test_specialist_coverage():
     specialist_manager = SpecialistManager()
 
     # Get all supported codes
-    all_codes = specialist_manager.list_supported_codes()
+    all_codes = set()
+    for specialist in specialist_manager.specialists.values():
+        all_codes.update(specialist.supported_codes)
     all_codes = [code for code in all_codes if code != "*"]  # Remove wildcard
 
     # Show coverage by specialist
-    for _name, specialist in specialist_manager.get_all_specialists().items():
+    for _name, specialist in specialist_manager.specialists.items():
         if "*" in specialist.supported_codes:
             pass
         else:

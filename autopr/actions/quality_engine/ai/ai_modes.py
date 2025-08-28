@@ -10,10 +10,10 @@ from typing import Any
 
 import structlog
 
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.actions.llm.manager import \
+    ActionLLMProviderManager as LLMProviderManager
 from autopr.actions.quality_engine.models import ToolResult
 from autopr.agents.models import CodeIssue
-
 
 logger = structlog.get_logger(__name__)
 

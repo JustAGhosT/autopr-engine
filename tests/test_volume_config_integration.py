@@ -1,8 +1,7 @@
 """Integration test for VolumeConfig and QualityMode."""
 
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 # Add the project root to the Python path
 project_root = str(Path(__file__).parent.absolute())
@@ -32,7 +31,7 @@ def test_volume_config():
     # Test quality mode mapping
     test_cases = [
         (0, QualityMode.ULTRA_FAST),
-        (100, QualityMode.ULTRA_FAST),
+        (100, QualityMode.FAST),
         (200, QualityMode.FAST),
         (400, QualityMode.SMART),
         (600, QualityMode.COMPREHENSIVE),

@@ -13,10 +13,13 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.ai_fix_applier import (AIFixApplier, FixAnalyzer,
-                                               FixApplier, FixConfig,
-                                               FixGenerator, FixReporter,
-                                               FixValidator)
+    from autopr.actions.ai_linting_fixer.ai_fix_applier import (AIFixApplier,
+                                                                FixAnalyzer,
+                                                                FixApplier,
+                                                                FixConfig,
+                                                                FixGenerator,
+                                                                FixReporter,
+                                                                FixValidator)
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
