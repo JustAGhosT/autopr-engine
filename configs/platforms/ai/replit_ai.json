@@ -5,7 +5,6 @@
   "description": "AI-powered cloud development environment with built-in AI assistance and collaboration features",
   "category": "ai_development",
   "version": "1.0.0",
-  "last_updated": "2025-07-27T00:00:00Z",
   "status": "active",
   "is_active": true,
   "is_beta": false,
@@ -83,3 +82,4 @@
     "configuration_files": [".replit", "replit.nix"]
   }
 }
+

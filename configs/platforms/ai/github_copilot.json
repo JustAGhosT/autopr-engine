@@ -5,7 +5,6 @@
   "category": "ai_development",
   "display_name": "GitHub Copilot",
   "version": "1.0.0",
-  "last_updated": "2025-07-27T00:00:00Z",
   "status": "active",
   "is_active": true,
   "is_beta": false,
@@ -75,3 +74,4 @@
     "configuration_files": [".copilot/config.json", ".vscode/settings.json"]
   }
 }
+

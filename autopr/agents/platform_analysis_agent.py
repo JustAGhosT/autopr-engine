@@ -17,7 +17,6 @@ from autopr.actions.platform_detection.detector import (
 from autopr.actions.platform_detection.schema import PlatformType
 from autopr.agents.agents import BaseAgent
 
-
 # PlatformAnalysis is now imported from platform_detection.detector as PlatformDetectorOutputs
 
 
@@ -290,7 +289,6 @@ class PlatformAnalysisAgent(BaseAgent):
                 "is_beta": getattr(platform_config, "is_beta", False),
                 "is_deprecated": getattr(platform_config, "is_deprecated", False),
                 "version": getattr(platform_config, "version", None),
-                "last_updated": getattr(platform_config, "last_updated", None),
                 "supported_languages": getattr(
                     platform_config, "supported_languages", []
                 )
@@ -329,7 +327,6 @@ class PlatformAnalysisAgent(BaseAgent):
             "is_beta": platform_config.get("is_beta", False),
             "is_deprecated": platform_config.get("is_deprecated", False),
             "version": platform_config.get("version"),
-            "last_updated": platform_config.get("last_updated"),
             "supported_languages": platform_config.get("supported_languages", []),
             "supported_frameworks": platform_config.get("supported_frameworks", []),
             "integrations": platform_config.get("integrations", []),

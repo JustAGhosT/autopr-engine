@@ -5,7 +5,6 @@
   "description": "AI-powered web app builder",
   "display_name": "Lovable.dev",
   "version": "1.0.0",
-  "last_updated": "2025-07-27T20:22:40.049179",
   "status": "active",
   "is_active": true,
   "type": "general",
@@ -49,3 +48,4 @@
   "is_beta": false,
   "is_deprecated": false
 }
+

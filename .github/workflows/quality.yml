@@ -47,8 +47,8 @@ jobs:
 
       - name: Run pre-commit hooks
         run: |
-          pre-commit install
-          pre-commit run --all-files
+          poetry run pre-commit install
+          poetry run pre-commit run --all-files
 
       - name: Comment PR with quality results
         if: github.event.pull_request.head.repo.fork == false

@@ -1,6 +1,6 @@
+import unittest
 from dataclasses import dataclass
 from pathlib import Path
-import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.actions.platform_detection.schema import (
@@ -85,7 +85,6 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
             is_beta=False,
             is_deprecated=False,
             version="1.0.0",
-            last_updated="2025-01-01T00:00:00Z",
             supported_languages=["TypeScript", "JavaScript"],
             supported_frameworks=["React", "Next.js"],
             integrations=["Vercel", "Netlify"],
@@ -128,7 +127,6 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         assert not result["is_beta"]
         assert not result["is_deprecated"]
         assert result["version"] == "1.0.0"
-        assert result["last_updated"] == "2025-01-01T00:00:00Z"
         assert result["supported_languages"] == ["TypeScript", "JavaScript"]
         assert result["supported_frameworks"] == ["React", "Next.js"]
         assert result["integrations"] == ["Vercel", "Netlify"]

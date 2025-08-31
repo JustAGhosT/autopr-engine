@@ -3,11 +3,11 @@ AutoPR Action: Learning & Memory System
 Tracks patterns, user preferences, and project context to improve decision-making over time.
 """
 
-from datetime import datetime
 import hashlib
 import os
 import pathlib
 import sqlite3
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel
@@ -67,8 +67,7 @@ class LearningMemorySystem:
                 user_id TEXT,
                 preference_type TEXT,
                 preference_value TEXT,
-                confidence REAL,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                confidence REAL
             )
         """
         )
@@ -186,15 +185,14 @@ class LearningMemorySystem:
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO user_preferences
-                (user_id, preference_type, preference_value, confidence, last_updated)
-                VALUES (?, ?, ?, ?, ?)
+                (user_id, preference_type, preference_value, confidence)
+                VALUES (?, ?, ?, ?)
             """,
                 (
                     user_id,
                     preference_type,
                     preference_value,
                     confidence,
-                    datetime.now(),
                 ),
             )
 
