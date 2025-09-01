@@ -26,10 +26,7 @@ from autopr.actions.prototype_enhancement.enhancement_strategies import (
     EnhancementStrategyFactory,
 )
 from autopr.actions.prototype_enhancement.file_generators import FileGenerator
-from autopr.actions.prototype_enhancement.platform_configs import (
-    PlatformConfig,
-    PlatformRegistry,
-)
+from autopr.actions.prototype_enhancement.platform_configs import PlatformConfig, PlatformRegistry
 
 
 logger = logging.getLogger(__name__)
@@ -403,6 +400,39 @@ class PrototypeEnhancer:
 
         return errors
 
+    def _get_checklist(self, platform: str, enhancement_type: str) -> list[str]:
+        """Get the appropriate checklist based on platform and enhancement type."""
+        if enhancement_type == "production_ready":
+            return self.platform_registry.get_production_checklists().get(platform, [])
+        elif enhancement_type == "testing":
+            return [
+                "✅ Unit tests configured",
+                "✅ Integration tests setup",
+                "✅ Test coverage reporting enabled",
+                "✅ CI/CD pipeline includes testing",
+                "✅ Test data and fixtures created",
+                "✅ Mocking and stubbing configured",
+                "✅ Performance testing setup",
+                "✅ Accessibility testing enabled",
+                "✅ Visual regression testing configured",
+                "✅ Test documentation created",
+            ]
+        elif enhancement_type == "security":
+            return [
+                "✅ Security headers configured",
+                "✅ Input validation implemented",
+                "✅ Authentication system secured",
+                "✅ Authorization rules defined",
+                "✅ CORS properly configured",
+                "✅ Rate limiting enabled",
+                "✅ SQL injection protection",
+                "✅ XSS protection implemented",
+                "✅ CSRF protection enabled",
+                "✅ Security monitoring setup",
+            ]
+        else:
+            return []
+
     def get_enhancement_preview(
         self, inputs: PrototypeEnhancerInputs
     ) -> dict[str, Any]:
@@ -425,9 +455,7 @@ class PrototypeEnhancer:
                 "devDependencies": package_updates["devDependencies"],
             },
             "checklist_items": len(
-                self.platform_registry.get_production_checklists().get(
-                    inputs.platform, []
-                )
+                self._get_checklist(inputs.platform, inputs.enhancement_type)
             ),
             "next_steps_count": len(
                 self.platform_registry.get_next_steps()

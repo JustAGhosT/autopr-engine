@@ -61,8 +61,9 @@ class GeneratePropTable(Action[Inputs, Outputs]):
                 prop_type = (
                     prop_details.get("type", {}).get("name", "n/a").replace("|", "\\|")
                 )
-                default_value = prop_details.get("defaultValue", {}).get("value", "n/a")
-                description = prop_details.get("description", "").replace("\\n", " ")
+                default_value = str(prop_details.get("defaultValue", {}).get("value", "n/a"))
+                default_value = default_value.replace("\n", " ").replace("|", "\\|")
+                description = prop_details.get("description", "").replace("\n", " ").replace("|", "\\|")
                 table += f"| `{prop_name}` | `{prop_type}` | `{default_value}` | {description} |\\n"
 
             return Outputs(markdown_table=table, error=None)

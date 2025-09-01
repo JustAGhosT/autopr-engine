@@ -10,10 +10,10 @@ from typing import Any
 
 import structlog
 
-from autopr.actions.llm.manager import \
-    ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
 from autopr.actions.quality_engine.models import ToolResult
 from autopr.agents.models import CodeIssue
+
 
 logger = structlog.get_logger(__name__)
 
@@ -87,6 +87,7 @@ async def run_ai_analysis(
     llm_manager: LLMProviderManager,
     provider_name: str = "openai",
     model: str = "gpt-4",
+    prompt: str = CODE_REVIEW_PROMPT,
 ) -> dict[str, Any] | None:
     """
     Run AI-enhanced analysis on the provided files.
@@ -126,7 +127,7 @@ async def run_ai_analysis(
         request = {
             "provider": provider_name,
             "messages": [
-                {"role": "system", "content": CODE_REVIEW_PROMPT},
+                {"role": "system", "content": prompt},
                 {"role": "user", "content": analysis_prompt},
             ],
             "temperature": 0.1,
@@ -398,8 +399,8 @@ async def analyze_code_architecture(
     Returns:
         Dict containing architectural analysis results
     """
-    # Implementation similar to run_ai_analysis but with architecture focus
-    return await run_ai_analysis(files, llm_manager, provider_name)
+    # Use specialized architecture analysis prompt
+    return await run_ai_analysis(files, llm_manager, provider_name, prompt=ARCHITECTURE_PROMPT)
 
 
 async def analyze_security_issues(
@@ -416,5 +417,5 @@ async def analyze_security_issues(
     Returns:
         Dict containing security analysis results
     """
-    # Implementation similar to run_ai_analysis but with security focus
-    return await run_ai_analysis(files, llm_manager, provider_name)
+    # Use specialized security analysis prompt
+    return await run_ai_analysis(files, llm_manager, provider_name, prompt=SECURITY_PROMPT)

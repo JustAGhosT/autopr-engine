@@ -5,7 +5,7 @@ Generates tests for code sections that lack coverage and validates fixes.
 """
 
 import ast
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 import logging
 from pathlib import Path
@@ -34,7 +34,7 @@ class TestGenerationResult:
     test_file_path: str | None = None
     test_content: str | None = None
     coverage_level: TestCoverageLevel = TestCoverageLevel.NONE
-    functions_tested: list[str] = None
+    functions_tested: list[str] = field(default_factory=list)
     error_message: str | None = None
 
 
@@ -69,7 +69,7 @@ class TestGenerator:
             classes = []
 
             for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef):
+                if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
                     functions.append(
                         {
                             "name": node.name,
@@ -303,7 +303,8 @@ class TestGenerator:
             functions = coverage_analysis.get("functions", [])
             classes = coverage_analysis.get("classes", [])
 
-            f"""
+            # TODO: Future LLM integration - prompt template for test generation
+            test_generation_prompt = f"""
 Generate comprehensive unit tests for the following Python file. Focus on testing all functions and classes.
 
 File: {file_path}
@@ -329,7 +330,7 @@ Generate only the test file content, no explanations.
 """
 
             # For now, return a basic test template
-            # In a real implementation, this would call an LLM
+            # In a real implementation, this would use test_generation_prompt with an LLM
             return self._generate_basic_test_template(
                 file_path, functions, classes, content
             )
@@ -354,8 +355,19 @@ from unittest.mock import Mock, patch
 import sys
 from pathlib import Path
 
-# Add the parent directory to sys.path to import the module
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Find the project root and add it to sys.path
+def find_project_root(start_path: Path) -> Path:
+    """Find the project root by looking for common markers."""
+    current = start_path.resolve()
+    for parent in [current] + list(current.parents):
+        markers = ['pyproject.toml', 'setup.py', 'setup.cfg', '.git']
+        if any((parent / marker).exists() for marker in markers):
+            return parent
+    # Fallback to current directory's parent
+    return current.parent
+
+project_root = find_project_root(Path(__file__))
+sys.path.insert(0, str(project_root))
 
 try:
     import {module_name}
@@ -428,12 +440,13 @@ class Test{cls["name"]}:
                 temp_file_path = temp_file.name
 
             # Run pytest on the test file
+            test_dir = Path(test_file_path).parent.resolve()
             result = subprocess.run(
                 ["python", "-m", "pytest", test_file_path, "-v", "--tb=short"],
                 capture_output=True,
                 text=True,
                 timeout=60,
-                cwd=Path(temp_file_path).parent,
+                cwd=test_dir,
             )
 
             return {

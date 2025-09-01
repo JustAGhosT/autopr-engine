@@ -3,10 +3,10 @@ AutoPR Action: AutoGen Multi-Agent Implementation
 Uses AutoGen for complex multi-agent development tasks
 """
 
+from datetime import datetime
 import json
 import os
 import re
-from datetime import datetime
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
 from pydantic import BaseModel, Field
@@ -45,8 +45,8 @@ class AutoGenInputs(BaseModel):
     task_description: str
     task_type: str  # "feature_development", "bug_fix", "security_review", "performance_optimization"
     repository: str
-    file_paths: List[str] = []
-    requirements: Dict[str, Any] = {}
+    file_paths: List[str] = Field(default_factory=list)
+    requirements: Dict[str, Any] = Field(default_factory=dict)
     complexity_level: str = "medium"  # "simple", "medium", "complex"
     max_agents: int = 4
 

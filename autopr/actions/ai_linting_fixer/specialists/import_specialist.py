@@ -29,7 +29,6 @@ class ImportSpecialist(BaseSpecialist):
             "F405",  # Name may be undefined or imported from star
             "TID252",  # Prefer absolute imports over relative imports
             "E402",  # Module level import not at top of file
-            "E731",  # Do not assign a lambda expression
         ]
 
     def _get_expertise_level(self) -> str:
@@ -108,8 +107,18 @@ Always maintain code functionality while improving import clarity and efficiency
         if original_imports == fixed_imports:
             return False
 
-        # Analyze the specific issues to determine if changes are relevant
-        for issue in issues:
+        # Filter issues to only those this specialist handles
+        supported_codes = set(self._get_supported_codes())
+        relevant_issues = [
+            issue for issue in issues if issue.code in supported_codes
+        ]
+
+        # If no relevant issues found, fall back to AST-based change validation
+        if not relevant_issues:
+            return original_imports != fixed_imports
+
+        # Analyze the specific import-related issues to determine if changes are relevant
+        for issue in relevant_issues:
             if not self._is_import_change_relevant(
                 issue, original_imports, fixed_imports
             ):

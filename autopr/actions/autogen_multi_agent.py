@@ -7,7 +7,7 @@ import json
 import os
 from typing import Any, Dict, List, Optional, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 try:
@@ -23,13 +23,17 @@ except ImportError:
             return []
     
     class GroupChat:
-        def __init__(self, agents: List[ConversableAgent], messages: List[Dict[str, Any]] = None, 
-                    max_round: int = 10, speaker_selection_method: str = "round_robin") -> None: pass
-        messages: List[Dict[str, Any]] = []
+        def __init__(self, agents: List[ConversableAgent], messages: Optional[List[Dict[str, Any]]] = None,
+                     max_round: int = 10, speaker_selection_method: str = "round_robin") -> None:
+            self.messages: List[Dict[str, Any]] = messages or []
+            self.agents: List[ConversableAgent] = agents
+            self.max_round: int = max_round
+            self.speaker_selection_method: str = speaker_selection_method
     
     class GroupChatManager:
-        def __init__(self, groupchat: GroupChat, llm_config: Dict[str, Any]) -> None: pass
-        groupchat: GroupChat
+        def __init__(self, groupchat: GroupChat, llm_config: Dict[str, Any]) -> None:
+            self.groupchat: GroupChat = groupchat
+            self.llm_config: Dict[str, Any] = llm_config
 
 
 # Type alias for improved readability
@@ -42,19 +46,19 @@ class AutoGenInputs(BaseModel):
     comment_body: str
     file_path: Optional[str] = None
     file_content: Optional[str] = None
-    pr_context: Dict[str, Any] = {}
+    pr_context: Dict[str, Any] = Field(default_factory=dict)
     task_type: str = (
         "analyze_and_fix"  # "analyze_and_fix", "code_review", "security_audit"
     )
-    agents_config: Dict[str, Any] = {}
+    agents_config: Dict[str, Any] = Field(default_factory=dict)
 
 
 class AutoGenOutputs(BaseModel):
     success: bool
-    analysis: Dict[str, Any] = {}
-    recommendations: List[str] = []
+    analysis: Dict[str, Any] = Field(default_factory=dict)
+    recommendations: List[str] = Field(default_factory=list)
     fix_code: Optional[str] = None
-    agent_conversations: List[Dict[str, str]] = []
+    agent_conversations: List[Dict[str, str]] = Field(default_factory=list)
     consensus: Optional[str] = None
     error_message: Optional[str] = None
 
@@ -307,12 +311,24 @@ class AutoGenAgentSystem:
             )
 
     def _extract_results_from_chat(
-        self, chat_result: List[Dict[str, Any]], inputs: AutoGenInputs
+        self, chat_result: Any, inputs: AutoGenInputs
     ) -> AutoGenOutputs:
         """Extract structured results from agent conversations."""
         try:
-            # Get all messages from the chat
-            messages: List[Dict[str, Any]] = chat_result
+            # Get all messages from the chat - handle ChatResult objects or plain lists
+            messages: List[Dict[str, Any]] = []
+            
+            # Check if chat_result has a chat_history attribute (ChatResult-like object)
+            if hasattr(chat_result, 'chat_history') and hasattr(chat_result.chat_history, '__iter__'):
+                messages = list(chat_result.chat_history)
+            # Otherwise use chat_result if it's a list
+            elif isinstance(chat_result, list):
+                messages = chat_result
+            # Ensure we have an iterable
+            elif hasattr(chat_result, '__iter__'):
+                messages = list(chat_result)
+            else:
+                messages = []
 
             # Extract agent conversations
             agent_conversations: List[Dict[str, str]] = [

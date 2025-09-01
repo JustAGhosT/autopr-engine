@@ -6,14 +6,14 @@ including caching, parallel processing, and memory optimization.
 """
 
 from dataclasses import dataclass, field
+import hashlib
+import itertools
 import logging
 from pathlib import Path
 import time
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.performance_optimizer import (
-    PerformanceOptimizer,
-)
+from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
 from autopr.ai.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 
@@ -76,7 +76,9 @@ class FileComplexityAnalyzer:
 
     def analyze_file_complexity(self, file_path: str, content: str) -> dict[str, Any]:
         """Analyze file complexity with caching support."""
-        cache_key = f"complexity_analysis:{file_path}:{hash(content)}"
+        # Create stable, collision-resistant cache key using SHA-256
+        content_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()
+        cache_key = f"complexity_analysis:{file_path}:{len(content)}:{content_hash}"
 
         # Try to get from cache first
         cached_result = self.cache_manager.get(cache_key)
@@ -451,17 +453,21 @@ class FileSplitter:
                 f"Using parallel processing for large file ({len(lines)} lines)"
             )
             # Use the correct method name from ParallelProcessor
-            components = self.parallel_processor.process_file_chunks_parallel(
+            chunk_results = self.parallel_processor.process_file_chunks_parallel(
                 Path("temp"),  # Temporary path for processing
                 content,
                 lambda chunk: self._split_by_functions(chunk, config),
                 chunk_size=500,
             )
-            if components:
+            if chunk_results:
+                # Flatten the list-of-lists into a single list of components
+                components = list(itertools.chain.from_iterable(
+                    result for result in chunk_results if result is not None
+                ))
                 logger.info(
-                    f"Parallel processing complete, found {len(components[0])} components"
+                    f"Parallel processing complete, found {len(components)} total components"
                 )
-                return components[0]  # Return first result
+                return components
 
         # Fallback to sequential processing
         logger.info("Using sequential processing for component splitting")

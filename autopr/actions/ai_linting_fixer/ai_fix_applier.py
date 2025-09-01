@@ -30,12 +30,12 @@ class AIFixApplier:
         validation_config: ValidationConfig | None = None,
     ):
         """Initialize the modular AI fix applier.
-        
+
         Args:
             llm_manager: Required LLM provider manager for AI operations
             backup_manager: Optional backup manager for file operations
             validation_config: Optional validation configuration
-            
+
         Raises:
             ValueError: If llm_manager is None
         """
@@ -51,7 +51,7 @@ class AIFixApplier:
         self.response_parser = ResponseParser()
         self.persistence_manager = FilePersistenceManager(backup_manager)
         self.validation_manager = ValidationManager(validation_config or ValidationConfig())
-        
+
         # Initialize strategy selector
         self.strategy_selector = StrategySelector(
             self.llm_client,
@@ -59,7 +59,7 @@ class AIFixApplier:
             self.persistence_manager,
             self.validation_manager,
         )
-        
+
         self.session_id = None
 
     async def apply_specialist_fix_with_validation(
@@ -71,17 +71,17 @@ class AIFixApplier:
         session_id: str | None = None,
     ) -> dict[str, Any]:
         """Apply fix with validation using the validation strategy.
-        
+
         This method maintains compatibility with the original interface while
         delegating to the modular strategy system.
-        
+
         Args:
             agent: AI agent for generating prompts
             file_path: Path to file being fixed
             content: Current file content
             issues: List of issues to fix
             session_id: Session ID for backup management
-            
+
         Returns:
             Fix result dictionary with validation and persistence info
         """
@@ -97,16 +97,16 @@ class AIFixApplier:
         session_id: str | None = None,
     ) -> dict[str, Any]:
         """Apply fix using basic strategy without validation.
-        
+
         This method maintains compatibility with the original interface.
-        
+
         Args:
             agent: AI agent for generating prompts
             file_path: Path to file being fixed
             content: Current file content
             issues: List of issues to fix
             session_id: Session ID for backup management
-            
+
         Returns:
             Fix result dictionary
         """
@@ -123,7 +123,7 @@ class AIFixApplier:
         session_id: str | None = None,
     ) -> dict[str, Any]:
         """Apply fix using a specific strategy.
-        
+
         Args:
             strategy_name: Name of strategy to use ("basic", "validation")
             agent: AI agent for generating prompts
@@ -131,7 +131,7 @@ class AIFixApplier:
             content: Current file content
             issues: List of issues to fix
             session_id: Session ID for backup management
-            
+
         Returns:
             Fix result dictionary
         """

@@ -464,6 +464,7 @@ class PerformanceOptimizer:
             return self._process_medium_file(file_path, content, processor_func)
 
         start_time = time.time()
+        temp_path = None
 
         # Write content to a unique temp file for memory mapping
         temp_file = tempfile.NamedTemporaryFile(
@@ -485,7 +486,7 @@ class PerformanceOptimizer:
 
         finally:
             try:
-                if temp_path.exists():
+                if temp_path is not None and temp_path.exists():
                     temp_path.unlink()
             except Exception as e:
                 logger.warning(f"Failed to remove mmap temp file {temp_path}: {e}")

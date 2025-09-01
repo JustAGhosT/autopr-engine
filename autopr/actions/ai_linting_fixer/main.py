@@ -15,13 +15,9 @@ from typing import Any
 
 from autopr.actions.ai_linting_fixer.agents import AgentType, specialist_manager
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.ai_linting_fixer.database import AIInteractionDB, IssueQueueManager
+from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 from autopr.actions.ai_linting_fixer.detection import issue_detector
-from autopr.actions.ai_linting_fixer.display import (
-    DisplayConfig,
-    OutputMode,
-    get_display,
-)
+from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode, get_display
 from autopr.actions.ai_linting_fixer.display import (
     display_provider_status as display_show_provider_status,
 )
@@ -38,10 +34,8 @@ from autopr.actions.ai_linting_fixer.models import (
     LintingIssue,
     create_empty_outputs,
 )
-from autopr.actions.ai_linting_fixer.workflow import (
-    WorkflowContext,
-    WorkflowIntegrationMixin,
-)
+from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
+from autopr.actions.ai_linting_fixer.workflow import WorkflowContext, WorkflowIntegrationMixin
 from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
 from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
 
@@ -687,7 +681,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             files_modified=[],  # TODO: Track modified files
             summary=f"Session completed with {success_rate:.1%} success rate",
             total_issues_detected=metrics_summary.get("total_issues", 0),
-            issues_queued=queue_stats.get("overall", {}).get("total_issues", 0),
+            issues_queued=queue_stats.get("total", 0),
             issues_processed=metrics_summary.get("successful_fixes", 0)
             + metrics_summary.get("failed_fixes", 0),
             issues_failed=metrics_summary.get("failed_fixes", 0),
@@ -885,9 +879,7 @@ def print_feature_status() -> None:
 
     # Check orchestration availability
     try:
-        from autopr.actions.ai_linting_fixer.orchestration import (
-            detect_available_orchestrators,
-        )
+        from autopr.actions.ai_linting_fixer.orchestration import detect_available_orchestrators
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())

@@ -6,6 +6,7 @@ using advanced language models and specialized agents.
 """
 
 import logging
+import os
 import time
 from typing import Any
 
@@ -16,10 +17,7 @@ from autopr.actions.ai_linting_fixer.display import AILintingFixerDisplay, Displ
 from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
 from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
-from autopr.actions.ai_linting_fixer.models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-)
+from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
 from autopr.actions.ai_linting_fixer.performance_tracker import PerformanceTracker
 from autopr.actions.llm.manager import LLMProviderManager
 
@@ -50,7 +48,7 @@ class AILintingFixer:
             "fallback_order": ["azure_openai"],  # Only use Azure OpenAI
             "providers": {
                 "azure_openai": {
-                    "azure_endpoint": "https://jurie-mcnb2krj-swedencentral.cognitiveservices.azure.com/",
+                    "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/"),
                     "api_key": None,  # Will be loaded from environment
                     "api_version": "2025-01-01-preview",
                 },

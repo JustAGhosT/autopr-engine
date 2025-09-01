@@ -27,7 +27,7 @@ def create_test_file_with_issues(content: str, filename: str = "test_file.py") -
     return str(file_path)
 
 
-def test_core_integration():
+async def test_core_integration():
     """Test the core file splitter integration."""
 
     # Create a large file that should trigger splitting
@@ -210,7 +210,6 @@ if __name__ == "__main__":
         # Create AI fix applier with file splitter integration
         ai_fix_applier = AIFixApplier(
             llm_manager=llm_manager,
-            split_config=config,
         )
 
         # Create mock issues
@@ -232,14 +231,12 @@ if __name__ == "__main__":
         ]
 
         # Test the comprehensive workflow
-        (
-            ai_fix_applier.apply_specialist_fix_with_comprehensive_workflow(
-                agent=None,  # Mock agent
-                file_path=file_path,
-                content=content,
-                issues=mock_issues,
-                session_id="test_session",
-            )
+        await ai_fix_applier.apply_specialist_fix_with_validation(
+            agent=None,  # Mock agent
+            file_path=file_path,
+            content=content,
+            issues=mock_issues,
+            session_id="test_session",
         )
 
         # 3. Test statistics and metrics

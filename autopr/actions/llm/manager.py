@@ -7,12 +7,17 @@ import os
 from typing import Any
 
 from autopr.actions.llm.base import BaseLLMProvider
-from autopr.actions.llm.providers import (AnthropicProvider, GroqProvider,
-                                          MistralProvider, OpenAIProvider,
-                                          PerplexityProvider,
-                                          TogetherAIProvider)
+from autopr.actions.llm.providers import (
+    AnthropicProvider,
+    GroqProvider,
+    MistralProvider,
+    OpenAIProvider,
+    PerplexityProvider,
+    TogetherAIProvider,
+)
 from autopr.actions.llm.providers.azure_openai import AzureOpenAIProvider
 from autopr.actions.llm.types import LLMResponse
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +46,7 @@ class ActionLLMProviderManager:
             "azure_openai": {
                 "api_key_env": "AZURE_OPENAI_API_KEY",
                 "default_model": "gpt-5-chat",
-                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT", "https://jurie-mcnb2krj-swedencentral.cognitiveservices.azure.com/"),
+                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/"),
                 "api_version": "2024-02-01",
                 "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-5-chat"),
             },

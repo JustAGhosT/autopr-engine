@@ -365,7 +365,7 @@ class MetricsAggregator:
             return {}
 
         total_files = sum(
-            len(getattr(session, "file_metrics", []))
+            session.total_files
             for session in self.historical_sessions
         )
         total_fixes = sum(

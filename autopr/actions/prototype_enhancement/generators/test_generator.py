@@ -73,7 +73,7 @@ class TestGenerator(BaseGenerator):
         if language == "typescript":
             if test_framework == "jest":
                 config_files.extend(
-                    ["jest.config.js", "jest.setup.js", ".mocharc.json"]
+                    ["jest.config.js", "jest.setup.js"]
                 )
             elif test_framework == "mocha":
                 config_files.extend([".mocharc.json", "test/setup.ts"])

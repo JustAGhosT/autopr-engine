@@ -5,9 +5,9 @@ This package contains individual model configurations for AI linting with
 availability detection and performance characteristics.
 """
 
-from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import (
-    DEEPSEEK_R1_7B_CONFIG,
-)
+import logging
+
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import DEEPSEEK_R1_7B_CONFIG
 from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import (
     update_availability as update_deepseek_r1_availability,
 )
@@ -19,9 +19,7 @@ from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import GPT_5_CHAT_
 from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import (
     update_availability as update_gpt5_availability,
 )
-from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import (
-    LLAMA_3_3_70B_CONFIG,
-)
+from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import LLAMA_3_3_70B_CONFIG
 from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import (
     update_availability as update_llama_availability,
 )
@@ -38,6 +36,8 @@ from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import (
     update_availability as update_qwen_availability,
 )
 
+
+logger = logging.getLogger(__name__)
 
 # All model configurations
 ALL_MODEL_CONFIGS = [
@@ -69,6 +69,7 @@ def update_all_availabilities():
         try:
             results[model_name] = updater()
         except Exception:
+            logger.exception("Failed to update availability for model %s", model_name)
             results[model_name] = False
     return results
 
