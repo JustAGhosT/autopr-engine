@@ -1,3 +1,9 @@
+# AutoPR Engine Implementation Tasks Configuration
+# This file defines the implementation roadmap and task definitions
+# for the AutoPR Engine project phases
+# NOT an Ansible playbook - this is a custom AutoPR Engine configuration file
+# File type: Custom YAML configuration (not Ansible)
+# Schema: None (custom format)
 immediate_priority:
   setup_sentry_monitoring:
     name: "setup_sentry_monitoring"
@@ -86,7 +92,7 @@ medium_priority:
       - "autopr/database/models.py"
       - "autopr/database/__init__.py"
     packages_required:
-      - "asyncpg>=0.28.0"
+      - "asyncpg>=0.30.0"
       - "alembic>=1.12.0"
 
   implement_prometheus_metrics:

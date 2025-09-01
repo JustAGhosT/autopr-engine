@@ -122,7 +122,7 @@ class TaskRegistry:
                     "autopr/database/models.py",
                     "autopr/database/__init__.py",
                 ],
-                packages_required=["asyncpg>=0.28.0", "alembic>=1.12.0"],
+                packages_required=["asyncpg>=0.30.0", "alembic>=1.12.0"],
             ),
             "implement_prometheus_metrics": Task(
                 name="implement_prometheus_metrics",
