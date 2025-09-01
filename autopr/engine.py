@@ -1,19 +1,21 @@
 """
 AutoPR Engine - Core Engine Implementation
 
-The main AutoPR engine that orchestrates AI-powered GitHub automation.
+Main engine class that orchestrates AutoPR operations.
 """
 
+import asyncio
 import logging
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from autopr.actions.registry import ActionRegistry
-from autopr.ai.providers.manager import LLMProviderManager
+# from autopr.agents.agents import AgentManager  # Not implemented yet
+from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
-from autopr.exceptions import AutoPRException
-from autopr.integrations.registry import IntegrationRegistry
-from autopr.workflows.engine import WorkflowEngine
-
+from autopr.exceptions import AutoPRException, ConfigurationError
+from autopr.quality.metrics_collector import MetricsCollector
+# from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 logger = logging.getLogger(__name__)
 

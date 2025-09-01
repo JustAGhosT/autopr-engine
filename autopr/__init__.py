@@ -1,26 +1,37 @@
 """
-AutoPR Engine - AI-Powered GitHub PR Automation and Issue Management.
+AutoPR Engine - Automated Code Review and Quality Management System
 
-A comprehensive platform for intelligent GitHub pull request analysis,
-automated issue creation, and multi-agent AI collaboration.
+This package provides AI-powered code analysis, automated fixes, and quality assurance workflows.
 """
 
 import logging
 import os
 from typing import Any, cast
 
-from autopr.actions.base import Action, ActionInputs, ActionOutputs
 from autopr.actions.registry import ActionRegistry
-from autopr.ai.base import LLMProvider
-from autopr.ai.providers.manager import LLMProviderManager
+# from autopr.agents.agents import AgentManager  # Not implemented yet
+from autopr.ai.core.base import LLMProvider
+from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.engine import AutoPREngine
-from autopr.exceptions import AutoPRException, ConfigurationError, IntegrationError
+from autopr.exceptions import (AutoPRException, ConfigurationError,
+                               IntegrationError)
 from autopr.integrations.base import Integration
-from autopr.integrations.registry import IntegrationRegistry
+# from autopr.integrations.bitbucket.bitbucket_integration import \
+#     BitbucketIntegration  # Not implemented yet
+# from autopr.integrations.github.github_integration import GitHubIntegration  # Not implemented yet
+# from autopr.integrations.gitlab.gitlab_integration import GitLabIntegration  # Not implemented yet
+# from autopr.integrations.jira.jira_integration import JiraIntegration  # Not implemented yet
+# from autopr.integrations.registry import IntegrationRegistry  # Not implemented yet
+# from autopr.integrations.slack.slack_integration import SlackIntegration  # Not implemented yet
+from autopr.quality.metrics_collector import MetricsCollector
+# from autopr.reporting.report_generator import ReportGenerator  # Not implemented yet
+from autopr.security.authorization.enterprise_manager import \
+    EnterpriseAuthorizationManager
 from autopr.workflows.base import Workflow
 from autopr.workflows.engine import WorkflowEngine
 
+# from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 # Import structlog with error handling
 STRUCTLOG_AVAILABLE: bool
@@ -33,41 +44,20 @@ except ImportError:
     STRUCTLOG_AVAILABLE = False
     structlog_module = None
 
-__version__ = "1.0.0"
-__author__ = "VeritasVault Team"
-__email__ = "dev@veritasvault.net"
+__version__ = "0.1.0"
+__author__ = "AutoPR Team"
+__email__ = "team@autopr.dev"
 __license__ = "MIT"
 __url__ = "https://github.com/veritasvault/autopr-engine"
 
 # Public API exports
 __all__ = [
-    # Actions
-    "Action",
-    "ActionInputs",
-    "ActionOutputs",
     "ActionRegistry",
-    "AutoPRConfig",
-    # Core
     "AutoPREngine",
-    # Exceptions
-    "AutoPRException",
-    "ConfigurationError",
-    # Integrations
-    "Integration",
-    "IntegrationError",
-    "IntegrationRegistry",
-    # AI/LLM
+    "MetricsCollector",
+    "EnterpriseAuthorizationManager",
     "LLMProvider",
     "LLMProviderManager",
-    "Workflow",
-    # Workflows
-    "WorkflowEngine",
-    "__author__",
-    "__email__",
-    "__license__",
-    "__url__",
-    # Version info
-    "__version__",
 ]
 
 # Package metadata
@@ -164,6 +154,9 @@ def configure_logging(level: str = "INFO", *, format_json: bool = False) -> None
         )
 
 
+log_level = os.getenv("AUTOPR_LOG_LEVEL", "INFO")
+json_logging = os.getenv("AUTOPR_JSON_LOGGING", "false").lower() == "true"
+configure_logging(level=log_level, format_json=json_logging)
 log_level = os.getenv("AUTOPR_LOG_LEVEL", "INFO")
 json_logging = os.getenv("AUTOPR_JSON_LOGGING", "false").lower() == "true"
 configure_logging(level=log_level, format_json=json_logging)

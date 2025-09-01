@@ -1,16 +1,19 @@
 """
-Code Quality Agent for AutoPR.
+Code Quality Agent
 
-This module provides the CodeQualityAgent class which is responsible for analyzing
-and improving code quality based on various metrics and best practices.
+Agent for managing code quality operations.
 """
 
+import asyncio
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-import json
-from json import JSONDecodeError
-from typing import Any
 
-from autopr.agents.base import BaseAgent
+from autopr.actions.quality_engine.engine import QualityEngine
+from autopr.actions.quality_engine.models import QualityInputs, QualityOutputs
+from autopr.agents.base.agent import BaseAgent
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 
 @dataclass
@@ -47,7 +50,7 @@ class CodeQualityOutputs:
     suggestions: list[str]
 
 
-class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
+class CodeQualityAgent(BaseAgent[QualityInputs, QualityOutputs]):
     """Agent for analyzing and improving code quality.
 
     This agent analyzes code for quality issues, provides a quality score,

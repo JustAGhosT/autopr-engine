@@ -1,18 +1,22 @@
 """
-AI Agent Manager Module
+AI Agent Manager for AI Linting Fixer
 
-This module manages AI agents and their specializations for different types of linting issues.
-Provides a clean interface between the AI fixer and the modularized specialist system.
+Manages AI agents for different types of code fixes.
 """
 
-import json
+import asyncio
 import logging
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from autopr.actions.ai_linting_fixer.agents import AgentType, SpecialistManager
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.ai.providers.manager import LLMProviderManager
-
+from autopr.actions.ai_linting_fixer.llm_client import LLMClient
+from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
+                                                    LintingIssue)
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import \
+    AgentType
+from autopr.actions.ai_linting_fixer.specialists.specialist_manager import \
+    SpecialistManager
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = logging.getLogger(__name__)
 

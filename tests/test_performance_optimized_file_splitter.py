@@ -1,20 +1,21 @@
 """
-Tests for Performance-Optimized File Splitter
+Test Performance Optimized File Splitter
 
-Tests caching, parallel processing, memory optimization, and performance monitoring.
+Tests for performance optimized file splitting functionality.
 """
 
 import tempfile
 import time
 from pathlib import Path
+from typing import Any, Dict, List
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from autopr.actions.ai_linting_fixer.file_splitter import (
-    AISplitDecisionEngine, FileComplexityAnalyzer, FileSplitter, SplitConfig)
-from autopr.actions.ai_linting_fixer.performance_optimizer import \
-    PerformanceOptimizer
-from autopr.ai.providers.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
+                                                           SplitConfig)
+from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 
 

@@ -1,15 +1,20 @@
 """
-AI-enhanced analysis functionality for the quality engine
+AI Handler for Quality Engine
+
+Handles AI interactions for quality analysis.
 """
 
-import os
-import time
-from typing import Any
+import asyncio
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import structlog
 
-from autopr.actions.quality_engine.models import ToolResult
-
+from autopr.actions.quality_engine.ai.ai_analyzer import AIAnalyzer
+from autopr.actions.quality_engine.ai.llm_manager import LLMManager
+from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = structlog.get_logger(__name__)
 
@@ -33,9 +38,8 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from autopr.actions.quality_engine.ai.ai_modes import (
-            run_ai_analysis as run_analysis,
-        )
+        from autopr.actions.quality_engine.ai.ai_modes import \
+            run_ai_analysis as run_analysis
 
         logger.info("Starting AI-enhanced analysis", file_count=len(files))
         start_time = time.time()

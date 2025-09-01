@@ -1,16 +1,17 @@
 """
-LLM Manager Initialization for AI-Enhanced Quality Analysis
+LLM Manager for Quality Engine
 
-This module provides initialization and configuration for the LLM provider manager
-used in AI-enhanced quality analysis.
+Manages LLM interactions for quality analysis.
 """
 
+import asyncio
 import logging
-import os
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from autopr.ai.providers.manager import LLMProviderManager
-
+from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
+from autopr.ai.core.base import LLMMessage
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = logging.getLogger(__name__)
 

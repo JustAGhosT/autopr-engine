@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
-Test script to verify AI handler fixes work correctly
+Test AI Handler Fixes
+
+Tests for AI handler fix functionality.
 """
 
 import asyncio
 import contextlib
 import os
 import sys
+from typing import Any, Dict, List
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
+from autopr.actions.quality_engine.ai.ai_handler import AIHandler
+from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autopr"))
 

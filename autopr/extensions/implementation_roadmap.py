@@ -6,7 +6,7 @@ while delegating to the new modular system.
 """
 
 # Import the modular implementation
-from autopr.extensions.implementation.implementor import Phase1ExtensionImplementor
+from autopr.ai.extensions.implementation.implementor import Phase1ExtensionImplementor
 
 
 # Backward compatibility: re-export the main class

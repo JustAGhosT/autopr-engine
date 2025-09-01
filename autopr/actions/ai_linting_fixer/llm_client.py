@@ -1,15 +1,17 @@
 """
-LLM Client Module
+LLM Client for AI Linting Fixer
 
-Handles async/sync LLM interface abstraction following the Interface Segregation Principle.
+Client for LLM interactions in the AI linting fixer.
 """
 
 import asyncio
-import inspect
 import logging
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from autopr.ai.providers.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.models import LintingIssue, LintingFixResult
+from autopr.ai.core.base import LLMMessage
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 
 logger = logging.getLogger(__name__)
@@ -65,7 +67,7 @@ class LLMClient:
                     response = self.llm_manager.complete(request)
 
                 # Check if the returned value is awaitable and await if needed
-                if inspect.isawaitable(response):
+                if asyncio.iscoroutine(response):
                     response = await response
 
             return response

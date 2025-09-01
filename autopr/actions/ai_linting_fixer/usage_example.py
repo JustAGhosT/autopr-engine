@@ -1,21 +1,20 @@
 """
-Usage Example: Modular AI Fix Applier
+AI Linting Fixer Usage Example
 
-Demonstrates how to use the new modular system following SOLID principles.
+Example usage of the AI linting fixer functionality.
 """
 
 import asyncio
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from autopr.actions.ai_linting_fixer import (
-    AIFixApplier,
-    FilePersistenceManager,
-    LLMClient,
-    ResponseParser,
-    StrategySelector,
-)
+from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
+from autopr.actions.ai_linting_fixer.models import LintingIssue, LintingFixResult
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
 from autopr.actions.ai_linting_fixer.validation_manager import ValidationConfig
-from autopr.ai.providers.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.file_splitter import SplitConfig
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 
 async def example_usage():

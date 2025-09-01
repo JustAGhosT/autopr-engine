@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-Test script for the AI Enhanced File Splitter
+Test File Splitter
 
-This script demonstrates the capabilities of the AI enhanced file splitter
-by testing it with various file types and complexity levels.
+Tests for file splitting functionality.
 """
+
+import pytest
+from unittest.mock import Mock, patch, AsyncMock
+from typing import Any, Dict, List
+
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 from pathlib import Path
 import tempfile
-
-import pytest
-
-# Import the file splitter components
-from autopr.actions.ai_linting_fixer.file_splitter import (
-    FileComplexityAnalyzer,
-    FileSplitter,
-    SplitConfig,
-)
 
 
 def create_test_file(content: str, filename: str = "test_file.py") -> str:

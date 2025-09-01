@@ -1,20 +1,21 @@
 """
-Main crew module for the AutoPR Agent Framework.
+Crew Main Module
 
-This module contains the main AutoPRCrew class that orchestrates the code analysis agents.
+Main module for crew-based agent collaboration.
 """
 
 import asyncio
-import importlib as _importlib
-import inspect as _inspect
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from autopr.actions.quality_engine.models import QualityMode
+from autopr.agents.base.agent import BaseAgent
+# from autopr.agents.crew.report_builder import ReportBuilder  # Not implemented yet
+# from autopr.agents.crew.tasks import TaskManager  # Not implemented yet
+from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config.settings import get_settings
 from autopr.utils.volume_utils import get_volume_level_name
-
 
 # Constants for volume thresholds
 VOLUME_HIGH = 700
@@ -85,7 +86,8 @@ class AutoPRCrew:
             self.platform_agent = injected_pa
         else:
             # Import from the correct location
-            from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+            from autopr.agents.platform_analysis_agent import \
+                PlatformAnalysisAgent
 
             self.platform_agent = PlatformAnalysisAgent(**agent_kwargs)
 

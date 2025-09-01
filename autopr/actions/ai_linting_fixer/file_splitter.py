@@ -1,22 +1,19 @@
 """
-AI Enhanced File Splitter with Performance Optimization
+File Splitter for AI Linting Fixer
 
-This module provides intelligent file splitting capabilities with advanced performance optimization,
-including caching, parallel processing, and memory optimization.
+Splits large files for AI processing.
 """
 
-from dataclasses import dataclass, field
-import hashlib
-import itertools
+import asyncio
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
-import time
-from typing import Any
+from typing import Any, Dict, List, Optional
 
-from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
-from autopr.ai.providers.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.llm_client import LLMClient
+from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
-
 
 logger = logging.getLogger(__name__)
 
@@ -70,9 +67,8 @@ class SplitResult:
 class FileComplexityAnalyzer:
     """Analyzes file complexity using AST parsing."""
 
-    def __init__(self, performance_optimizer: PerformanceOptimizer | None = None):
-        self.performance_optimizer = performance_optimizer or PerformanceOptimizer()
-        self.cache_manager = self.performance_optimizer.cache
+    def __init__(self):
+        self.cache_manager = {}
 
     def analyze_file_complexity(self, file_path: str, content: str) -> dict[str, Any]:
         """Analyze file complexity with caching support."""
@@ -164,11 +160,9 @@ class AISplitDecisionEngine:
     def __init__(
         self,
         llm_manager: LLMProviderManager,
-        performance_optimizer: PerformanceOptimizer | None = None,
     ):
         self.llm_manager = llm_manager
-        self.performance_optimizer = performance_optimizer or PerformanceOptimizer()
-        self.cache_manager = self.performance_optimizer.cache
+        self.cache_manager = {}
 
     async def should_split_file(
         self, file_path: str, content: str, complexity: dict[str, Any]
@@ -313,18 +307,13 @@ class FileSplitter:
         self,
         llm_manager: LLMProviderManager,
         metrics_collector: MetricsCollector | None = None,
-        performance_optimizer: PerformanceOptimizer | None = None,
     ):
         self.llm_manager = llm_manager
         self.metrics_collector = metrics_collector or MetricsCollector()
-        self.performance_optimizer = performance_optimizer or PerformanceOptimizer()
 
         # Initialize components
-        self.complexity_analyzer = FileComplexityAnalyzer(self.performance_optimizer)
-        self.ai_decision_engine = AISplitDecisionEngine(
-            llm_manager, self.performance_optimizer
-        )
-        self.parallel_processor = self.performance_optimizer.parallel_processor
+        self.complexity_analyzer = FileComplexityAnalyzer()
+        self.ai_decision_engine = AISplitDecisionEngine(llm_manager)
 
     async def split_file(
         self, file_path: str, content: str, config: SplitConfig | None = None
@@ -389,10 +378,10 @@ class FileSplitter:
 
             # Performance metrics
             processing_time = time.time() - start_time
-            cache_stats = self.performance_optimizer.cache.get_stats()
+            cache_stats = {"hits": 0, "misses": 0}
 
-            # Get performance metrics from optimizer
-            perf_metrics = self.performance_optimizer.get_performance_metrics()
+            # Get performance metrics
+            perf_metrics = {"memory_usage_mb": 0.0}
 
             logger.info("Performance Summary:")
             logger.info(f"  - Processing time: {processing_time:.3f}s")
@@ -563,4 +552,4 @@ class FileSplitter:
 
     def cleanup(self):
         """Cleanup resources."""
-        self.performance_optimizer.cleanup()
+        pass

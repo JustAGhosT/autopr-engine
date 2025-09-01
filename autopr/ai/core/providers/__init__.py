@@ -1,10 +1,9 @@
 """
-AutoPR AI Providers
+AI Core Providers
 
 LLM provider implementations and management.
 """
 
-from autopr.ai.providers.manager import LLMProviderManager
-
+from .manager import LLMProviderManager
 
 __all__ = ["LLMProviderManager"]

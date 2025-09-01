@@ -1,19 +1,20 @@
 """
-AI-Enhanced Code Quality Analyzer
+AI Analyzer for Quality Engine
 
-Provides intelligent code quality analysis using AI models via the AutoPR LLM provider system.
+AI-powered analysis of code quality issues.
 """
 
 import asyncio
-from dataclasses import dataclass
-import os
-from typing import Any
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 import structlog
 
-from autopr.ai.base import LLMMessage
-from autopr.ai.providers.manager import LLMProviderManager
-
+from autopr.actions.quality_engine.ai.llm_manager import LLMManager
+from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
+from autopr.ai.core.base import LLMMessage
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = structlog.get_logger(__name__)
 

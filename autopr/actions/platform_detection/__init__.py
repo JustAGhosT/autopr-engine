@@ -1,24 +1,19 @@
 """
-Platform Detection Package
+Platform Detection Module
 
-Modular platform detection system for AutoPR.
+Detects and analyzes rapid prototyping platforms.
 """
 
-from autopr.actions.platform_detection.config import PlatformConfigManager
-from autopr.actions.platform_detection.detector import (
-    PlatformDetector,
-    PlatformDetectorInputs,
-    PlatformDetectorOutputs,
-)
-from autopr.actions.platform_detection.file_analyzer import FileAnalyzer
-from autopr.actions.platform_detection.scoring import PlatformScoringEngine
-
+from .detector import PlatformDetector
+from .models import PlatformDetectorInputs, PlatformDetectorOutputs
+from .patterns import PlatformPatterns
+from .utils import calculate_confidence_score, get_confidence_level
 
 __all__ = [
-    "FileAnalyzer",
-    "PlatformConfigManager",
     "PlatformDetector",
-    "PlatformDetectorInputs",
+    "PlatformDetectorInputs", 
     "PlatformDetectorOutputs",
-    "PlatformScoringEngine",
+    "PlatformPatterns",
+    "calculate_confidence_score",
+    "get_confidence_level"
 ]

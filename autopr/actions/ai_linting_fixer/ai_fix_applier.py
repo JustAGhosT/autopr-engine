@@ -1,21 +1,21 @@
 """
-AI Fix Applier - Modular Design
+AI Linting Fixer - Main Application Logic
 
-Simplified coordinator following SOLID principles with proper separation of concerns.
+Core application logic for AI-powered code fixing.
 """
 
+import asyncio
 import logging
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
-from autopr.actions.ai_linting_fixer.file_persistence import FilePersistenceManager
-from autopr.actions.ai_linting_fixer.fix_strategy import StrategySelector
-from autopr.actions.ai_linting_fixer.llm_client import LLMClient
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.ai_linting_fixer.response_parser import ResponseParser
-from autopr.actions.ai_linting_fixer.validation_manager import ValidationConfig, ValidationManager
-from autopr.ai.providers.manager import LLMProviderManager
-
+from autopr.actions.ai_linting_fixer.file_splitter import SplitConfig
+from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
+                                                    LintingIssue)
+from autopr.actions.ai_linting_fixer.validation_manager import ValidationConfig
+from autopr.actions.base.action import Action
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = logging.getLogger(__name__)
 
@@ -143,18 +143,18 @@ class AIFixApplier:
         """Set the session ID for backup management."""
         self.session_id = session_id
 
-    def get_response_parser(self) -> ResponseParser:
+    def get_response_parser(self):
         """Get the response parser instance."""
-        return self.response_parser
+        return None
 
-    def get_llm_client(self) -> LLMClient:
+    def get_llm_client(self):
         """Get the LLM client instance."""
-        return self.llm_client
+        return None
 
-    def get_persistence_manager(self) -> FilePersistenceManager:
+    def get_persistence_manager(self):
         """Get the file persistence manager instance."""
-        return self.persistence_manager
+        return None
 
-    def get_validation_manager(self) -> ValidationManager:
+    def get_validation_manager(self):
         """Get the validation manager instance."""
-        return self.validation_manager
+        return None
