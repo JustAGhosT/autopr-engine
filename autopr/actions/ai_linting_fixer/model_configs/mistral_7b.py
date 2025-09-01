@@ -6,6 +6,7 @@ and performance characteristics for code linting fixes.
 """
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -19,8 +20,8 @@ class ModelSpec:
     performance_tier: str
     availability: bool
     endpoint_available: bool = False
-    competency_ratings: dict[str, float] = None
-    recommended_use_cases: list = None
+    competency_ratings: dict[str, float] | None = None
+    recommended_use_cases: list[Any] | None = None
 
 
 # Mistral 7B Model Configuration

@@ -34,6 +34,14 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
     def category(self) -> str:
         return "linting"  # Override with specific category
 
+    def is_available(self) -> bool:
+        """Check if mypy is available."""
+        return self.check_command_availability("mypy")
+
+    def get_required_command(self) -> str | None:
+        """Get the required command for this tool."""
+        return "mypy"
+
     async def run(self, files: list[str], config: MyPyConfig) -> list[LintIssue]:
         """
         Run mypy on a list of files.
@@ -42,7 +50,14 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
             return []
 
         # MyPy does not have a stable JSON output, so we parse the text output.
-        command = ["mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty"]
+        # Try to use mypy from poetry environment if available
+        import sys
+        if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+            # We're in a virtual environment, try python -m mypy
+            command = [sys.executable, "-m", "mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty"]
+        else:
+            # Fall back to system mypy
+            command = ["mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty"]
 
         # Add any configured arguments
         if "args" in config:

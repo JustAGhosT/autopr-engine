@@ -127,6 +127,8 @@ pre-commit = "^3.0.0"
 sphinx = "^8.1.0"
 sphinx-rtd-theme = "^3.0.0"
 myst-parser = "^4.0.0"
+types-pyyaml = "^6.0.12.20250822"
+types-requests = "^2.32.4.20250809"
 
 [tool.poetry.group.monitoring.dependencies]
 prometheus-client = "^0.17.0"

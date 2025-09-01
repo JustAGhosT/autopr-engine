@@ -26,6 +26,15 @@ class TemplateManager:
         self.templates_cache: dict[str, TemplateInfo] = {}
         self._load_templates()
 
+    def _load_config(self, config_path: str) -> dict[str, Any]:
+        """Load configuration from file"""
+        try:
+            import yaml
+            with open(config_path, 'r') as f:
+                return yaml.safe_load(f) or {}
+        except Exception:
+            return {"templates": {"confidence_threshold": 0.5}}
+
     def discover_templates(self, project_path: Path) -> list[TemplateInfo]:
         """Auto-discover templates based on project structure"""
         discovered = []
@@ -38,11 +47,21 @@ class TemplateManager:
 
         return sorted(discovered, key=lambda t: t.confidence, reverse=True)
 
+    def _calculate_confidence(self, project_path: Path, template_info: TemplateInfo) -> float:
+        """Calculate confidence score for template match"""
+        # Simple confidence calculation based on file presence
+        confidence = 0.0
+        for file_path in template_info.files:
+            if (project_path / file_path).exists():
+                confidence += 0.2
+        return min(confidence, 1.0)
+
     def generate_from_template(
         self, template_name: str, context: dict[str, Any]
     ) -> dict[str, str]:
         """Generate files from template with context"""
         # Implementation details...
+        return {"status": "not_implemented"}
 
     def _load_templates(self):
         """Load all template definitions"""
@@ -60,3 +79,13 @@ class TemplateManager:
         # Load configuration templates
         for config_file in (config_dir / "platforms").glob("**/*.json"):
             self._load_config_template(config_file)
+
+    def _load_template_file(self, template_file: Path):
+        """Load template from file"""
+        # Implementation placeholder
+        pass
+
+    def _load_config_template(self, config_file: Path):
+        """Load configuration template from file"""
+        # Implementation placeholder
+        pass
