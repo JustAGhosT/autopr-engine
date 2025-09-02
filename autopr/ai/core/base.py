@@ -4,11 +4,10 @@ AutoPR AI/LLM Base Classes
 Base classes and interfaces for AI/LLM provider implementation.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import logging
 from typing import Any
-
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +193,11 @@ class LLMProvider(ABC):
             ValueError: If response format is unsupported
         """
         if not response_format:
-            return messages
+            # Return a shallow-copied list with cloned metadata
+            return [
+                LLMMessage(role=m.role, content=str(m.content), metadata=dict(m.metadata or {}))
+                for m in messages
+            ]
 
         rtype = (response_format.get("type") or "").lower()
 
@@ -207,9 +210,12 @@ class LLMProvider(ABC):
         ]
 
         if rtype in {"json", "json_object"}:
-            # Insert JSON instruction as system message at the beginning
+            # Insert JSON instruction after any existing system messages
+            insert_at = 0
+            while insert_at < len(msgs) and msgs[insert_at].role == "system":
+                insert_at += 1
             msgs.insert(
-                0,
+                insert_at,
                 LLMMessage(
                     role="system",
                     content=JSON_INSTRUCTION,
@@ -305,6 +311,10 @@ class OpenAIProvider(LLMProvider):
             raise RuntimeError(msg)
 
         model = model or self.default_model
+
+        # Handle response_format parameter
+        response_format = kwargs.pop("response_format", None)
+        messages = self._apply_response_format(messages, response_format)
 
         # TODO: Implement actual OpenAI streaming API call
         # For now, yield a placeholder response
@@ -415,6 +425,14 @@ class AnthropicProvider(LLMProvider):
             raise RuntimeError(msg)
 
         model = model or self.default_model
+
+        # Handle response_format parameter
+        response_format = kwargs.pop("response_format", None)
+        messages = self._apply_response_format(messages, response_format)
+
+        # Optional provider hint for real client later:
+        if response_format and response_format.get("type") in {"json", "json_object"}:
+            kwargs["format"] = "json"
 
         # TODO: Implement actual Anthropic streaming API call
         yield LLMResponse(

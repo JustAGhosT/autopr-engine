@@ -30,6 +30,33 @@ class LLMProviderManager:
         # Implementation would go here
         pass
 
+    def get_available_providers(self) -> List[str]:
+        """Compatibility alias for list_providers to maintain Engine.get_status() compatibility."""
+        return self.list_providers()
+
+    async def initialize(self) -> None:
+        """Initialize all registered providers (no-op if none)."""
+        init_tasks = []
+        for provider in self.providers.values():
+            if hasattr(provider, "initialize"):
+                cfg = getattr(provider, "config", {}) or {}
+                init = provider.initialize(cfg)
+                if asyncio.iscoroutine(init):
+                    init_tasks.append(init)
+        if init_tasks:
+            await asyncio.gather(*init_tasks)
+
+    async def cleanup(self) -> None:
+        """Cleanup all registered providers."""
+        tasks = []
+        for provider in self.providers.values():
+            if hasattr(provider, "cleanup"):
+                c = provider.cleanup()
+                if asyncio.iscoroutine(c):
+                    tasks.append(c)
+        if tasks:
+            await asyncio.gather(*tasks)
+
     async def complete(
         self,
         messages: List[LLMMessage],

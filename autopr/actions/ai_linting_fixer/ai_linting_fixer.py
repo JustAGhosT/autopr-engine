@@ -41,7 +41,7 @@ class AILintingFixer:
         self.display = AILintingFixerDisplay(display_config)
 
         # Initialize core components
-        self.performance_tracker = PerformanceTracker(display=self.display)
+        self.performance_tracker = PerformanceTracker()
         self.error_handler = ErrorHandler()
 
         # Initialize LLM manager with default config

@@ -5,48 +5,47 @@ This is the core module that orchestrates all the modular components
 to provide AI-powered linting fixes. Much cleaner and focused!
 """
 
-from contextlib import suppress
-from datetime import UTC, datetime
 import logging
 import os
-from pathlib import Path
 import random
+from contextlib import suppress
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.agents import AgentType, specialist_manager
+from autopr.actions.ai_linting_fixer.agents import (AgentType,
+                                                    specialist_manager)
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 from autopr.actions.ai_linting_fixer.detection import issue_detector
-from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode, get_display
-from autopr.actions.ai_linting_fixer.display import (
-    display_provider_status as display_show_provider_status,
-)
-from autopr.actions.ai_linting_fixer.display import (
-    print_feature_status as display_print_feature_status,
-)
+from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode
+from autopr.actions.ai_linting_fixer.display import \
+    display_provider_status as display_show_provider_status
+from autopr.actions.ai_linting_fixer.display import get_display
+from autopr.actions.ai_linting_fixer.display import \
+    print_feature_status as display_print_feature_status
 from autopr.actions.ai_linting_fixer.file_ops import dry_run_ops, safe_file_ops
+from autopr.actions.ai_linting_fixer.file_persistence import \
+    FilePersistenceManager
 from autopr.actions.ai_linting_fixer.issue_processor import IssueProcessor
 from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
-from autopr.actions.ai_linting_fixer.models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    LintingFixResult,
-    LintingIssue,
-    create_empty_outputs,
-)
+from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
+                                                    AILintingFixerOutputs,
+                                                    LintingFixResult,
+                                                    LintingIssue,
+                                                    create_empty_outputs)
 from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
-from autopr.actions.ai_linting_fixer.workflow import WorkflowContext, WorkflowIntegrationMixin
-from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.ai_linting_fixer.workflow import (WorkflowContext,
+                                                      WorkflowIntegrationMixin)
+from autopr.actions.llm.manager import \
+    ActionLLMProviderManager as LLMProviderManager
 from autopr.config.settings import AutoPRSettings  # type: ignore[attr-defined]
-
 
 # Optional Redis support
 try:
-    from autopr.actions.ai_linting_fixer.redis_queue import (
-        REDIS_AVAILABLE,
-        RedisConfig,
-        RedisQueueManager,
-    )
+    from autopr.actions.ai_linting_fixer.redis_queue import (REDIS_AVAILABLE,
+                                                             RedisConfig,
+                                                             RedisQueueManager)
 except ImportError:
     REDIS_AVAILABLE = False
     # Do not assign RedisQueueManager = None here; just rely on REDIS_AVAILABLE
@@ -107,6 +106,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
         # Initialize modular components
         self.agent_manager = specialist_manager
         self.issue_detector = issue_detector
+        self.file_persistence = FilePersistenceManager()
         self.safe_file_ops = safe_file_ops
         self.dry_run_ops = dry_run_ops
 
@@ -193,7 +193,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
     def select_specialized_agent(self, issues: list[LintingIssue]) -> Any:
         """Select the most appropriate specialized agent for a batch of issues."""
         if not issues:
-            return self.agent_manager.get_agent_by_type(AgentType.GENERAL_FIXER)
+            return self.agent_manager.get_specialist_by_type(AgentType.GENERAL_FIXER)
 
         # Convert to the format expected by agent manager
         issue_dicts = [
@@ -206,7 +206,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             for issue in issues
         ]
 
-        return self.agent_manager.select_agent_for_issues(issue_dicts)
+        return self.agent_manager.get_specialist_for_issues(issues)
 
     def apply_ai_fix(
         self,
@@ -223,7 +223,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 file_content = f.read()
 
             # Get appropriate agent for the issues
-            agent = self.agent_manager.get_best_agent(issues)  # type: ignore[attr-defined]
+            agent = self.agent_manager.get_specialist_for_issues(issues)
             if not agent:
                 return {
                     "success": False,
@@ -314,8 +314,10 @@ class AILintingFixer(WorkflowIntegrationMixin):
                 "column_number": issue.column_number,
                 "error_code": issue.error_code,
                 "message": issue.message,
-                "line_content": getattr(issue, "line_content", ""),
-                "priority": self._calculate_issue_priority(issue.error_code),
+                "metadata": {
+                    "priority": self._calculate_issue_priority(issue.error_code),
+                    "line_content": getattr(issue, "line_content", ""),
+                }
             }
             issue_dicts.append(issue_dict)
 
@@ -606,10 +608,34 @@ class AILintingFixer(WorkflowIntegrationMixin):
             )
 
             if fix_result.get("success", False):
-                # Write the fixed content back to the file
-                with Path(file_path).open("w", encoding="utf-8") as f:
-                    f.write(fix_result.get("fixed_content", content))
-                return True
+                # Get the fixed content, fall back to original if missing
+                fixed_content = fix_result.get("fixed_content", content)
+                
+                # Validate the fixed content before persisting
+                try:
+                    # Basic validation - ensure content is not empty
+                    if not fixed_content or not fixed_content.strip():
+                        logger.error("Fixed content is empty or invalid")
+                        return False
+                    
+                    # Use FilePersistenceManager for atomic, validated persistence
+                    persistence_result = await self.file_persistence.persist_fix(
+                        file_path=file_path,
+                        content=fixed_content,
+                        session_id=self.session_id,
+                        create_backup=True
+                    )
+                    
+                    if persistence_result.get("write_success", False):
+                        logger.info(f"Successfully persisted AI fix to {file_path}")
+                        return True
+                    else:
+                        logger.error(f"Failed to persist AI fix to {file_path}: {persistence_result.get('error', 'Unknown error')}")
+                        return False
+                        
+                except Exception as e:
+                    logger.exception(f"Error during file persistence: {e}")
+                    return False
 
             return False
 
@@ -879,7 +905,8 @@ def print_feature_status() -> None:
 
     # Check orchestration availability
     try:
-        from autopr.actions.ai_linting_fixer.orchestration import detect_available_orchestrators
+        from autopr.actions.ai_linting_fixer.orchestration import \
+            detect_available_orchestrators
 
         available_orchestrators = detect_available_orchestrators()
         features["orchestration"] = any(available_orchestrators.values())
@@ -905,5 +932,7 @@ def display_provider_status(*, quiet: bool = False) -> None:
         available_providers = llm_manager.get_available_providers()
         display_show_provider_status(available_providers, quiet=quiet)
     except Exception:
+        if not quiet:
+            logger.debug("Failed to display provider status")
         if not quiet:
             logger.debug("Failed to display provider status")

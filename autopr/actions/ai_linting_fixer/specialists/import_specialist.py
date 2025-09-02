@@ -8,10 +8,7 @@ import ast
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
-    AgentType,
-    BaseSpecialist,
-    FixStrategy,
-)
+    AgentType, BaseSpecialist, FixStrategy)
 
 
 class ImportSpecialist(BaseSpecialist):
@@ -91,13 +88,19 @@ Always maintain code functionality while improving import clarity and efficiency
         if original_content == fixed_content:
             return False
 
+        # Parse original_content first
         try:
-            # Parse both contents into ASTs
             original_ast = ast.parse(original_content)
+        except SyntaxError:
+            # If original content can't be parsed, fall back to basic validation
+            return original_content != fixed_content
+        
+        # Parse fixed_content separately - if this fails, validation fails
+        try:
             fixed_ast = ast.parse(fixed_content)
         except SyntaxError:
-            # If parsing fails, fall back to basic validation
-            return original_content != fixed_content
+            # Unparseable fixed_content causes validation failure
+            return False
 
         # Extract import nodes from both ASTs
         original_imports = self._extract_import_nodes(original_ast)
@@ -110,7 +113,7 @@ Always maintain code functionality while improving import clarity and efficiency
         # Filter issues to only those this specialist handles
         supported_codes = set(self._get_supported_codes())
         relevant_issues = [
-            issue for issue in issues if issue.code in supported_codes
+            issue for issue in issues if issue.error_code in supported_codes
         ]
 
         # If no relevant issues found, fall back to AST-based change validation

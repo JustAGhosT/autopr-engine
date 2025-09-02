@@ -8,11 +8,10 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from implementation.phase_manager import PhaseManager
-from implementation.report_generator import ReportGenerator
-from implementation.task_definitions import Task, TaskRegistry
-from implementation.task_executor import TaskExecutor
-
+from .phase_manager import PhaseManager
+from .report_generator import ReportGenerator
+from .task_definitions import Task, TaskRegistry
+from .task_executor import TaskExecutor
 
 logger = logging.getLogger(__name__)
 

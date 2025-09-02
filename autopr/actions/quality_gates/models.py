@@ -15,7 +15,7 @@ class QualityGateInputs(BaseModel):
     original_content: str
     modified_content: str
     fix_type: str
-    project_standards: dict[str, Any] = {}
+    project_standards: dict[str, Any] = Field(default_factory=dict)
     run_tests: bool = True
     check_syntax: bool = True
     check_style: bool = True
@@ -28,5 +28,4 @@ class QualityGateOutputs(BaseModel):
     errors: list[str] = Field(default_factory=list)
     test_results: dict[str, Any] = Field(default_factory=dict)
     quality_score: float = 0.0
-    recommendations: list[str] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)

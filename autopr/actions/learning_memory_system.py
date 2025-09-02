@@ -8,15 +8,13 @@ import os
 import pathlib
 import sqlite3
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
 
 class MemoryInputs(BaseModel):
-    action_type: (
-        str  # "record_fix", "record_preference", "get_patterns", "get_recommendations"
-    )
+    action_type: Literal["record_fix", "record_preference", "get_patterns", "get_preferences"]
     user_id: str | None = None
     file_path: str | None = None
     comment_type: str | None = None
@@ -67,7 +65,8 @@ class LearningMemorySystem:
                 user_id TEXT,
                 preference_type TEXT,
                 preference_value TEXT,
-                confidence REAL
+                confidence REAL,
+                UNIQUE(user_id, preference_type)
             )
         """
         )

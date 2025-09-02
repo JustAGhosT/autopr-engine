@@ -14,8 +14,9 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from autopr.actions.quality_engine.ai.ai_handler import AIHandler
-from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
+# Commented out unused imports that don't exist
+# from autopr.actions.quality_engine.ai.ai_handler import AIHandler
+# from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
 from autopr.ai.core.providers.manager import LLMProviderManager
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autopr"))
@@ -65,7 +66,7 @@ async def test_ai_handler_fixes():
     # Test 4: Import consistency
     try:
         # Verify we're using the correct LLMProviderManager
-        from autopr.ai.providers.manager import LLMProviderManager
+        from autopr.ai.core.providers.manager import LLMProviderManager
 
         # Verify the new manager has expected attributes
         assert hasattr(LLMProviderManager, '__init__')

@@ -49,8 +49,17 @@ class QualityGateValidator:
             with open(temp_file, "w", encoding="utf-8") as f:
                 f.write(inputs.modified_content)
 
-            # Run all quality checks
-            for check_name, check_func in self.quality_checks.items():
+            # Select checks to run based on inputs
+            checks_to_run = dict(self.quality_checks)
+            if not inputs.check_syntax:
+                checks_to_run.pop("syntax", None)
+            if not inputs.check_style:
+                checks_to_run.pop("style", None)
+            if not inputs.run_tests:
+                checks_to_run.pop("tests", None)
+
+            # Run selected checks
+            for check_name, check_func in checks_to_run.items():
                 try:
                     result = check_func(temp_file, inputs)
 

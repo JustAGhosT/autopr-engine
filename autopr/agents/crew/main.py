@@ -5,6 +5,8 @@ Main module for crew-based agent collaboration.
 """
 
 import asyncio
+import importlib as _importlib
+import inspect as _inspect
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -37,10 +39,9 @@ EXPECTED_RESULTS_COUNT = 3
 logger = logging.getLogger(__name__)
 
 
-def get_llm_provider_manager():
+def get_llm_provider_manager() -> Optional[LLMProviderManager]:
     """Get the LLM provider manager instance."""
     try:
-        from autopr.ai.providers.manager import LLMProviderManager
         from autopr.config.settings import get_settings
 
         settings = get_settings()
@@ -120,8 +121,6 @@ class AutoPRCrew:
 
             # Import and initialize LLM provider
             try:
-                from autopr.ai.providers.manager import LLMProviderManager
-
                 self.llm_provider = LLMProviderManager(config=settings)
             except ImportError:
                 self.llm_provider = None

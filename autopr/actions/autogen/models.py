@@ -30,4 +30,3 @@ class AutoGenOutputs(BaseModel):
     agent_conversations: List[Dict[str, str]] = Field(default_factory=list)
     consensus: Optional[str] = None
     error_message: Optional[str] = None
-    error_message: Optional[str] = None

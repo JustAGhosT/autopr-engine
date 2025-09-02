@@ -22,10 +22,14 @@ class PlatformDetector:
         self.advanced_patterns = PlatformPatterns.get_advanced_patterns()
 
     def detect_platform(self, inputs: PlatformDetectorInputs) -> PlatformDetectorOutputs:
-        """Main platform detection method."""
+        """Main platform detection method.
+        
+        Note: This method currently raises NotImplementedError as it is a stub.
+        The full implementation will be added in a future update.
+        """
         # Implementation would go here
         # This is a simplified version - the full implementation would be moved from the original file
-        pass
+        raise NotImplementedError("detect_platform not implemented - this is a stub method")
 
     def _analyze_files(self, workspace_path: str) -> dict[str, Any]:
         """Analyze files in the workspace for platform signatures."""

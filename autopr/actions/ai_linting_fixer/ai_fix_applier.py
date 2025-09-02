@@ -10,10 +10,16 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
+from autopr.actions.ai_linting_fixer.file_persistence import \
+    FilePersistenceManager
 from autopr.actions.ai_linting_fixer.file_splitter import SplitConfig
+from autopr.actions.ai_linting_fixer.fix_strategy import StrategySelector
+from autopr.actions.ai_linting_fixer.llm_client import LLMClient
 from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
                                                     LintingIssue)
-from autopr.actions.ai_linting_fixer.validation_manager import ValidationConfig
+from autopr.actions.ai_linting_fixer.response_parser import ResponseParser
+from autopr.actions.ai_linting_fixer.validation_manager import (
+    ValidationConfig, ValidationManager)
 from autopr.actions.base.action import Action
 from autopr.ai.core.providers.manager import LLMProviderManager
 
@@ -145,16 +151,16 @@ class AIFixApplier:
 
     def get_response_parser(self):
         """Get the response parser instance."""
-        return None
+        return self.response_parser
 
     def get_llm_client(self):
         """Get the LLM client instance."""
-        return None
+        return self.llm_client
 
     def get_persistence_manager(self):
         """Get the file persistence manager instance."""
-        return None
+        return self.persistence_manager
 
     def get_validation_manager(self):
         """Get the validation manager instance."""
-        return None
+        return self.validation_manager

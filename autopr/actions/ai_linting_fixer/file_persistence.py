@@ -11,7 +11,6 @@ from typing import Any
 
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -95,7 +94,7 @@ class FilePersistenceManager:
             }
 
     async def _atomic_write(self, file_path: str, content: str) -> bool:
-        """Perform atomic file write using temp file + rename.
+        """Perform atomic file write using temp file + rename with proper fsync.
         
         Args:
             file_path: Target file path
@@ -104,39 +103,79 @@ class FilePersistenceManager:
         Returns:
             True if write successful, False otherwise
         """
+        temp_file_path = f"{file_path}.tmp"
+        temp_file = None
+        parent_dir_fd = None
+        
         try:
-            temp_file_path = f"{file_path}.tmp"
+            # Write to temporary file with explicit file handle for fsync
+            temp_file = Path(temp_file_path).open('w', encoding='utf-8')
+            temp_file.write(content)
+            temp_file.flush()  # Ensure data is written to disk
             
-            # Write to temporary file
-            with Path(temp_file_path).open('w', encoding='utf-8') as temp_file:
-                temp_file.write(content)
-                temp_file.flush()  # Ensure data is written to disk
+            # Call fsync to ensure data is persisted to disk
+            os.fsync(temp_file.fileno())
+            
+            # Close the temp file before atomic replacement
+            temp_file.close()
+            temp_file = None
 
-            # Atomic rename to target file
+            # Atomic rename to target file with platform-specific handling
             if os.name == 'nt':  # Windows
-                # On Windows, handle existing target file
-                if Path(file_path).exists():
-                    Path(temp_file_path).replace(file_path)
-                else:
-                    Path(temp_file_path).rename(file_path)
+                # On Windows, prefer os.replace for atomic replacement
+                try:
+                    os.replace(temp_file_path, file_path)
+                except OSError as e:
+                    # Fallback to Path.replace if os.replace fails
+                    if Path(file_path).exists():
+                        Path(temp_file_path).replace(file_path)
+                    else:
+                        Path(temp_file_path).rename(file_path)
             else:  # Unix-like systems
                 Path(temp_file_path).rename(file_path)
+
+            # Ensure directory entry is persisted by fsyncing the parent directory
+            try:
+                parent_dir = str(Path(file_path).parent)
+                parent_dir_fd = os.open(parent_dir, os.O_RDONLY)
+                os.fsync(parent_dir_fd)
+            except (OSError, IOError) as e:
+                logger.warning("Failed to fsync parent directory %s: %s", parent_dir, e)
+            finally:
+                if parent_dir_fd is not None:
+                    try:
+                        os.close(parent_dir_fd)
+                    except OSError:
+                        pass  # Ignore close errors
+                    parent_dir_fd = None
 
             logger.info("Successfully persisted file %s", file_path)
             return True
 
         except Exception:
             logger.exception("Failed to write file %s", file_path)
+            return False
+            
+        finally:
+            # Clean up resources
+            if temp_file is not None:
+                try:
+                    temp_file.close()
+                except Exception:
+                    pass  # Ignore close errors
+            
+            if parent_dir_fd is not None:
+                try:
+                    os.close(parent_dir_fd)
+                except OSError:
+                    pass  # Ignore close errors
             
             # Clean up temp file if it exists
             try:
-                temp_file_path = f"{file_path}.tmp"
                 if Path(temp_file_path).exists():
                     Path(temp_file_path).unlink()
             except Exception:
                 pass  # Ignore cleanup errors
-
-            return False
 
     def rollback_if_needed(
         self,

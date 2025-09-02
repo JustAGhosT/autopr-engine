@@ -5,14 +5,12 @@ AI-powered analysis of code quality issues.
 """
 
 import asyncio
-import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+import os
+from dataclasses import dataclass
+from typing import Any
 
 import structlog
 
-from autopr.actions.quality_engine.ai.llm_manager import LLMManager
-from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
 from autopr.ai.core.base import LLMMessage
 from autopr.ai.core.providers.manager import LLMProviderManager
 

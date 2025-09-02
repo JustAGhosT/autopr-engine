@@ -5,15 +5,17 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
+import asyncio
 import json
+from functools import partial
 from typing import Any
 
 import structlog
 
-from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.llm.manager import \
+    ActionLLMProviderManager as LLMProviderManager
 from autopr.actions.quality_engine.models import ToolResult
 from autopr.agents.models import CodeIssue
-
 
 logger = structlog.get_logger(__name__)
 
@@ -126,13 +128,23 @@ async def run_ai_analysis(
         # Get LLM response
         request = {
             "provider": provider_name,
+            "model": model,
             "messages": [
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": analysis_prompt},
             ],
             "temperature": 0.1,
         }
-        response = llm_manager.complete(request)
+        
+        # Use async call to avoid blocking the event loop
+        try:
+            response = await llm_manager.complete_async(request)
+        except AttributeError:
+            # Fallback to sync call via executor if async method doesn't exist
+            import asyncio
+            from functools import partial
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(None, partial(llm_manager.complete, request))
 
         if not response or not response.content:
             logger.warning("No response received from LLM")
@@ -150,6 +162,16 @@ async def run_ai_analysis(
 
             ai_result = json.loads(content)
 
+            # Ensure robust fallback keys exist
+            ai_result.setdefault("suggestions", [])
+            ai_result.setdefault("issues", [])
+            ai_result.setdefault("summary", "AI analysis completed")
+            ai_result.setdefault("priorities", [])
+            
+            # Mirror suggestions into issues when issues are absent
+            if not ai_result.get("issues") and ai_result.get("suggestions"):
+                ai_result["issues"] = ai_result["suggestions"]
+            
             # Add metadata
             ai_result["files_analyzed"] = list(file_contents.keys())
             ai_result["provider"] = provider_name
@@ -163,6 +185,7 @@ async def run_ai_analysis(
             # Return a fallback result
             return {
                 "suggestions": [],
+                "issues": [],
                 "summary": "AI analysis completed but response format was invalid",
                 "priorities": [],
                 "files_analyzed": list(file_contents.keys()),

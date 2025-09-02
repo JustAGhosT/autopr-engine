@@ -5,13 +5,13 @@ Manages AI agents for different types of code fixes.
 """
 
 import asyncio
+import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from autopr.actions.ai_linting_fixer.llm_client import LLMClient
-from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
-                                                    LintingIssue)
+from autopr.actions.ai_linting_fixer.detection import LintingIssue
+from autopr.actions.ai_linting_fixer.models import LintingFixResult
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import \
     AgentType
 from autopr.actions.ai_linting_fixer.specialists.specialist_manager import \
@@ -254,7 +254,8 @@ class AIAgentManager:
         if "confidence" in ai_response:
             response_confidence = ai_response["confidence"]
             if (
-                isinstance(response_confidence, int | float)
+                isinstance(response_confidence, (int, float))
+                and not isinstance(response_confidence, bool)
                 and 0 <= response_confidence <= 1
             ):
                 confidence = confidence * 0.7 + response_confidence * 0.3

@@ -12,11 +12,34 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
+from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
+    FileComplexityAnalyzer
+from autopr.actions.ai_linting_fixer.engines.ai_split_decision_engine import \
+    AISplitDecisionEngine
 from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
                                                            SplitConfig)
 from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.actions.ai_linting_fixer.performance_optimizer import (
+    IntelligentCache, ParallelProcessor)
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
+
+
+# Create a compatibility class for the tests
+class PerformanceOptimizer:
+    """Compatibility wrapper for old PerformanceOptimizer interface."""
+    
+    def __init__(self):
+        self.cache = IntelligentCache()
+        self.parallel_processor = ParallelProcessor()
+        
+    def cleanup(self):
+        """Cleanup resources."""
+        # Clean up cache and parallel processor resources
+        if hasattr(self.cache, 'cleanup'):
+            self.cache.cleanup()
+        if hasattr(self.parallel_processor, 'cleanup'):
+            self.parallel_processor.cleanup()
 
 
 class TestPerformanceOptimizedFileSplitter:
@@ -61,7 +84,7 @@ class TestPerformanceOptimizedFileSplitter:
         return FileSplitter(
             llm_manager=llm_manager,
             metrics_collector=metrics_collector,
-            performance_optimizer=performance_optimizer,
+            parallel_processor=performance_optimizer.parallel_processor,
         )
 
     @pytest.fixture
@@ -148,7 +171,7 @@ def another_function():
 
     def test_file_complexity_analyzer_with_caching(self, performance_optimizer):
         """Test file complexity analyzer with caching."""
-        analyzer = FileComplexityAnalyzer(performance_optimizer)
+        analyzer = FileComplexityAnalyzer(performance_optimizer.cache)
 
         content = """def test_function():
     if True:
@@ -182,7 +205,7 @@ class TestClass:
         self, llm_manager, performance_optimizer
     ):
         """Test AI split decision engine with caching."""
-        engine = AISplitDecisionEngine(llm_manager, performance_optimizer)
+        engine = AISplitDecisionEngine(llm_manager, performance_optimizer.cache)
 
         content = "def test(): pass"
         complexity = {

@@ -3,20 +3,20 @@ AutoPR Action: AutoGen Multi-Agent Implementation
 Uses AutoGen for complex multi-agent development tasks
 """
 
-from datetime import datetime
 import json
 import os
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Optional, TypeVar, cast
 
 from pydantic import BaseModel, Field
-
 
 # Define custom typing for ConversableAgent to avoid partial unknown types
 ConversableAgentType = Any
 
 try:
-    from autogen import ConversableAgent, GroupChat, GroupChatManager  # type: ignore
+    from autogen import (ConversableAgent, GroupChat,  # type: ignore
+                         GroupChatManager)
     AUTOGEN_AVAILABLE = True
 except ImportError:
     # Create dummy classes for type annotations when AutoGen is not available
@@ -587,6 +587,23 @@ Please work together to create a complete, production-ready solution.
 def run(inputs_dict: Dict[str, Any]) -> Dict[str, Any]:
     """AutoPR entry point"""
     inputs = AutoGenInputs(**inputs_dict)
+    
+    # Check if AutoGen is available before attempting to instantiate
+    if not AUTOGEN_AVAILABLE:
+        # Return graceful fallback when AutoGen is not available
+        fallback_outputs = AutoGenOutputs(
+            implementation_plan="",
+            code_changes={},
+            test_files={},
+            documentation="",
+            agent_conversations=[],
+            quality_score=0.0,
+            success=False,
+            errors=["AutoGen not available. Install with: pip install pyautogen"],
+        )
+        return fallback_outputs.model_dump() if hasattr(fallback_outputs, 'model_dump') else fallback_outputs.dict()
+    
+    # AutoGen is available, proceed with normal execution
     implementation = AutoGenImplementation()
     outputs = implementation.execute_multi_agent_task(inputs)
     # Use model_dump() which is the newer pydantic v2 way to convert to dict

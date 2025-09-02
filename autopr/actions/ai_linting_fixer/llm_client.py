@@ -9,10 +9,10 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from autopr.actions.ai_linting_fixer.models import LintingIssue, LintingFixResult
+from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
+                                                    LintingIssue)
 from autopr.ai.core.base import LLMMessage
 from autopr.ai.core.providers.manager import LLMProviderManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +43,17 @@ class LLMClient:
                 self.llm_manager.generate_completion
             ):
                 # Use async interface with generate_completion
+                # Build kwargs excluding known keys to forward all other parameters
+                known_keys = {"messages", "provider", "temperature", "max_tokens"}
+                kwargs = {k: v for k, v in request.items() if k not in known_keys}
+                
                 response = await self.llm_manager.generate_completion(
                     messages=request.get("messages", []),
                     provider_name=request.get("provider"),
                     temperature=request.get("temperature", 0.1),
                     max_tokens=request.get("max_tokens"),
+                    model=request.get("model"),
+                    **kwargs
                 )
             elif hasattr(self.llm_manager, "complete") and asyncio.iscoroutinefunction(
                 self.llm_manager.complete
@@ -57,11 +63,17 @@ class LLMClient:
             else:
                 # Use sync interface - check if result is awaitable
                 if hasattr(self.llm_manager, "generate_completion"):
+                    # Build kwargs excluding known keys to forward all other parameters
+                    known_keys = {"messages", "provider", "temperature", "max_tokens"}
+                    kwargs = {k: v for k, v in request.items() if k not in known_keys}
+                    
                     response = self.llm_manager.generate_completion(
                         messages=request.get("messages", []),
                         provider_name=request.get("provider"),
                         temperature=request.get("temperature", 0.1),
                         max_tokens=request.get("max_tokens"),
+                        model=request.get("model"),
+                        **kwargs
                     )
                 else:
                     response = self.llm_manager.complete(request)

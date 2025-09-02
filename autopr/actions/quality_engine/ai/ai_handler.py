@@ -6,14 +6,14 @@ Handles AI interactions for quality analysis.
 
 import asyncio
 import logging
+import os
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import structlog
 
-from autopr.actions.quality_engine.ai.ai_analyzer import AIAnalyzer
-from autopr.actions.quality_engine.ai.llm_manager import LLMManager
-from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
+from autopr.actions.quality_engine.models import ToolResult
 from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = structlog.get_logger(__name__)
@@ -75,7 +75,7 @@ async def initialize_llm_manager() -> Any | None:
         Initialized LLM manager or None if initialization fails
     """
     try:
-        from autopr.ai.providers.manager import LLMProviderManager
+        from autopr.ai.core.providers.manager import LLMProviderManager
 
         # Basic configuration for quality analysis
         config = {
@@ -113,14 +113,24 @@ async def initialize_llm_manager() -> Any | None:
 
         # Initialize the LLM manager
         try:
-            await llm_manager.initialize()
-            logger.info("LLM provider manager initialized successfully")
+            if hasattr(llm_manager, "initialize"):
+                initializer = getattr(llm_manager, "initialize")
+                if asyncio.iscoroutinefunction(initializer):
+                    await initializer()
+                else:
+                    initializer()
+                logger.info("LLM provider manager initialized successfully")
+            else:
+                logger.info("LLM provider manager does not require initialization")
         except Exception as init_error:
             logger.exception(f"Failed to initialize LLM manager: {init_error}")
             return None
 
         # Get available providers after initialization
-        available_providers = llm_manager.get_available_providers()
+        if hasattr(llm_manager, "list_providers"):
+            available_providers = llm_manager.list_providers()
+        else:
+            available_providers = llm_manager.get_available_providers()
         logger.info(
             "LLM provider manager ready", available_providers=available_providers
         )

@@ -49,10 +49,26 @@ class VolumeConfig(BaseModel):
         if v is None:
             v = {}
 
-        # Validate enable_ai_agents if present
-        if "enable_ai_agents" in v and not isinstance(v["enable_ai_agents"], bool):
-            msg = "enable_ai_agents must be a boolean"
-            raise ValueError(msg)
+        # Convert enable_ai_agents to boolean if present
+        if "enable_ai_agents" in v:
+            enable_ai_agents = v["enable_ai_agents"]
+            if isinstance(enable_ai_agents, str):
+                # Convert string to boolean
+                enable_ai_agents = enable_ai_agents.strip().lower()
+                if enable_ai_agents in ("true", "t", "yes", "y", "on", "1"):
+                    v["enable_ai_agents"] = True
+                elif enable_ai_agents in ("false", "f", "no", "n", "off", "0"):
+                    v["enable_ai_agents"] = False
+                else:
+                    msg = f"enable_ai_agents must be a boolean or valid boolean string, got '{enable_ai_agents}'"
+                    raise ValueError(msg)
+            elif not isinstance(enable_ai_agents, bool):
+                # Try to convert other types to boolean
+                try:
+                    v["enable_ai_agents"] = bool(enable_ai_agents)
+                except Exception:
+                    msg = f"enable_ai_agents must be a boolean, got {type(enable_ai_agents).__name__}"
+                    raise ValueError(msg)
 
         # Add enable_ai_agents if not present
         if "enable_ai_agents" not in v:

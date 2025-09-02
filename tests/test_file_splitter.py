@@ -5,16 +5,19 @@ Test File Splitter
 Tests for file splitting functionality.
 """
 
-import pytest
-from unittest.mock import Mock, patch, AsyncMock
+import tempfile
+from pathlib import Path
 from typing import Any, Dict, List
+from unittest.mock import AsyncMock, Mock, patch
 
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+import pytest
+
+from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
+    FileComplexityAnalyzer
+from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
+                                                           SplitConfig)
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.ai.core.providers.manager import LLMProviderManager
-
-from pathlib import Path
-import tempfile
 
 
 def create_test_file(content: str, filename: str = "test_file.py") -> str:
@@ -310,7 +313,7 @@ if __name__ == "__main__":
         )
 
         # Create a mock LLM manager for testing
-        from autopr.ai.providers.manager import LLMProviderManager
+        from autopr.ai.core.providers.manager import LLMProviderManager
 
         llm_config = {
             "providers": {
@@ -396,7 +399,7 @@ def function3():
 
     try:
         # Create a mock LLM manager for testing
-        from autopr.ai.providers.manager import LLMProviderManager
+        from autopr.ai.core.providers.manager import LLMProviderManager
 
         llm_config = {
             "providers": {

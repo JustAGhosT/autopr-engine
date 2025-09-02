@@ -4,16 +4,15 @@ Report Generator Module
 Generates comprehensive reports and analytics for implementation roadmap execution.
 """
 
-from datetime import datetime, timedelta
 import json
 import logging
 import operator
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from implementation.phase_manager import PhaseManager
-from implementation.task_executor import TaskExecution, TaskExecutor
-
+from .phase_manager import PhaseManager
+from .task_executor import TaskExecution, TaskExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +117,7 @@ class ReportGenerator:
         task_complexity_analysis = {}
 
         # Group tasks by category
-        from implementation.task_definitions import TaskRegistry
+        from .task_definitions import TaskRegistry
 
         categories = TaskRegistry.get_task_categories()
 

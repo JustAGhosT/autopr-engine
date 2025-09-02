@@ -5,13 +5,14 @@ Agent for managing code quality operations.
 """
 
 import asyncio
+import json
 import logging
+from dataclasses import dataclass
+from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
 
 from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityInputs, QualityOutputs
 from autopr.agents.base.agent import BaseAgent
 from autopr.ai.core.providers.manager import LLMProviderManager
 
@@ -50,7 +51,7 @@ class CodeQualityOutputs:
     suggestions: list[str]
 
 
-class CodeQualityAgent(BaseAgent[QualityInputs, QualityOutputs]):
+class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
     """Agent for analyzing and improving code quality.
 
     This agent analyzes code for quality issues, provides a quality score,
@@ -93,8 +94,6 @@ class CodeQualityAgent(BaseAgent[QualityInputs, QualityOutputs]):
         )
         # Initialize LLM provider if not done by BaseAgent
         if not hasattr(self, "llm_provider"):
-            from autopr.ai.providers.manager import LLMProviderManager
-
             # Minimal default config; provider selection handled later
             self.llm_provider = LLMProviderManager(
                 {"default_provider": "azure_openai", "providers": {}}

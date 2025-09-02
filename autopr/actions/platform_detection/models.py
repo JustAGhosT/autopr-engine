@@ -6,13 +6,13 @@ Data models for platform detection inputs and outputs.
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PlatformDetectorInputs(BaseModel):
     """Inputs for platform detection."""
     repository_url: str
-    commit_messages: list[str] = []
+    commit_messages: list[str] = Field(default_factory=list)
     workspace_path: str = "."
     package_json_content: str | None = None
 
@@ -24,5 +24,4 @@ class PlatformDetectorOutputs(BaseModel):
     platform_specific_config: dict[str, Any]
     recommended_workflow: str
     migration_suggestions: list[str]
-    enhancement_opportunities: list[str]
     enhancement_opportunities: list[str]

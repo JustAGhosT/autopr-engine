@@ -6,10 +6,9 @@ Manages LLM interactions for quality analysis.
 
 import asyncio
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+import os
+from typing import Any
 
-from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
 from autopr.ai.core.base import LLMMessage
 from autopr.ai.core.providers.manager import LLMProviderManager
 
@@ -57,11 +56,12 @@ async def initialize_llm_manager() -> LLMProviderManager | None:
 
         config_obj = SimpleConfig(config)
         llm_manager = LLMProviderManager(config_obj)
-        await llm_manager.initialize()
+        
+        # Guard optional initialize() call
+        if hasattr(llm_manager, "initialize"):
+            await llm_manager.initialize()
 
         # Test the connection
-        from autopr.ai.base import LLMMessage
-
         test_messages = [
             LLMMessage(role="system", content="You are a helpful assistant."),
             LLMMessage(role="user", content="Test message"),
