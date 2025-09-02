@@ -4,19 +4,15 @@ AI Agent Manager for AI Linting Fixer
 Manages AI agents for different types of code fixes.
 """
 
-import asyncio
 import json
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from autopr.actions.ai_linting_fixer.detection import LintingIssue
-from autopr.actions.ai_linting_fixer.models import LintingFixResult
-from autopr.actions.ai_linting_fixer.specialists.base_specialist import \
-    AgentType
-from autopr.actions.ai_linting_fixer.specialists.specialist_manager import \
-    SpecialistManager
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import AgentType
+from autopr.actions.ai_linting_fixer.specialists.specialist_manager import SpecialistManager
 from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -78,14 +74,14 @@ class AIAgentManager:
         return specialist.name
 
     def get_specialized_system_prompt(
-        self, agent_type: str, issues: list[LintingIssue]
+        self, agent_type: str, _issues: list[LintingIssue]
     ) -> str:
         """
         Get a specialized system prompt for the given agent type.
 
         Args:
             agent_type: String identifier for the agent type
-            issues: List of issues (used for context)
+            _issues: List of issues (used for context, prefixed with _ to indicate unused)
 
         Returns:
             Specialized system prompt for the agent
@@ -254,7 +250,7 @@ class AIAgentManager:
         if "confidence" in ai_response:
             response_confidence = ai_response["confidence"]
             if (
-                isinstance(response_confidence, (int, float))
+                isinstance(response_confidence, int | float)
                 and not isinstance(response_confidence, bool)
                 and 0 <= response_confidence <= 1
             ):
