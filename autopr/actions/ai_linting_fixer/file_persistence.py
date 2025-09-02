@@ -4,12 +4,14 @@ File Persistence Module
 Handles atomic file operations and persistence following the Single Responsibility Principle.
 """
 
+from contextlib import suppress
 import logging
 import os
 from pathlib import Path
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,7 @@ class FilePersistenceManager:
 
     def __init__(self, backup_manager: BackupManager | None = None):
         """Initialize the file persistence manager.
-        
+
         Args:
             backup_manager: Optional backup manager for file operations
         """
@@ -33,13 +35,13 @@ class FilePersistenceManager:
         create_backup: bool = True,
     ) -> dict[str, Any]:
         """Persist a fix to disk with atomic operations.
-        
+
         Args:
             file_path: Path to the file to update
             content: Content to write
             session_id: Session ID for backup management
             create_backup: Whether to create a backup before writing
-            
+
         Returns:
             Result dictionary with success status and details
         """
@@ -53,7 +55,7 @@ class FilePersistenceManager:
                 current_session_id = session_id or "default"
                 if current_session_id not in self.backup_manager.sessions:
                     self.backup_manager.start_session(current_session_id)
-                
+
                 backup = self.backup_manager.backup_file(file_path, current_session_id)
                 if not backup:
                     logger.error("Failed to create backup for %s", file_path)
@@ -78,12 +80,6 @@ class FilePersistenceManager:
                 if not rollback_success:
                     logger.error("Rollback failed for %s", file_path)
 
-            return {
-                "write_success": write_success,
-                "backup_created": backup is not None,
-                "rollback_performed": rollback_performed,
-            }
-
         except Exception as e:
             logger.exception("Error during file persistence for %s", file_path)
             return {
@@ -92,41 +88,42 @@ class FilePersistenceManager:
                 "rollback_performed": False,
                 "error": str(e),
             }
+        else:
+            return {
+                "write_success": write_success,
+                "backup_created": backup is not None,
+                "rollback_performed": rollback_performed,
+            }
 
     async def _atomic_write(self, file_path: str, content: str) -> bool:
         """Perform atomic file write using temp file + rename with proper fsync.
-        
+
         Args:
             file_path: Target file path
             content: Content to write
-            
+
         Returns:
             True if write successful, False otherwise
         """
         temp_file_path = f"{file_path}.tmp"
-        temp_file = None
         parent_dir_fd = None
-        
+
         try:
-            # Write to temporary file with explicit file handle for fsync
-            temp_file = Path(temp_file_path).open('w', encoding='utf-8')
-            temp_file.write(content)
-            temp_file.flush()  # Ensure data is written to disk
-            
-            # Call fsync to ensure data is persisted to disk
-            os.fsync(temp_file.fileno())
-            
-            # Close the temp file before atomic replacement
-            temp_file.close()
-            temp_file = None
+            # Write to temporary file with context manager
+            with Path(temp_file_path).open('w', encoding='utf-8') as temp_file:
+                temp_file.write(content)
+                temp_file.flush()  # Ensure data is written to disk
+
+                # Call fsync to ensure data is persisted to disk
+                os.fsync(temp_file.fileno())
 
             # Atomic rename to target file with platform-specific handling
             if os.name == 'nt':  # Windows
-                # On Windows, prefer os.replace for atomic replacement
+                # On Windows, prefer Path.replace for atomic replacement
                 try:
-                    os.replace(temp_file_path, file_path)
-                except OSError as e:
-                    # Fallback to Path.replace if os.replace fails
+                    Path(temp_file_path).replace(file_path)
+                except OSError:
+                    # Fallback to rename if replace fails
                     if Path(file_path).exists():
                         Path(temp_file_path).replace(file_path)
                     else:
@@ -139,43 +136,32 @@ class FilePersistenceManager:
                 parent_dir = str(Path(file_path).parent)
                 parent_dir_fd = os.open(parent_dir, os.O_RDONLY)
                 os.fsync(parent_dir_fd)
-            except (OSError, IOError) as e:
+            except OSError as e:
                 logger.warning("Failed to fsync parent directory %s: %s", parent_dir, e)
             finally:
                 if parent_dir_fd is not None:
-                    try:
+                    with suppress(OSError):
                         os.close(parent_dir_fd)
-                    except OSError:
-                        pass  # Ignore close errors
                     parent_dir_fd = None
 
             logger.info("Successfully persisted file %s", file_path)
-            return True
 
         except Exception:
             logger.exception("Failed to write file %s", file_path)
-            return False
-            
+        else:
+            return True
         finally:
             # Clean up resources
-            if temp_file is not None:
-                try:
-                    temp_file.close()
-                except Exception:
-                    pass  # Ignore close errors
-            
             if parent_dir_fd is not None:
-                try:
+                with suppress(OSError):
                     os.close(parent_dir_fd)
-                except OSError:
-                    pass  # Ignore close errors
-            
+
             # Clean up temp file if it exists
-            try:
+            with suppress(Exception):
                 if Path(temp_file_path).exists():
                     Path(temp_file_path).unlink()
-            except Exception:
-                pass  # Ignore cleanup errors
+
+        return False
 
     def rollback_if_needed(
         self,
@@ -184,12 +170,12 @@ class FilePersistenceManager:
         session_id: str | None = None,
     ) -> bool:
         """Rollback a file if needed.
-        
+
         Args:
             file_path: Path to the file to rollback
             should_rollback: Whether rollback should be performed
             session_id: Session ID for backup management
-            
+
         Returns:
             True if rollback was successful or not needed, False otherwise
         """
@@ -205,8 +191,8 @@ class FilePersistenceManager:
             if not rollback_success:
                 logger.error("Rollback failed for %s", file_path)
 
-            return rollback_success
-
         except Exception:
             logger.exception("Error during rollback for %s", file_path)
             return False
+        else:
+            return rollback_success

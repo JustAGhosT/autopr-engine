@@ -567,7 +567,17 @@
     "scoring",
     "specialists",
     "specializations",
-    "specialized"
+    "specialized",
+    "Responsibility",
+    "Principle",
+    "performed",
+    "Perform",
+    "otherwise",
+    "written",
+    "persisted",
+    "fails",
+    "fsyncing",
+    "RDONLY"
   ],
   "ignoreWords": [
     "async",
