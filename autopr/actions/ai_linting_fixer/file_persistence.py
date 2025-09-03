@@ -58,13 +58,17 @@ class FilePersistenceManager:
 
                 backup = self.backup_manager.backup_file(file_path, current_session_id)
                 if not backup:
-                    logger.error("Failed to create backup for %s", file_path)
-                    return {
-                        "write_success": False,
-                        "backup_created": False,
-                        "rollback_performed": False,
-                        "error": "Backup creation failed",
-                    }
+                    # If the file doesn't exist yet, proceed without a backup
+                    if not Path(file_path).exists():
+                        logger.info("No existing file to backup for %s; proceeding", file_path)
+                    else:
+                        logger.error("Failed to create backup for %s", file_path)
+                        return {
+                            "write_success": False,
+                            "backup_created": False,
+                            "rollback_performed": False,
+                            "error": "Backup creation failed",
+                        }
 
             # Perform atomic write
             write_success = await self._atomic_write(file_path, content)

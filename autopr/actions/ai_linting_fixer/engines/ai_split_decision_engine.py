@@ -8,9 +8,9 @@ import hashlib
 import logging
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.performance_optimizer import \
-    IntelligentCache
+from autopr.actions.ai_linting_fixer.performance_optimizer import IntelligentCache
 from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ class AISplitDecisionEngine:
         # Try cache first
         cached_result = self.cache_manager.get(cache_key)
         if cached_result:
-            logger.debug(f"Cache hit for split decision: {file_path}")
-            logger.info(f"Using cached decision: {cached_result['reason']}")
+            logger.debug("Cache hit for split decision: %s", file_path)
+            logger.info("Using cached decision: %s", cached_result['reason'])
             return (
                 cached_result["should_split"],
                 cached_result["confidence"],
@@ -57,20 +57,23 @@ class AISplitDecisionEngine:
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are an expert code analyzer. Determine if a file should be split based on complexity, maintainability, and best practices.",
+                        "content": (
+                            "You are an expert code analyzer. Determine if a file should be "
+                            "split based on complexity, maintainability, and best practices."
+                        ),
                     },
                     {"role": "user", "content": prompt},
                 ],
                 "temperature": 0.1,
             }
-            response = await self.llm_manager.generate_completion(
+            response = await self.llm_manager.complete(
                 messages=request["messages"],
-                provider_name=request["provider"],
+                provider=request["provider"],
                 temperature=request["temperature"],
             )
 
             if response and response.content:
-                logger.debug(f"AI response received: {response.content[:100]}...")
+                logger.debug("AI response received: %s...", response.content[:100])
 
                 # Enhanced rule-based decision with detailed reasoning
                 should_split = False
@@ -117,13 +120,13 @@ class AISplitDecisionEngine:
                 # Cache result
                 self.cache_manager.set(cache_key, result, ttl_seconds=3600)
                 logger.info(
-                    f"AI analysis complete: {reason} (confidence: {confidence:.2f})"
+                    "AI analysis complete: %s (confidence: %.2f)", reason, confidence
                 )
 
                 return should_split, confidence, reason
 
         except Exception as e:
-            logger.warning(f"AI split decision failed: {e}")
+            logger.warning("AI split decision failed: %s", e)
 
         # Fallback to rule-based decision
         logger.info("Using fallback rule-based decision")

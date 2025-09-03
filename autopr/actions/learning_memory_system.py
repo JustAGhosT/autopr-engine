@@ -3,14 +3,13 @@ AutoPR Action: Learning & Memory System
 Tracks patterns, user preferences, and project context to improve decision-making over time.
 """
 
+from datetime import UTC, datetime
 import hashlib
-import os
 import pathlib
 import sqlite3
-from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MemoryInputs(BaseModel):
@@ -20,15 +19,15 @@ class MemoryInputs(BaseModel):
     comment_type: str | None = None
     fix_applied: str | None = None
     success: bool | None = None
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class MemoryOutputs(BaseModel):
     success: bool
-    patterns: list[dict[str, Any]] = []
-    recommendations: list[str] = []
-    confidence_scores: dict[str, float] = {}
-    learned_preferences: dict[str, Any] = {}
+    patterns: list[dict[str, Any]] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    confidence_scores: dict[str, float] = Field(default_factory=dict)
+    learned_preferences: dict[str, Any] = Field(default_factory=dict)
 
 
 class LearningMemorySystem:
@@ -112,7 +111,7 @@ class LearningMemorySystem:
 
         try:
             file_ext = (
-                os.path.splitext(inputs.file_path or "")[1] if inputs.file_path else ""
+                pathlib.Path(inputs.file_path or "").suffix if inputs.file_path else ""
             )
 
             # Check if pattern exists
@@ -140,14 +139,15 @@ class LearningMemorySystem:
                     SET usage_count = ?, success_rate = ?, last_used = ?
                     WHERE id = ?
                 """,
-                    (new_usage_count, new_success_rate, datetime.now(), pattern_id),
+                    (new_usage_count, new_success_rate, datetime.now(UTC), pattern_id),
                 )
             else:
                 # Create new pattern
                 cursor.execute(
                     """
                     INSERT INTO fix_patterns
-                    (comment_type, file_extension, fix_type, fix_code, success_rate, usage_count, last_used)
+                    (comment_type, file_extension, fix_type, fix_code,
+                     success_rate, usage_count, last_used)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
@@ -157,14 +157,15 @@ class LearningMemorySystem:
                         inputs.context.get("fix_code", ""),
                         1.0 if inputs.success else 0.0,
                         1,
-                        datetime.now(),
+                        datetime.now(UTC),
                     ),
                 )
 
             conn.commit()
-            return True
         except Exception:
             return False
+        else:
+            return True
         finally:
             conn.close()
 
@@ -196,9 +197,10 @@ class LearningMemorySystem:
             )
 
             conn.commit()
-            return True
         except Exception:
             return False
+        else:
+            return True
         finally:
             conn.close()
 
@@ -210,7 +212,7 @@ class LearningMemorySystem:
         cursor = conn.cursor()
 
         try:
-            file_ext = os.path.splitext(file_path or "")[1] if file_path else ""
+            file_ext = pathlib.Path(file_path or "").suffix if file_path else ""
 
             # Get patterns ordered by success rate and usage
             cursor.execute(
@@ -238,9 +240,10 @@ class LearningMemorySystem:
                     }
                 )
 
-            return recommendations
         except Exception:
             return []
+        else:
+            return recommendations
         finally:
             conn.close()
 
@@ -264,9 +267,10 @@ class LearningMemorySystem:
             for pref_type, pref_value, confidence in cursor.fetchall():
                 preferences[pref_type] = {"value": pref_value, "confidence": confidence}
 
-            return preferences
         except Exception:
             return {}
+        else:
+            return preferences
         finally:
             conn.close()
 
@@ -303,7 +307,7 @@ class LearningMemorySystem:
         for file_path in files[:10]:
             if file_path.endswith((".js", ".ts", ".tsx", ".jsx")):
                 try:
-                    with open(file_path, encoding="utf-8") as f:
+                    with pathlib.Path(file_path).open(encoding="utf-8") as f:
                         content = f.read()
 
                     # Count style indicators
@@ -396,7 +400,7 @@ class LearningMemorySystem:
                         str(pattern_data),
                         1,
                         1.0,
-                        datetime.now(),
+                        datetime.now(UTC),
                     ),
                 )
 
