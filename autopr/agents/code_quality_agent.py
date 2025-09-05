@@ -4,15 +4,11 @@ Code Quality Agent
 Agent for managing code quality operations.
 """
 
-import asyncio
-import json
-import logging
 from dataclasses import dataclass
+import json
 from json.decoder import JSONDecodeError
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from autopr.actions.quality_engine.engine import QualityEngine
 from autopr.agents.base.agent import BaseAgent
 from autopr.ai.core.providers.manager import LLMProviderManager
 
@@ -79,7 +75,10 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         """
         super().__init__(
             name="Code Quality Analyst",
-            role="Analyze and improve code quality by identifying issues and suggesting improvements.",
+            role=(
+                "Analyze and improve code quality by identifying issues and "
+                "suggesting improvements."
+            ),
             backstory=(
                 "You are a meticulous code quality analyst with deep knowledge of "
                 "software engineering best practices, design patterns, and code smells. "
@@ -148,7 +147,7 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
                 suggestions=["Failed to analyze code quality due to an error."],
             )
 
-    def _build_prompt(self, inputs: CodeQualityInputs, config: dict[str, Any]) -> str:
+    def _build_prompt(self, inputs: CodeQualityInputs) -> str:
         """Build the prompt for the LLM based on inputs and configuration.
 
         Args:
@@ -228,7 +227,7 @@ Format your response as a JSON object with the following structure:
             # Validate the response structure
             if not isinstance(result, dict):
                 msg = "Response is not a JSON object"
-                raise ValueError(msg)
+                raise TypeError(msg)
 
             # Ensure required fields exist
             if "issues" not in result:
@@ -239,8 +238,6 @@ Format your response as a JSON object with the following structure:
                 result["metrics"] = {}
             if "suggestions" not in result:
                 result["suggestions"] = []
-
-            return result
 
         except JSONDecodeError as e:
             # If JSON parsing fails, return a default response with the error
@@ -257,3 +254,5 @@ Format your response as a JSON object with the following structure:
                     "The code quality analysis could not be completed due to a parsing error."
                 ],
             }
+        else:
+            return result

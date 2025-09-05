@@ -33,6 +33,23 @@ class LLMMessage:
 
 
 @dataclass
+class CompletionRequest:
+    """Represents a completion request to an LLM provider."""
+
+    messages: list[LLMMessage]
+    model: str | None = None
+    temperature: float = 0.7
+    max_tokens: int = 1000
+    provider: str | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        """Initialize metadata if not provided."""
+        if self.metadata is None:
+            self.metadata = {}
+
+
+@dataclass
 class LLMResponse:
     """Represents a response from an LLM provider."""
 

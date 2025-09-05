@@ -9,15 +9,13 @@ import importlib as _importlib
 import inspect as _inspect
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from autopr.actions.quality_engine.models import QualityMode
-from autopr.agents.base.agent import BaseAgent
-# from autopr.agents.crew.report_builder import ReportBuilder  # Not implemented yet
-# from autopr.agents.crew.tasks import TaskManager  # Not implemented yet
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config.settings import get_settings
 from autopr.utils.volume_utils import get_volume_level_name
+
 
 # Constants for volume thresholds
 VOLUME_HIGH = 700
@@ -39,7 +37,7 @@ EXPECTED_RESULTS_COUNT = 3
 logger = logging.getLogger(__name__)
 
 
-def get_llm_provider_manager() -> Optional[LLMProviderManager]:
+def get_llm_provider_manager() -> LLMProviderManager | None:
     """Get the LLM provider manager instance."""
     try:
         from autopr.config.settings import get_settings
@@ -87,8 +85,7 @@ class AutoPRCrew:
             self.platform_agent = injected_pa
         else:
             # Import from the correct location
-            from autopr.agents.platform_analysis_agent import \
-                PlatformAnalysisAgent
+            from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
 
             self.platform_agent = PlatformAnalysisAgent(**agent_kwargs)
 
@@ -144,15 +141,20 @@ class AutoPRCrew:
         """Create code quality analysis task."""
         agent = self.code_quality_agent
         agent.role = "Senior Code Quality Engineer"
-        agent.goal = "Analyze code quality, maintainability, and technical debt with configurable depth"
+        agent.goal = (
+            "Analyze code quality, maintainability, and technical debt with configurable depth"
+        )
 
         # Determine analysis depth based on volume
         current_volume = context.get("volume", self.volume)
         volume_level = get_volume_level_name(current_volume)
 
-        agent.backstory = f"""You are an expert in code quality analysis, software metrics, and technical debt assessment.
-        You provide actionable insights to improve code maintainability and reduce technical debt.
-        Volume level {current_volume} ({volume_level})."""
+        agent.backstory = (
+            f"You are an expert in code quality analysis, software metrics, and "
+            f"technical debt assessment. You provide actionable insights to improve "
+            f"code maintainability and reduce technical debt. "
+            f"Volume level {current_volume} ({volume_level})."
+        )
 
         # Create task
         tasks_mod = _importlib.import_module("autopr.agents.crew.tasks")
@@ -173,7 +175,7 @@ class AutoPRCrew:
         task.description = f"{desc} (Volume: {current_volume}, Detail: {detail})"
         return task
 
-    def _create_linting_task(self, repo_path: Path, context: dict[str, Any]) -> Any:
+    async def _create_linting_task(self, repo_path: Path, context: dict[str, Any]) -> Any:
         """Create linting task."""
         tasks_mod = _importlib.import_module("autopr.agents.crew.tasks")
         task = tasks_mod.create_linting_task(repo_path, context, self.linting_agent)
@@ -186,9 +188,16 @@ class AutoPRCrew:
                 merged_ctx = {}
                 merged_ctx.update(context)
                 merged_ctx.update(task_ctx)
-                _ = analyze_code(
-                    repo_path=context.get("repo_path", repo_path), context=merged_ctx
-                )
+                # Check if analyze_code is async and await it if so
+                if asyncio.iscoroutinefunction(analyze_code):
+                    await analyze_code(
+                        repo_path=context.get("repo_path", repo_path), context=merged_ctx
+                    )
+                else:
+                    # If it's not async, call it directly
+                    analyze_code(
+                        repo_path=context.get("repo_path", repo_path), context=merged_ctx
+                    )
 
         # Update task with volume context
         task_ctx = getattr(task, "context", None)
@@ -277,7 +286,7 @@ class AutoPRCrew:
         context = self._build_context(repo_path, current_volume, analysis_kwargs)
 
         # Create and execute tasks
-        tasks = self._create_tasks(repo_path, context)
+        tasks = await self._create_tasks(repo_path, context)
         results = await self._gather_tasks(tasks)
 
         # Process results
@@ -307,7 +316,7 @@ class AutoPRCrew:
             **analysis_kwargs,
         }
 
-    def _create_tasks(
+    async def _create_tasks(
         self, repo_path: Path | str, context: dict[str, Any]
     ) -> list[Any]:
         """Create analysis tasks."""
@@ -318,7 +327,7 @@ class AutoPRCrew:
         ctx["volume"] = current
 
         # Create task builders
-        def _call_builder(builder, *args):
+        async def _call_builder(builder, *args):
             sig = _inspect.signature(builder)
             params = [
                 p
@@ -326,15 +335,19 @@ class AutoPRCrew:
                 if p.name != "self"
                 and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
             ]
-            return builder(*args[: len(params)])
+            result = builder(*args[: len(params)])
+            # If the builder is async, await it
+            if asyncio.iscoroutine(result):
+                return await result
+            return result
 
-        code_quality_task = _call_builder(
+        code_quality_task = await _call_builder(
             self._create_code_quality_task, repo_path, ctx
         )
-        platform_task = _call_builder(
+        platform_task = await _call_builder(
             self._create_platform_analysis_task, repo_path, ctx
         )
-        linting_task = _call_builder(self._create_linting_task, repo_path, ctx)
+        linting_task = await _call_builder(self._create_linting_task, repo_path, ctx)
 
         # Create task pairs
         task_pairs = [

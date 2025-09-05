@@ -5,16 +5,14 @@ Handles AI interactions for quality analysis.
 """
 
 import asyncio
-import logging
 import os
 import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
 from autopr.actions.quality_engine.models import ToolResult
-from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = structlog.get_logger(__name__)
 
@@ -38,8 +36,7 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from autopr.actions.quality_engine.ai.ai_modes import \
-            run_ai_analysis as run_analysis
+        from autopr.actions.quality_engine.ai.ai_modes import run_ai_analysis as run_analysis
 
         logger.info("Starting AI-enhanced analysis", file_count=len(files))
         start_time = time.time()
@@ -50,18 +47,18 @@ async def run_ai_analysis(
         if result is None:
             logger.warning("AI analysis returned None result")
             return None
+        else:
+            execution_time = time.time() - start_time
+            logger.info(
+                "AI analysis completed",
+                issues_found=len(result.get("issues", [])),
+                execution_time=f"{execution_time:.2f}s",
+            )
 
-        execution_time = time.time() - start_time
-        logger.info(
-            "AI analysis completed",
-            issues_found=len(result.get("issues", [])),
-            execution_time=f"{execution_time:.2f}s",
-        )
+            # Add execution time to the result
+            result["execution_time"] = execution_time
 
-        # Add execution time to the result
-        result["execution_time"] = execution_time
-
-        return result
+            return result
 
     except Exception as e:
         logger.exception("Error running AI analysis", error=str(e))
@@ -75,6 +72,7 @@ async def initialize_llm_manager() -> Any | None:
         Initialized LLM manager or None if initialization fails
     """
     try:
+        from autopr.ai.core.base import AnthropicProvider, OpenAIProvider
         from autopr.ai.core.providers.manager import LLMProviderManager
 
         # Basic configuration for quality analysis
@@ -111,10 +109,30 @@ async def initialize_llm_manager() -> Any | None:
         config_obj = SimpleConfig(config)
         llm_manager = LLMProviderManager(config_obj)
 
+        # Create and register OpenAI provider if API key is available
+        if config["providers"]["openai"]["api_key"]:
+            openai_provider = OpenAIProvider()
+            openai_provider.default_model = config["providers"]["openai"]["default_model"]
+            llm_manager.register_provider("openai", openai_provider)
+            logger.info("OpenAI provider registered")
+
+        # Create and register Anthropic provider if API key is available
+        if config["providers"]["anthropic"]["api_key"]:
+            anthropic_provider = AnthropicProvider()
+            anthropic_provider.default_model = config["providers"]["anthropic"]["default_model"]
+            llm_manager.register_provider("anthropic", anthropic_provider)
+            logger.info("Anthropic provider registered")
+
+        # Set fallback order and default provider
+        if config["providers"]["openai"]["api_key"]:
+            llm_manager.set_default_provider("openai")
+        elif config["providers"]["anthropic"]["api_key"]:
+            llm_manager.set_default_provider("anthropic")
+
         # Initialize the LLM manager
         try:
             if hasattr(llm_manager, "initialize"):
-                initializer = getattr(llm_manager, "initialize")
+                initializer = llm_manager.initialize
                 if asyncio.iscoroutinefunction(initializer):
                     await initializer()
                 else:
@@ -122,24 +140,24 @@ async def initialize_llm_manager() -> Any | None:
                 logger.info("LLM provider manager initialized successfully")
             else:
                 logger.info("LLM provider manager does not require initialization")
-        except Exception as init_error:
-            logger.exception(f"Failed to initialize LLM manager: {init_error}")
+        except Exception:
+            logger.exception("Failed to initialize LLM manager")
             return None
-
-        # Get available providers after initialization
-        if hasattr(llm_manager, "list_providers"):
-            available_providers = llm_manager.list_providers()
         else:
-            available_providers = llm_manager.get_available_providers()
-        logger.info(
-            "LLM provider manager ready", available_providers=available_providers
-        )
+            # Get available providers after initialization
+            if hasattr(llm_manager, "list_providers"):
+                available_providers = llm_manager.list_providers()
+            else:
+                available_providers = llm_manager.get_available_providers()
+            logger.info(
+                "LLM provider manager ready", available_providers=available_providers
+            )
 
-        if not available_providers:
-            logger.warning("No LLM providers available for AI-enhanced analysis")
-            return None
+            if not available_providers:
+                logger.warning("No LLM providers available for AI-enhanced analysis")
+                return None
 
-        return llm_manager
+            return llm_manager
 
     except Exception as e:
         logger.exception("Failed to initialize LLM provider manager", error=str(e))

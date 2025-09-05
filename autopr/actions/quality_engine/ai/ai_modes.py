@@ -5,83 +5,84 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
-import asyncio
 import json
-from functools import partial
+from pathlib import Path
 from typing import Any
 
 import structlog
 
-from autopr.actions.llm.manager import \
-    ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
 from autopr.actions.quality_engine.models import ToolResult
 from autopr.agents.models import CodeIssue
+
 
 logger = structlog.get_logger(__name__)
 
 # System prompt templates
-CODE_REVIEW_PROMPT = """You are CodeQualityGPT, an expert code review assistant specialized in identifying improvements,
-optimizations, and potential issues in code. Your task is to analyze code snippets and provide detailed,
-actionable feedback that goes beyond what static analysis tools can find.
+CODE_REVIEW_PROMPT = (
+    "You are CodeQualityGPT, an expert code review assistant specialized in identifying "
+    "improvements, optimizations, and potential issues in code. Your task is to analyze "
+    "code snippets and provide detailed, actionable feedback that goes beyond what "
+    "static analysis tools can find.\n\n"
+    "Focus on the following aspects:\n"
+    "1. Architecture and design patterns\n"
+    "2. Performance optimization opportunities\n"
+    "3. Security vulnerabilities or risks\n"
+    "4. Maintainability and readability concerns\n"
+    "5. Edge case handling and robustness\n"
+    "6. Business logic flaws or inconsistencies\n"
+    "7. API design and usability\n\n"
+    "Provide your feedback in a structured JSON format with:\n"
+    "- Specific issues identified\n"
+    "- Why they matter\n"
+    "- How to fix them\n"
+    "- A confidence score (0-1) for each suggestion\n\n"
+    "Format your response as JSON:\n"
+    "```json\n"
+    "{\n"
+    '  "suggestions": [\n'
+    "    {\n"
+    '      "line": 42,\n'
+    '      "issue": "Inefficient algorithm implementation",\n'
+    '      "explanation": (\n'
+    '          "The current approach has O(n²) complexity but could be optimized to O(n log n)."\n'
+    "      ),\n"
+    '      "fix": (\n'
+    '          "Use a more efficient sorting algorithm like quicksort instead of bubble sort."\n'
+    "      ),\n"
+    '      "category": "performance",\n'
+    '      "confidence": 0.9\n'
+    "    }\n"
+    "  ],\n"
+    '  "summary": "Overall code quality assessment and key improvement areas.",\n'
+    '  "priorities": ["Top 3 most important issues to address"]\n'
+    "}\n"
+    "```\n"
+)
 
-Focus on the following aspects:
-1. Architecture and design patterns
-2. Performance optimization opportunities
-3. Security vulnerabilities or risks
-4. Maintainability and readability concerns
-5. Edge case handling and robustness
-6. Business logic flaws or inconsistencies
-7. API design and usability
 
-Provide your feedback in a structured JSON format with:
-- Specific issues identified
-- Why they matter
-- How to fix them
-- A confidence score (0-1) for each suggestion
+ARCHITECTURE_PROMPT = (
+    "You are CodeArchitectGPT, an expert in software architecture and design patterns. "
+    "Analyze this codebase from an architectural perspective, identifying:\n\n"
+    "1. Design pattern usage and opportunities\n"
+    "2. Component interactions and dependencies\n"
+    "3. Architectural smells or anti-patterns\n"
+    "4. Modularization and separation of concerns\n"
+    "5. Potential architectural improvements\n\n"
+    "Provide detailed architectural insights in a structured JSON format."
+)
 
-Format your response as JSON:
-```json
-{
-  "suggestions": [
-    {
-      "line": 42,
-      "issue": "Inefficient algorithm implementation",
-      "explanation": "The current approach has O(n²) complexity but could be optimized to O(n log n).",
-      "fix": "Use a more efficient sorting algorithm like quicksort instead of bubble sort.",
-      "category": "performance",
-      "confidence": 0.9
-    }
-  ],
-  "summary": "Overall code quality assessment and key improvement areas.",
-  "priorities": ["Top 3 most important issues to address"]
-}
-```
-"""
-
-ARCHITECTURE_PROMPT = """You are CodeArchitectGPT, an expert in software architecture and design patterns.
-Analyze this codebase from an architectural perspective, identifying:
-
-1. Design pattern usage and opportunities
-2. Component interactions and dependencies
-3. Architectural smells or anti-patterns
-4. Modularization and separation of concerns
-5. Potential architectural improvements
-
-Provide detailed architectural insights in a structured JSON format.
-"""
-
-SECURITY_PROMPT = """You are SecurityGPT, an expert in application security and secure coding practices.
-Analyze this code for security vulnerabilities, focusing on:
-
-1. Input validation and sanitization
-2. Authentication and authorization
-3. Data encryption and protection
-4. Common vulnerabilities (SQL injection, XSS, CSRF, etc.)
-5. Secure coding practices
-6. Compliance considerations
-
-Provide security analysis in a structured JSON format with severity levels.
-"""
+SECURITY_PROMPT = (
+    "You are SecurityGPT, an expert in application security and secure coding practices. "
+    "Analyze this code for security vulnerabilities, focusing on:\n\n"
+    "1. Input validation and sanitization\n"
+    "2. Authentication and authorization\n"
+    "3. Data encryption and protection\n"
+    "4. Common vulnerabilities (SQL injection, XSS, CSRF, etc.)\n"
+    "5. Secure coding practices\n"
+    "6. Compliance considerations\n\n"
+    "Provide security analysis in a structured JSON format with severity levels."
+)
 
 
 async def run_ai_analysis(
@@ -112,10 +113,10 @@ async def run_ai_analysis(
         file_contents = {}
         for file_path in files:
             try:
-                with open(file_path, encoding="utf-8") as f:
+                with Path(file_path).open(encoding="utf-8") as f:
                     file_contents[file_path] = f.read()
             except Exception as e:
-                logger.warning(f"Could not read file {file_path}: {e}")
+                logger.warning("Could not read file %s: %s", file_path, e)
                 continue
 
         if not file_contents:
@@ -134,8 +135,9 @@ async def run_ai_analysis(
                 {"role": "user", "content": analysis_prompt},
             ],
             "temperature": 0.1,
+            "response_format": {"type": "json_object"},
         }
-        
+
         # Use async call to avoid blocking the event loop
         try:
             response = await llm_manager.complete_async(request)
@@ -167,21 +169,20 @@ async def run_ai_analysis(
             ai_result.setdefault("issues", [])
             ai_result.setdefault("summary", "AI analysis completed")
             ai_result.setdefault("priorities", [])
-            
+
             # Mirror suggestions into issues when issues are absent
             if not ai_result.get("issues") and ai_result.get("suggestions"):
                 ai_result["issues"] = ai_result["suggestions"]
-            
+
             # Add metadata
             ai_result["files_analyzed"] = list(file_contents.keys())
             ai_result["provider"] = provider_name
             ai_result["model"] = model
 
-            logger.info(f"AI analysis completed for {len(file_contents)} files")
-            return ai_result
+            logger.info("AI analysis completed for %d files", len(file_contents))
 
-        except json.JSONDecodeError as e:
-            logger.exception(f"Failed to parse AI response as JSON: {e}")
+        except json.JSONDecodeError:
+            logger.exception("Failed to parse AI response as JSON")
             # Return a fallback result
             return {
                 "suggestions": [],
@@ -193,9 +194,11 @@ async def run_ai_analysis(
                 "model": model,
                 "error": "JSON parsing failed",
             }
+        else:
+            return ai_result
 
-    except Exception as e:
-        logger.exception(f"AI analysis failed: {e}")
+    except Exception:
+        logger.exception("AI analysis failed")
         return None
 
 
@@ -233,6 +236,28 @@ def create_tool_result_from_ai_analysis(ai_result: dict[str, Any]) -> ToolResult
         )
         issues.append(issue)
 
+    # Convert AI issues to CodeIssue objects (handle both "issue" and "message" keys)
+    ai_issues = ai_result.get("issues", [])
+    for ai_issue in ai_issues:
+        issue = CodeIssue(
+            file_path=ai_issue.get("file", ai_issue.get("path", "unknown")),
+            line_number=ai_issue.get("line", ai_issue.get("line_number", 0)),
+            column=ai_issue.get("column", ai_issue.get("column_number", 0)),
+            message=ai_issue.get("issue", ai_issue.get("message", "AI issue")),
+            severity="info" if ai_issue.get("confidence", 0) < 0.7 else "warning",
+            rule_id=ai_issue.get("category", ai_issue.get("rule_id", "AI_ISSUE")),
+            category="ai_issue",
+            fix=(
+                {
+                    "suggestion": ai_issue.get("fix", ai_issue.get("suggestion", "")),
+                    "confidence": ai_issue.get("confidence", 0.5),
+                }
+                if ai_issue.get("fix") or ai_issue.get("suggestion")
+                else None
+            ),
+        )
+        issues.append(issue)
+
     # Create tool result
     return ToolResult(
         issues=[issue.model_dump() for issue in issues],
@@ -253,7 +278,10 @@ def _create_analysis_prompt(file_contents: dict[str, str]) -> str:
         str: Analysis prompt
     """
     prompt_parts = [
-        "Please analyze the following code files for quality issues, improvements, and potential problems:",
+        (
+            "Please analyze the following code files for quality issues, improvements, and "
+            "potential problems:"
+        ),
         "",
     ]
 
@@ -332,7 +360,9 @@ def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
 
     # Add truncation indicator if content was actually truncated
     if len(content) > len(truncated_content):
-        truncated_content += f"\n\n... (content truncated, showing first {len(truncated_content)} characters)"
+        truncated_content += (
+            f"\n\n... (content truncated, showing first {len(truncated_content)} characters)"
+        )
 
     return truncated_content
 
@@ -396,7 +426,7 @@ def _split_content_into_chunks(content: str, max_chunk_size: int) -> list[str]:
             # Start new chunk with overlap
             overlap_start = max(0, len(current_chunk) - overlap_lines)
             current_chunk = current_chunk[overlap_start:]
-            current_length = sum(len(l) + 1 for l in current_chunk)
+            current_length = sum(len(line) + 1 for line in current_chunk)
 
         current_chunk.append(line)
         current_length += len(line) + 1

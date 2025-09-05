@@ -16,6 +16,13 @@ from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 from autopr.agents.models import CodeIssue, IssueSeverity
 
 
+def get_highest_severity() -> IssueSeverity:
+    """Get the highest available severity level, falling back to ERROR if CRITICAL is not available."""
+    return getattr(
+        IssueSeverity, "CRITICAL", getattr(IssueSeverity, "ERROR", IssueSeverity.HIGH)
+    )
+
+
 class VolumeConfig(BaseModel):
     """Configuration for volume-based quality control."""
 
@@ -144,15 +151,17 @@ class LintingAgent(BaseAgent):
         # Configure linting fixer based on volume
         linting_config = {}
         if self.volume_config.config:
+            # Filter to only include valid AILintingFixer parameters
+            valid_params = {"llm_manager", "max_workers", "workflow_context"}
             linting_config.update(
                 {
                     k: v
                     for k, v in self.volume_config.config.items()
-                    if k.startswith("linting_")
+                    if k.startswith("linting_") and k.replace("linting_", "") in valid_params
                 }
             )
 
-        self._linting_fixer = _AILintingFixer(**linting_config)  # type: ignore[call-arg,misc]
+        self._linting_fixer = _AILintingFixer(**linting_config)
 
         # Adjust verbosity based on volume
         self._verbose = False
@@ -198,7 +207,7 @@ class LintingAgent(BaseAgent):
                         file_path=file_path,
                         line_number=0,
                         message=f"Unicode decode error: {e}",
-                        severity=IssueSeverity.CRITICAL,
+                        severity=get_highest_severity(),
                     )
                 ]
 
@@ -209,7 +218,7 @@ class LintingAgent(BaseAgent):
                         file_path=file_path,
                         line_number=0,
                         message="Linting fixer not initialized",
-                        severity=IssueSeverity.CRITICAL,
+                        severity=get_highest_severity(),
                     )
                 ]
             result = await self._linting_fixer.fix_file(file_path, file_content)
@@ -221,7 +230,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message=f"Linting failed: {result.error_message}",
-                    severity=IssueSeverity.CRITICAL,
+                    severity=get_highest_severity(),
                 )
             ]
 
@@ -231,7 +240,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message="File not found",
-                    severity=IssueSeverity.CRITICAL,
+                    severity=get_highest_severity(),
                 )
             ]
         except PermissionError:
@@ -240,7 +249,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message="Permission denied",
-                    severity=IssueSeverity.CRITICAL,
+                    severity=get_highest_severity(),
                 )
             ]
         except Exception as e:
@@ -252,7 +261,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message=f"Unexpected error: {e}",
-                    severity=IssueSeverity.CRITICAL,
+                    severity=get_highest_severity(),
                 )
             ]
 
@@ -276,7 +285,7 @@ class LintingAgent(BaseAgent):
                         file_path=file_path,
                         line_number=0,
                         message=f"Unicode decode error: {e}",
-                        severity=IssueSeverity.CRITICAL,
+                        severity=get_highest_severity(),
                     )
                 ]
 
@@ -290,7 +299,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message=f"Analysis failed: {result.error_message}",
-                    severity=IssueSeverity.CRITICAL,
+                    severity=get_highest_severity(),
                 )
             ]
 
@@ -303,7 +312,7 @@ class LintingAgent(BaseAgent):
                     file_path=file_path,
                     line_number=0,
                     message=f"Unexpected error: {e}",
-                    severity=IssueSeverity.CRITICAL,
+                    severity=get_highest_severity(),
                 )
             ]
 

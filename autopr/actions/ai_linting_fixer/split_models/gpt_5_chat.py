@@ -88,10 +88,17 @@ def check_availability() -> tuple[bool, str]:
     Returns:
         Tuple of (availability, reason)
     """
+    import os
+
     try:
-        # This would be the actual availability check
-        # For now, return False as it's not released yet
-        return False, "GPT-5-Chat not yet released (expected 2025)"
+        # Detect only endpoint reachability; do not second-guess release status here.
+        if not GPT_5_CHAT_CONFIG.availability:
+            return False, "Model flagged unavailable."
+        has_key = bool(os.getenv("OPENAI_API_KEY"))
+        if has_key:
+            return True, "Endpoint available (OPENAI_API_KEY present)"
+        else:
+            return False, "Endpoint unavailable: OPENAI_API_KEY missing"
     except Exception as e:
         return False, f"Error checking availability: {e}"
 
@@ -99,6 +106,6 @@ def check_availability() -> tuple[bool, str]:
 def update_availability() -> bool:
     """Update the availability status of GPT-5-Chat."""
     available, reason = check_availability()
-    GPT_5_CHAT_CONFIG.availability = available
+    # Do not overwrite the static release flag; only update endpoint availability.
     GPT_5_CHAT_CONFIG.endpoint_available = available
     return available

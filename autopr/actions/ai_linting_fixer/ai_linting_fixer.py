@@ -52,7 +52,8 @@ class AILintingFixer:
                 "azure_openai": {
                     "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/"),
                     "api_key": None,  # Will be loaded from environment
-                    "api_version": "2025-01-01-preview",
+                    "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
+                    "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-35-turbo"),
                 },
             },
         }
