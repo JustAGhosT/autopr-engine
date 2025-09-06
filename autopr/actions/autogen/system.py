@@ -12,7 +12,7 @@ try:
 except ImportError:
     AUTOGEN_AVAILABLE = False
     # Create dummy classes for type annotations
-    class GroupChat:
+    class GroupChatDummy:
         def __init__(self, agents: List[Any], messages: Optional[List[Dict[str, Any]]] = None,
                      max_round: int = 10, speaker_selection_method: str = "round_robin") -> None:
             self.messages: List[Dict[str, Any]] = messages or []
@@ -20,10 +20,13 @@ except ImportError:
             self.max_round: int = max_round
             self.speaker_selection_method: str = speaker_selection_method
     
-    class GroupChatManager:
-        def __init__(self, groupchat: GroupChat, llm_config: Dict[str, Any]) -> None:
-            self.groupchat: GroupChat = groupchat
+    class GroupChatManagerDummy:
+        def __init__(self, groupchat: GroupChatDummy, llm_config: Dict[str, Any]) -> None:
+            self.groupchat: GroupChatDummy = groupchat
             self.llm_config: Dict[str, Any] = llm_config
+    
+    GroupChat = GroupChatDummy
+    GroupChatManager = GroupChatManagerDummy
 
 
 class AutoGenAgentSystem:
@@ -58,4 +61,4 @@ class AutoGenAgentSystem:
     def run_analysis(self, task_type: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Run analysis using appropriate agents based on task type."""
         # Implementation would go here
-        pass
+        return {}

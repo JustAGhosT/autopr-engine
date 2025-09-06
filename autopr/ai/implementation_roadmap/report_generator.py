@@ -3,14 +3,15 @@ Report Generator for Implementation Roadmap
 Handles analytics, reporting, and progress visualization
 """
 
-from datetime import datetime, timedelta
 import operator
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from implementation_roadmap.phase_manager import PhaseManager
-from implementation_roadmap.task_definitions import ImplementationPhases, TaskRegistry
-from implementation_roadmap.task_executor import TaskExecutor
+from autopr.ai.implementation_roadmap.phase_manager import PhaseManager
+from autopr.ai.implementation_roadmap.task_definitions import (
+    ImplementationPhases, TaskRegistry)
+from autopr.ai.implementation_roadmap.task_executor import TaskExecutor
 
 
 class ReportGenerator:
@@ -431,9 +432,9 @@ th { background: #f8f9fa; font-weight: 600; }
                     avg_duration = sum(
                         t["duration"] or 0 for t in task_performance
                     ) / len(task_performance)
-                    analysis["average_task_duration"] = avg_duration
+                    analysis["average_task_duration"] = int(avg_duration)
 
-                    complexity_breakdown = {}
+                    complexity_breakdown: dict[str, int] = {}
                     for task in task_performance:
                         complexity = task["complexity"]
                         complexity_breakdown[complexity] = (
@@ -478,8 +479,8 @@ th { background: #f8f9fa; font-weight: 600; }
         # Calculate averages
         for stats in category_stats.values():
             if stats["total"] > 0:
-                stats["success_rate"] = stats["success"] / stats["total"]
-                stats["avg_duration"] /= stats["total"]
+                stats["success_rate"] = int(stats["success"] / stats["total"])
+                stats["avg_duration"] = int(stats["avg_duration"] / stats["total"])
 
         # Complexity vs success rate correlation
         complexity_analysis = {}
@@ -496,7 +497,7 @@ th { background: #f8f9fa; font-weight: 600; }
 
         for stats in complexity_analysis.values():
             if stats["total"] > 0:
-                stats["success_rate"] = stats["success"] / stats["total"]
+                stats["success_rate"] = int(stats["success"] / stats["total"])
 
         return {
             "total_tasks_executed": len(all_executions),
@@ -640,7 +641,7 @@ th { background: #f8f9fa; font-weight: 600; }
 
     def _analyze_task_distribution(self) -> dict[str, int]:
         """Analyze distribution of tasks across categories"""
-        distribution = {}
+        distribution: dict[str, int] = {}
 
         for task_name in self.task_registry.get_all_task_names():
             task = self.task_registry.get_task(task_name)
@@ -652,7 +653,7 @@ th { background: #f8f9fa; font-weight: 600; }
 
     def _analyze_time_allocation(self) -> dict[str, float]:
         """Analyze time allocation across different task types"""
-        time_allocation = {}
+        time_allocation: dict[str, float] = {}
 
         for execution in self.task_executor.executions.values():
             if execution.duration:

@@ -8,7 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from implementation_roadmap.task_definitions import Task, TaskRegistry
+from autopr.ai.implementation_roadmap.task_definitions import (Task,
+                                                               TaskRegistry)
 
 
 @dataclass
@@ -20,8 +21,8 @@ class TaskExecution:
     start_time: datetime
     end_time: datetime | None = None
     error_message: str | None = None
-    files_created: list[str] = None
-    logs: list[str] = None
+    files_created: list[str] | None = None
+    logs: list[str] | None = None
 
     def __post_init__(self) -> None:
         if self.files_created is None:

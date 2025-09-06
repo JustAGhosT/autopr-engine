@@ -7,12 +7,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from implementation_roadmap.task_definitions import (
-    ImplementationPhases,
-    Phase,
-    TaskRegistry,
-)
-from implementation_roadmap.task_executor import TaskExecution, TaskExecutor
+from autopr.ai.implementation_roadmap.task_definitions import (
+    ImplementationPhases, Phase, TaskRegistry)
+from autopr.ai.implementation_roadmap.task_executor import (TaskExecution,
+                                                            TaskExecutor)
 
 
 @dataclass

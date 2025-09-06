@@ -2,14 +2,15 @@
 Pattern classes for platform detection.
 """
 
+import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-import re
 from re import Pattern
 
 
 @dataclass
-class BasePattern:
+class BasePattern(ABC):
     """Base class for all pattern types."""
 
     platform_id: str
@@ -23,6 +24,11 @@ class BasePattern:
         if not 0.0 <= self.confidence <= 1.0:
             msg = f"Confidence must be between 0.0 and 1.0, got {self.confidence}"
             raise ValueError(msg)
+
+    @abstractmethod
+    def matches(self, target) -> bool:
+        """Check if this pattern matches the given target."""
+        pass
 
 
 @dataclass

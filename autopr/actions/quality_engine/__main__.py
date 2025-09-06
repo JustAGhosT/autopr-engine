@@ -8,7 +8,7 @@ import glob
 import sys
 
 from autopr.actions.quality_engine.di import container, get_engine
-from autopr.actions.quality_engine.engine import QualityInputs, QualityMode
+from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 
 
 def main() -> None:

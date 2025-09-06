@@ -12,10 +12,12 @@ try:
 except ImportError:
     AUTOGEN_AVAILABLE = False
     # Create dummy class for type annotations
-    class ConversableAgent:
+    class ConversableAgentDummy:
         def __init__(self, *args: Any, **kwargs: Any) -> None: pass
         def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]: 
             return []
+    
+    ConversableAgent = ConversableAgentDummy
 
 
 class AutoGenAgentFactory:

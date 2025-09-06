@@ -10,8 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from autopr.actions.ai_linting_fixer import \
-    ai_linting_fixer as _create_ai_linting_fixer
+from autopr.actions.ai_linting_fixer.ai_linting_fixer import AILintingFixer
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.agents.base import BaseAgent
 
@@ -113,10 +112,11 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         )
 
         # Initialize the AI linting fixer (constructor manages its own LLM manager)
-        if _create_ai_linting_fixer is None:
-            msg = "AILintingFixer factory is not available. Ensure optional AI components are installed."
-            raise ImportError(msg)
-        self.linting_fixer = _create_ai_linting_fixer()
+        try:
+            self.linting_fixer = AILintingFixer()
+        except Exception as e:
+            msg = f"AILintingFixer initialization failed: {e}. Ensure optional AI components are installed."
+            raise ImportError(msg) from e
 
         # Register fixer agents
         self._register_fixer_agents()
