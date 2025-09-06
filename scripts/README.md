@@ -1,251 +1,169 @@
-# Scripts Directory
+# GitHub Environment Setup Scripts
 
-This directory contains utility scripts for the AutoPR Engine project.
+This directory contains scripts to automatically create GitHub environments for staging and production deployments.
 
-## 🎛️ Volume Control System
+## 📁 Files
 
-The main volume control system for managing IDE linting and commit checks:
+- `setup-github-environments.ps1` - PowerShell script (Windows/macOS/Linux)
+- `setup-github-environments.sh` - Bash script (Linux/macOS/WSL)
+- `README.md` - This documentation
 
-- **`volume.py`** - Main volume control interface
-- **`volume-control/`** - Complete volume control system
-  - `main.py` - Volume control engine
-  - `volume_knob.py` - Volume knob implementation
-  - `config_loader.py` - JSON configuration loader
-  - `configs/` - Tool-specific volume configurations
-  - `status.py` - Show current volume status
-  - `debug.py` - Debug volume settings
+## 🚀 Quick Start
 
-## 🔍 Validation Scripts
+### Prerequisites
 
-Scripts for validating different aspects of the project:
+1. **GitHub Personal Access Token** with the following permissions:
+   - `repo` (Full control of private repositories)
+   - `admin:org` (if creating environments for organization repositories)
 
-- **`validate_build_system.py`** - Validate the build system configuration
-- **`validate_configs.py`** - Validate configuration files
-- **`validate_imports.py`** - Check for import issues
-- **`validate_links.py`** - Validate internal and external links
-- **`validate_templates.py`** - Validate template files
+2. **Repository Access**: You must have admin access to the repository
 
-## 🛠️ Maintenance Scripts
-
-- **`level-0-complete.py`** - Verify Level 0 (no linting) status
-- **`disable-github-actions.py`** - Disable GitHub Actions workflows
-
-## 📦 Archived Scripts
-
-Legacy and one-time use scripts have been moved to the `archive/scripts/` directory. These are kept
-for reference but are not part of the active codebase.
-
-### Usage
-
-```bash
-# Set volumes
-python scripts/volume.py dev 50        # Set dev volume to 50
-python scripts/volume.py commit 200    # Set commit volume to 200
-
-# Adjust volumes
-python scripts/volume.py dev up 5      # Increase dev volume by 5 steps
-python scripts/volume.py commit down 2 # Decrease commit volume by 2 steps
-
-# Check status
-python scripts/volume-control/status.py
-```
-
-## 📋 Volume Control Examples
-
-### Common Scenarios
-
-**Quiet Coding** (minimal distractions):
-
-```bash
-python scripts/volume.py dev 50        # Light IDE features
-python scripts/volume.py commit 200    # Basic commit checks
-```
-
-**Development Mode** (balanced):
-
-```bash
-python scripts/volume.py dev 200       # Standard IDE features
-python scripts/volume.py commit 500    # Comprehensive commit checks
-```
-
-**Production Ready** (maximum quality):
-
-```bash
-python scripts/volume.py dev 500       # Full IDE validation
-python scripts/volume.py commit 1000   # Maximum commit validation
-```
-
-**Emergency Debugging** (complete silence):
-
-```bash
-python scripts/volume.py dev 0         # No IDE noise
-python scripts/volume.py commit 0      # No commit checks
-```
-
-## 🔧 Validation & Utility Scripts
-
-- **`validate_build_system.py`** - Validates build system configuration
-- **`validate_configs.py`** - Validates project configuration files
-- **`validate_imports.py`** - Validates import statements across codebase
-- **`validate_links.py`** - Validates external links in documentation
-- **`validate_templates.py`** - Validates template files
-
-## 🚀 Comprehensive Commit Scripts
-
-These scripts provide a thorough code review workflow that runs comprehensive quality analysis with
-AI enhancement before committing changes.
-
-### Available Scripts
-
-- **`comprehensive-commit.ps1`** - PowerShell script (recommended for Windows)
-- **`comprehensive-commit.bat`** - Windows batch script
-- **`commit.bat`** - Basic Windows commit script
-
-### What These Scripts Do
-
-1. **Pre-commit Hooks** - Runs all pre-commit hooks (Black, isort, Prettier, etc.)
-2. **Comprehensive Quality Analysis** - Full analysis with all available tools
-3. **AI-Enhanced Analysis** - AI-powered code review and suggestions
-4. **Git Commit** - Commits changes with your message
-
-### Basic Usage
+### PowerShell Script (Recommended for Windows)
 
 ```powershell
-# Run the comprehensive commit script
-.\scripts\comprehensive-commit.ps1 -Message "Your commit message"
+# Run with parameters
+.\scripts\setup-github-environments.ps1 -Repository "your-org/autopr-engine" -Token "ghp_your_token_here"
 
-# Optional parameters:
-# -Message       : Commit message (required)
-# -SkipTests     : Skip running tests
-# -SkipLint      : Skip linting
-# -SkipTypeCheck : Skip type checking
+# Dry run to see what would be created
+.\scripts\setup-github-environments.ps1 -Repository "your-org/autopr-engine" -Token "ghp_your_token_here" -DryRun
 ```
 
-### Detailed Workflow
+### Bash Script (Linux/macOS/WSL)
 
-1. **Stage Changes** - `git add .`
-2. **Run Script** - Execute the comprehensive commit script
-3. **Review Results** - Check quality analysis and AI suggestions
-4. **Commit** - Enter commit message and complete
+```bash
+# Make executable (Linux/macOS only)
+chmod +x scripts/setup-github-environments.sh
 
-### Expected Duration
+# Run with parameters
+./scripts/setup-github-environments.sh -r "your-org/autopr-engine" -t "ghp_your_token_here"
 
-- **Pre-commit hooks**: ~5-10 seconds
-- **Comprehensive analysis**: ~60-120 seconds
-- **AI-enhanced analysis**: ~30-60 seconds
-- **Total time**: ~2-3 minutes
-
-### Features
-
-- ✅ **Error Handling** - Graceful failure with helpful messages
-- ✅ **User Confirmation** - Option to continue even with warnings
-- ✅ **Progress Tracking** - Clear step-by-step progress
-- ✅ **Color Output** - PowerShell version with colored output
-- ✅ **Validation** - Checks for git repository and staged changes
-
-### Example Output
-
-```text
-========================================
- AutoPR Comprehensive Commit Script
-========================================
-
-[1/4] Running pre-commit hooks...
-black................................................Passed
-isort................................................Passed
-prettier.................................................................Passed
-Handle Unstaged Changes..................................................Passed
-
-[2/4] Running comprehensive quality analysis...
-[Quality Engine output with 3000+ issues found]
-
-[3/4] Running AI-enhanced analysis...
-[AI analysis with suggestions]
-
-[4/4] Committing changes...
-Enter commit message: Add new feature with comprehensive testing
-
-========================================
- SUCCESS: Comprehensive commit completed!
-========================================
-
-Summary:
-- Pre-commit hooks: PASSED
-- Comprehensive quality analysis: COMPLETED
-- AI-enhanced analysis: COMPLETED
-- Git commit: SUCCESSFUL
+# Dry run to see what would be created
+./scripts/setup-github-environments.sh -r "your-org/autopr-engine" -t "ghp_your_token_here" --dry-run
 ```
 
-## 🚨 Emergency/Nuclear Scripts
+## 🔧 What the Scripts Create
 
-Legacy scripts for extreme linting control (use volume control instead):
+### Staging Environment
+- **Name**: `staging`
+- **Protection**: Manual workflow dispatch required
+- **Branch Policy**: Protected branches only
+- **Variables**:
+  - `DEPLOYMENT_ENV=staging`
+  - `NODE_ENV=staging`
+  - `LOG_LEVEL=debug`
 
-- `nuclear-problems-fix.py` - Nuclear option to disable all IDE problems
-- `super-nuclear-fix.py` - Temporarily disable problematic files
-- `kill-all-validation.py` - Kill all validation systems
-- `fix-extension-errors.py` - Fix extension cache errors
-- `final-level-0-fix.py` - Apply Level 0 (silence) fixes
+### Production Environment
+- **Name**: `production`
+- **Protection**: Requires approval + 5-minute wait timer
+- **Branch Policy**: Protected branches only
+- **Variables**:
+  - `DEPLOYMENT_ENV=production`
+  - `NODE_ENV=production`
+  - `LOG_LEVEL=info`
 
-## 🔌 IDE Integration
+## 📋 Script Parameters
 
-### VS Code Setup
+### PowerShell Script
+| Parameter     | Description                                 | Required |
+| ------------- | ------------------------------------------- | -------- |
+| `-Repository` | GitHub repository in format "owner/repo"    | ✅ Yes    |
+| `-Token`      | GitHub personal access token                | ✅ Yes    |
+| `-DryRun`     | Show what would be created without creating | ❌ No     |
 
-Add this to your `.vscode/tasks.json` to run the comprehensive commit script directly from VS Code:
+### Bash Script
+| Parameter   | Short | Description                                 | Required |
+| ----------- | ----- | ------------------------------------------- | -------- |
+| `--repo`    | `-r`  | GitHub repository in format "owner/repo"    | ✅ Yes    |
+| `--token`   | `-t`  | GitHub personal access token                | ✅ Yes    |
+| `--dry-run` | `-d`  | Show what would be created without creating | ❌ No     |
+| `--help`    | `-h`  | Show help message                           | ❌ No     |
 
-```json
-{
-  "tasks": [
-    {
-      "label": "Comprehensive Commit",
-      "type": "shell",
-      "command": "powershell",
-      "args": [
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${workspaceFolder}/scripts/comprehensive-commit.ps1"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    }
-  ]
-}
+## 🔐 Creating a GitHub Token
+
+1. Go to GitHub → Settings → Developer settings → Personal access tokens
+2. Click "Generate new token (classic)"
+3. Select scopes:
+   - ✅ `repo` (Full control of private repositories)
+   - ✅ `admin:org` (if organization repository)
+4. Copy the token (starts with `ghp_`)
+
+## 🎯 Example Usage
+
+### For AutoPR Engine Repository
+
+```powershell
+# Replace with your actual repository and token
+.\scripts\setup-github-environments.ps1 -Repository "your-username/autopr-engine" -Token "ghp_xxxxxxxxxxxxxxxxxxxx"
 ```
 
-## 🛠 Troubleshooting
+### For Organization Repository
+
+```bash
+# Replace with your organization and token
+./scripts/setup-github-environments.sh -r "your-org/autopr-engine" -t "ghp_xxxxxxxxxxxxxxxxxxxx"
+```
+
+## ✅ Verification
+
+After running the script:
+
+1. **Check GitHub Repository**:
+   - Go to your repository → Settings → Environments
+   - Verify `staging` and `production` environments exist
+
+2. **Test CI/CD Pipeline**:
+   - Push to a branch to trigger staging deployment
+   - Merge to `main` to trigger production deployment
+
+3. **Review Protection Rules**:
+   - Staging: Manual workflow dispatch
+   - Production: Requires approval + wait timer
+
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
-**AI-Enhanced Analysis Fails**
+1. **"Environment already exists"**
+   - ✅ Normal - script handles this gracefully
+   - Environments are updated if they exist
 
-- Verify your OpenAI API key is properly configured
-- Check your internet connection
-- You can continue with the commit using `-SkipAI` parameter
+2. **"Invalid repository format"**
+   - ❌ Use format: `owner/repository-name`
+   - ✅ Correct: `microsoft/vscode`
+   - ❌ Wrong: `microsoft-vscode` or `microsoft/vscode/`
 
-**Quality Analysis Finds Issues**
+3. **"Failed to create environment"**
+   - Check token permissions
+   - Verify repository access
+   - Ensure you have admin rights
 
-- Review the reported issues in detail
-- Use volume control to adjust validation strictness
-- For quick checks: `python -m autopr.actions.quality_engine --mode=fast`
+4. **"Token authentication failed"**
+   - Verify token is correct
+   - Check token hasn't expired
+   - Ensure token has required scopes
 
-**Pre-commit Hooks Fail**
+### Getting Help
 
-- Fix any formatting/linting issues reported
-- Run `pre-commit run --all-files` to test hooks separately
-- Use volume control to temporarily reduce strictness if needed
+```bash
+# Show help for bash script
+./scripts/setup-github-environments.sh --help
+```
 
-## Customization
+```powershell
+# Show help for PowerShell script
+Get-Help .\scripts\setup-github-environments.ps1 -Detailed
+```
 
-You can modify the scripts to:
+## 🔄 Updating Environments
 
-- Change AI provider/model
-- Add additional quality checks
-- Customize error handling
-- Add specific file patterns to analyze
+The scripts are idempotent - you can run them multiple times safely:
+
+- Existing environments are detected and skipped
+- New protection rules are added
+- Environment variables are updated
+
+## 📚 Related Documentation
+
+- [GitHub Environments Documentation](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+- [GitHub REST API - Environments](https://docs.github.com/en/rest/reference/deployments#environments)
+- [GitHub CLI Documentation](https://cli.github.com/)

@@ -20,7 +20,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.default_timeout = 30.0  # Reduce timeout to 30 seconds for faster execution
+        self.default_timeout = 300.0  # Increase timeout to 5 minutes for large codebases
 
     @property
     def name(self) -> str:
@@ -52,12 +52,15 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
         # MyPy does not have a stable JSON output, so we parse the text output.
         # Try to use mypy from poetry environment if available
         import sys
+        import tempfile
+        cache_dir = tempfile.mkdtemp(prefix="mypy-cache-")
+        
         if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
             # We're in a virtual environment, try python -m mypy
-            command = [sys.executable, "-m", "mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty"]
+            command = [sys.executable, "-m", "mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty", f"--cache-dir={cache_dir}"]
         else:
             # Fall back to system mypy
-            command = ["mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty"]
+            command = ["mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty", f"--cache-dir={cache_dir}"]
 
         # Add any configured arguments
         if "args" in config:

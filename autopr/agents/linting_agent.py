@@ -79,7 +79,6 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         allow_delegation: bool = False,
         max_iter: int = 3,
         max_rpm: int | None = None,
-        llm_manager: Any | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the LintingAgent.
@@ -115,7 +114,10 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         try:
             self.linting_fixer = AILintingFixer()
         except Exception as e:
-            msg = f"AILintingFixer initialization failed: {e}. Ensure optional AI components are installed."
+            msg = (
+                f"AILintingFixer initialization failed: {e}. "
+                "Ensure optional AI components are installed."
+            )
             raise ImportError(msg) from e
 
         # Register fixer agents
@@ -123,7 +125,8 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
 
     def _register_fixer_agents(self) -> None:
         """Register all available fixer agents."""
-        # The AgentManager already initializes all agents, so we don't need to register them individually
+        # The AgentManager already initializes all agents, so we don't need to
+        # register them individually
         # Just ensure the agent manager is properly imported and used
 
     async def _execute(self, inputs: LintingInputs) -> LintingOutputs:
@@ -154,16 +157,12 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
                         logger.exception("%s", error_msg)
                     raise FileNotFoundError(error_msg) from e
                 except PermissionError as e:
-                    error_msg = (
-                        f"Permission denied when reading file: {inputs.file_path}"
-                    )
+                    error_msg = f"Permission denied when reading file: {inputs.file_path}"
                     if self.verbose:
                         logger.exception("%s", error_msg)
                     raise PermissionError(error_msg) from e
                 except UnicodeDecodeError as e:
-                    error_msg = (
-                        f"Could not decode file {inputs.file_path} as UTF-8: {e!s}"
-                    )
+                    error_msg = f"Could not decode file {inputs.file_path} as UTF-8: {e!s}"
                     if self.verbose:
                         logger.exception("%s", error_msg)
                     # Preserve the original exception details while adding context
@@ -211,7 +210,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         except Exception as e:
             # Log the error and return a response with the error
             if self.verbose:
-                logger.exception("Error in LintingAgent: %s", e)
+                logger.exception("Error in LintingAgent")
 
             # Create a default issue for the error
             error_issue = LintingIssue(

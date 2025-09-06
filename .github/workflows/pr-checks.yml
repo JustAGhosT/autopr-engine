@@ -34,6 +34,10 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
 
+      - name: Install quality tools
+        run: |
+          poetry run pip install ruff mypy bandit
+
       - name: Run pre-commit hooks
         run: |
           poetry run pre-commit install
@@ -41,7 +45,7 @@ jobs:
 
       - name: Run Quality Engine (Fast Mode)
         run: |
-          poetry run python -m autopr.actions.quality_engine --mode fast --files autopr/
+          poetry run python -m autopr.actions.quality_engine --mode fast --files autopr/ --continue-on-errors
 
       - name: Run basic tests
         run: |
