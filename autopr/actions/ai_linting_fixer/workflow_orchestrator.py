@@ -11,15 +11,14 @@ from typing import Any
 
 from autopr.actions.ai_linting_fixer.core import AILintingFixer
 from autopr.actions.ai_linting_fixer.detection import issue_detector
-from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode, get_display
-from autopr.actions.ai_linting_fixer.models import (
-    AILintingFixerInputs,
-    AILintingFixerOutputs,
-    LintingIssue,
-    create_empty_outputs,
-)
-from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
-
+from autopr.actions.ai_linting_fixer.display import (DisplayConfig, OutputMode,
+                                                     get_display)
+from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
+                                                    AILintingFixerOutputs,
+                                                    LintingIssue,
+                                                    create_empty_outputs)
+from autopr.actions.llm.manager import \
+    ActionLLMProviderManager as LLMProviderManager
 
 logger = logging.getLogger(__name__)
 
@@ -129,14 +128,40 @@ class WorkflowOrchestrator:
         self, fixer: AILintingFixer, inputs: AILintingFixerInputs
     ) -> AILintingFixerOutputs:
         """Generate the final results output."""
-        final_results = fixer.get_session_results()
+        session_results = fixer.get_session_results()
+
+        # Convert dict to AILintingFixerOutputs instance
+        final_results = AILintingFixerOutputs(
+            total_issues_found=session_results.get("total_issues", 0),
+            issues_fixed=session_results.get("successful_fixes", 0),
+            files_modified=[],  # This would need to be filled from fixer if available
+            success=session_results.get("success_rate", 0.0) > 0.5,
+            summary=(
+                f"Processed {session_results.get('total_issues', 0)} issues with "
+                f"{session_results.get('success_rate', 0.0):.1%} success rate"
+            ),
+            total_issues_detected=session_results.get("total_issues", 0),
+            issues_processed=session_results.get("total_issues", 0),
+            issues_failed=session_results.get("failed_fixes", 0),
+            total_duration=session_results.get("duration", 0.0),
+            session_id=session_results.get("session_id"),
+            agent_stats=session_results.get("stats", {}),
+            queue_stats={},  # This would need to be filled from fixer if available
+        )
 
         # Display comprehensive results
         self.display.results.show_results_summary(final_results)
         if inputs.verbose_metrics:
             self.display.results.show_agent_performance(final_results.agent_stats)
             self.display.results.show_queue_statistics(final_results.queue_stats)
-        self.display.results.show_suggestions(final_results)
+        # Generate suggestions based on results
+        suggestions = []
+        if final_results.issues_failed > 0:
+            suggestions.append("Review failed fixes and consider manual intervention")
+        success_rate = final_results.issues_fixed / max(final_results.total_issues_found, 1)
+        if success_rate < 0.8:
+            suggestions.append("Consider adjusting fix parameters or reviewing code patterns")
+        self.display.results.show_suggestions(suggestions)
 
         return final_results
 

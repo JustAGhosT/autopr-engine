@@ -5,12 +5,14 @@ import contextlib
 import inspect
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, field_validator
 
 from autopr.actions import platform_detection
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
+from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
+                                                    AILintingFixerOutputs)
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 from autopr.agents.models import CodeIssue, IssueSeverity
@@ -127,6 +129,72 @@ class BaseAgent:
         return result
 
 
+class LintingFixerWrapper:
+    """Wrapper for AILintingFixer to provide the expected interface for agents."""
+
+    def __init__(self, linting_fixer: _AILintingFixer):
+        self._fixer = linting_fixer
+
+    async def fix_file(self, file_path: str, file_content: str) -> Any:
+        """Fix linting issues in a single file."""
+        inputs = AILintingFixerInputs(
+            target_path=file_path,
+            max_fixes=10,
+            create_backups=False,
+            dry_run=False
+        )
+        result: AILintingFixerOutputs = cast(Any, self._fixer).run(inputs)
+
+        # Convert the result to the expected format
+        class FixResult:
+            def __init__(self, success: bool, fixed_issues: list[CodeIssue]):
+                self.success = success
+                self.fixed_issues = fixed_issues
+
+        # Convert AILintingFixerOutputs to the expected format
+        fixed_issues = []
+        if result.success and result.issues_fixed > 0:
+            # Create CodeIssue objects from the results
+            for file_modified in result.files_modified:
+                fixed_issues.append(CodeIssue(
+                    file_path=file_modified,
+                    line_number=0,
+                    message="Fixed linting issues",
+                    severity=IssueSeverity.INFO
+                ))
+
+        return FixResult(success=result.success, fixed_issues=fixed_issues)
+
+    async def analyze_file(self, file_path: str, file_content: str) -> Any:
+        """Analyze linting issues in a single file without fixing."""
+        inputs = AILintingFixerInputs(
+            target_path=file_path,
+            max_fixes=0,  # Don't fix, just analyze
+            create_backups=False,
+            dry_run=True
+        )
+        result: AILintingFixerOutputs = cast(Any, self._fixer).run(inputs)
+
+        # Convert the result to the expected format
+        class AnalysisResult:
+            def __init__(self, success: bool, issues: list[CodeIssue]):
+                self.success = success
+                self.issues = issues
+
+        # Convert detected issues to CodeIssue objects
+        issues = []
+        if result.total_issues_detected > 0:
+            # For now, create a generic issue since we don't have detailed issue info
+            issues.append(CodeIssue(
+                file_path=file_path,
+                line_number=0,
+                message=f"Found {result.total_issues_detected} linting issues",
+                severity=IssueSeverity.WARNING
+            ))
+
+        return AnalysisResult(success=result.success, issues=issues)
+
+
 class LintingAgent(BaseAgent):
     """Agent responsible for code linting and style enforcement with volume-aware strictness."""
 
@@ -161,7 +229,14 @@ class LintingAgent(BaseAgent):
                 }
             )
 
-        self._linting_fixer = _AILintingFixer(**linting_config)
+        # Initialize linting fixer, but handle potential failures gracefully
+        self._linting_fixer: Any = None
+        try:
+            base_fixer = _AILintingFixer(**linting_config)
+            self._linting_fixer = LintingFixerWrapper(base_fixer)
+        except Exception as e:
+            logging.warning("Failed to initialize linting fixer: %s", e)
+            self._linting_fixer = None
 
         # Adjust verbosity based on volume
         self._verbose = False
@@ -361,7 +436,7 @@ class QualityAgent(BaseAgent):
                 **self.volume_config.config,
             )
 
-            return await self._quality_engine.execute(inputs, {})
+            return await self._quality_engine.execute(inputs, {}, self.volume_config.config)
 
         except Exception as e:
             logging.exception(f"Error analyzing quality: {e}")

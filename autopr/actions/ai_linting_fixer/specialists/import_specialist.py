@@ -37,17 +37,17 @@ class ImportSpecialist(BaseSpecialist):
         return [
             FixStrategy(
                 name="import_optimization",
-                description="Optimize import statements for clarity and efficiency",
-                confidence_multiplier=1.2,
-                max_retries=2,
+                description="Optimize import statements for clearness and performance",
+                confidence_factor=1.2,
+                max_attempts=2,
                 requires_context=True,
                 priority=1,
             ),
             FixStrategy(
                 name="unused_import_removal",
                 description="Remove unused imports to clean up the code",
-                confidence_multiplier=1.5,
-                max_retries=1,
+                confidence_factor=1.5,
+                max_attempts=1,
                 requires_context=False,
                 priority=2,
             ),
@@ -65,8 +65,8 @@ class ImportSpecialist(BaseSpecialist):
 
 Always maintain code functionality while improving import clarity and efficiency."""
 
-    def get_specialization_score(self, issues: list[LintingIssue]) -> float:
-        """Calculate specialization score for import issues."""
+    def get_specialty_score(self, issues: list[LintingIssue]) -> float:
+        """Calculate specialty score for import issues."""
         if not issues:
             return 0.0
 
@@ -92,14 +92,14 @@ Always maintain code functionality while improving import clarity and efficiency
         try:
             original_ast = ast.parse(original_content)
         except SyntaxError:
-            # If original content can't be parsed, fall back to basic validation
+            # If original content can't be parsed, use basic validation
             return original_content != fixed_content
-        
+
         # Parse fixed_content separately - if this fails, validation fails
         try:
             fixed_ast = ast.parse(fixed_content)
         except SyntaxError:
-            # Unparseable fixed_content causes validation failure
+            # Unparseable fixed content leads to validation failure
             return False
 
         # Extract import nodes from both ASTs
@@ -110,19 +110,19 @@ Always maintain code functionality while improving import clarity and efficiency
         if original_imports == fixed_imports:
             return False
 
-        # Filter issues to only those this specialist handles
+        # Filter issues to only the ones this specialist handles
         supported_codes = set(self._get_supported_codes())
-        relevant_issues = [
+        applicable_issues = [
             issue for issue in issues if issue.error_code in supported_codes
         ]
 
-        # If no relevant issues found, fall back to AST-based change validation
-        if not relevant_issues:
+        # If no applicable issues found, use AST-based change validation
+        if not applicable_issues:
             return original_imports != fixed_imports
 
-        # Analyze the specific import-related issues to determine if changes are relevant
-        for issue in relevant_issues:
-            if not self._is_import_change_relevant(
+        # Analyze the specific import-related issues to determine if changes are applicable
+        for issue in applicable_issues:
+            if not self._is_import_change_applicable(
                 issue, original_imports, fixed_imports
             ):
                 return False
@@ -147,10 +147,10 @@ Always maintain code functionality while improving import clarity and efficiency
 
         return imports
 
-    def _is_import_change_relevant(
+    def _is_import_change_applicable(
         self, issue: LintingIssue, original_imports: set, fixed_imports: set
     ) -> bool:
-        """Check if the import changes are relevant to the specific issue."""
+        """Check if the import changes are applicable to the specific issue."""
         if issue.error_code == "F401":  # Unused imports
             # Check if unused imports were removed
             removed_imports = original_imports - fixed_imports
@@ -181,9 +181,9 @@ Always maintain code functionality while improving import clarity and efficiency
             fixed_earliest_import_line = min(
                 (imp[3] for imp in fixed_imports), default=float("inf")
             )
-            # E402 is fixed if the earliest import moved up (smaller line number)
+            # E402 is fixed if the earliest import moved up (lower line number)
             return fixed_earliest_import_line < original_earliest_import_line
 
         else:
-            # For other issues, any import change is considered relevant
+            # For other issues, any import change is considered applicable
             return original_imports != fixed_imports

@@ -4,12 +4,11 @@ Performance Tracker Module
 This module tracks performance metrics for the AI linting fixer.
 """
 
-from dataclasses import dataclass, field
 import logging
 import time
+from dataclasses import dataclass, field
 from typing import Any
 from uuid import uuid4
-
 
 logger = logging.getLogger(__name__)
 
@@ -170,3 +169,48 @@ class PerformanceTracker:
         self._by_id.clear()
         self.session_start = time.time()
         self.session_id = f"session_{int(self.session_start)}"
+
+    def get_performance_summary(self) -> dict[str, Any]:
+        """Get a comprehensive performance summary."""
+        summary = self.get_session_summary()
+        
+        # Add agent performance data (placeholder for now)
+        agent_performance = {
+            "total_agents_used": 0,
+            "average_agent_response_time": 0.0,
+            "agent_success_rate": 0.0,
+        }
+        
+        # Add queue statistics (placeholder for now)
+        queue_statistics = {
+            "total_queued_operations": 0,
+            "average_queue_wait_time": 0.0,
+            "queue_processing_rate": 0.0,
+        }
+        
+        return {
+            "session_summary": summary,
+            "agent_performance": agent_performance,
+            "queue_statistics": queue_statistics,
+        }
+
+    def end_session(self) -> None:
+        """End the current performance tracking session."""
+        # Mark any incomplete operations as ended
+        for metric in self.metrics:
+            if not metric.is_completed:
+                metric.end_time = time.time()
+                metric.success = False
+                metric.error_message = "Session ended before completion"
+        
+        logger.info(f"Performance tracking session {self.session_id} ended")
+
+    def export_metrics(self) -> None:
+        """Export performance metrics to a file or external system."""
+        try:
+            # For now, just log the metrics
+            summary = self.get_performance_summary()
+            logger.info(f"Performance metrics exported for session {self.session_id}")
+            logger.debug(f"Performance summary: {summary}")
+        except Exception as e:
+            logger.warning(f"Failed to export performance metrics: {e}")

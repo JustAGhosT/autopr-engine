@@ -13,7 +13,6 @@ import structlog
 
 from autopr.actions.quality_engine.models import ToolResult
 
-
 logger = structlog.get_logger(__name__)
 
 
@@ -36,7 +35,8 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from autopr.actions.quality_engine.ai.ai_modes import run_ai_analysis as run_analysis
+        from autopr.actions.quality_engine.ai.ai_modes import \
+            run_ai_analysis as run_analysis
 
         logger.info("Starting AI-enhanced analysis", file_count=len(files))
         start_time = time.time()
@@ -72,11 +72,10 @@ async def initialize_llm_manager() -> Any | None:
         Initialized LLM manager or None if initialization fails
     """
     try:
-        from autopr.ai.core.base import AnthropicProvider, OpenAIProvider
         from autopr.ai.core.providers.manager import LLMProviderManager
 
         # Basic configuration for quality analysis
-        config = {
+        config: dict[str, Any] = {
             "providers": {
                 "openai": {
                     "api_key": os.getenv("OPENAI_API_KEY", ""),
@@ -95,33 +94,32 @@ async def initialize_llm_manager() -> Any | None:
             "default_provider": "openai",
         }
 
-        # Create a simple config object with the required attributes
-        class SimpleConfig:
-            def __init__(self, config_dict):
-                self.openai_api_key = config_dict["providers"]["openai"]["api_key"]
-                self.anthropic_api_key = config_dict["providers"]["anthropic"][
-                    "api_key"
-                ]
-                self.default_llm_provider = config_dict.get(
-                    "default_provider", "openai"
-                )
+        # Create an AutoPRConfig object with the required attributes
+        from autopr.config import AutoPRConfig
 
-        config_obj = SimpleConfig(config)
+        config_obj = AutoPRConfig(
+            openai_api_key=config["providers"]["openai"]["api_key"],
+            anthropic_api_key=config["providers"]["anthropic"]["api_key"],
+            default_llm_provider=config.get("default_provider", "openai")
+        )
         llm_manager = LLMProviderManager(config_obj)
 
-        # Create and register OpenAI provider if API key is available
+        # Configure existing providers if they are available
         if config["providers"]["openai"]["api_key"]:
-            openai_provider = OpenAIProvider()
-            openai_provider.default_model = config["providers"]["openai"]["default_model"]
-            llm_manager.register_provider("openai", openai_provider)
-            logger.info("OpenAI provider registered")
+            openai_provider = llm_manager.get_provider("openai")
+            if openai_provider:
+                openai_provider.default_model = config["providers"]["openai"]["default_model"]
+                logger.info("OpenAI provider configured")
+            else:
+                logger.info("OpenAI provider not found in manager")
 
-        # Create and register Anthropic provider if API key is available
         if config["providers"]["anthropic"]["api_key"]:
-            anthropic_provider = AnthropicProvider()
-            anthropic_provider.default_model = config["providers"]["anthropic"]["default_model"]
-            llm_manager.register_provider("anthropic", anthropic_provider)
-            logger.info("Anthropic provider registered")
+            anthropic_provider = llm_manager.get_provider("anthropic")
+            if anthropic_provider:
+                anthropic_provider.default_model = config["providers"]["anthropic"]["default_model"]
+                logger.info("Anthropic provider configured")
+            else:
+                logger.info("Anthropic provider not found in manager")
 
         # Set fallback order and default provider
         if config["providers"]["openai"]["api_key"]:
@@ -136,7 +134,10 @@ async def initialize_llm_manager() -> Any | None:
                 if asyncio.iscoroutinefunction(initializer):
                     await initializer()
                 else:
-                    initializer()
+                    # Handle case where initializer may return a coroutine
+                    result = initializer()
+                    if asyncio.iscoroutine(result):
+                        await result
                 logger.info("LLM provider manager initialized successfully")
             else:
                 logger.info("LLM provider manager does not require initialization")

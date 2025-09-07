@@ -188,7 +188,7 @@ jobs:
 
       - name: Install security tools
         run: |
-          poetry run pip install bandit safety semgrep
+          poetry run pip install bandit "safety<3" semgrep
 
       - name: Run Bandit security scan
         run: |
@@ -300,7 +300,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [build, performance]
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging' }}
     environment:
       name: staging
 
@@ -358,7 +358,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build, performance]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     environment:
       name: production
       url: ${{ steps.deploy.outputs.url }}
@@ -403,9 +403,11 @@ jobs:
           poetry run python -m pytest tests/test_performance_optimized_file_splitter.py -v
 
       - name: Deploy to production environment
+        id: deploy
         run: |
           echo "Deploying to production environment..."
           echo "Production deployment completed"
+          echo "url=https://autopr.example.com" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release
         uses: actions/create-release@v1

@@ -5,24 +5,7 @@ Configuration for OpenAI's GPT-5-Chat model with specific competency ratings
 and performance characteristics for code linting fixes.
 """
 
-from dataclasses import dataclass
-from typing import Any
-
-
-@dataclass
-class ModelSpec:
-    """Model specification with availability and performance characteristics."""
-
-    name: str
-    provider: str
-    release_date: str
-    vram_required: str
-    performance_tier: str
-    availability: bool
-    endpoint_available: bool = False
-    competency_ratings: dict[str, float] | None = None
-    recommended_use_cases: list[Any] | None = None
-
+from autopr.actions.ai_linting_fixer.model_configs.spec import ModelSpec
 
 # GPT-5-Chat Model Configuration
 GPT_5_CHAT_CONFIG = ModelSpec(
@@ -96,9 +79,29 @@ def check_availability() -> tuple[bool, str]:
         return False, f"Error checking availability: {e}"
 
 
+def check_endpoint_reachability() -> bool:
+    """
+    Check if the GPT-5-Chat endpoint is reachable.
+
+    Returns:
+        True if endpoint is reachable, False otherwise
+    """
+    try:
+        # This would be the actual endpoint reachability check
+        # For now, return False as it's not released yet
+        return False
+    except Exception:
+        # Log error instead of printing
+        return False
+
+
 def update_availability() -> bool:
     """Update the availability status of GPT-5-Chat."""
     available, reason = check_availability()
     GPT_5_CHAT_CONFIG.availability = available
-    GPT_5_CHAT_CONFIG.endpoint_available = available
+
+    # Check endpoint reachability separately
+    endpoint_reachable = check_endpoint_reachability()
+    GPT_5_CHAT_CONFIG.endpoint_available = endpoint_reachable
+
     return available

@@ -53,48 +53,48 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
         # Try to use mypy from poetry environment if available
         import sys
         import tempfile
-        cache_dir = tempfile.mkdtemp(prefix="mypy-cache-")
         
-        if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
-            # We're in a virtual environment, try python -m mypy
-            command = [sys.executable, "-m", "mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty", f"--cache-dir={cache_dir}"]
-        else:
-            # Fall back to system mypy
-            command = ["mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty", f"--cache-dir={cache_dir}"]
+        with tempfile.TemporaryDirectory(prefix="mypy-cache-") as cache_dir:
+            if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+                # We're in a virtual environment, try python -m mypy
+                command = [sys.executable, "-m", "mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty", f"--cache-dir={cache_dir}"]
+            else:
+                # Fall back to system mypy
+                command = ["mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty", f"--cache-dir={cache_dir}"]
 
-        # Add any configured arguments
-        if "args" in config:
-            command.extend(config["args"])
+            # Add any configured arguments
+            if "args" in config:
+                command.extend(config["args"])
 
-        # Add files to analyze
-        command.extend(files)
+            # Add files to analyze
+            command.extend(files)
 
-        process = await asyncio.create_subprocess_exec(
-            *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-        )
+            process = await asyncio.create_subprocess_exec(
+                *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
 
-        stdout, stderr = await process.communicate()
+            stdout, stderr = await process.communicate()
 
-        # mypy returns 1 if issues are found, 0 if everything is fine.
-        # A non-zero/non-one return code indicates an actual error.
-        if process.returncode not in [0, 1]:
-            error_message = stderr.decode().strip()
-            logging.error("Error running mypy: %s", error_message)
-            return [
-                {
-                    "filename": "",
-                    "line_number": 0,
-                    "column_number": 0,
-                    "message": f"MyPy execution failed: {error_message}",
-                    "code": "mypy-error",
-                    "level": "error",
-                }
-            ]
+            # mypy returns 1 if issues are found, 0 if everything is fine.
+            # A non-zero/non-one return code indicates an actual error.
+            if process.returncode not in [0, 1]:
+                error_message = stderr.decode().strip()
+                logging.error("Error running mypy: %s", error_message)
+                return [
+                    {
+                        "filename": "",
+                        "line_number": 0,
+                        "column_number": 0,
+                        "message": f"MyPy execution failed: {error_message}",
+                        "code": "mypy-error",
+                        "level": "error",
+                    }
+                ]
 
-        if not stdout:
-            return []
+            if not stdout:
+                return []
 
-        return self._parse_output(stdout.decode())
+            return self._parse_output(stdout.decode())
 
     def _parse_output(self, output: str) -> list[LintIssue]:
         """

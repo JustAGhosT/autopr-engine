@@ -7,17 +7,12 @@ import os
 from typing import Any
 
 from autopr.actions.llm.base import BaseLLMProvider
-from autopr.actions.llm.providers import (
-    AnthropicProvider,
-    GroqProvider,
-    MistralProvider,
-    OpenAIProvider,
-    PerplexityProvider,
-    TogetherAIProvider,
-)
+from autopr.actions.llm.providers import (AnthropicProvider, GroqProvider,
+                                          MistralProvider, OpenAIProvider,
+                                          PerplexityProvider,
+                                          TogetherAIProvider)
 from autopr.actions.llm.providers.azure_openai import AzureOpenAIProvider
 from autopr.actions.llm.types import LLMResponse
-
 
 logger = logging.getLogger(__name__)
 
@@ -222,3 +217,7 @@ class ActionLLMProviderManager:
             }
 
         return info
+
+
+# Backward compatibility alias
+LLMProviderManager = ActionLLMProviderManager

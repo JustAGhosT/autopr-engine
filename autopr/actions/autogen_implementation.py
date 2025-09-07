@@ -3,28 +3,24 @@ AutoPR Action: AutoGen Multi-Agent Implementation
 Uses AutoGen for complex multi-agent development tasks
 """
 
-from datetime import datetime
 import json
 import os
 import re
+from datetime import UTC, datetime
 from typing import Any, TypeVar, cast
 
 from autopr.actions.autogen import AutoGenInputs, AutoGenOutputs
-
 
 # Define custom typing for ConversableAgent to avoid partial unknown types
 ConversableAgentType = Any
 
 try:
-    from autogen import (
-        ConversableAgent,  # type: ignore[import-untyped]
-        GroupChat,
-        GroupChatManager,
-    )
+    from autogen import ConversableAgent  # type: ignore[import-not-found]
+    from autogen import GroupChat, GroupChatManager
     AUTOGEN_AVAILABLE = True
 except ImportError:
     # Create dummy classes for type annotations when AutoGen is not available
-    class ConversableAgent:
+    class _ConversableAgent:
         def __init__(self, **kwargs: Any) -> None:
             pass
 
@@ -33,7 +29,7 @@ except ImportError:
         ) -> list[dict[str, Any]]:
             return []
 
-    class GroupChat:
+    class _GroupChat:
         def __init__(
             self,
             _agents: list["ConversableAgent"],
@@ -43,14 +39,19 @@ except ImportError:
         ) -> None:
             self.messages: list[dict[str, Any]] = messages or []
 
-    class GroupChatManager:
+    class _GroupChatManager:
         def __init__(
-            self, groupchat: GroupChat, _llm_config: dict[str, Any]
+            self, groupchat: _GroupChat, _llm_config: dict[str, Any]
         ) -> None:
-            self.groupchat: GroupChat = groupchat
+            self.groupchat: _GroupChat = groupchat
 
     # Define the constant outside the block to avoid redefinition
     AUTOGEN_AVAILABLE = False
+
+    # Create aliases for the fallback classes
+    ConversableAgent = _ConversableAgent
+    GroupChat = _GroupChat
+    GroupChatManager = _GroupChatManager
 
 
 T = TypeVar("T")
@@ -649,7 +650,7 @@ Please work together to create a complete, production-ready solution.
                 formatted_conversations.append({
                     "agent": str(message.get("name", "Unknown")),
                     "content": content,
-                    "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                 })
 
         return formatted_conversations

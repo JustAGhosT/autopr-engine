@@ -60,14 +60,29 @@ class ComponentSplitter:
         """Process file in chunks with configurable overlap."""
         lines = content.split("\n")
         chunk_size = 500
+        # Clamp overlap to [0, chunk_size-1] to keep step > 0
         overlap = config.line_overlap
+        if overlap < 0:
+            logger.warning("Negative overlap (%d) adjusted to 0", overlap)
+            overlap = 0
+        if overlap >= chunk_size:
+            logger.warning(
+                "Overlap (%d) >= chunk_size (%d); adjusting to %d",
+                overlap,
+                chunk_size,
+                chunk_size - 1,
+            )
+            overlap = chunk_size - 1
 
         # Create overlapping chunks
-        chunks = []
-        for i in range(0, len(lines), chunk_size - overlap):
+        chunks: list[str] = []
+        chunk_bases: list[int] = []
+        step = chunk_size - overlap
+        for i in range(0, len(lines), step):
             end_idx = min(i + chunk_size, len(lines))
             chunk_content = "\n".join(lines[i:end_idx])
             chunks.append(chunk_content)
+            chunk_bases.append(i)
 
             # Don't create overlapping chunks if we've reached the end
             if end_idx >= len(lines):
@@ -81,16 +96,25 @@ class ComponentSplitter:
         ) as executor:
             futures = [executor.submit(self._split_by_functions, chunk) for chunk in chunks]
 
-            results = []
-            for future in futures:
+            results: list[list[SplitComponent] | None] = []
+            for idx, future in enumerate(futures):
                 try:
                     result = future.result(timeout=60)
-                    results.append(result)
+                    if result is None:
+                        results.append(None)
+                    else:
+                        base = chunk_bases[idx]  # 0-based line index
+                        for comp in result:
+                            comp.start_line += base
+                            comp.end_line += base
+                        results.append(result)
                 except Exception:
                     logger.exception("Error processing chunk")
                     results.append(None)
 
-        return results
+        # Filter out None results and return only valid components
+        valid_results: list[list[SplitComponent]] = [result for result in results if result is not None]
+        return valid_results
 
     def _merge_adjacent_components(self, components: list[SplitComponent]) -> list[SplitComponent]:
         """Merge adjacent components with the same name and overlapping/contiguous line ranges."""
@@ -129,11 +153,13 @@ class ComponentSplitter:
                 current_lines = current_component.content.split("\n")
                 next_lines = next_component.content.split("\n")
 
-                # Find the overlap point and merge
-                overlap_start = max(0, next_component.start_line - current_component.start_line)
-                if overlap_start < len(current_lines):
-                    # Remove overlapping lines from next component
-                    next_lines = next_lines[overlap_start:]
+                # Calculate overlap length from end_line/start_line delta
+                overlap_len = max(0, current_component.end_line - next_component.start_line + 1)
+                # Clamp overlap to the length of next_lines
+                overlap_len = min(overlap_len, len(next_lines))
+                if overlap_len > 0:
+                    # Remove overlapping lines from the beginning of next_lines
+                    next_lines = next_lines[overlap_len:]
                     current_component.content = "\n".join(current_lines + next_lines)
                 else:
                     # No overlap, just append
@@ -179,7 +205,11 @@ class ComponentSplitter:
         logger.debug("Analyzing %d lines for function definitions...", len(lines))
 
         for i, line in enumerate(lines):
-            if line.strip().startswith("def "):
+            # Check for function definition (def or async def)
+            stripped_line = line.strip()
+            is_function_def = (stripped_line.startswith("def ") or
+                             stripped_line.startswith("async def "))
+            if is_function_def:
                 # Save previous function
                 if current_function:
                     function_count += 1
@@ -196,9 +226,19 @@ class ComponentSplitter:
                         )
                     )
 
-                # Start new function
-                current_function = line.strip().split("def ")[1].split("(")[0]
-                function_start = i
+                # Backtrack to find decorators
+                decorator_start = i
+                j = i - 1
+                while j >= 0 and lines[j].strip().startswith("@"):
+                    decorator_start = j
+                    j -= 1
+                # Extract function name (handle both def and async def)
+                if stripped_line.startswith("async def "):
+                    function_name = stripped_line.split("async def ")[1].split("(")[0]
+                else:
+                    function_name = stripped_line.split("def ")[1].split("(")[0]
+                current_function = function_name
+                function_start = decorator_start
 
         # Add last function
         if current_function:

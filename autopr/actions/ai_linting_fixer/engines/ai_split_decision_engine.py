@@ -8,9 +8,9 @@ import hashlib
 import logging
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.performance_optimizer import IntelligentCache
+from autopr.actions.ai_linting_fixer.performance_optimizer import \
+    IntelligentCache
 from autopr.ai.core.providers.manager import LLMProviderManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -80,28 +80,30 @@ class AISplitDecisionEngine:
                 confidence = 0.5
                 reasons = []
 
-                # Check various criteria
-                if complexity["total_lines"] > 200:
+                # Check various criteria with safe access
+                total_lines = int(complexity.get("total_lines", 0))
+                if total_lines > 200:
                     should_split = True
                     confidence += 0.2
-                    reasons.append(f"Large file ({complexity['total_lines']} lines)")
+                    reasons.append(f"Large file ({total_lines} lines)")
 
-                if complexity["complexity_score"] > 8.0:
+                complexity_score = float(complexity.get("complexity_score", 0.0))
+                if complexity_score > 8.0:
                     should_split = True
                     confidence += 0.3
-                    reasons.append(
-                        f"High complexity score ({complexity['complexity_score']:.2f})"
-                    )
+                    reasons.append(f"High complexity score ({complexity_score:.2f})")
 
-                if complexity["total_functions"] > 15:
+                total_functions = int(complexity.get("total_functions", 0))
+                if total_functions > 15:
                     should_split = True
                     confidence += 0.2
-                    reasons.append(f"Many functions ({complexity['total_functions']})")
+                    reasons.append(f"Many functions ({total_functions})")
 
-                if complexity["total_classes"] > 3:
+                total_classes = int(complexity.get("total_classes", 0))
+                if total_classes > 3:
                     should_split = True
                     confidence += 0.2
-                    reasons.append(f"Multiple classes ({complexity['total_classes']})")
+                    reasons.append(f"Multiple classes ({total_classes})")
 
                 # Cap confidence at 0.95
                 confidence = min(confidence, 0.95)
@@ -128,16 +130,17 @@ class AISplitDecisionEngine:
         except Exception as e:
             logger.warning("AI split decision failed: %s", e)
 
-        # Fallback to rule-based decision
+        # Fallback to rule-based decision with safe access
         logger.info("Using fallback rule-based decision")
-        should_split = (
-            complexity["total_lines"] > 150 or complexity["complexity_score"] > 7.0
-        )
+        total_lines = int(complexity.get("total_lines", 0))
+        complexity_score = float(complexity.get("complexity_score", 0.0))
+
+        should_split = (total_lines > 150 or complexity_score > 7.0)
         fallback_reason = "Rule-based fallback: "
-        if complexity["total_lines"] > 150:
-            fallback_reason += f"Large file ({complexity['total_lines']} lines)"
-        elif complexity["complexity_score"] > 7.0:
-            fallback_reason += f"High complexity ({complexity['complexity_score']:.2f})"
+        if total_lines > 150:
+            fallback_reason += f"Large file ({total_lines} lines)"
+        elif complexity_score > 7.0:
+            fallback_reason += f"High complexity ({complexity_score:.2f})"
         else:
             fallback_reason += "No specific criteria met"
 

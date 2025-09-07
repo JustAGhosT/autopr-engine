@@ -12,7 +12,8 @@ from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
 from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
-from autopr.actions.ai_linting_fixer.detection import IssueDetector
+from autopr.actions.ai_linting_fixer.detection import (IssueDetector,
+                                                       LintingIssue)
 from autopr.actions.ai_linting_fixer.display import (AILintingFixerDisplay,
                                                      DisplayConfig)
 from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler
@@ -20,6 +21,8 @@ from autopr.actions.ai_linting_fixer.file_manager import FileManager
 from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
 from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
                                                     AILintingFixerOutputs)
+from autopr.actions.ai_linting_fixer.models import \
+    LintingIssue as ModelLintingIssue
 from autopr.actions.ai_linting_fixer.performance_tracker import \
     PerformanceTracker
 from autopr.actions.llm.manager import ActionLLMProviderManager
@@ -27,8 +30,23 @@ from autopr.actions.llm.manager import ActionLLMProviderManager
 logger = logging.getLogger(__name__)
 
 
+def convert_detection_issue_to_model_issue(detection_issue: "LintingIssue") -> ModelLintingIssue:
+    """Convert a LintingIssue from detection module to models module."""
+    return ModelLintingIssue(
+        file_path=detection_issue.file_path,
+        line_number=detection_issue.line_number,
+        column_number=detection_issue.column_number,
+        error_code=detection_issue.error_code,
+        message=detection_issue.message,
+        line_content=getattr(detection_issue, 'line_content', ''),
+        column=detection_issue.column_number,
+    )
+
+
 class AILintingFixer:
     """Main AI Linting Fixer class that orchestrates all components."""
+
+    database: Any = None
 
     def __init__(self, display_config: DisplayConfig | None = None):
         """Initialize the AI Linting Fixer with all components."""
@@ -44,14 +62,39 @@ class AILintingFixer:
         self.performance_tracker = PerformanceTracker()
         self.error_handler = ErrorHandler()
 
-        # Initialize LLM manager with default config
+        # Validate Azure OpenAI configuration before proceeding
+        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/")
+        azure_api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+
+        # Check for placeholder endpoint
+        if "<" in azure_endpoint or "your-azure-openai-endpoint" in azure_endpoint:
+            error_msg = (
+                "Azure OpenAI endpoint is not properly configured. "
+                "Please set AZURE_OPENAI_ENDPOINT environment variable to your actual endpoint URL. "
+                f"Current value: {azure_endpoint}"
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Check for missing API key
+        if not azure_api_key:
+            error_msg = (
+                "Azure OpenAI API key is not configured. "
+                "Please set either AZURE_OPENAI_API_KEY or OPENAI_API_KEY environment variable."
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        logger.info("Azure OpenAI configuration validated successfully")
+
+        # Initialize LLM manager with validated config
         llm_config = {
             "default_provider": "azure_openai",
             "fallback_order": ["azure_openai"],  # Only use Azure OpenAI
             "providers": {
                 "azure_openai": {
-                    "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/"),
-                    "api_key": None,  # Will be loaded from environment
+                    "azure_endpoint": azure_endpoint,
+                    "api_key": azure_api_key,
                     "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
                     "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-35-turbo"),
                 },
@@ -88,7 +131,7 @@ class AILintingFixer:
         error_type = type(error).__name__
         error_msg = str(error)
 
-        analysis = {
+        analysis: dict[str, Any] = {
             "error_type": error_type,
             "error_message": error_msg,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -203,7 +246,7 @@ class AILintingFixer:
         self, error_details: dict[str, Any]
     ) -> list[str]:
         """Get specific recovery suggestions based on error analysis."""
-        suggestions = []
+        suggestions: list[str] = []
 
         # Add general suggestions
         suggestions.extend(
@@ -271,6 +314,7 @@ class AILintingFixer:
 
             # Show session start
             session_id = f"session_{int(start_time)}"
+            self.session_id = session_id
             self.display.operation.show_session_start(inputs, session_id)
 
             # Use display for user-facing messages instead of logger
@@ -293,9 +337,9 @@ class AILintingFixer:
                 filtered_issues = issues
 
             # Calculate unique files for accurate reporting
-            unique_files = len({issue.file_path for issue in filtered_issues})
+            unique_files_count = len({issue.file_path for issue in filtered_issues})
             self.display.operation.show_detection_results(
-                len(filtered_issues), len(issues), unique_files
+                len(filtered_issues), len(issues), unique_files_count
             )
 
             if not filtered_issues:
@@ -342,7 +386,7 @@ class AILintingFixer:
 
             for i, issue in enumerate(issues_to_process, 1):
                 self.display.operation.show_processing_progress(
-                    i, len(issues_to_process), issue
+                    i, len(issues_to_process), convert_detection_issue_to_model_issue(issue)
                 )
 
                 try:
@@ -359,7 +403,7 @@ class AILintingFixer:
                     result = self.issue_fixer._fix_single_issue(
                         file_path=issue.file_path,
                         content=content,
-                        issue=issue,
+                        issue=convert_detection_issue_to_model_issue(issue),
                         provider=inputs.provider,
                         model=inputs.model,
                     )
@@ -408,8 +452,12 @@ class AILintingFixer:
             # Generate results
             processing_duration = time.time() - start_time
 
-            # Get performance metrics
-            performance_summary = self.performance_tracker.get_performance_summary()
+            # Get performance metrics with defensive guard
+            get_perf = getattr(self.performance_tracker, "get_performance_summary", None)
+            if callable(get_perf):
+                performance_summary = get_perf()
+            else:
+                performance_summary = {"agent_performance": {}, "queue_statistics": {}}
 
             # Create suggestions
             suggestions: list[str] = []
@@ -482,10 +530,12 @@ class AILintingFixer:
         """Context manager exit."""
         try:
             # End performance tracking
-            self.performance_tracker.end_session()
+            if hasattr(self.performance_tracker, "end_session"):
+                self.performance_tracker.end_session()
 
             # Export final metrics
-            self.performance_tracker.export_metrics()
+            if hasattr(self.performance_tracker, "export_metrics"):
+                self.performance_tracker.export_metrics()
 
             # Use display module for user-facing messages
             if self.display:
