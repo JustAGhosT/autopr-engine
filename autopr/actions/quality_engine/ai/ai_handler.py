@@ -38,30 +38,40 @@ async def run_ai_analysis(
         from autopr.actions.quality_engine.ai.ai_modes import \
             run_ai_analysis as run_analysis
 
-        # Detect available API keys and set provider/model accordingly
-        openai_key = os.getenv("OPENAI_API_KEY")
-        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-        azure_key = os.getenv("AZURE_OPENAI_API_KEY")
-
-        # Fallback logic: choose provider based on available API keys
-        if not openai_key and anthropic_key:
-            provider_name = "anthropic"
-            model = "claude-3-5-sonnet-20241022"
-            logger.info("OpenAI API key not found, falling back to Anthropic")
-        elif not openai_key and azure_endpoint and azure_key:
-            provider_name = "azure_openai"
-            model = "gpt-4"
-            logger.info("OpenAI API key not found, falling back to Azure OpenAI")
-        elif not openai_key:
-            logger.warning("No OpenAI API key found and no fallback providers available")
+        # Resolve provider/model against what's actually registered in the manager
+        available = (
+            llm_manager.list_providers()
+            if hasattr(llm_manager, "list_providers")
+            else llm_manager.get_available_providers()
+        ) or []
+        selected_provider = provider_name
+        if selected_provider not in available:
+            # Prefer manager default, else the first available
+            selected_provider = getattr(llm_manager, "default_provider", None) or (
+                llm_manager.get_default_provider()  # type: ignore[attr-defined]
+                if hasattr(llm_manager, "get_default_provider")
+                else (available[0] if available else None)
+            )
+            logger.info(
+                "Provider not available; falling back",
+                requested=provider_name,
+                fallback=selected_provider,
+            )
+            provider_name = selected_provider or provider_name
+            # Align model to provider default if provided/known
+            prov = (
+                llm_manager.get_provider(provider_name)
+                if hasattr(llm_manager, "get_provider")
+                else None
+            )
+            if prov and hasattr(prov, "default_model"):
+                model = getattr(prov, "default_model") or model
 
         logger.info("Starting AI-enhanced analysis", file_count=len(files), provider=provider_name, model=model)
         start_time = time.time()
 
         # Run the AI analysis
         result = await run_analysis(files, llm_manager, provider_name, model)
-
         if result is None:
             logger.warning("AI analysis returned None result")
             return None
