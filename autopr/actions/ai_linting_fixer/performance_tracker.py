@@ -4,11 +4,13 @@ Performance Tracker Module
 This module tracks performance metrics for the AI linting fixer.
 """
 
-import logging
-import time
 from dataclasses import dataclass, field
+import logging
+import threading
+import time
 from typing import Any
 from uuid import uuid4
+
 
 logger = logging.getLogger(__name__)
 
@@ -47,18 +49,23 @@ class PerformanceTracker:
         self.session_start = time.time()
         self.session_id = f"session_{int(self.session_start)}"
         self._by_id: dict[str, PerformanceMetric] = {}
+        self._lock = threading.RLock()
 
     def start_operation(
         self, operation: str, metadata: dict[str, str] | None = None
     ) -> str:
         """Start tracking an operation."""
         operation_id = f"{operation}_{uuid4().hex[:8]}"
-        metric = PerformanceMetric(
-            operation=operation, start_time=time.time(), metadata=metadata or {}
-        )
-        metric.operation_id = operation_id
-        self.metrics.append(metric)
-        self._by_id[operation_id] = metric
+        with self._lock:
+            # Create metric with shallow copy of metadata to prevent external mutations
+            metric = PerformanceMetric(
+                operation=operation,
+                start_time=time.time(),
+                metadata=dict(metadata) if metadata else {}
+            )
+            metric.operation_id = operation_id
+            self.metrics.append(metric)
+            self._by_id[operation_id] = metric
         return operation_id
 
     def end_operation(
@@ -68,71 +75,74 @@ class PerformanceTracker:
         error_message: str | None = None,
     ) -> None:
         """End tracking an operation."""
-        metric = self._by_id.get(operation_id)
-        if metric:
-            metric.end_time = time.time()
-            metric.success = success
-            metric.error_message = error_message
-        else:
-            logger.warning(f"Operation ID not found: {operation_id}")
+        with self._lock:
+            metric = self._by_id.get(operation_id)
+            if metric:
+                metric.end_time = time.time()
+                metric.success = success
+                metric.error_message = error_message
+            else:
+                logger.warning("Operation ID not found: %s", operation_id)
 
     def get_operation_stats(self, operation: str) -> dict[str, float]:
         """Get statistics for a specific operation."""
-        operation_metrics = [m for m in self.metrics if m.operation == operation]
+        with self._lock:
+            operation_metrics = [m for m in self.metrics if m.operation == operation]
 
-        if not operation_metrics:
-            return {}
+            if not operation_metrics:
+                return {}
 
-        completed_metrics = [m for m in operation_metrics if m.is_completed]
+            completed_metrics = [m for m in operation_metrics if m.is_completed]
 
-        if not completed_metrics:
-            return {}
+            if not completed_metrics:
+                return {}
 
-        durations = [m.duration for m in completed_metrics]
-        successes = [m for m in completed_metrics if m.success]
+            durations = [m.duration for m in completed_metrics]
+            successes = [m for m in completed_metrics if m.success]
 
-        return {
-            "total_operations": len(operation_metrics),
-            "completed_operations": len(completed_metrics),
-            "successful_operations": len(successes),
-            "success_rate": (
-                len(successes) / len(completed_metrics) if completed_metrics else 0.0
-            ),
-            "average_duration": sum(durations) / len(durations),
-            "min_duration": min(durations),
-            "max_duration": max(durations),
-        }
+            return {
+                "total_operations": len(operation_metrics),
+                "completed_operations": len(completed_metrics),
+                "successful_operations": len(successes),
+                "success_rate": (
+                    len(successes) / len(completed_metrics) if completed_metrics else 0.0
+                ),
+                "average_duration": sum(durations) / len(durations),
+                "min_duration": min(durations),
+                "max_duration": max(durations),
+            }
 
     def get_session_summary(self) -> dict[str, Any]:
         """Get a summary of the current session."""
-        if not self.metrics:
+        with self._lock:
+            if not self.metrics:
+                return {
+                    "session_id": self.session_id,
+                    "total_operations": 0,
+                    "session_duration": time.time() - self.session_start,
+                    "success_rate": 0.0,
+                }
+
+            completed_metrics = [m for m in self.metrics if m.is_completed]
+            successful_metrics = [m for m in completed_metrics if m.success]
+
             return {
                 "session_id": self.session_id,
-                "total_operations": 0,
+                "total_operations": len(self.metrics),
+                "completed_operations": len(completed_metrics),
+                "successful_operations": len(successful_metrics),
                 "session_duration": time.time() - self.session_start,
-                "success_rate": 0.0,
+                "success_rate": (
+                    len(successful_metrics) / len(completed_metrics)
+                    if completed_metrics
+                    else 0.0
+                ),
+                "average_operation_duration": (
+                    sum(m.duration for m in completed_metrics) / len(completed_metrics)
+                    if completed_metrics
+                    else 0.0
+                ),
             }
-
-        completed_metrics = [m for m in self.metrics if m.is_completed]
-        successful_metrics = [m for m in completed_metrics if m.success]
-
-        return {
-            "session_id": self.session_id,
-            "total_operations": len(self.metrics),
-            "completed_operations": len(completed_metrics),
-            "successful_operations": len(successful_metrics),
-            "session_duration": time.time() - self.session_start,
-            "success_rate": (
-                len(successful_metrics) / len(completed_metrics)
-                if completed_metrics
-                else 0.0
-            ),
-            "average_operation_duration": (
-                sum(m.duration for m in completed_metrics) / len(completed_metrics)
-                if completed_metrics
-                else 0.0
-            ),
-        }
 
     def generate_report(self) -> str:
         """Generate a human-readable performance report."""
@@ -144,14 +154,16 @@ class PerformanceTracker:
         report += f"Total Operations: {summary['total_operations']}\n"
         report += f"Completed Operations: {summary.get('completed_operations', 0)}\n"
         report += f"Success Rate: {summary['success_rate']:.1%}\n"
-        report += f"Average Operation Duration: {summary.get('average_operation_duration', 0.0):.3f} seconds\n\n"
+        avg_duration = summary.get('average_operation_duration', 0.0)
+        report += f"Average Operation Duration: {avg_duration:.3f} seconds\n\n"
 
         # Group by operation type
         operation_groups: dict[str, list[PerformanceMetric]] = {}
-        for metric in self.metrics:
-            if metric.operation not in operation_groups:
-                operation_groups[metric.operation] = []
-            operation_groups[metric.operation].append(metric)
+        with self._lock:
+            for metric in self.metrics:
+                if metric.operation not in operation_groups:
+                    operation_groups[metric.operation] = []
+                operation_groups[metric.operation].append(metric)
 
         for operation, _metrics in operation_groups.items():
             stats = self.get_operation_stats(operation)
@@ -159,35 +171,38 @@ class PerformanceTracker:
                 report += f"Operation: {operation}\n"
                 report += f"  Success Rate: {stats['success_rate']:.1%}\n"
                 report += f"  Average Duration: {stats['average_duration']:.3f}s\n"
-                report += f"  Min/Max Duration: {stats['min_duration']:.3f}s / {stats['max_duration']:.3f}s\n\n"
+                min_dur = stats['min_duration']
+                max_dur = stats['max_duration']
+                report += f"  Min/Max Duration: {min_dur:.3f}s / {max_dur:.3f}s\n\n"
 
         return report
 
     def reset(self) -> None:
         """Reset the performance tracker."""
-        self.metrics.clear()
-        self._by_id.clear()
-        self.session_start = time.time()
-        self.session_id = f"session_{int(self.session_start)}"
+        with self._lock:
+            self.metrics.clear()
+            self._by_id.clear()
+            self.session_start = time.time()
+            self.session_id = f"session_{int(self.session_start)}"
 
     def get_performance_summary(self) -> dict[str, Any]:
         """Get a comprehensive performance summary."""
         summary = self.get_session_summary()
-        
+
         # Add agent performance data (placeholder for now)
         agent_performance = {
             "total_agents_used": 0,
             "average_agent_response_time": 0.0,
             "agent_success_rate": 0.0,
         }
-        
+
         # Add queue statistics (placeholder for now)
         queue_statistics = {
             "total_queued_operations": 0,
             "average_queue_wait_time": 0.0,
             "queue_processing_rate": 0.0,
         }
-        
+
         return {
             "session_summary": summary,
             "agent_performance": agent_performance,
@@ -196,21 +211,25 @@ class PerformanceTracker:
 
     def end_session(self) -> None:
         """End the current performance tracking session."""
-        # Mark any incomplete operations as ended
-        for metric in self.metrics:
-            if not metric.is_completed:
-                metric.end_time = time.time()
-                metric.success = False
-                metric.error_message = "Session ended before completion"
-        
-        logger.info(f"Performance tracking session {self.session_id} ended")
+        # Mark any incomplete operations as ended and clear internal mappings
+        with self._lock:
+            for metric in self.metrics:
+                if not metric.is_completed:
+                    metric.end_time = time.time()
+                    metric.success = False
+                    metric.error_message = "Session ended before completion"
+
+            # Clear the _by_id mapping to prevent dangling references
+            self._by_id.clear()
+
+        logger.info("Performance tracking session %s ended", self.session_id)
 
     def export_metrics(self) -> None:
         """Export performance metrics to a file or external system."""
         try:
             # For now, just log the metrics
             summary = self.get_performance_summary()
-            logger.info(f"Performance metrics exported for session {self.session_id}")
-            logger.debug(f"Performance summary: {summary}")
+            logger.info("Performance metrics exported for session %s", self.session_id)
+            logger.debug("Performance summary: %s", summary)
         except Exception as e:
-            logger.warning(f"Failed to export performance metrics: {e}")
+            logger.warning("Failed to export performance metrics: %s", e)

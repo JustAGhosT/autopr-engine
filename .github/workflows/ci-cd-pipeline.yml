@@ -361,7 +361,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     environment:
       name: production
-      url: ${{ steps.deploy.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -403,11 +402,9 @@ jobs:
           poetry run python -m pytest tests/test_performance_optimized_file_splitter.py -v
 
       - name: Deploy to production environment
-        id: deploy
         run: |
           echo "Deploying to production environment..."
           echo "Production deployment completed"
-          echo "url=https://autopr.example.com" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release
         uses: actions/create-release@v1

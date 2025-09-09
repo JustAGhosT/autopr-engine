@@ -8,7 +8,10 @@ import ast
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
-    AgentType, BaseSpecialist, FixStrategy)
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class ImportSpecialist(BaseSpecialist):
@@ -38,16 +41,16 @@ class ImportSpecialist(BaseSpecialist):
             FixStrategy(
                 name="import_optimization",
                 description="Optimize import statements for clearness and performance",
-                confidence_factor=1.2,
-                max_attempts=2,
+                confidence_multiplier=1.2,
+                max_retries=2,
                 requires_context=True,
                 priority=1,
             ),
             FixStrategy(
                 name="unused_import_removal",
                 description="Remove unused imports to clean up the code",
-                confidence_factor=1.5,
-                max_attempts=1,
+                confidence_multiplier=1.5,
+                max_retries=1,
                 requires_context=False,
                 priority=2,
             ),
@@ -136,7 +139,7 @@ Always maintain code functionality while improving import clarity and efficiency
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    imports.add(("import", alias.name, alias.asname, node.lineno, 0, 0))
+                    imports.add(("import", "", alias.name, alias.asname, node.lineno, 0))
             elif isinstance(node, ast.ImportFrom):
                 level = getattr(node, "level", 0)
                 module = node.module or ""

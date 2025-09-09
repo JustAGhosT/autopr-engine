@@ -9,31 +9,13 @@ import logging
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.detection import LintingIssue
-from autopr.actions.ai_linting_fixer.models import \
-    LintingIssue as ModelLintingIssue
-from autopr.actions.ai_linting_fixer.specialists.base_specialist import \
-    AgentType
-from autopr.actions.ai_linting_fixer.specialists.specialist_manager import \
-    SpecialistManager
+from autopr.actions.ai_linting_fixer.issue_converter import convert_detection_issues_to_model_issues
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import AgentType
+from autopr.actions.ai_linting_fixer.specialists.specialist_manager import SpecialistManager
 from autopr.actions.llm.manager import ActionLLMProviderManager
 
+
 logger = logging.getLogger(__name__)
-
-
-def convert_detection_issues_to_model_issues(detection_issues: list[LintingIssue]) -> list[ModelLintingIssue]:
-    """Convert a list of LintingIssues from detection module to models module."""
-    return [
-        ModelLintingIssue(
-            file_path=issue.file_path,
-            line_number=issue.line_number,
-            column_number=issue.column_number,
-            error_code=issue.error_code,
-            message=issue.message,
-            line_content=getattr(issue, 'line_content', ''),
-            column=issue.column_number,
-        )
-        for issue in detection_issues
-    ]
 
 
 class AIAgentManager:
@@ -86,7 +68,9 @@ class AIAgentManager:
         if not issues:
             return "GeneralSpecialist"
 
-        specialist = self.specialist_manager.get_specialist_for_issues(convert_detection_issues_to_model_issues(issues))
+        specialist = self.specialist_manager.get_specialist_for_issues(
+            convert_detection_issues_to_model_issues(issues)
+        )
         logger.debug(
             "Selected specialist '%s' for %d issues", specialist.name, len(issues)
         )
@@ -123,8 +107,12 @@ class AIAgentManager:
         Returns:
             Specialized user prompt for the issues
         """
-        specialist = self.specialist_manager.get_specialist_for_issues(convert_detection_issues_to_model_issues(issues))
-        return specialist.get_user_prompt(file_path, content, convert_detection_issues_to_model_issues(issues))
+        specialist = self.specialist_manager.get_specialist_for_issues(
+            convert_detection_issues_to_model_issues(issues)
+        )
+        return specialist.get_user_prompt(
+            file_path, content, convert_detection_issues_to_model_issues(issues)
+        )
 
     def parse_ai_response(self, content: str) -> dict[str, Any]:
         """

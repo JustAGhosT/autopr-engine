@@ -19,19 +19,19 @@ except ImportError:
             self.agents: List[Any] = agents
             self.max_round: int = max_round
             self.speaker_selection_method: str = speaker_selection_method
-    
+
     class GroupChatManagerDummy:
         def __init__(self, groupchat: GroupChatDummy, llm_config: Dict[str, Any]) -> None:
             self.groupchat: GroupChatDummy = groupchat
             self.llm_config: Dict[str, Any] = llm_config
-    
+
     GroupChat = GroupChatDummy
     GroupChatManager = GroupChatManagerDummy
 
 
 class AutoGenAgentSystem:
     """Manages AutoGen multi-agent interactions."""
-    
+
     def __init__(self, llm_config: Dict[str, Any]) -> None:
         if not AUTOGEN_AVAILABLE:
             msg = "AutoGen not installed. Install with: pip install pyautogen"
@@ -44,7 +44,7 @@ class AutoGenAgentSystem:
     def _initialize_agents(self) -> None:
         """Initialize specialized agents for different tasks."""
         from .agents import AutoGenAgentFactory
-        
+
         self.agents["code_analyzer"] = AutoGenAgentFactory.create_code_analyzer(self.llm_config)
         self.agents["code_fixer"] = AutoGenAgentFactory.create_code_fixer(self.llm_config)
         self.agents["security_auditor"] = AutoGenAgentFactory.create_security_auditor(self.llm_config)

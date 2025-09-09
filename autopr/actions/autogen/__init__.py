@@ -10,7 +10,7 @@ from .system import AutoGenAgentSystem
 
 __all__ = [
     "AutoGenInputs",
-    "AutoGenOutputs", 
+    "AutoGenOutputs",
     "AutoGenAgentFactory",
     "AutoGenAgentSystem"
 ]

@@ -56,7 +56,7 @@ async def initialize_llm_manager() -> LLMProviderManager | None:
 
         config_obj = SimpleConfig(config)
         llm_manager = LLMProviderManager(config_obj)
-        
+
         # Guard optional initialize() call
         if hasattr(llm_manager, "initialize"):
             await llm_manager.initialize()

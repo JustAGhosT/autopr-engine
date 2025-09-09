@@ -6,12 +6,8 @@ Client for LLM interactions in the AI linting fixer.
 
 import asyncio
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
-                                                    LintingIssue)
-from autopr.ai.core.base import LLMMessage
 from autopr.ai.core.providers.manager import LLMProviderManager
 
 logger = logging.getLogger(__name__)
@@ -46,7 +42,7 @@ class LLMClient:
                 # Build kwargs excluding known keys to forward all other parameters
                 known_keys = {"messages", "provider", "temperature", "max_tokens"}
                 kwargs = {k: v for k, v in request.items() if k not in known_keys}
-                
+
                 response = await self.llm_manager.generate_completion(
                     messages=request.get("messages", []),
                     provider_name=request.get("provider"),
@@ -66,7 +62,7 @@ class LLMClient:
                     # Build kwargs excluding known keys to forward all other parameters
                     known_keys = {"messages", "provider", "temperature", "max_tokens"}
                     kwargs = {k: v for k, v in request.items() if k not in known_keys}
-                    
+
                     response = self.llm_manager.generate_completion(
                         messages=request.get("messages", []),
                         provider_name=request.get("provider"),
@@ -118,13 +114,13 @@ class LLMClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
-        
+
         if provider:
             request["provider"] = provider
         elif hasattr(self.llm_manager, "default_provider"):
             request["provider"] = self.llm_manager.default_provider
-            
+
         if model:
             request["model"] = model
-            
+
         return request

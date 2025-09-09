@@ -9,7 +9,7 @@ from typing import Any
 
 class PlatformPatterns:
     """Platform-specific detection patterns."""
-    
+
     @staticmethod
     def get_platform_signatures() -> dict[str, dict[str, Any]]:
         """Get platform signature patterns."""
@@ -67,7 +67,7 @@ class PlatformPatterns:
                 "folder_patterns": ["emergent_scripts", ".emergent_cache"],
             },
         }
-    
+
     @staticmethod
     def get_advanced_patterns() -> dict[str, dict[str, Any]]:
         """Get advanced detection patterns."""

@@ -1,6 +1,6 @@
 # AutoPR Engine 🤖
 
-**AI-Powered GitHub PR Automation and Issue Management**
+## AI-Powered GitHub PR Automation and Issue Management
 
 [![PyPI version](<https://badge.fury.io/py/autopr-engine.svg)](https://badge.fury.io/py/autopr-engine)>
 [![Python 3.8+](<https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)>
@@ -24,7 +24,7 @@ workflows through intelligent analysis, issue creation, and multi-agent collabor
 
 The AutoPR Engine repository is organized for optimal developer experience and maintainability:
 
-```
+```text
 autopr-engine/
 ├── docs/                      # 📚 All documentation
 │   ├── getting-started/       # Setup and quick start guides
@@ -486,4 +486,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ by JustAGhosT**
+## Made with ❤️ by JustAGhosT

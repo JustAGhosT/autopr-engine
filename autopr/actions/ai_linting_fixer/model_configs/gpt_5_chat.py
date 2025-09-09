@@ -7,6 +7,7 @@ and performance characteristics for code linting fixes.
 
 from autopr.actions.ai_linting_fixer.model_configs.spec import ModelSpec
 
+
 # GPT-5-Chat Model Configuration
 GPT_5_CHAT_CONFIG = ModelSpec(
     name="gpt-5-chat",
@@ -50,7 +51,7 @@ GPT_5_CHAT_CONFIG = ModelSpec(
 )
 
 
-def get_gpt5_fallback_strategies() -> dict[str, list]:
+def get_gpt5_fallback_strategies() -> dict[str, list[tuple[str, str]]]:
     """Get fallback strategies for GPT-5-Chat."""
     return {
         "primary": [

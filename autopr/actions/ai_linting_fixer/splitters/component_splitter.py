@@ -8,8 +8,8 @@ import itertools
 import logging
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.split_models.split_models import (
-    SplitComponent, SplitConfig)
+from autopr.actions.ai_linting_fixer.split_models.split_models import SplitComponent, SplitConfig
+
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,9 @@ class ComponentSplitter:
                     results.append(None)
 
         # Filter out None results and return only valid components
-        valid_results: list[list[SplitComponent]] = [result for result in results if result is not None]
+        valid_results: list[list[SplitComponent]] = [
+            result for result in results if result is not None
+        ]
         return valid_results
 
     def _merge_adjacent_components(self, components: list[SplitComponent]) -> list[SplitComponent]:
@@ -144,17 +146,15 @@ class ComponentSplitter:
                     next_component.end_line,
                 )
 
-                # Extend the current component's range
-                current_component.end_line = max(
-                    current_component.end_line, next_component.end_line
-                )
+                # Store the original end line before any modifications
+                previous_end = current_component.end_line
 
                 # Combine content (remove duplicate lines)
                 current_lines = current_component.content.split("\n")
                 next_lines = next_component.content.split("\n")
 
-                # Calculate overlap length from end_line/start_line delta
-                overlap_len = max(0, current_component.end_line - next_component.start_line + 1)
+                # Calculate overlap length using the original end line
+                overlap_len = max(0, previous_end - next_component.start_line + 1)
                 # Clamp overlap to the length of next_lines
                 overlap_len = min(overlap_len, len(next_lines))
                 if overlap_len > 0:
@@ -164,6 +164,9 @@ class ComponentSplitter:
                 else:
                     # No overlap, just append
                     current_component.content = "\n".join(current_lines + next_lines)
+
+                # Update the current component's end line after merging content
+                current_component.end_line = max(previous_end, next_component.end_line)
 
                 # Combine metadata
                 current_component.metadata.update(next_component.metadata)

@@ -98,7 +98,7 @@ class Tool[TConfig: Any, TIssue](ABC):
         # First check system PATH
         if shutil.which(command) is not None:
             return True
-        
+
         # If not in system PATH, check poetry virtual environment
         try:
             import subprocess
@@ -114,17 +114,17 @@ class Tool[TConfig: Any, TIssue](ABC):
                 )
                 if result.returncode == 0:
                     return True
-                    
+
                 # Also try direct execution in the virtual environment
                 venv_bin = Path(sys.prefix) / "bin" if sys.platform != "win32" else Path(sys.prefix) / "Scripts"
                 command_path = venv_bin / command
                 if command_path.exists():
                     return True
-                    
+
         except Exception:
             # If any error occurs during poetry environment check, fall back to system PATH only
             pass
-            
+
         return False
 
     async def run_with_timeout(

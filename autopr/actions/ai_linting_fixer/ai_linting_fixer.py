@@ -13,35 +13,18 @@ from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
 from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
-from autopr.actions.ai_linting_fixer.detection import (IssueDetector,
-                                                       LintingIssue)
-from autopr.actions.ai_linting_fixer.display import (AILintingFixerDisplay,
-                                                     DisplayConfig)
+from autopr.actions.ai_linting_fixer.detection import IssueDetector
+from autopr.actions.ai_linting_fixer.display import AILintingFixerDisplay, DisplayConfig
 from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
+from autopr.actions.ai_linting_fixer.issue_converter import convert_detection_issue_to_model_issue
 from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs)
-from autopr.actions.ai_linting_fixer.models import \
-    LintingIssue as ModelLintingIssue
-from autopr.actions.ai_linting_fixer.performance_tracker import \
-    PerformanceTracker
+from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
+from autopr.actions.ai_linting_fixer.performance_tracker import PerformanceTracker
 from autopr.actions.llm.manager import ActionLLMProviderManager
 
+
 logger = logging.getLogger(__name__)
-
-
-def convert_detection_issue_to_model_issue(detection_issue: "LintingIssue") -> ModelLintingIssue:
-    """Convert a LintingIssue from detection module to models module."""
-    return ModelLintingIssue(
-        file_path=detection_issue.file_path,
-        line_number=detection_issue.line_number,
-        column_number=detection_issue.column_number,
-        error_code=detection_issue.error_code,
-        message=detection_issue.message,
-        line_content=getattr(detection_issue, 'line_content', ''),
-        column=detection_issue.column_number,
-    )
 
 
 class AILintingFixer:
@@ -66,21 +49,22 @@ class AILintingFixer:
         # Get Azure OpenAI configuration
         azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/")
         azure_api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
-        
+
         # Validate Azure OpenAI configuration before proceeding
         # Skip validation in test environments or when explicitly disabled
         skip_validation = (
-            os.getenv("AUTOPR_TEST_MODE") == "true" or 
+            os.getenv("AUTOPR_TEST_MODE") == "true" or
             os.getenv("SKIP_AI_VALIDATION") == "true" or
             "pytest" in sys.modules
         )
-        
+
         if not skip_validation:
             # Check for placeholder endpoint
             if "<" in azure_endpoint or "your-azure-openai-endpoint" in azure_endpoint:
                 error_msg = (
                     "Azure OpenAI endpoint is not properly configured. "
-                    "Please set AZURE_OPENAI_ENDPOINT environment variable to your actual endpoint URL. "
+                    "Please set AZURE_OPENAI_ENDPOINT environment variable "
+                    "to your actual endpoint URL. "
                     f"Current value: {azure_endpoint}"
                 )
                 logger.error(error_msg)
@@ -127,13 +111,12 @@ class AILintingFixer:
 
         # Initialize database for logging interactions
         try:
-            from autopr.actions.ai_linting_fixer.database import \
-                AIInteractionDB
+            from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 
             self.database = AIInteractionDB()
             self.issue_fixer.database = self.database
         except Exception as e:
-            logger.warning(f"Failed to initialize database: {e}")
+            logger.warning("Failed to initialize database: %s", e)
             self.database = None
 
         logger.info("AI Linting Fixer initialized with modular components")
@@ -180,7 +163,7 @@ class AILintingFixer:
             return "api"
         return "general"
 
-    def _get_error_context(self, error: Exception) -> dict[str, Any]:
+    def _get_error_context(self, _error: Exception) -> dict[str, Any]:
         """Get context information about when/where the error occurred."""
         return {
             "session_id": getattr(self, "session_id", "unknown"),
@@ -224,7 +207,7 @@ class AILintingFixer:
             ],
         }
 
-    def _analyze_connection_error(self, error: Exception) -> dict[str, Any]:
+    def _analyze_connection_error(self, _error: Exception) -> dict[str, Any]:
         """Analyze connection-related errors."""
         return {
             "connection_details": {
@@ -239,7 +222,7 @@ class AILintingFixer:
             ],
         }
 
-    def _analyze_permission_error(self, error: Exception) -> dict[str, Any]:
+    def _analyze_permission_error(self, _error: Exception) -> dict[str, Any]:
         """Analyze permission-related errors."""
         return {
             "permission_details": {
@@ -412,7 +395,7 @@ class AILintingFixer:
                         continue
 
                     # Fix the issue
-                    result = self.issue_fixer._fix_single_issue(
+                    result = self.issue_fixer.fix_single_issue(
                         file_path=issue.file_path,
                         content=content,
                         issue=convert_detection_issue_to_model_issue(issue),
@@ -431,7 +414,8 @@ class AILintingFixer:
                                 processed_issues.append(issue)
                                 confidence = result.get("confidence", 0.0)
                                 self.display.error.show_info(
-                                    f"✅ Fixed {issue.error_code} in {issue.file_path} (confidence: {confidence:.3f})"
+                                    f"✅ Fixed {issue.error_code} in {issue.file_path} "
+                                    f"(confidence: {confidence:.3f})"
                                 )
                             else:
                                 failed_issues.append(issue)
@@ -509,7 +493,7 @@ class AILintingFixer:
             self.display.results.show_queue_statistics(outputs.queue_stats)
             self.display.results.show_suggestions(suggestions)
 
-            return outputs
+            return outputs  # noqa: TRY300
 
         except Exception as e:
             # Enhanced error handling with drill-down capability
@@ -559,7 +543,7 @@ class AILintingFixer:
             if self.display:
                 self.display.error.show_warning(f"⚠️ Error during cleanup: {e}")
             else:
-                logger.exception(f"Error during cleanup: {e}")
+                logger.exception("Error during cleanup")
 
 
 # Convenience functions for backward compatibility

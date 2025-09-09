@@ -15,9 +15,9 @@ from .utils import calculate_confidence_score, get_confidence_level
 __all__ = [
     "PlatformDetector",
     "FileAnalyzer",
-    "PlatformConfigManager", 
+    "PlatformConfigManager",
     "PlatformScoringEngine",
-    "PlatformDetectorInputs", 
+    "PlatformDetectorInputs",
     "PlatformDetectorOutputs",
     "PlatformPatterns",
     "calculate_confidence_score",

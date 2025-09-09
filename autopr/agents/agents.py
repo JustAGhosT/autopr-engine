@@ -11,18 +11,24 @@ from pydantic import BaseModel, field_validator
 
 from autopr.actions import platform_detection
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs)
+from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 from autopr.agents.models import CodeIssue, IssueSeverity
 
 
 def get_highest_severity() -> IssueSeverity:
-    """Get the highest available severity level, falling back to ERROR if CRITICAL is not available."""
-    return getattr(
-        IssueSeverity, "CRITICAL", getattr(IssueSeverity, "ERROR", IssueSeverity.HIGH)
-    )
+    """Get the highest available severity level, falling back through ordered severity levels."""
+    # Safe ordered lookup to avoid direct attribute evaluation at import time
+    severity_names = ["CRITICAL", "ERROR", "HIGH", "MEDIUM", "WARNING", "LOW", "INFO"]
+
+    for name in severity_names:
+        severity = getattr(IssueSeverity, name, None)
+        if severity is not None:
+            return severity
+
+    # Fallback to INFO if nothing else is available
+    return IssueSeverity.INFO
 
 
 class VolumeConfig(BaseModel):
@@ -48,7 +54,7 @@ class VolumeConfig(BaseModel):
         """Validate quality mode is valid."""
         if not isinstance(v, QualityMode):
             msg = "Quality mode must be a valid QualityMode enum"
-            raise ValueError(msg)
+            raise TypeError(msg)
         return v
 
     @field_validator("config")
@@ -69,15 +75,21 @@ class VolumeConfig(BaseModel):
                 elif enable_ai_agents in ("false", "f", "no", "n", "off", "0"):
                     v["enable_ai_agents"] = False
                 else:
-                    msg = f"enable_ai_agents must be a boolean or valid boolean string, got '{enable_ai_agents}'"
+                    msg = (
+                        f"enable_ai_agents must be a boolean or valid boolean string, "
+                        f"got '{enable_ai_agents}'"
+                    )
                     raise ValueError(msg)
             elif not isinstance(enable_ai_agents, bool):
                 # Try to convert other types to boolean
                 try:
                     v["enable_ai_agents"] = bool(enable_ai_agents)
                 except Exception:
-                    msg = f"enable_ai_agents must be a boolean, got {type(enable_ai_agents).__name__}"
-                    raise ValueError(msg)
+                    msg = (
+                        f"enable_ai_agents must be a boolean, "
+                        f"got {type(enable_ai_agents).__name__}"
+                    )
+                    raise ValueError(msg) from None
 
         # Add enable_ai_agents if not present
         if "enable_ai_agents" not in v:
@@ -135,7 +147,7 @@ class LintingFixerWrapper:
     def __init__(self, linting_fixer: _AILintingFixer):
         self._fixer = linting_fixer
 
-    async def fix_file(self, file_path: str, file_content: str) -> Any:
+    async def fix_file(self, file_path: str, _file_content: str) -> Any:
         """Fix linting issues in a single file."""
         inputs = AILintingFixerInputs(
             target_path=file_path,
@@ -147,9 +159,13 @@ class LintingFixerWrapper:
 
         # Convert the result to the expected format
         class FixResult:
-            def __init__(self, success: bool, fixed_issues: list[CodeIssue]):
+            def __init__(
+                self, success: bool, fixed_issues: list[CodeIssue],
+                error_message: str | None = None
+            ):
                 self.success = success
                 self.fixed_issues = fixed_issues
+                self.error_message = error_message
 
         # Convert AILintingFixerOutputs to the expected format
         fixed_issues = []
@@ -163,9 +179,13 @@ class LintingFixerWrapper:
                     severity=IssueSeverity.INFO
                 ))
 
-        return FixResult(success=result.success, fixed_issues=fixed_issues)
+        return FixResult(
+            success=result.success,
+            fixed_issues=fixed_issues,
+            error_message=getattr(result, 'error_message', None)
+        )
 
-    async def analyze_file(self, file_path: str, file_content: str) -> Any:
+    async def analyze_file(self, file_path: str, _file_content: str) -> Any:
         """Analyze linting issues in a single file without fixing."""
         inputs = AILintingFixerInputs(
             target_path=file_path,
@@ -177,9 +197,12 @@ class LintingFixerWrapper:
 
         # Convert the result to the expected format
         class AnalysisResult:
-            def __init__(self, success: bool, issues: list[CodeIssue]):
+            def __init__(
+                self, success: bool, issues: list[CodeIssue], error_message: str | None = None
+            ):
                 self.success = success
                 self.issues = issues
+                self.error_message = error_message
 
         # Convert detected issues to CodeIssue objects
         issues = []
@@ -192,7 +215,11 @@ class LintingFixerWrapper:
                 severity=IssueSeverity.WARNING
             ))
 
-        return AnalysisResult(success=result.success, issues=issues)
+        return AnalysisResult(
+            success=result.success,
+            issues=issues,
+            error_message=getattr(result, 'error_message', None)
+        )
 
 
 class LintingAgent(BaseAgent):
@@ -329,7 +356,7 @@ class LintingAgent(BaseAgent):
             ]
         except Exception as e:
             logging.exception(
-                f"Unexpected error fixing code issues in {file_path}: {e}"
+                "Unexpected error fixing code issues in %s", file_path
             )
             return [
                 CodeIssue(
@@ -380,7 +407,7 @@ class LintingAgent(BaseAgent):
 
         except Exception as e:
             logging.exception(
-                f"Unexpected error analyzing code quality in {file_path}: {e}"
+                "Unexpected error analyzing code quality in %s", file_path
             )
             return [
                 CodeIssue(
@@ -438,8 +465,8 @@ class QualityAgent(BaseAgent):
 
             return await self._quality_engine.execute(inputs, {}, self.volume_config.config)
 
-        except Exception as e:
-            logging.exception(f"Error analyzing quality: {e}")
+        except Exception:
+            logging.exception("Error analyzing quality")
             return None
 
 

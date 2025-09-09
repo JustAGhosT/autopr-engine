@@ -284,7 +284,7 @@ class IssueFixer:
                 "modified": False,
             }
 
-    def _fix_single_issue(
+    def fix_single_issue(
         self,
         file_path: str,
         content: str,

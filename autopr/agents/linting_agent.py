@@ -5,16 +5,17 @@ and fixing code style and quality issues in a codebase.
 """
 
 import asyncio
+from dataclasses import dataclass
 import logging
 import os
-import sys
-from dataclasses import dataclass
 from pathlib import Path
+import sys
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_linting_fixer import AILintingFixer
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.agents.base import BaseAgent
+
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -118,7 +119,7 @@ class LintingAgent(BaseAgent[LintingInputs, LintingOutputs]):
         except Exception as e:
             # In test mode or when AI components are not available, set to None
             if os.getenv("AUTOPR_TEST_MODE") == "true" or "pytest" in sys.modules:
-                logger.warning(f"AILintingFixer initialization failed in test mode: {e}")
+                logger.warning("AILintingFixer initialization failed in test mode: %s", e)
                 self.linting_fixer = None
             else:
                 msg = (

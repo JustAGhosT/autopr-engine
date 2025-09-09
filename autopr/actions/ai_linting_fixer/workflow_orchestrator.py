@@ -10,15 +10,16 @@ import os
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.core import AILintingFixer
-from autopr.actions.ai_linting_fixer.detection import issue_detector
-from autopr.actions.ai_linting_fixer.display import (DisplayConfig, OutputMode,
-                                                     get_display)
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs,
-                                                    LintingIssue,
-                                                    create_empty_outputs)
-from autopr.actions.llm.manager import \
-    ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.ai_linting_fixer.detection import IssueDetector
+from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode, get_display
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    LintingIssue,
+    create_empty_outputs,
+)
+from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class WorkflowOrchestrator:
     def __init__(self, display_config: DisplayConfig):
         """Initialize the workflow orchestrator."""
         self.display = get_display(display_config)
+        self.issue_detector = IssueDetector()
 
     def create_llm_manager(self, inputs: AILintingFixerInputs) -> LLMProviderManager:
         """Create and configure the LLM manager."""
@@ -59,7 +61,7 @@ class WorkflowOrchestrator:
     def detect_issues(self, target_path: str) -> list[Any]:
         """Detect linting issues in the target path."""
         self.display.operation.show_detection_progress(target_path)
-        issues = issue_detector.detect_issues(target_path)
+        issues = self.issue_detector.detect_issues(target_path)
 
         if not issues:
             self.display.operation.show_detection_results(0, 0)
@@ -145,15 +147,18 @@ class WorkflowOrchestrator:
             issues_failed=session_results.get("failed_fixes", 0),
             total_duration=session_results.get("duration", 0.0),
             session_id=session_results.get("session_id"),
-            agent_stats=session_results.get("stats", {}),
-            queue_stats={},  # This would need to be filled from fixer if available
+            agent_stats=session_results.get("stats", {}).get("agent_performance", {}),
+            queue_stats=session_results.get("stats", {}).get("queue_statistics", {}),
         )
 
         # Display comprehensive results
         self.display.results.show_results_summary(final_results)
         if inputs.verbose_metrics:
-            self.display.results.show_agent_performance(final_results.agent_stats)
-            self.display.results.show_queue_statistics(final_results.queue_stats)
+            # Extract nested metrics from session_results
+            agent_stats = session_results.get("stats", {}).get("agent_performance", {})
+            queue_stats = session_results.get("stats", {}).get("queue_statistics", {})
+            self.display.results.show_agent_performance(agent_stats)
+            self.display.results.show_queue_statistics(queue_stats)
         # Generate suggestions based on results
         suggestions = []
         if final_results.issues_failed > 0:

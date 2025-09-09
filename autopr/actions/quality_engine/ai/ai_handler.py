@@ -38,7 +38,25 @@ async def run_ai_analysis(
         from autopr.actions.quality_engine.ai.ai_modes import \
             run_ai_analysis as run_analysis
 
-        logger.info("Starting AI-enhanced analysis", file_count=len(files))
+        # Detect available API keys and set provider/model accordingly
+        openai_key = os.getenv("OPENAI_API_KEY")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+
+        # Fallback logic: choose provider based on available API keys
+        if not openai_key and anthropic_key:
+            provider_name = "anthropic"
+            model = "claude-3-5-sonnet-20241022"
+            logger.info("OpenAI API key not found, falling back to Anthropic")
+        elif not openai_key and azure_endpoint and azure_key:
+            provider_name = "azure_openai"
+            model = "gpt-4"
+            logger.info("OpenAI API key not found, falling back to Azure OpenAI")
+        elif not openai_key:
+            logger.warning("No OpenAI API key found and no fallback providers available")
+
+        logger.info("Starting AI-enhanced analysis", file_count=len(files), provider=provider_name, model=model)
         start_time = time.time()
 
         # Run the AI analysis

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 class QualityGateValidator:
     """Validates fixes before committing using comprehensive quality checks."""
-    
+
     def __init__(self) -> None:
         self.quality_checks: dict[
             str, Callable[[str, QualityGateInputs], dict[str, Any]]

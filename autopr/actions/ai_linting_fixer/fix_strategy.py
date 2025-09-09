@@ -202,7 +202,7 @@ class ValidationStrategy(FixStrategy):
             self.persistence_manager,
             self.validation_manager,
         )
-        
+
         fix_result = await basic_strategy.apply_fix(agent, file_path, content, issues, session_id)
 
         if not fix_result.get("success", False):
@@ -259,8 +259,8 @@ class ValidationStrategy(FixStrategy):
             ],
             **persistence_result,
             "final_success": (
-                fix_result.get("success", False) 
-                and should_keep_fix 
+                fix_result.get("success", False)
+                and should_keep_fix
                 and persistence_result.get("write_success", False)
             ),
         })

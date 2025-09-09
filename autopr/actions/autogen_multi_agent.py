@@ -19,9 +19,9 @@ except ImportError:
     # Create dummy classes for type annotations
     class ConversableAgent:
         def __init__(self, *args: Any, **kwargs: Any) -> None: pass
-        def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]: 
+        def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
             return []
-    
+
     class GroupChat:
         def __init__(self, agents: List[ConversableAgent], messages: Optional[List[Dict[str, Any]]] = None,
                      max_round: int = 10, speaker_selection_method: str = "round_robin") -> None:
@@ -29,7 +29,7 @@ except ImportError:
             self.agents: List[ConversableAgent] = agents
             self.max_round: int = max_round
             self.speaker_selection_method: str = speaker_selection_method
-    
+
     class GroupChatManager:
         def __init__(self, groupchat: GroupChat, llm_config: Dict[str, Any]) -> None:
             self.groupchat: GroupChat = groupchat
@@ -199,13 +199,13 @@ class AutoGenAgentSystem:
 
             # Create group chat manager
             manager = GroupChatManager(
-                groupchat=groupchat, 
+                groupchat=groupchat,
                 llm_config=self.llm_config
             )
 
             # Start the conversation
             chat_result = self.agents["code_analyzer"].initiate_chat(
-                manager, 
+                manager,
                 message=context_message
             )
 
@@ -241,18 +241,18 @@ class AutoGenAgentSystem:
             ]
 
             groupchat = GroupChat(
-                agents=participants, 
-                messages=[], 
+                agents=participants,
+                messages=[],
                 max_round=8
             )
 
             manager = GroupChatManager(
-                groupchat=groupchat, 
+                groupchat=groupchat,
                 llm_config=self.llm_config
             )
 
             chat_result = self.agents["security_auditor"].initiate_chat(
-                manager, 
+                manager,
                 message=context_message
             )
 
@@ -288,18 +288,18 @@ class AutoGenAgentSystem:
             ]
 
             groupchat = GroupChat(
-                agents=participants, 
-                messages=[], 
+                agents=participants,
+                messages=[],
                 max_round=12
             )
 
             manager = GroupChatManager(
-                groupchat=groupchat, 
+                groupchat=groupchat,
                 llm_config=self.llm_config
             )
 
             chat_result = self.agents["quality_reviewer"].initiate_chat(
-                manager, 
+                manager,
                 message=context_message
             )
 
@@ -317,7 +317,7 @@ class AutoGenAgentSystem:
         try:
             # Get all messages from the chat - handle ChatResult objects or plain lists
             messages: List[Dict[str, Any]] = []
-            
+
             # Check if chat_result has a chat_history attribute (ChatResult-like object)
             if hasattr(chat_result, 'chat_history') and hasattr(chat_result.chat_history, '__iter__'):
                 messages = list(chat_result.chat_history)

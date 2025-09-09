@@ -76,7 +76,7 @@ class ResponseParser:
             return False
 
         lines = [line.strip() for line in code.split('\n') if line.strip()]
-        
+
         # Must have some actual content
         if not lines:
             return False
@@ -86,7 +86,7 @@ class ResponseParser:
             "def ", "class ", "import ", "from ", "if ", "for ", "while ",
             "try:", "except", "with ", "return", "yield", "async def", "await"
         ]
-        
+
         has_python_structure = any(
             any(indicator in line for indicator in python_indicators)
             for line in lines
@@ -107,7 +107,7 @@ class ResponseParser:
             return False
 
         lines = [line.strip() for line in code.split('\n') if line.strip()]
-        
+
         # 1. Must have significant content (more than just a few lines)
         if len(lines) < 5:
             return False
@@ -177,7 +177,7 @@ class ResponseParser:
             return {"strategy": "targeted", "reasoning": "No response received"}
 
         content_lower = response_content.lower()
-        
+
         # Look for strategy indicators
         if "full" in content_lower and "file" in content_lower:
             strategy = "full_file"

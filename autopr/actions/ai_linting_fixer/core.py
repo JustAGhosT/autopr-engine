@@ -12,9 +12,9 @@ from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
 from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
-from autopr.actions.ai_linting_fixer.workflow import (WorkflowContext,
-                                                      WorkflowIntegrationMixin)
+from autopr.actions.ai_linting_fixer.workflow import WorkflowContext, WorkflowIntegrationMixin
 from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 

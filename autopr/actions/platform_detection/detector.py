@@ -16,7 +16,7 @@ from .patterns import PlatformPatterns
 
 class PlatformDetector:
     """Detects which rapid prototyping platform was used and routes accordingly."""
-    
+
     def __init__(self) -> None:
         self.platform_signatures = PlatformPatterns.get_platform_signatures()
         self.advanced_patterns = PlatformPatterns.get_advanced_patterns()

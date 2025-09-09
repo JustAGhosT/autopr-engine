@@ -14,21 +14,21 @@ except ImportError:
     # Create dummy class for type annotations
     class ConversableAgentDummy:
         def __init__(self, *args: Any, **kwargs: Any) -> None: pass
-        def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]: 
+        def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
             return []
-    
+
     ConversableAgent = ConversableAgentDummy
 
 
 class AutoGenAgentFactory:
     """Factory for creating specialized AutoGen agents."""
-    
+
     @staticmethod
     def create_code_analyzer(llm_config: Dict[str, Any]) -> ConversableAgent:
         """Create a code analyzer agent."""
         if not AUTOGEN_AVAILABLE:
             raise ImportError("AutoGen not installed. Install with: pip install pyautogen")
-            
+
         return ConversableAgent(
             name="code_analyzer",
             system_message="""You are a senior code analyzer. Your role is to:
@@ -41,13 +41,13 @@ class AutoGenAgentFactory:
             llm_config=llm_config,
             human_input_mode="NEVER",
         )
-    
+
     @staticmethod
     def create_code_fixer(llm_config: Dict[str, Any]) -> ConversableAgent:
         """Create a code fixer agent."""
         if not AUTOGEN_AVAILABLE:
             raise ImportError("AutoGen not installed. Install with: pip install pyautogen")
-            
+
         return ConversableAgent(
             name="code_fixer",
             system_message="""You are an expert code fixer. Your role is to:
@@ -58,13 +58,13 @@ class AutoGenAgentFactory:
             llm_config=llm_config,
             human_input_mode="NEVER",
         )
-    
+
     @staticmethod
     def create_security_auditor(llm_config: Dict[str, Any]) -> ConversableAgent:
         """Create a security auditor agent."""
         if not AUTOGEN_AVAILABLE:
             raise ImportError("AutoGen not installed. Install with: pip install pyautogen")
-            
+
         return ConversableAgent(
             name="security_auditor",
             system_message="""You are a security expert. Your role is to:

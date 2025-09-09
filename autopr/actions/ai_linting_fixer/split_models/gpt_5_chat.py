@@ -67,7 +67,7 @@ GPT_5_CHAT_CONFIG = ModelSpec(
 )
 
 
-def get_gpt5_fallback_strategies() -> dict[str, list]:
+def get_gpt5_fallback_strategies() -> dict[str, list[tuple[str, str]]]:
     """Get fallback strategies for GPT-5-Chat."""
     return {
         "primary": [

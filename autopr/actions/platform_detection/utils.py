@@ -24,11 +24,11 @@ def calculate_confidence_score(
         'commit_messages': 0.15,
         'content_patterns': 0.10
     }
-    
+
     # Normalize weights to sum to 1.0
     total_weight = sum(weights.values())
     normalized_weights = {k: v / total_weight for k, v in weights.items()}
-    
+
     # Calculate weighted score using all factors
     total_score = (
         file_score * normalized_weights['files'] +
@@ -37,7 +37,7 @@ def calculate_confidence_score(
         commit_score * normalized_weights['commit_messages'] +
         content_score * normalized_weights['content_patterns']
     )
-    
+
     return min(1.0, max(0.0, total_score))
 
 

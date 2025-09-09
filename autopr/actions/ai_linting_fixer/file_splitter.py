@@ -6,7 +6,6 @@ Main orchestrator for file splitting operations.
 
 import logging
 import time
-from typing import Any
 
 from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
     FileComplexityAnalyzer
