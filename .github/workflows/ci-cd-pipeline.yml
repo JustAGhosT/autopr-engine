@@ -351,8 +351,7 @@ jobs:
         run: |
           echo "AutoPR has been successfully deployed to staging environment"
           echo "Environment: staging"
-          echo "Version: $(python -c "import autopr; print(autopr.__version__)")"
-
+          echo "Version: $(poetry run python -c 'import autopr; print(autopr.__version__)')"
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
