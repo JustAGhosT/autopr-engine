@@ -7,22 +7,24 @@ using advanced language models and specialized agents.
 
 import logging
 import os
-import sys
 import time
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
 from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
 from autopr.actions.ai_linting_fixer.detection import IssueDetector
-from autopr.actions.ai_linting_fixer.display import AILintingFixerDisplay, DisplayConfig
+from autopr.actions.ai_linting_fixer.display import (AILintingFixerDisplay,
+                                                     DisplayConfig)
 from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
-from autopr.actions.ai_linting_fixer.issue_converter import convert_detection_issue_to_model_issue
+from autopr.actions.ai_linting_fixer.issue_converter import \
+    convert_detection_issue_to_model_issue
 from autopr.actions.ai_linting_fixer.issue_fixer import IssueFixer
-from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
-from autopr.actions.ai_linting_fixer.performance_tracker import PerformanceTracker
+from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
+                                                    AILintingFixerOutputs)
+from autopr.actions.ai_linting_fixer.performance_tracker import \
+    PerformanceTracker
 from autopr.actions.llm.manager import ActionLLMProviderManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -48,54 +50,69 @@ class AILintingFixer:
 
         # Get Azure OpenAI configuration
         azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/")
-        azure_api_key = os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 
-        # Validate Azure OpenAI configuration before proceeding
-        # Skip validation in test environments or when explicitly disabled
-        skip_validation = (
-            os.getenv("AUTOPR_TEST_MODE") == "true" or
-            os.getenv("SKIP_AI_VALIDATION") == "true" or
-            "pytest" in sys.modules
+        # Soft validation: check if Azure OpenAI is properly configured
+        azure_configured = (
+            azure_api_key and
+            azure_endpoint and
+            "<" not in azure_endpoint and
+            "your-azure-openai-endpoint" not in azure_endpoint
         )
 
-        if not skip_validation:
-            # Check for placeholder endpoint
-            if "<" in azure_endpoint or "your-azure-openai-endpoint" in azure_endpoint:
-                error_msg = (
-                    "Azure OpenAI endpoint is not properly configured. "
-                    "Please set AZURE_OPENAI_ENDPOINT environment variable "
-                    "to your actual endpoint URL. "
-                    f"Current value: {azure_endpoint}"
-                )
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-
-            # Check for missing API key
-            if not azure_api_key:
-                error_msg = (
-                    "Azure OpenAI API key is not configured. "
-                    "Please set either AZURE_OPENAI_API_KEY or OPENAI_API_KEY environment variable."
-                )
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-        else:
-            logger.info("Skipping Azure OpenAI validation in test mode")
-
-        logger.info("Azure OpenAI configuration validated successfully")
-
-        # Initialize LLM manager with validated config
+        # Build LLM configuration with fallback providers
         llm_config = {
-            "default_provider": "azure_openai",
-            "fallback_order": ["azure_openai"],  # Only use Azure OpenAI
-            "providers": {
-                "azure_openai": {
-                    "azure_endpoint": azure_endpoint,
-                    "api_key": azure_api_key,
-                    "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
-                    "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-35-turbo"),
-                },
-            },
+            "default_provider": "openai",  # Default to OpenAI
+            "fallback_order": ["openai", "anthropic"],  # Fallback providers
+            "providers": {},
         }
+
+        # Add Azure OpenAI provider only if properly configured
+        if azure_configured:
+            llm_config["default_provider"] = "azure_openai"
+            llm_config["fallback_order"] = ["azure_openai", "openai", "anthropic"]
+            llm_config["providers"]["azure_openai"] = {
+                "azure_endpoint": azure_endpoint,
+                "api_key": azure_api_key,
+                "api_version": os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
+                "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-35-turbo"),
+            }
+            logger.info("Azure OpenAI provider configured successfully")
+        else:
+            # Log warnings for missing Azure configuration
+            if not azure_api_key:
+                logger.warning(
+                    "Azure OpenAI API key not configured. "
+                    "Set AZURE_OPENAI_API_KEY environment variable to enable Azure OpenAI provider."
+                )
+            if (not azure_endpoint or "<" in azure_endpoint or
+                "your-azure-openai-endpoint" in azure_endpoint):
+                logger.warning(
+                    "Azure OpenAI endpoint not properly configured. "
+                    "Set AZURE_OPENAI_ENDPOINT environment variable to enable Azure OpenAI provider. "
+                    "Current value: %s", azure_endpoint
+                )
+            logger.info("Azure OpenAI provider skipped due to missing configuration")
+
+        # Add other providers for fallback
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if openai_api_key:
+            llm_config["providers"]["openai"] = {
+                "api_key": openai_api_key,
+            }
+            logger.info("OpenAI provider configured")
+
+        anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+        if anthropic_api_key:
+            llm_config["providers"]["anthropic"] = {
+                "api_key": anthropic_api_key,
+            }
+            logger.info("Anthropic provider configured")
+
+        # Log final configuration
+        configured_providers = list(llm_config["providers"].keys())
+        logger.info("LLM configuration: default_provider=%s, fallback_order=%s, configured_providers=%s",
+                   llm_config['default_provider'], llm_config['fallback_order'], configured_providers)
         self.llm_manager = ActionLLMProviderManager(llm_config, display=self.display)
 
         # Initialize specialized components
@@ -111,7 +128,8 @@ class AILintingFixer:
 
         # Initialize database for logging interactions
         try:
-            from autopr.actions.ai_linting_fixer.database import AIInteractionDB
+            from autopr.actions.ai_linting_fixer.database import \
+                AIInteractionDB
 
             self.database = AIInteractionDB()
             self.issue_fixer.database = self.database

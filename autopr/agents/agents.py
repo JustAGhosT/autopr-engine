@@ -11,7 +11,8 @@ from pydantic import BaseModel, field_validator
 
 from autopr.actions import platform_detection
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
-from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
+from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
+                                                    AILintingFixerOutputs)
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 from autopr.agents.models import CodeIssue, IssueSeverity
@@ -247,7 +248,9 @@ class LintingAgent(BaseAgent):
         linting_config = {}
         if self.volume_config.config:
             # Filter to only include valid AILintingFixer parameters
-            valid_params = {"llm_manager", "max_workers", "workflow_context"}
+            # AILintingFixer.__init__ only accepts display_config, not llm_manager,
+            # max_workers, or workflow_context
+            valid_params = {"display_config"}
             linting_config.update(
                 {
                     k: v
@@ -392,6 +395,15 @@ class LintingAgent(BaseAgent):
                 ]
 
             # Process the file with the linting fixer for analysis only
+            if self._linting_fixer is None:
+                return [
+                    CodeIssue(
+                        file_path=file_path,
+                        line_number=0,
+                        message="Linting fixer not initialized",
+                        severity=get_highest_severity(),
+                    )
+                ]
             result = await self._linting_fixer.analyze_file(file_path, file_content)
 
             if result.success:

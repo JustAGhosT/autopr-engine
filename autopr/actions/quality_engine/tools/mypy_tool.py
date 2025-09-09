@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import re
 from typing import TypedDict
@@ -77,18 +78,35 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
             # Add files to analyze
             command.extend(files)
 
-            process = await asyncio.create_subprocess_exec(
-                *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-            )
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                )
+            except FileNotFoundError:
+                # MyPy executable not found, return structured error
+                return [
+                    {
+                        "filename": "",
+                        "line_number": 0,
+                        "column_number": 0,
+                        "message": (
+                            "MyPy executable not found. Please install mypy or "
+                            "ensure it's in your PATH."
+                        ),
+                        "severity": "error",
+                    }
+                ]
 
             try:
                 stdout, stderr = await asyncio.wait_for(
                     process.communicate(), timeout=self.default_timeout
                 )
             except TimeoutError:
-                # Terminate the process and wait for cleanup
+                # asyncio.wait_for raises TimeoutError when timeout is exceeded
+                # Terminate the process and drain pipes before cleanup
                 process.kill()
-                await process.wait()
+                with contextlib.suppress(Exception):
+                    await process.communicate()
 
                 # Return structured error result for timeout
                 return [

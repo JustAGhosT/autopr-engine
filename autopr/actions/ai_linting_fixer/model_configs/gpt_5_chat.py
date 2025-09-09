@@ -7,7 +7,6 @@ and performance characteristics for code linting fixes.
 
 from autopr.actions.ai_linting_fixer.model_configs.spec import ModelSpec
 
-
 # GPT-5-Chat Model Configuration
 GPT_5_CHAT_CONFIG = ModelSpec(
     name="gpt-5-chat",
@@ -51,58 +50,5 @@ GPT_5_CHAT_CONFIG = ModelSpec(
 )
 
 
-def get_gpt5_fallback_strategies() -> dict[str, list[tuple[str, str]]]:
-    """Get fallback strategies for GPT-5-Chat."""
-    return {
-        "primary": [
-            ("gpt-5-chat", "openai"),  # Primary choice
-        ],
-        "with_fallback": [
-            ("gpt-5-chat", "openai"),  # Best available
-            ("gpt-4o", "azure_openai"),  # High competency fallback
-            ("gpt-4", "azure_openai"),  # Solid fallback
-        ],
-    }
-
-
-def check_availability() -> tuple[bool, str]:
-    """
-    Check if GPT-5-Chat is available.
-
-    Returns:
-        Tuple of (availability, reason)
-    """
-    try:
-        # This would be the actual availability check
-        # For now, return False as it's not released yet
-        return False, "GPT-5-Chat not yet released (expected 2025)"
-    except Exception as e:
-        return False, f"Error checking availability: {e}"
-
-
-def check_endpoint_reachability() -> bool:
-    """
-    Check if the GPT-5-Chat endpoint is reachable.
-
-    Returns:
-        True if endpoint is reachable, False otherwise
-    """
-    try:
-        # This would be the actual endpoint reachability check
-        # For now, return False as it's not released yet
-        return False
-    except Exception:
-        # Log error instead of printing
-        return False
-
-
-def update_availability() -> bool:
-    """Update the availability status of GPT-5-Chat."""
-    available, reason = check_availability()
-    GPT_5_CHAT_CONFIG.availability = available
-
-    # Check endpoint reachability separately
-    endpoint_reachable = check_endpoint_reachability()
-    GPT_5_CHAT_CONFIG.endpoint_available = endpoint_reachable
-
-    return available
+# Functions are now imported from shared helper
+# Functions are now imported from shared helper

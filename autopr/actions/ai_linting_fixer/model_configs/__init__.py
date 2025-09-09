@@ -7,35 +7,34 @@ availability detection and performance characteristics.
 
 import logging
 
-from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import DEEPSEEK_R1_7B_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import (
-    update_availability as update_deepseek_r1_availability,
-)
-from autopr.actions.ai_linting_fixer.model_configs.deepseek_v3 import DEEPSEEK_V3_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.deepseek_v3 import (
-    update_availability as update_deepseek_v3_availability,
-)
-from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import GPT_5_CHAT_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import (
-    update_availability as update_gpt5_availability,
-)
-from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import LLAMA_3_3_70B_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import (
-    update_availability as update_llama_availability,
-)
-from autopr.actions.ai_linting_fixer.model_configs.mistral_7b import MISTRAL_7B_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.mistral_7b import (
-    update_availability as update_mistral_availability,
-)
-from autopr.actions.ai_linting_fixer.model_configs.phi_4_mini import PHI_4_MINI_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.phi_4_mini import (
-    update_availability as update_phi_mini_availability,
-)
-from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import QWEN_2_5_CONFIG
-from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import (
-    update_availability as update_qwen_availability,
-)
-
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import \
+    DEEPSEEK_R1_7B_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import \
+    update_availability as update_deepseek_r1_availability
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_v3 import \
+    DEEPSEEK_V3_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.deepseek_v3 import \
+    update_availability as update_deepseek_v3_availability
+from autopr.actions.ai_linting_fixer.model_configs.gpt_5_chat import \
+    GPT_5_CHAT_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import \
+    LLAMA_3_3_70B_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.llama_3_3_70b import \
+    update_availability as update_llama_availability
+from autopr.actions.ai_linting_fixer.model_configs.mistral_7b import \
+    MISTRAL_7B_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.mistral_7b import \
+    update_availability as update_mistral_availability
+from autopr.actions.ai_linting_fixer.model_configs.phi_4_mini import \
+    PHI_4_MINI_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.phi_4_mini import \
+    update_availability as update_phi_mini_availability
+from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import \
+    QWEN_2_5_CONFIG
+from autopr.actions.ai_linting_fixer.model_configs.qwen_2_5 import \
+    update_availability as update_qwen_availability
+from autopr.actions.ai_linting_fixer.shared.gpt5_helper import \
+    update_availability as update_gpt5_availability
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +66,11 @@ def update_all_availabilities():
     results = {}
     for model_name, updater in AVAILABILITY_UPDATERS.items():
         try:
-            results[model_name] = updater()
+            if model_name == "gpt-5-chat":
+                # GPT-5-Chat updater needs config parameter
+                results[model_name] = updater(GPT_5_CHAT_CONFIG)
+            else:
+                results[model_name] = updater()
         except Exception:
             logger.exception("Failed to update availability for model %s", model_name)
             results[model_name] = False

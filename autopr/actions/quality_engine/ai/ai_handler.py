@@ -38,25 +38,63 @@ async def run_ai_analysis(
         from autopr.actions.quality_engine.ai.ai_modes import \
             run_ai_analysis as run_analysis
 
-        # Detect available API keys and set provider/model accordingly
-        openai_key = os.getenv("OPENAI_API_KEY")
-        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-        azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+        # Get available providers from the manager
+        available_providers = []
+        if hasattr(llm_manager, "list_providers"):
+            available_providers = llm_manager.list_providers()
+        elif hasattr(llm_manager, "get_available_providers"):
+            available_providers = llm_manager.get_available_providers()
+        # Early return if no providers are available
+        if not available_providers:
+            logger.error("No LLM providers are available for AI analysis")
+            return None
 
-        # Fallback logic: choose provider based on available API keys
-        if not openai_key and anthropic_key:
-            provider_name = "anthropic"
-            model = "claude-3-5-sonnet-20241022"
-            logger.info("OpenAI API key not found, falling back to Anthropic")
-        elif not openai_key and azure_endpoint and azure_key:
-            provider_name = "azure_openai"
-            model = "gpt-4"
-            logger.info("OpenAI API key not found, falling back to Azure OpenAI")
-        elif not openai_key:
-            logger.warning("No OpenAI API key found and no fallback providers available")
+        # Determine the selected provider
+        selected_provider = provider_name
+        if provider_name not in available_providers:
+            # Use manager default if specified provider is not available
+            if hasattr(llm_manager, "get_default_provider"):
+                default_provider = llm_manager.get_default_provider()
+                if default_provider and default_provider in available_providers:
+                    selected_provider = default_provider
+                    logger.info(
+                        "Provider '%s' not available, using default: %s",
+                        provider_name,
+                        selected_provider
+                    )
+                else:
+                    # Use first available provider as fallback
+                    selected_provider = available_providers[0]
+                    logger.info(
+                        "Provider '%s' not available, using first available: %s",
+                        provider_name,
+                        selected_provider
+                    )
+            else:
+                # Use first available provider as fallback
+                selected_provider = available_providers[0]
+                logger.info(
+                    "Provider '%s' not available, using first available: %s",
+                    provider_name,
+                    selected_provider
+                )
 
-        logger.info("Starting AI-enhanced analysis", file_count=len(files), provider=provider_name, model=model)
+        # Get the provider object and align model with provider's default if available
+        provider_obj = None
+        if hasattr(llm_manager, "get_provider"):
+            provider_obj = llm_manager.get_provider(selected_provider)
+        if provider_obj and hasattr(provider_obj, "default_model") and provider_obj.default_model:
+            model = provider_obj.default_model
+            logger.info("Using provider default model: %s", model)
+        # Update provider_name to the resolved selected_provider
+        provider_name = selected_provider
+
+        logger.info(
+            "Starting AI-enhanced analysis",
+            file_count=len(files),
+            provider=provider_name,
+            model=model
+        )
         start_time = time.time()
 
         # Run the AI analysis

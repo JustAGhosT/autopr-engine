@@ -8,10 +8,7 @@ import ast
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
-    AgentType,
-    BaseSpecialist,
-    FixStrategy,
-)
+    AgentType, BaseSpecialist, FixStrategy)
 
 
 class ImportSpecialist(BaseSpecialist):
@@ -159,13 +156,14 @@ Always maintain code functionality while improving import clarity and efficiency
             removed_imports = original_imports - fixed_imports
             return len(removed_imports) > 0
 
-        elif issue.error_code == "F403":  # Wildcard imports
+        elif issue.error_code in ("F403", "F405"):  # Wildcard imports
             # Check if wildcard imports were replaced with specific imports
+            # Only consider from-import wildcards (imp[2] == "*")
             original_wildcards = {
-                imp for imp in original_imports if imp[1] == "*" or imp[2] == "*"
+                imp for imp in original_imports if imp[2] == "*"
             }
             fixed_wildcards = {
-                imp for imp in fixed_imports if imp[1] == "*" or imp[2] == "*"
+                imp for imp in fixed_imports if imp[2] == "*"
             }
             return len(original_wildcards) > len(fixed_wildcards)
 

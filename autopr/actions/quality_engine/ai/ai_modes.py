@@ -138,15 +138,31 @@ async def run_ai_analysis(
             "response_format": {"type": "json_object"},
         }
 
-        # Use async call to avoid blocking the event loop
+        # Use high-level complete API with structured input
         try:
-            response = await llm_manager.complete_async(request)
+            response = await llm_manager.complete(
+                messages=request["messages"],
+                provider=request["provider"],
+                model=request["model"],
+                temperature=request["temperature"],
+                response_format=request["response_format"]
+            )
         except AttributeError:
             # Fallback to sync call via executor if async method doesn't exist
             import asyncio
             from functools import partial
             loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(None, partial(llm_manager.complete, request))
+            response = await loop.run_in_executor(
+                None,
+                partial(
+                    llm_manager.complete,
+                    messages=request["messages"],
+                    provider=request["provider"],
+                    model=request["model"],
+                    temperature=request["temperature"],
+                    response_format=request["response_format"]
+                )
+            )
 
         if not response or not response.content:
             logger.warning("No response received from LLM")

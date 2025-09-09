@@ -67,45 +67,4 @@ GPT_5_CHAT_CONFIG = ModelSpec(
 )
 
 
-def get_gpt5_fallback_strategies() -> dict[str, list[tuple[str, str]]]:
-    """Get fallback strategies for GPT-5-Chat."""
-    return {
-        "primary": [
-            ("gpt-5-chat", "openai"),  # Primary choice
-        ],
-        "with_fallback": [
-            ("gpt-5-chat", "openai"),  # Best available
-            ("gpt-4o", "azure_openai"),  # High competency fallback
-            ("gpt-4", "azure_openai"),  # Solid fallback
-        ],
-    }
-
-
-def check_availability() -> tuple[bool, str]:
-    """
-    Check if GPT-5-Chat is available.
-
-    Returns:
-        Tuple of (availability, reason)
-    """
-    import os
-
-    try:
-        # Detect only endpoint reachability; do not second-guess release status here.
-        if not GPT_5_CHAT_CONFIG.availability:
-            return False, "Model flagged unavailable."
-        has_key = bool(os.getenv("OPENAI_API_KEY"))
-        if has_key:
-            return True, "Endpoint available (OPENAI_API_KEY present)"
-        else:
-            return False, "Endpoint unavailable: OPENAI_API_KEY missing"
-    except Exception as e:
-        return False, f"Error checking availability: {e}"
-
-
-def update_availability() -> bool:
-    """Update the availability status of GPT-5-Chat."""
-    available, reason = check_availability()
-    # Do not overwrite the static release flag; only update endpoint availability.
-    GPT_5_CHAT_CONFIG.endpoint_available = available
-    return available
+# Functions are now imported from shared helper

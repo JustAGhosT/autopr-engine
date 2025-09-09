@@ -12,9 +12,9 @@ from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 from autopr.actions.ai_linting_fixer.database import AIInteractionDB
 from autopr.actions.ai_linting_fixer.metrics import MetricsCollector
 from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
-from autopr.actions.ai_linting_fixer.workflow import WorkflowContext, WorkflowIntegrationMixin
+from autopr.actions.ai_linting_fixer.workflow import (WorkflowContext,
+                                                      WorkflowIntegrationMixin)
 from autopr.ai.core.providers.manager import LLMProviderManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -113,13 +113,13 @@ class AILintingFixer(WorkflowIntegrationMixin):
         """Process queued issues using the queue manager."""
         # Check if there are queued issues using queue stats
         stats = self.queue_manager.get_queue_stats()
-        if not stats.get("queued", 0):
-            return {"processed": 0, "fixed": 0, "failed": 0}
+        if not stats.get("pending", 0):
+            return {"processed": 0, "completed": 0, "failed": 0}
 
         max_fixes = max_fixes or DEFAULT_MAX_FIXES
 
         # Process issues using the existing queue manager API
-        results = {"processed": 0, "fixed": 0, "failed": 0}
+        results = {"processed": 0, "completed": 0, "failed": 0}
         processed_count = 0
 
         while processed_count < max_fixes:
@@ -144,8 +144,8 @@ class AILintingFixer(WorkflowIntegrationMixin):
                     fix_result = await self._attempt_issue_fix(issue)
 
                     if fix_result.get("success", False):
-                        results["fixed"] += 1
-                        status = "fixed"
+                        results["completed"] += 1
+                        status = "completed"
                     else:
                         results["failed"] += 1
                         status = "failed"
@@ -179,7 +179,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
 
         # Update stats
         self.stats["issues_processed"] = results.get("processed", 0)
-        self.stats["issues_fixed"] = results.get("fixed", 0)
+        self.stats["issues_fixed"] = results.get("completed", 0)
         self.stats["issues_failed"] = results.get("failed", 0)
 
         return results
@@ -230,7 +230,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             "total_issues": total_issues,
             "successful_fixes": self.stats["issues_fixed"],
             "failed_fixes": self.stats["issues_failed"],
-            "duration": session_duration,
+            "session_duration": session_duration,
             "stats": self.stats.copy(),
         }
 
