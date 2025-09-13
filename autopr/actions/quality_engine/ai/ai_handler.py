@@ -99,7 +99,6 @@ async def run_ai_analysis(
 
         # Run the AI analysis
         result = await run_analysis(files, llm_manager, provider_name, model)
-
         if result is None:
             logger.warning("AI analysis returned None result")
             return None

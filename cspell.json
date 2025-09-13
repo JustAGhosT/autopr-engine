@@ -1028,7 +1028,20 @@
     "Completion",
     "days",
     "FULLY",
-    "OPERATIONAL"
+    "OPERATIONAL",
+    "deepseek",
+    "DEEPSEEK",
+    "llama",
+    "LLAMA",
+    "qwen",
+    "QWEN",
+    "UPDATERS",
+    "availabilities",
+    "updater",
+    "needs",
+    "exceeded",
+    "Centralized",
+    "duplication"
   ],
   "ignoreWords": [
     "async",
