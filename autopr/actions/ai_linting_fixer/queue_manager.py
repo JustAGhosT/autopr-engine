@@ -6,10 +6,9 @@ Manages the queue of linting issues for processing by AI agents.
 
 import json
 import logging
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 from typing import Any
-
 
 logger = logging.getLogger(__name__)
 
@@ -99,40 +98,58 @@ class IssueQueueManager:
         """Get the next batch of issues to process."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
+            
+            # Use a transaction to ensure atomicity
+            conn.execute("BEGIN IMMEDIATE")
 
-            where_conditions = ["status = 'pending'"]
-            params = []
+            try:
+                where_conditions = ["status = 'pending'"]
+                params = []
 
-            if filter_types:
-                placeholders = ",".join("?" for _ in filter_types)
-                where_conditions.append(f"error_code IN ({placeholders})")
-                params.extend(filter_types)
+                if filter_types:
+                    placeholders = ",".join("?" for _ in filter_types)
+                    where_conditions.append(f"error_code IN ({placeholders})")
+                    params.extend(filter_types)
 
-            query = f"""
-                SELECT * FROM issue_queue
-                WHERE {' AND '.join(where_conditions)}
-                ORDER BY created_at ASC
-                LIMIT ?
-            """
-            params.append(limit)
+                # First, atomically select and mark issues as processing
+                if worker_id:
+                    # Use a more atomic approach: select and update in one operation
+                    # This prevents race conditions by using a subquery
+                    query = f"""
+                        UPDATE issue_queue
+                        SET status = 'processing', worker_id = ?, updated_at = CURRENT_TIMESTAMP
+                        WHERE id IN (
+                            SELECT id FROM issue_queue
+                            WHERE {' AND '.join(where_conditions)}
+                            ORDER BY created_at ASC
+                            LIMIT ?
+                        )
+                        RETURNING *
+                    """
+                    params_with_worker = [worker_id] + params + [limit]
+                    
+                    cursor = conn.execute(query, params_with_worker)
+                    issues = [dict(row) for row in cursor.fetchall()]
+                else:
+                    # If no worker_id provided, just select without marking as processing
+                    query = f"""
+                        SELECT * FROM issue_queue
+                        WHERE {' AND '.join(where_conditions)}
+                        ORDER BY created_at ASC
+                        LIMIT ?
+                    """
+                    params.append(limit)
+                    
+                    cursor = conn.execute(query, params)
+                    issues = [dict(row) for row in cursor.fetchall()]
 
-            cursor = conn.execute(query, params)
-            issues = [dict(row) for row in cursor.fetchall()]
-
-            # Mark issues as processing
-            if issues and worker_id:
-                issue_ids = [issue["id"] for issue in issues]
-                placeholders = ",".join("?" for _ in issue_ids)
-                conn.execute(
-                    f"""
-                    UPDATE issue_queue
-                    SET status = 'processing', worker_id = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE id IN ({placeholders})
-                """,
-                    [worker_id] + issue_ids,
-                )
-
-        return issues
+                conn.commit()
+                return issues
+                
+            except Exception as e:
+                conn.rollback()
+                logger.error(f"Error in get_next_issues: {e}")
+                return []
 
     def update_issue_status(
         self, issue_id: int, status: str, fix_result: dict[str, Any] | None = None

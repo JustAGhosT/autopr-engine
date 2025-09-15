@@ -127,6 +127,7 @@ class AILintingFixer(WorkflowIntegrationMixin):
             batch_size = min(max_fixes - processed_count, max_fixes)
             issues = self.queue_manager.get_next_issues(
                 limit=batch_size,
+                worker_id=self.session_id,
                 filter_types=filter_types
             )
 
