@@ -53,12 +53,24 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
           version: latest
           virtualenvs-create: true
           virtualenvs-in-project: true
+
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
 
       - name: Load cached venv
         id: cached-poetry-dependencies
@@ -69,7 +81,9 @@ jobs:
 
       - name: Install Python dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Install quality tools
         run: |
@@ -121,6 +135,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -128,8 +149,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Run unit tests
         run: |
@@ -180,6 +208,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -187,8 +222,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Install security tools
         run: |
@@ -231,6 +273,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -238,8 +287,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Run performance benchmarks
         run: |
@@ -274,6 +330,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -281,8 +344,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Install build dependencies
         run: |
@@ -317,6 +387,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -324,8 +401,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Install quality tools
         run: |
@@ -374,6 +458,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -381,8 +472,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Install quality tools
         run: |
@@ -451,6 +549,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Remove incompatible virtual environment
+        run: |
+          if [ -d ".venv" ]; then
+            rm -rf .venv
+            echo "Removed incompatible virtual environment"
+          fi
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -458,8 +563,15 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Configure Poetry to use correct Python version
+        run: |
+          poetry env use python
+          poetry env info
+
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       - name: Install documentation dependencies
         run: |
