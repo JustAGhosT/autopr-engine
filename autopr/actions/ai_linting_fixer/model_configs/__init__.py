@@ -6,6 +6,7 @@ availability detection and performance characteristics.
 """
 
 import logging
+from functools import partial
 
 from autopr.actions.ai_linting_fixer.model_configs.deepseek_r1_7b import \
     DEEPSEEK_R1_7B_CONFIG
@@ -51,7 +52,8 @@ ALL_MODEL_CONFIGS = [
 
 # Availability update functions
 AVAILABILITY_UPDATERS = {
-    "gpt-5-chat": update_gpt5_availability,
+    # Do not overwrite release flag; update endpoint only
+    "gpt-5-chat": partial(update_gpt5_availability, GPT_5_CHAT_CONFIG, update_endpoint_only=True),
     "mistral-7b": update_mistral_availability,
     "deepseek-r1-7b": update_deepseek_r1_availability,
     "llama-3.3-70b": update_llama_availability,
@@ -66,11 +68,7 @@ def update_all_availabilities():
     results = {}
     for model_name, updater in AVAILABILITY_UPDATERS.items():
         try:
-            if model_name == "gpt-5-chat":
-                # GPT-5-Chat updater needs config parameter
-                results[model_name] = updater(GPT_5_CHAT_CONFIG)
-            else:
-                results[model_name] = updater()
+            results[model_name] = updater()
         except Exception:
             logger.exception("Failed to update availability for model %s", model_name)
             results[model_name] = False
