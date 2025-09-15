@@ -158,12 +158,12 @@ Always maintain code functionality while improving import clarity and efficiency
 
         elif issue.error_code in ("F403", "F405"):  # Wildcard imports
             # Check if wildcard imports were replaced with specific imports
-            # Only consider from-import wildcards (imp[2] == "*")
+            # Only consider from-import wildcards (imp[0] == "from" and imp[2] == "*")
             original_wildcards = {
-                imp for imp in original_imports if imp[2] == "*"
+                imp for imp in original_imports if imp[0] == "from" and imp[2] == "*"
             }
             fixed_wildcards = {
-                imp for imp in fixed_imports if imp[2] == "*"
+                imp for imp in fixed_imports if imp[0] == "from" and imp[2] == "*"
             }
             return len(original_wildcards) > len(fixed_wildcards)
 
