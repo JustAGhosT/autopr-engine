@@ -62,15 +62,13 @@ class AILintingFixer:
 
         # Build LLM configuration with fallback providers
         llm_config = {
-            "default_provider": "openai",  # Default to OpenAI
-            "fallback_order": ["openai", "anthropic"],  # Fallback providers
+            "default_provider": None,  # Will be set based on available providers
+            "fallback_order": [],  # Will be populated based on available providers
             "providers": {},
         }
 
         # Add Azure OpenAI provider only if properly configured
         if azure_configured:
-            llm_config["default_provider"] = "azure_openai"
-            llm_config["fallback_order"] = ["azure_openai", "openai", "anthropic"]
             llm_config["providers"]["azure_openai"] = {
                 "azure_endpoint": azure_endpoint,
                 "api_key": azure_api_key,
@@ -86,11 +84,11 @@ class AILintingFixer:
                     "Set AZURE_OPENAI_API_KEY environment variable to enable Azure OpenAI provider."
                 )
             if (not azure_endpoint or "<" in azure_endpoint or
-                "your-azure-openai-endpoint" in azure_endpoint):
+                    "your-azure-openai-endpoint" in azure_endpoint):
                 logger.warning(
                     "Azure OpenAI endpoint not properly configured. "
-                    "Set AZURE_OPENAI_ENDPOINT environment variable to enable Azure OpenAI provider. "
-                    "Current value: %s", azure_endpoint
+                    "Set AZURE_OPENAI_ENDPOINT environment variable to enable "
+                    "Azure OpenAI provider. Current value: %s", azure_endpoint
                 )
             logger.info("Azure OpenAI provider skipped due to missing configuration")
 
@@ -109,22 +107,72 @@ class AILintingFixer:
             }
             logger.info("Anthropic provider configured")
 
+        # Determine default provider and fallback order based on available providers
+        available_providers = list(llm_config["providers"].keys())
+        if available_providers:
+            # Set default provider to the first available one
+            llm_config["default_provider"] = available_providers[0]
+            # Set fallback order to all available providers
+            llm_config["fallback_order"] = available_providers
+            logger.info("Default provider set to: %s", llm_config["default_provider"])
+        else:
+            # No providers available - will be handled gracefully
+            logger.warning("No LLM providers configured. AI features will be disabled.")
+            logger.warning("To enable AI features, configure at least one of:")
+            logger.warning("  - AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT")
+            logger.warning("  - OPENAI_API_KEY")
+            logger.warning("  - ANTHROPIC_API_KEY")
+
         # Log final configuration
         configured_providers = list(llm_config["providers"].keys())
-        logger.info("LLM configuration: default_provider=%s, fallback_order=%s, configured_providers=%s",
-                   llm_config['default_provider'], llm_config['fallback_order'], configured_providers)
-        self.llm_manager = ActionLLMProviderManager(llm_config, display=self.display)
+        logger.info(
+            "LLM configuration: default_provider=%s, fallback_order=%s, "
+            "configured_providers=%s",
+            llm_config['default_provider'], llm_config['fallback_order'],
+            configured_providers
+        )
+
+        # Initialize LLM manager with validation
+        if llm_config["default_provider"] is not None:
+            self.llm_manager = ActionLLMProviderManager(
+                llm_config, display=self.display
+            )
+            logger.info(
+                "LLM manager initialized successfully with provider: %s",
+                llm_config["default_provider"]
+            )
+        else:
+            self.llm_manager = None
+            logger.warning("LLM manager not initialized - no providers available")
 
         # Initialize specialized components
         self.issue_detector = IssueDetector()
         self.code_analyzer = CodeAnalyzer()
-        self.ai_agent_manager = AIAgentManager(
-            self.llm_manager, self.performance_tracker
-        )
+
+        # Initialize AI agent manager only if LLM manager is available
+        if self.llm_manager is not None:
+            self.ai_agent_manager = AIAgentManager(
+                self.llm_manager, self.performance_tracker
+            )
+            logger.info("AI agent manager initialized successfully")
+        else:
+            self.ai_agent_manager = None
+            logger.warning(
+                "AI agent manager not initialized - no LLM provider available"
+            )
         self.file_manager = FileManager()
-        self.issue_fixer = IssueFixer(
-            self.ai_agent_manager, self.file_manager, self.error_handler
-        )
+
+        # Initialize issue fixer only if AI agent manager is available
+        if self.ai_agent_manager is not None:
+            self.issue_fixer = IssueFixer(
+                self.ai_agent_manager, self.file_manager, self.error_handler
+            )
+            logger.info("Issue fixer initialized successfully")
+        else:
+            self.issue_fixer = None
+            logger.warning(
+                "Issue fixer not initialized - no AI capabilities available"
+            )
 
         # Initialize database for logging interactions
         try:
@@ -302,6 +350,27 @@ class AILintingFixer:
 
         return suggestions
 
+    def is_ai_available(self) -> bool:
+        """Check if AI features are available (LLM provider configured)."""
+        return (self.llm_manager is not None and
+                self.ai_agent_manager is not None and
+                self.issue_fixer is not None)
+
+    def get_ai_availability_message(self) -> str:
+        """Get a user-friendly message about AI availability and configuration instructions."""
+        if self.is_ai_available():
+            return "AI features are available and ready to use."
+
+        message = ("AI features are not available. To enable AI-powered linting fixes, "
+                  "configure at least one LLM provider:\n\n")
+        message += "1. OpenAI: Set OPENAI_API_KEY environment variable\n"
+        message += "2. Anthropic: Set ANTHROPIC_API_KEY environment variable\n"
+        message += ("3. Azure OpenAI: Set AZURE_OPENAI_API_KEY and "
+                   "AZURE_OPENAI_ENDPOINT environment variables\n\n")
+        message += ("Without AI providers, only issue detection will be available "
+                   "(no automatic fixes).")
+        return message
+
     def run(self, inputs: AILintingFixerInputs) -> AILintingFixerOutputs:
         """Run the complete AI linting fixer workflow."""
         start_time = time.time()
@@ -384,7 +453,28 @@ class AILintingFixer:
                 backup_count = self.file_manager.create_backups(unique_files)
                 self.display.error.show_info(f"Created {backup_count} backup files")
 
-            # Step 3: Process issues with AI
+            # Step 3: Check AI availability before processing
+            if not self.is_ai_available():
+                self.display.error.show_warning(self.get_ai_availability_message())
+                return AILintingFixerOutputs(
+                    success=False,
+                    total_issues_found=len(issues),
+                    issues_fixed=0,
+                    files_modified=[],
+                    summary="AI features not available - no LLM providers configured",
+                    total_issues_detected=len(issues),
+                    issues_processed=0,
+                    issues_failed=len(filtered_issues),
+                    total_duration=time.time() - start_time,
+                    backup_files_created=backup_count,
+                    agent_stats={},
+                    queue_stats={},
+                    session_id=session_id,
+                    processing_mode="detection_only",
+                    dry_run=getattr(inputs, "dry_run", False),
+                )
+
+            # Step 4: Process issues with AI
             self.display.operation.show_processing_start(len(filtered_issues))
 
             # Limit to max_fixes
@@ -412,7 +502,14 @@ class AILintingFixer:
                         failed_issues.append(issue)
                         continue
 
-                    # Fix the issue
+                    # Fix the issue (with additional safety check)
+                    if self.issue_fixer is None:
+                        self.display.error.show_error(
+                            "Issue fixer not available - AI features not configured"
+                        )
+                        failed_issues.append(issue)
+                        continue
+
                     result = self.issue_fixer.fix_single_issue(
                         file_path=issue.file_path,
                         content=content,
