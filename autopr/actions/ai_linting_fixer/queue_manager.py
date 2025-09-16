@@ -99,6 +99,9 @@ class IssueQueueManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             
+            # Set to autocommit mode to avoid transaction within transaction error
+            conn.isolation_level = None
+            
             # Use a transaction to ensure atomicity
             conn.execute("BEGIN IMMEDIATE")
 

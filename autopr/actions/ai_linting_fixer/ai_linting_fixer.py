@@ -180,7 +180,8 @@ class AILintingFixer:
                 AIInteractionDB
 
             self.database = AIInteractionDB()
-            self.issue_fixer.database = self.database
+            if self.issue_fixer is not None:
+                self.issue_fixer.database = self.database
         except Exception as e:
             logger.warning("Failed to initialize database: %s", e)
             self.database = None
@@ -421,7 +422,9 @@ class AILintingFixer:
             # Calculate unique files for accurate reporting
             unique_files_count = len({issue.file_path for issue in filtered_issues})
             self.display.operation.show_detection_results(
-                len(filtered_issues), len(issues), unique_files_count
+                filtered_count=len(filtered_issues),
+                total_count=len(issues),
+                unique_files_count=unique_files_count
             )
 
             if not filtered_issues:

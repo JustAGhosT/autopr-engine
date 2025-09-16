@@ -11,10 +11,10 @@ from typing import Any
 
 import structlog
 
-from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.llm.manager import \
+    ActionLLMProviderManager as LLMProviderManager
 from autopr.actions.quality_engine.models import ToolResult
 from autopr.agents.models import CodeIssue
-
 
 logger = structlog.get_logger(__name__)
 
@@ -365,8 +365,31 @@ def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
                     truncated_lines.append(partial_line.strip())
                 break
             else:
-                # Line is short, just add it and stop
-                truncated_lines.append(line)
+                # Line is short, but still check if it fits in remaining budget
+                remaining_budget = max_length - current_length
+                if remaining_budget > 0:
+                    # Try to fit as much as possible, preferably at word boundaries
+                    if len(line) <= remaining_budget:
+                        # Line fits completely
+                        truncated_lines.append(line)
+                    else:
+                        # Line is too long, try to truncate at word boundary
+                        words = line.split()
+                        partial_line = ""
+                        for word in words:
+                            space_needed = 1 if partial_line else 0
+                            word_with_space = len(partial_line) + len(word) + space_needed
+                            if word_with_space <= remaining_budget:
+                                partial_line += (" " if partial_line else "") + word
+                            else:
+                                break
+
+                        # If we couldn't fit any words, hard-truncate to remaining chars
+                        if not partial_line and remaining_budget > 0:
+                            partial_line = line[:remaining_budget]
+
+                        if partial_line:
+                            truncated_lines.append(partial_line)
                 break
         else:
             truncated_lines.append(line)

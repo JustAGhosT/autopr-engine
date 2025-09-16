@@ -38,17 +38,11 @@ class ImportSpecialist(BaseSpecialist):
             FixStrategy(
                 name="import_optimization",
                 description="Optimize import statements for clearness and performance",
-                confidence_multiplier=1.2,
-                max_retries=2,
-                requires_context=True,
                 priority=1,
             ),
             FixStrategy(
                 name="unused_import_removal",
                 description="Remove unused imports to clean up the code",
-                confidence_multiplier=1.5,
-                max_retries=1,
-                requires_context=False,
                 priority=2,
             ),
         ]

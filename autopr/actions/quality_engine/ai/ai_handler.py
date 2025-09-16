@@ -177,10 +177,30 @@ async def initialize_llm_manager() -> Any | None:
                 logger.info("Anthropic provider not found in manager")
 
         # Set fallback order and default provider
-        if config["providers"]["openai"]["api_key"]:
-            llm_manager.set_default_provider("openai")
-        elif config["providers"]["anthropic"]["api_key"]:
-            llm_manager.set_default_provider("anthropic")
+        # Check if providers are actually registered before setting as default
+        if config["providers"]["openai"]["api_key"] and "openai" in llm_manager.providers:
+            try:
+                llm_manager.set_default_provider("openai")
+                logger.info("Set OpenAI as default provider")
+            except ValueError as e:
+                logger.warning("Failed to set OpenAI as default provider: %s", e)
+        elif config["providers"]["anthropic"]["api_key"] and "anthropic" in llm_manager.providers:
+            try:
+                llm_manager.set_default_provider("anthropic")
+                logger.info("Set Anthropic as default provider")
+            except ValueError as e:
+                logger.warning("Failed to set Anthropic as default provider: %s", e)
+        else:
+            # Try to set any available provider as default
+            available_providers = llm_manager.list_providers()
+            if available_providers:
+                try:
+                    llm_manager.set_default_provider(available_providers[0])
+                    logger.info("Set %s as default provider (fallback)", available_providers[0])
+                except ValueError as e:
+                    logger.warning("Failed to set fallback default provider: %s", e)
+            else:
+                logger.warning("No LLM providers available - AI features will be disabled")
 
         # Initialize the LLM manager
         try:

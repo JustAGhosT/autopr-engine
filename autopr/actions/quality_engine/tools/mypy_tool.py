@@ -149,7 +149,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
         """
         issues = []
         pattern = re.compile(
-            r"^(?P<file>[^:]+):(?P<line>\d+):(?P<col>\d+): (?P<level>\w+): "
+            r"^(?P<file>.+):(?P<line>\d+):(?P<col>\d+): (?P<level>\w+): "
             r"(?P<message>.+?)(?:  \[(?P<code>.+)\])?$"
         )
 
