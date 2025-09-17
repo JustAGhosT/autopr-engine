@@ -284,6 +284,52 @@ class IssueFixer:
                 "modified": False,
             }
 
+    def _safe_extract_response_content(self, response) -> str:
+        """
+        Safely extract and normalize response content from various response types.
+        
+        Args:
+            response: The response object from LLM (could be None, dict, string, etc.)
+            
+        Returns:
+            str: Normalized string content, or fallback message if extraction fails
+        """
+        if response is None:
+            return "<no response>"
+        
+        # Try to extract content from various response formats
+        content = None
+        
+        # Check if response has a content attribute
+        if hasattr(response, 'content'):
+            content = response.content
+        # Check if response is a dict with content key
+        elif isinstance(response, dict):
+            content = response.get('content')
+        # Check if response is already a string
+        elif isinstance(response, str):
+            content = response
+        # Try to get content via get method
+        elif hasattr(response, 'get'):
+            content = response.get('content')
+        
+        # If we still don't have content, convert to string
+        if content is None:
+            content = str(response)
+        
+        # Ensure content is a string and normalize it
+        if not isinstance(content, str):
+            content = str(content)
+        
+        # Normalize whitespace and ensure UTF-8 encoding
+        content = content.strip()
+        
+        # Handle empty content
+        if not content:
+            return "<empty response>"
+        
+        return content
+
     def fix_single_issue(
         self,
         file_path: str,
@@ -327,8 +373,9 @@ class IssueFixer:
             else:
                 response = llm_mgr.complete(request_payload)
 
-            # Parse response
-            parsed_response = self.ai_agent_manager.parse_ai_response(response.content)
+            # Parse response - safely extract content first
+            response_content = self._safe_extract_response_content(response)
+            parsed_response = self.ai_agent_manager.parse_ai_response(response_content)
 
             if not parsed_response.get("success", False):
                 error_msg = parsed_response.get("error", "Unknown error")
@@ -348,7 +395,7 @@ class IssueFixer:
                             "model_used": model or "gpt-4.1",
                             "system_prompt": system_prompt[:1000],
                             "user_prompt": user_prompt[:1000],
-                            "ai_response": str(response.content)[:1000],
+                            "ai_response": response_content[:1000],
                             "fix_successful": False,
                             "confidence_score": 0.0,
                             "fixed_codes": "[]",
@@ -418,9 +465,7 @@ class IssueFixer:
                         "model_used": model or "gpt-4.1",
                         "system_prompt": system_prompt[:1000],  # Truncate for database
                         "user_prompt": user_prompt[:1000],  # Truncate for database
-                        "ai_response": str(response.content)[
-                            :1000
-                        ],  # Truncate for database
+                        "ai_response": response_content[:1000],  # Truncate for database
                         "fix_successful": True,
                         "confidence_score": confidence,
                         "fixed_codes": str(parsed_response.get("changes_made", [])),

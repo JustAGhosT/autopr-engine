@@ -1,7 +1,7 @@
 import asyncio
-import contextlib
 import logging
 import re
+import subprocess
 from typing import TypedDict
 
 from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
@@ -83,9 +83,9 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                 import platform
                 if platform.system() == "Windows":
                     result = subprocess.run(
-                        command, 
-                        capture_output=True, 
-                        text=True, 
+                        command,
+                        capture_output=True,
+                        text=True,
                         timeout=self.default_timeout
                     )
                     stdout = result.stdout
@@ -121,7 +121,7 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                 # A non-zero/non-one return code indicates an actual error.
                 if returncode not in [0, 1]:
                     error_message = stderr.strip()
-                    logging.error("Error running mypy: %s", error_message)
+                    logging.exception("Error running mypy: %s", error_message)
                     return [
                         {
                             "filename": "",

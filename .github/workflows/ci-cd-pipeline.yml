@@ -1,8 +1,6 @@
 name: AutoPR CI/CD Pipeline
 
-permissions:
-  contents: write
-  id-token: write
+# Prefer job-scoped permissions
 
 on:
   push:
@@ -129,6 +127,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     needs: quality-assurance
+    permissions:
+      contents: write
 
     strategy:
       matrix:
@@ -491,6 +491,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     environment:
       name: production
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
