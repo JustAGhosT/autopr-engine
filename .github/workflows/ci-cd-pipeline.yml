@@ -642,6 +642,25 @@ jobs:
     needs:
       [quality-assurance, testing, security, performance, build, documentation]
     if: always()
+    steps:
+      - name: Summarize pipeline status
+        run: |
+          cat > status-report.md <<'EOF'
+          # AutoPR CI/CD Status Report
+          - QA: ${{ needs.quality-assurance.result }}
+          - Testing: ${{ needs.testing.result }}
+          - Security: ${{ needs.security.result }}
+          - Performance: ${{ needs.performance.result }}
+          - Build: ${{ needs.build.result }}
+          - Documentation: ${{ needs.documentation.result }}
+          EOF
+          echo "::notice title=Status Report::Generated status-report.md"
+      - name: Upload status report
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-report
+          path: status-report.md
+          retention-days: 7
 
   # Job aliases for branch protection rules
   test:
