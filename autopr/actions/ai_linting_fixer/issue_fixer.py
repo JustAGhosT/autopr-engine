@@ -4,6 +4,8 @@ Issue Fixer Module
 This module handles the actual fixing of linting issues using AI agents.
 """
 
+import asyncio
+import inspect
 import logging
 import time
 from typing import Any
@@ -374,6 +376,9 @@ class IssueFixer:
                 "temperature": 0.1,
                 "max_tokens": 2000,
             }
+            if provider:
+                request_payload["provider"] = provider
+
             if provider and hasattr(llm_mgr, "get_llm"):
                 chosen = llm_mgr.get_llm(provider)
                 if chosen:
@@ -382,6 +387,10 @@ class IssueFixer:
                     response = llm_mgr.complete(request_payload)
             else:
                 response = llm_mgr.complete(request_payload)
+
+            # Handle async/sync ambiguity - check if response is a coroutine
+            if inspect.isawaitable(response):
+                response = asyncio.run(response)
 
             # Parse response - safely extract content first
             response_content = self._safe_extract_response_content(response)

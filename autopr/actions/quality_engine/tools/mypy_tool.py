@@ -117,37 +117,37 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                     }
                 ]
 
-                # mypy returns 1 if issues are found, 0 if everything is fine.
-                # A non-zero/non-one return code indicates an actual error.
-                if returncode not in [0, 1]:
-                    error_message = stderr.strip()
-                    logging.exception("Error running mypy: %s", error_message)
+            # mypy returns 1 if issues are found, 0 if everything is fine.
+            # A non-zero/non-one return code indicates an actual error.
+            if returncode not in [0, 1]:
+                error_message = stderr.strip()
+                logging.exception("Error running mypy: %s", error_message)
+                return [
+                    {
+                        "filename": "",
+                        "line_number": 0,
+                        "column_number": 0,
+                        "message": f"MyPy execution failed: {error_message}",
+                        "code": "mypy-error",
+                        "level": "error",
+                    }
+                ]
+
+            if not stdout:
+                if returncode == 1 and stderr:
                     return [
                         {
                             "filename": "",
                             "line_number": 0,
                             "column_number": 0,
-                            "message": f"MyPy execution failed: {error_message}",
-                            "code": "mypy-error",
+                            "message": f"MyPy produced no parseable output: {stderr.strip()}",
+                            "code": "mypy-no-output",
                             "level": "error",
                         }
                     ]
+                return []
 
-                if not stdout:
-                    if returncode == 1 and stderr:
-                        return [
-                            {
-                                "filename": "",
-                                "line_number": 0,
-                                "column_number": 0,
-                                "message": f"MyPy produced no parseable output: {stderr.strip()}",
-                                "code": "mypy-no-output",
-                                "level": "error",
-                            }
-                        ]
-                    return []
-
-                return self._parse_output(stdout)
+            return self._parse_output(stdout)
 
     def _parse_output(self, output: str) -> list[LintIssue]:
         """

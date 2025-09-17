@@ -82,20 +82,30 @@ pip install autopr-engine
 # Or install with all features
 pip install "autopr-engine[full]"
 
-# Docker deployment (if image is published)
-docker run -d \
-  -e GITHUB_TOKEN=your_token \
-  -e OPENAI_API_KEY=your_key \
-  -p 8080:8080 \
-  justaghost/autopr-engine:latest
-
-# Or build locally (recommended)
+# Docker deployment (build locally)
 docker build -t autopr-engine:latest .
 docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
   autopr-engine:latest
+
+# Docker Compose deployment (recommended for full setup)
+# Create a .env file with your environment variables:
+# GITHUB_TOKEN=your_token
+# OPENAI_API_KEY=your_key
+# Then run:
+docker-compose up -d
+
+# For private registry deployment (if you have access to a private image)
+# First authenticate to your registry:
+# docker login ghcr.io -u YOUR_USERNAME -p YOUR_TOKEN
+# Then pull and run:
+# docker run -d \
+#   -e GITHUB_TOKEN=your_token \
+#   -e OPENAI_API_KEY=your_key \
+#   -p 8080:8080 \
+#   ghcr.io/your-org/autopr-engine:latest
 ```
 
 ### **Basic Configuration**
