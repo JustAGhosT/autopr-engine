@@ -1,14 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
+  # Disabled - functionality moved to ci-cd-pipeline.yml
   workflow_dispatch:
     inputs:
       volume:
