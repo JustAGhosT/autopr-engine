@@ -10,12 +10,10 @@ from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
 from autopr.actions.ai_linting_fixer.error_handler import (
-    ErrorHandler,
-    create_error_context,
-)
+    ErrorHandler, create_error_context)
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
-from autopr.actions.ai_linting_fixer.models import LintingFixResult, LintingIssue
-
+from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
+                                                    LintingIssue)
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +73,9 @@ class IssueFixer:
             # Process each file
             for file_path, file_issues in issues_by_file.items():
                 try:
+                    # Capture original error codes for this file
+                    original_error_codes = [issue.error_code for issue in file_issues]
+
                     file_result = self._fix_file_issues(
                         file_path=file_path,
                         issues=file_issues,
@@ -83,13 +84,22 @@ class IssueFixer:
                     )
 
                     if file_result["success"]:
-                        fixed_issues.extend(file_result["fixed_issues"])
+                        # Get the error codes that were actually fixed
+                        fixed_error_codes = file_result.get("fixed_issues", [])
+                        fixed_issues.extend(fixed_error_codes)
+
+                        # Compute remaining unfixed issues for this file
+                        remaining_codes = [
+                            code for code in original_error_codes
+                            if code not in fixed_error_codes
+                        ]
+                        remaining_issues.extend(remaining_codes)
+
                         if file_result["modified"]:
                             modified_files.append(file_path)
                     else:
-                        remaining_issues.extend(
-                            [issue.error_code for issue in file_issues]
-                        )
+                        # If file processing failed, all issues remain unfixed
+                        remaining_issues.extend(original_error_codes)
 
                 except Exception as e:
                     # Handle file-specific errors
@@ -115,9 +125,8 @@ class IssueFixer:
                         # Could implement retry logic here
                     else:
                         logger.exception(f"Failed to process {file_path}: {e}")
-                        remaining_issues.extend(
-                            [issue.error_code for issue in file_issues]
-                        )
+                        # All original issues remain unfixed due to processing error
+                        remaining_issues.extend(original_error_codes)
 
             # Create result
             result = LintingFixResult(
@@ -177,7 +186,8 @@ class IssueFixer:
                 raise FileNotFoundError(msg)
 
             # Validate syntax before processing
-            from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
+            from autopr.actions.ai_linting_fixer.code_analyzer import \
+                CodeAnalyzer
 
             code_analyzer = CodeAnalyzer()
             syntax_valid_before = code_analyzer.validate_python_syntax(original_content)

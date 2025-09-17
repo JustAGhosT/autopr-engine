@@ -61,13 +61,13 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                 # We're in a virtual environment, try python -m mypy
                 command = [
                     sys.executable, "-m", "mypy",
-                    "--show-column-numbers", "--no-error-summary", "--no-pretty",
+                    "--show-column-numbers", "--no-error-summary",
                     f"--cache-dir={cache_dir}"
                 ]
             else:
                 # Fall back to system mypy
                 command = [
-                    "mypy", "--show-column-numbers", "--no-error-summary", "--no-pretty",
+                    "mypy", "--show-column-numbers", "--no-error-summary",
                     f"--cache-dir={cache_dir}"
                 ]
 
@@ -134,6 +134,17 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                     ]
 
                 if not stdout:
+                    if returncode == 1 and stderr:
+                        return [
+                            {
+                                "filename": "",
+                                "line_number": 0,
+                                "column_number": 0,
+                                "message": f"MyPy produced no parseable output: {stderr.strip()}",
+                                "code": "mypy-no-output",
+                                "level": "error",
+                            }
+                        ]
                     return []
 
                 return self._parse_output(stdout)
