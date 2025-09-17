@@ -1,9 +1,7 @@
 name: Quality Feedback
 on:
-  pull_request:
-    branches:
-      - main
-      - develop
+  # Disabled - functionality moved to ci-cd-pipeline.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
