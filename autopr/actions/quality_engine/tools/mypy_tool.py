@@ -93,7 +93,8 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                             "MyPy executable not found. Please install mypy or "
                             "ensure it's in your PATH."
                         ),
-                        "severity": "error",
+                        "code": "mypy-not-found",
+                        "level": "error",
                     }
                 ]
 

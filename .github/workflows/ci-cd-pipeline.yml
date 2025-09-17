@@ -92,6 +92,15 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
+      - name: Install TypeScript dependencies (if needed)
+        run: |
+          if [ -f "package.json" ] && grep -q "typescript\|@types" package.json; then
+            echo "Installing TypeScript dependencies..."
+            npm install --save-dev typescript @types/node @types/react @types/react-dom
+          else
+            echo "No TypeScript dependencies needed"
+          fi
+
       - name: Run pre-commit hooks
         run: |
           poetry run pre-commit install
@@ -161,6 +170,16 @@ jobs:
         run: |
           poetry env use python
           poetry install --no-interaction --no-root
+
+      - name: Install TypeScript dependencies (if needed)
+        shell: bash
+        run: |
+          if [ -f "package.json" ] && grep -q "typescript\|@types" package.json; then
+            echo "Installing TypeScript dependencies..."
+            npm install --save-dev typescript @types/node @types/react @types/react-dom
+          else
+            echo "No TypeScript dependencies needed"
+          fi
 
       - name: Run unit tests
         shell: bash

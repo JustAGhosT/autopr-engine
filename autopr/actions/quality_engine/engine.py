@@ -292,9 +292,19 @@ class QualityEngine(Action):
         if has_python_files and "mypy" in available_tools:
             selected_tools.append("mypy")
 
-        # Add ESLint for JavaScript files
+        # Add ESLint for JavaScript files (only if ESLint is properly configured)
         if has_js_files and "eslint" in available_tools:
-            selected_tools.append("eslint")
+            # Check if ESLint is actually available before adding it
+            try:
+                from autopr.actions.quality_engine.tools.eslint_tool import \
+                    ESLintTool
+                eslint_tool = ESLintTool()
+                if eslint_tool.is_available():
+                    selected_tools.append("eslint")
+                else:
+                    logger.warning("ESLint is not available - skipping JavaScript/TypeScript linting")
+            except Exception as e:
+                logger.warning("Failed to check ESLint availability: %s - skipping JavaScript/TypeScript linting", e)
 
         # Add security scanning for higher volumes
         if volume > 300 and "bandit" in available_tools:

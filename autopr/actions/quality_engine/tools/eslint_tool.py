@@ -80,6 +80,19 @@ class ESLintTool(Tool[ESLintConfig, LintIssue]):
         if not files:
             return []
 
+        # Check if ESLint is available before proceeding
+        if not self.is_available():
+            return [
+                {
+                    "filename": "",
+                    "line_number": 0,
+                    "column_number": 0,
+                    "message": "ESLint is not available. Please install ESLint and TypeScript dependencies.",
+                    "code": "eslint-not-available",
+                    "level": "warning",
+                }
+            ]
+
         # Basic ESLint command
         command = ["npx", "eslint", "--format", "json"]
 
