@@ -79,9 +79,28 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
             command.extend(files)
 
             try:
-                process = await asyncio.create_subprocess_exec(
-                    *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-                )
+                # Use subprocess.run on Windows to avoid asyncio subprocess issues
+                import platform
+                if platform.system() == "Windows":
+                    result = subprocess.run(
+                        command, 
+                        capture_output=True, 
+                        text=True, 
+                        timeout=self.default_timeout
+                    )
+                    stdout = result.stdout
+                    stderr = result.stderr
+                    returncode = result.returncode
+                else:
+                    process = await asyncio.create_subprocess_exec(
+                        *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                    )
+                    stdout, stderr = await asyncio.wait_for(
+                        process.communicate(), timeout=self.default_timeout
+                    )
+                    stdout = stdout.decode() if stdout else ""
+                    stderr = stderr.decode() if stderr else ""
+                    returncode = process.returncode
             except FileNotFoundError:
                 # MyPy executable not found, return structured error
                 return [
@@ -98,49 +117,26 @@ class MyPyTool(Tool[MyPyConfig, LintIssue]):
                     }
                 ]
 
-            try:
-                stdout, stderr = await asyncio.wait_for(
-                    process.communicate(), timeout=self.default_timeout
-                )
-            except TimeoutError:
-                # asyncio.wait_for raises TimeoutError when timeout is exceeded
-                # Terminate the process and drain pipes before cleanup
-                process.kill()
-                with contextlib.suppress(Exception):
-                    await process.communicate()
+                # mypy returns 1 if issues are found, 0 if everything is fine.
+                # A non-zero/non-one return code indicates an actual error.
+                if returncode not in [0, 1]:
+                    error_message = stderr.strip()
+                    logging.error("Error running mypy: %s", error_message)
+                    return [
+                        {
+                            "filename": "",
+                            "line_number": 0,
+                            "column_number": 0,
+                            "message": f"MyPy execution failed: {error_message}",
+                            "code": "mypy-error",
+                            "level": "error",
+                        }
+                    ]
 
-                # Return structured error result for timeout
-                return [
-                    {
-                        "filename": "",
-                        "line_number": 0,
-                        "column_number": 0,
-                        "message": f"MyPy execution timed out after {self.default_timeout} seconds",
-                        "code": "mypy-timeout",
-                        "level": "error",
-                    }
-                ]
+                if not stdout:
+                    return []
 
-            # mypy returns 1 if issues are found, 0 if everything is fine.
-            # A non-zero/non-one return code indicates an actual error.
-            if process.returncode not in [0, 1]:
-                error_message = stderr.decode().strip()
-                logging.error("Error running mypy: %s", error_message)
-                return [
-                    {
-                        "filename": "",
-                        "line_number": 0,
-                        "column_number": 0,
-                        "message": f"MyPy execution failed: {error_message}",
-                        "code": "mypy-error",
-                        "level": "error",
-                    }
-                ]
-
-            if not stdout:
-                return []
-
-            return self._parse_output(stdout.decode())
+                return self._parse_output(stdout)
 
     def _parse_output(self, output: str) -> list[LintIssue]:
         """

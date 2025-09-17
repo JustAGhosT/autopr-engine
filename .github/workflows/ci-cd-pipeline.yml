@@ -181,6 +181,11 @@ jobs:
             echo "No TypeScript dependencies needed"
           fi
 
+      - name: Install quality tools
+        shell: bash
+        run: |
+          poetry run pip install ruff mypy bandit interrogate
+
       - name: Run unit tests
         shell: bash
         run: |
