@@ -307,18 +307,25 @@ class IssueFixer:
                 file_path, content, [issue]
             )
 
-            # Call AI
-            response = self.ai_agent_manager.llm_manager.complete(
-                {
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "model": model or "gpt-4.1",
-                    "temperature": 0.1,
-                    "max_tokens": 2000,
-                }
-            )
+            # Call AI - Honor provider override if a specific provider is requested
+            llm_mgr = self.ai_agent_manager.llm_manager
+            request_payload = {
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "model": model or "gpt-4.1",
+                "temperature": 0.1,
+                "max_tokens": 2000,
+            }
+            if provider and hasattr(llm_mgr, "get_llm"):
+                chosen = llm_mgr.get_llm(provider)
+                if chosen:
+                    response = chosen.complete(request_payload)
+                else:
+                    response = llm_mgr.complete(request_payload)
+            else:
+                response = llm_mgr.complete(request_payload)
 
             # Parse response
             parsed_response = self.ai_agent_manager.parse_ai_response(response.content)
