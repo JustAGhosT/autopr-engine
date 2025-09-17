@@ -151,27 +151,32 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Configure Poetry to use correct Python version
+        shell: bash
         run: |
           poetry env use python
           poetry env info
 
       - name: Install dependencies
+        shell: bash
         run: |
           poetry env use python
           poetry install --no-interaction --no-root
 
       - name: Run unit tests
+        shell: bash
         run: |
           poetry run pytest tests/ -v --cov=autopr --cov-report=xml --cov-report=html
           poetry run coverage report --show-missing
 
       - name: Run integration tests
+        shell: bash
         run: |
           poetry run pytest tests/test_quality_pipeline.py -v
           poetry run pytest tests/test_performance_optimized_file_splitter.py -v
         continue-on-error: true
 
       - name: Run AI Enhanced File Splitter tests
+        shell: bash
         run: |
           poetry run pytest tests/test_file_splitter.py -v
 
@@ -182,7 +187,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-          use_oidc: true
+          use_oidc: false
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
