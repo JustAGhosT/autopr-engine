@@ -100,6 +100,9 @@ jobs:
       - name: Upload coverage to Codecov
         if: github.event_name == 'push' && env.PYTHON_VERSION == '3.13'
         uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
 
   lint:
     needs: setup

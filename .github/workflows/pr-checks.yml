@@ -133,7 +133,9 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-          use_oidc: true
+          use_oidc: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4

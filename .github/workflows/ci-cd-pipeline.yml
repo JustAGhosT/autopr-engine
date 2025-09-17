@@ -199,9 +199,8 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
           use_oidc: false
+          token: ${{ secrets.CODECOV_TOKEN }}
         continue-on-error: true
-        env:
-          CODECOV_TOKEN: ""
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
