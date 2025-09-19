@@ -217,7 +217,7 @@ class IssueFixer:
                     )
 
                     # Attempt to fix the issue
-                    fix_result = self._fix_single_issue(
+                    fix_result = self.fix_single_issue(
                         file_path=file_path,
                         content=fixed_content,
                         issue=issue,
