@@ -97,15 +97,42 @@ docker run -d \
 # Then run:
 docker-compose up -d
 
-# For private registry deployment (if you have access to a private image)
-# First authenticate to your registry:
-# docker login ghcr.io -u YOUR_USERNAME -p YOUR_TOKEN
-# Then pull and run:
-# docker run -d \
-#   -e GITHUB_TOKEN=your_token \
-#   -e OPENAI_API_KEY=your_key \
-#   -p 8080:8080 \
-#   ghcr.io/your-org/autopr-engine:latest
+# Publishing to GitHub Container Registry (GHCR)
+# 1. Build the image:
+docker build -t autopr-engine:latest .
+
+# 2. Tag for GHCR (replace YOUR_USERNAME with your GitHub username):
+docker tag autopr-engine:latest ghcr.io/YOUR_USERNAME/autopr-engine:latest
+
+# 3. Authenticate to GHCR:
+docker login ghcr.io -u YOUR_USERNAME -p YOUR_GITHUB_TOKEN
+
+# 4. Push to GHCR:
+docker push ghcr.io/YOUR_USERNAME/autopr-engine:latest
+
+# 5. Run the published image:
+docker run -d \
+  -e GITHUB_TOKEN=your_token \
+  -e OPENAI_API_KEY=your_key \
+  -p 8080:8080 \
+  ghcr.io/YOUR_USERNAME/autopr-engine:latest
+
+# Publishing to Docker Hub (alternative)
+# 1. Build and tag for Docker Hub:
+docker build -t YOUR_DOCKERHUB_USERNAME/autopr-engine:latest .
+
+# 2. Authenticate to Docker Hub:
+docker login -u YOUR_DOCKERHUB_USERNAME -p YOUR_DOCKERHUB_TOKEN
+
+# 3. Push to Docker Hub:
+docker push YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
+
+# 4. Run the published image:
+docker run -d \
+  -e GITHUB_TOKEN=your_token \
+  -e OPENAI_API_KEY=your_key \
+  -p 8080:8080 \
+  YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
 ```
 
 ### **Basic Configuration**
@@ -497,5 +524,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## Made with ❤️ by JustAGhosT
-# Workflow cleanup
-# Final test - branch protection rules fixed
