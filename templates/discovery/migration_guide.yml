@@ -1,8 +1,6 @@
 name: "Platform Migration and Integration Guide"
-description:
-  "Comprehensive guide for migrating between no-code platforms and integrating multiple templates"
+description: "Comprehensive guide for migrating between no-code platforms and integrating multiple templates"
 version: "1.0.0"
-last_updated: "2024-01-01"
 
 migration_scenarios:
   platform_outgrown:
@@ -21,8 +19,14 @@ migration_scenarios:
           timeline: "1-2 weeks"
           data_migration: "Manual export/import of spreadsheet data"
           ui_migration: "Rebuild with similar visual components"
-          benefits: ["Better mobile features", "More customization", "Native app deployment"]
-          challenges: ["Different data connection methods", "Learning new interface"]
+          benefits:
+            [
+              "Better mobile features",
+              "More customization",
+              "Native app deployment",
+            ]
+          challenges:
+            ["Different data connection methods", "Learning new interface"]
 
         to_flutterflow:
           difficulty: "Hard"
@@ -30,7 +34,8 @@ migration_scenarios:
           data_migration: "Complete database restructure required"
           ui_migration: "Complete redesign with Flutter widgets"
           benefits: ["Native performance", "Code export", "Advanced features"]
-          challenges: ["Steep learning curve", "Complete rebuild", "Different paradigm"]
+          challenges:
+            ["Steep learning curve", "Complete rebuild", "Different paradigm"]
 
       from_bubble:
         to_replit:
@@ -38,8 +43,10 @@ migration_scenarios:
           timeline: "8-16 weeks"
           data_migration: "Export data and rebuild database schema"
           ui_migration: "Code frontend from scratch"
-          benefits: ["Complete control", "Better performance", "Any technology stack"]
-          challenges: ["Requires coding skills", "Complete rebuild", "No visual tools"]
+          benefits:
+            ["Complete control", "Better performance", "Any technology stack"]
+          challenges:
+            ["Requires coding skills", "Complete rebuild", "No visual tools"]
 
         to_flutterflow:
           difficulty: "Medium"
@@ -55,8 +62,10 @@ migration_scenarios:
           timeline: "2-4 weeks"
           data_migration: "Migrate data connections to Firebase"
           ui_migration: "Rebuild with Flutter widgets"
-          benefits: ["Better performance", "Code export", "More advanced features"]
-          challenges: ["Learning Flutter concepts", "Different component system"]
+          benefits:
+            ["Better performance", "Code export", "More advanced features"]
+          challenges:
+            ["Learning Flutter concepts", "Different component system"]
 
   cost_optimization:
     description: "Moving to reduce costs while maintaining functionality"
@@ -239,7 +248,8 @@ integration_patterns:
 
     project_management_plus_integrations:
       primary_template: "Project Management Tool"
-      integration_templates: ["Authentication Integration", "Payment Integration"]
+      integration_templates:
+        ["Authentication Integration", "Payment Integration"]
       combination_benefits:
         - "Team authentication and permissions"
         - "Client billing and time tracking"

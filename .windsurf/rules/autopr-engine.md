@@ -7,7 +7,7 @@ description: For AutoPR-Engine and Python repos
 
 ## Context & Goal
 
-- This repo powers automated PR creation/maintenance across many VV/NeuralLiquid repos.
+- This repo powers automated PR creation/maintenance across many VV/JustAGhosT repos.
 - Priorities: determinism, idempotence, clear diffs, zero surprise merges.
 
 ## Stack & Runtime

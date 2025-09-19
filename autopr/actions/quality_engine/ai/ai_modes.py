@@ -5,267 +5,509 @@ This module provides AI-powered code analysis capabilities for the Quality Engin
 integrating with the AutoPR LLM provider system.
 """
 
-import os
+import json
+from pathlib import Path
 from typing import Any
 
 import structlog
 
-from autopr.actions.quality_engine.ai.ai_analyzer import AICodeAnalyzer
-from autopr.ai.providers.manager import LLMProviderManager
-
+from autopr.actions.llm.manager import \
+    ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.quality_engine.models import ToolResult
+from autopr.agents.models import CodeIssue
 
 logger = structlog.get_logger(__name__)
 
 # System prompt templates
-CODE_REVIEW_PROMPT = """You are CodeQualityGPT, an expert code review assistant specialized in identifying improvements,
-optimizations, and potential issues in code. Your task is to analyze code snippets and provide detailed,
-actionable feedback that goes beyond what static analysis tools can find.
+CODE_REVIEW_PROMPT = (
+    "You are CodeQualityGPT, an expert code review assistant specialized in identifying "
+    "improvements, optimizations, and potential issues in code. Your task is to analyze "
+    "code snippets and provide detailed, actionable feedback that goes beyond what "
+    "static analysis tools can find.\n\n"
+    "Focus on the following aspects:\n"
+    "1. Architecture and design patterns\n"
+    "2. Performance optimization opportunities\n"
+    "3. Security vulnerabilities or risks\n"
+    "4. Maintainability and readability concerns\n"
+    "5. Edge case handling and robustness\n"
+    "6. Business logic flaws or inconsistencies\n"
+    "7. API design and usability\n\n"
+    "Provide your feedback in a structured JSON format with:\n"
+    "- Specific issues identified\n"
+    "- Why they matter\n"
+    "- How to fix them\n"
+    "- A confidence score (0-1) for each suggestion\n\n"
+    "Format your response as JSON:\n"
+    "```json\n"
+    "{\n"
+    '  "suggestions": [\n'
+    "    {\n"
+    '      "line": 42,\n'
+    '      "issue": "Inefficient algorithm implementation",\n'
+    '      "explanation": (\n'
+    '          "The current approach has O(n²) complexity but could be optimized to O(n log n)."\n'
+    "      ),\n"
+    '      "fix": (\n'
+    '          "Use a more efficient sorting algorithm like quicksort instead of bubble sort."\n'
+    "      ),\n"
+    '      "category": "performance",\n'
+    '      "confidence": 0.9\n'
+    "    }\n"
+    "  ],\n"
+    '  "summary": "Overall code quality assessment and key improvement areas.",\n'
+    '  "priorities": ["Top 3 most important issues to address"]\n'
+    "}\n"
+    "```\n"
+)
 
-Focus on the following aspects:
-1. Architecture and design patterns
-2. Performance optimization opportunities
-3. Security vulnerabilities or risks
-4. Maintainability and readability concerns
-5. Edge case handling and robustness
-6. Business logic flaws or inconsistencies
-7. API design and usability
 
-Provide your feedback in a structured JSON format with:
-- Specific issues identified
-- Why they matter
-- How to fix them
-- A confidence score (0-1) for each suggestion
+ARCHITECTURE_PROMPT = (
+    "You are CodeArchitectGPT, an expert in software architecture and design patterns. "
+    "Analyze this codebase from an architectural perspective, identifying:\n\n"
+    "1. Design pattern usage and opportunities\n"
+    "2. Component interactions and dependencies\n"
+    "3. Architectural smells or anti-patterns\n"
+    "4. Modularization and separation of concerns\n"
+    "5. Potential architectural improvements\n\n"
+    "Provide detailed architectural insights in a structured JSON format."
+)
 
-Format your response as JSON:
-```json
-{
-  "suggestions": [
-    {
-      "line": 42,
-      "issue": "Inefficient algorithm implementation",
-      "explanation": "The current approach has O(n²) complexity but could be optimized to O(n log n).",
-      "fix": "Use a more efficient sorting algorithm like quicksort instead of bubble sort.",
-      "category": "performance",
-      "confidence": 0.9
-    }
-  ],
-  "summary": "Overall code quality assessment and key improvement areas.",
-  "priorities": ["Top 3 most important issues to address"]
-}
-```
-"""
-
-ARCHITECTURE_PROMPT = """You are CodeArchitectGPT, an expert in software architecture and design patterns.
-Analyze this codebase from an architectural perspective, identifying:
-
-1. Design pattern usage and opportunities
-2. Component interactions and dependencies
-3. Architectural smells or anti-patterns
-4. Modularization and separation of concerns
-5. Potential architectural improvements
-
-Provide detailed architectural insights in a structured JSON format.
-"""
-
-SECURITY_PROMPT = """You are SecurityGPT, a specialized AI focused on identifying security vulnerabilities and risks in code.
-Perform a thorough security analysis, identifying:
-
-1. Common vulnerability patterns (OWASP Top 10 relevant issues)
-2. Input validation concerns
-3. Authentication/authorization weaknesses
-4. Data protection issues
-5. Security best practices violations
-
-Provide detailed security insights in a structured JSON format.
-"""
+SECURITY_PROMPT = (
+    "You are SecurityGPT, an expert in application security and secure coding practices. "
+    "Analyze this code for security vulnerabilities, focusing on:\n\n"
+    "1. Input validation and sanitization\n"
+    "2. Authentication and authorization\n"
+    "3. Data encryption and protection\n"
+    "4. Common vulnerabilities (SQL injection, XSS, CSRF, etc.)\n"
+    "5. Secure coding practices\n"
+    "6. Compliance considerations\n\n"
+    "Provide security analysis in a structured JSON format with severity levels."
+)
 
 
 async def run_ai_analysis(
     files: list[str],
     llm_manager: LLMProviderManager,
-    provider_name: str | None = None,
-    model: str | None = None,
-) -> dict[str, Any]:
+    provider_name: str = "openai",
+    model: str = "gpt-4",
+    prompt: str = CODE_REVIEW_PROMPT,
+) -> dict[str, Any] | None:
     """
-    Run AI-enhanced code analysis on the provided files.
+    Run AI-enhanced analysis on the provided files.
 
     Args:
         files: List of file paths to analyze
-        llm_manager: LLM provider manager instance
-        provider_name: Optional specific LLM provider to use
-        model: Optional specific model to use
+        llm_manager: LLM provider manager
+        provider_name: Name of the LLM provider to use
+        model: Model name to use for analysis
 
     Returns:
-        Dictionary containing AI analysis results
+        Dict containing AI analysis results or None if analysis fails
     """
-    # Filter files to only include code files that are appropriate for AI analysis
-    code_file_extensions = [
-        ".py",
-        ".js",
-        ".ts",
-        ".jsx",
-        ".tsx",
-        ".java",
-        ".go",
-        ".rb",
-        ".php",
-        ".c",
-        ".cpp",
-        ".cs",
-        ".h",
-        ".hpp",
-        ".html",
-        ".css",
-    ]
+    try:
+        if not files:
+            logger.warning("No files provided for AI analysis")
+            return None
 
-    # Filter files to code files with a reasonable size for LLM analysis (< 100KB)
-    files_for_analysis = []
-    for file_path in files:
-        extension = os.path.splitext(file_path)[1]
-        try:
-            # Skip non-code files
-            if extension not in code_file_extensions:
+        # Read file contents
+        file_contents = {}
+        for file_path in files:
+            try:
+                with Path(file_path).open(encoding="utf-8") as f:
+                    file_contents[file_path] = f.read()
+            except Exception as e:
+                logger.warning("Could not read file %s: %s", file_path, e)
                 continue
 
-            # Check file size
-            file_size = os.path.getsize(file_path)
-            if file_size > 100 * 1024:  # 100 KB
-                logger.info(
-                    "Skipping large file for AI analysis",
-                    file_path=file_path,
-                    size=file_size,
-                )
-                continue
+        if not file_contents:
+            logger.warning("No files could be read for AI analysis")
+            return None
 
-            files_for_analysis.append(file_path)
-        except Exception as e:
-            logger.exception(
-                "Error checking file for AI analysis", file_path=file_path, error=str(e)
-            )
+        # Create analysis prompt
+        analysis_prompt = _create_analysis_prompt(file_contents)
 
-    # If no files are suitable for analysis, return empty results
-    if not files_for_analysis:
-        logger.warning("No suitable files for AI analysis")
-        return {
-            "issues": [],
-            "files_with_issues": [],
-            "summary": "No suitable files found for AI analysis.",
+        # Get LLM response
+        request = {
+            "provider": provider_name,
+            "model": model,
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": analysis_prompt},
+            ],
+            "temperature": 0.1,
+            "response_format": {"type": "json_object"},
         }
 
-    # Limit the number of files to analyze to avoid overloading the LLM
-    max_files_to_analyze = 10
-    if len(files_for_analysis) > max_files_to_analyze:
-        logger.info(f"Limiting AI analysis to {max_files_to_analyze} files")
-        # Prioritize smaller files that are more likely to be fully processed
-        files_for_analysis = sorted(files_for_analysis, key=lambda f: os.path.getsize(f))[
-            :max_files_to_analyze
-        ]
+        # Use high-level complete API with structured input
+        try:
+            response = await llm_manager.complete(
+                messages=request["messages"],
+                provider=request["provider"],
+                model=request["model"],
+                temperature=request["temperature"],
+                response_format=request["response_format"]
+            )
+        except AttributeError:
+            # Fallback to sync call via executor if async method doesn't exist
+            import asyncio
+            from functools import partial
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                partial(
+                    llm_manager.complete,
+                    messages=request["messages"],
+                    provider=request["provider"],
+                    model=request["model"],
+                    temperature=request["temperature"],
+                    response_format=request["response_format"]
+                )
+            )
 
-    # Create an AI code analyzer and run the analysis
-    analyzer = AICodeAnalyzer(llm_manager)
+        if not response or not response.content:
+            logger.warning("No response received from LLM")
+            return None
 
-    logger.info(f"Starting AI analysis of {len(files_for_analysis)} files")
-    results = await analyzer.analyze_files(files_for_analysis, provider_name, model)
+        # Parse response
+        try:
+            # Extract JSON from response
+            content = response.content.strip()
+            if "```json" in content:
+                json_start = content.find("```json") + 7
+                json_end = content.find("```", json_start)
+                if json_end != -1:
+                    content = content[json_start:json_end].strip()
 
-    # Convert the results to the format expected by the quality engine
-    tool_results = analyzer.convert_to_tool_results(results)
+            ai_result = json.loads(content)
 
-    # Add file statistics
-    tool_results["total_files_analyzed"] = len(files_for_analysis)
-    tool_results["total_files_with_issues"] = len(tool_results["files_with_issues"])
+            # Ensure robust fallback keys exist
+            ai_result.setdefault("suggestions", [])
+            ai_result.setdefault("issues", [])
+            ai_result.setdefault("summary", "AI analysis completed")
+            ai_result.setdefault("priorities", [])
 
-    # Create a consolidated summary of all issues
-    summary_lines = ["# AI-Enhanced Code Analysis"]
-    summary_lines.append(
-        f"\nAnalyzed {len(files_for_analysis)} files. Found {len(tool_results['issues'])} potential improvements in {len(tool_results['files_with_issues'])} files."
+            # Mirror suggestions into issues when issues are absent
+            if not ai_result.get("issues") and ai_result.get("suggestions"):
+                ai_result["issues"] = ai_result["suggestions"]
+
+            # Add metadata
+            ai_result["files_analyzed"] = list(file_contents.keys())
+            ai_result["provider"] = provider_name
+            ai_result["model"] = model
+
+            logger.info("AI analysis completed for %d files", len(file_contents))
+
+        except json.JSONDecodeError:
+            logger.exception("Failed to parse AI response as JSON")
+            # Return a fallback result
+            return {
+                "suggestions": [],
+                "issues": [],
+                "summary": "AI analysis completed but response format was invalid",
+                "priorities": [],
+                "files_analyzed": list(file_contents.keys()),
+                "provider": provider_name,
+                "model": model,
+                "error": "JSON parsing failed",
+            }
+        else:
+            return ai_result
+
+    except Exception:
+        logger.exception("AI analysis failed")
+        return None
+
+
+def create_tool_result_from_ai_analysis(ai_result: dict[str, Any]) -> ToolResult:
+    """
+    Convert AI analysis result to a ToolResult.
+
+    Args:
+        ai_result: AI analysis result dictionary
+
+    Returns:
+        ToolResult: Converted tool result
+    """
+    issues = []
+
+    # Convert AI suggestions to issues
+    suggestions = ai_result.get("suggestions", [])
+    for suggestion in suggestions:
+        issue = CodeIssue(
+            file_path=suggestion.get("file", "unknown"),
+            line_number=suggestion.get("line", 0),
+            column=suggestion.get("column", 0),
+            message=suggestion.get("issue", "AI suggestion"),
+            severity="info" if suggestion.get("confidence", 0) < 0.7 else "warning",
+            rule_id=suggestion.get("category", "AI_SUGGESTION"),
+            category="ai_suggestion",
+            fix=(
+                {
+                    "suggestion": suggestion.get("fix", ""),
+                    "confidence": suggestion.get("confidence", 0.5),
+                }
+                if suggestion.get("fix")
+                else None
+            ),
+        )
+        issues.append(issue)
+
+    # Convert AI issues to CodeIssue objects (handle both "issue" and "message" keys)
+    ai_issues = ai_result.get("issues", [])
+    for ai_issue in ai_issues:
+        issue = CodeIssue(
+            file_path=ai_issue.get("file", ai_issue.get("path", "unknown")),
+            line_number=ai_issue.get("line", ai_issue.get("line_number", 0)),
+            column=ai_issue.get("column", ai_issue.get("column_number", 0)),
+            message=ai_issue.get("issue", ai_issue.get("message", "AI issue")),
+            severity="info" if ai_issue.get("confidence", 0) < 0.7 else "warning",
+            rule_id=ai_issue.get("category", ai_issue.get("rule_id", "AI_ISSUE")),
+            category="ai_issue",
+            fix=(
+                {
+                    "suggestion": ai_issue.get("fix", ai_issue.get("suggestion", "")),
+                    "confidence": ai_issue.get("confidence", 0.5),
+                }
+                if ai_issue.get("fix") or ai_issue.get("suggestion")
+                else None
+            ),
+        )
+        issues.append(issue)
+
+    # Create tool result
+    return ToolResult(
+        issues=[issue.model_dump() for issue in issues],
+        files_with_issues=list({issue.file_path for issue in issues}),
+        summary=ai_result.get("summary", "AI analysis completed"),
+        execution_time=0.0,  # AI analysis time is not tracked separately
     )
 
-    # Add category-based summary
-    categories = {}
-    for issue in tool_results["issues"]:
-        category = issue.get("category", "general")
-        if category not in categories:
-            categories[category] = 0
-        categories[category] += 1
 
-    if categories:
-        summary_lines.append("\n## Issues by Category")
-        for category, count in sorted(categories.items(), key=lambda x: x[1], reverse=True):
-            summary_lines.append(f"- {category}: {count} issues")
+def _create_analysis_prompt(file_contents: dict[str, str]) -> str:
+    """
+    Create a prompt for AI analysis of the provided files.
 
-    # Add high-confidence issues
-    high_confidence_issues = [i for i in tool_results["issues"] if i.get("confidence", 0) > 0.8]
-    if high_confidence_issues:
-        summary_lines.append("\n## High Confidence Suggestions")
-        for issue in sorted(
-            high_confidence_issues, key=lambda x: x.get("confidence", 0), reverse=True
-        )[:5]:
-            file = issue.get("file", "unknown")
-            line = issue.get("line", "?")
-            message = issue.get("message", "Unknown issue")
-            confidence = issue.get("confidence", 0)
-            summary_lines.append(f"- {file}:{line} - {message} (Confidence: {confidence:.2f})")
+    Args:
+        file_contents: Dictionary mapping file paths to their contents
 
-    # Add file summaries
-    if results:
-        summary_lines.append("\n## File Summaries")
-        for file_path, result in results.items():
-            if result.get("summary"):
-                summary_lines.append(f"\n### {os.path.basename(file_path)}")
-                summary_lines.append(result["summary"])
+    Returns:
+        str: Analysis prompt
+    """
+    prompt_parts = [
+        (
+            "Please analyze the following code files for quality issues, improvements, and "
+            "potential problems:"
+        ),
+        "",
+    ]
 
-    tool_results["summary"] = "\n".join(summary_lines)
+    for file_path, content in file_contents.items():
+        # Use smart truncation to preserve syntactic boundaries
+        truncated_content = _smart_truncate_content(content, max_length=2000)
+        prompt_parts.extend(
+            [
+                f"## File: {file_path}",
+                "```",
+                truncated_content,
+                "```",
+                "",
+            ]
+        )
 
-    return tool_results
+    prompt_parts.extend(
+        [
+            "Please provide a comprehensive analysis including:",
+            "1. Code quality issues and suggestions",
+            "2. Performance optimization opportunities",
+            "3. Security considerations",
+            "4. Maintainability improvements",
+            "5. Architecture and design patterns",
+            "",
+            "Format your response as JSON with the structure specified in the system prompt.",
+        ]
+    )
+
+    return "\n".join(prompt_parts)
+
+
+def _smart_truncate_content(content: str, max_length: int = 2000) -> str:
+    """
+    Smartly truncate content while preserving syntactic boundaries.
+
+    Args:
+        content: The content to truncate
+        max_length: Maximum length in characters
+
+    Returns:
+        Truncated content that preserves code structure
+    """
+    if len(content) <= max_length:
+        return content
+
+    # Try to find a good truncation point
+    lines = content.split("\n")
+    current_length = 0
+    truncated_lines = []
+
+    for line in lines:
+        # Check if adding this line would exceed the limit
+        if current_length + len(line) + 1 > max_length:
+            # Try to find a better break point within this line
+            if len(line) > 100:  # Long line, try to break at word boundary
+                words = line.split()
+                partial_line = ""
+                for word in words:
+                    if current_length + len(partial_line) + len(word) + 1 <= max_length:
+                        partial_line += word + " "
+                    else:
+                        break
+                if partial_line.strip():
+                    truncated_lines.append(partial_line.strip())
+                break
+            else:
+                # Line is short, but still check if it fits in remaining budget
+                remaining_budget = max_length - current_length
+                if remaining_budget > 0:
+                    # Try to fit as much as possible, preferably at word boundaries
+                    if len(line) <= remaining_budget:
+                        # Line fits completely
+                        truncated_lines.append(line)
+                    else:
+                        # Line is too long, try to truncate at word boundary
+                        words = line.split()
+                        partial_line = ""
+                        for word in words:
+                            space_needed = 1 if partial_line else 0
+                            word_with_space = len(partial_line) + len(word) + space_needed
+                            if word_with_space <= remaining_budget:
+                                partial_line += (" " if partial_line else "") + word
+                            else:
+                                break
+
+                        # If we couldn't fit any words, hard-truncate to remaining chars
+                        if not partial_line and remaining_budget > 0:
+                            partial_line = line[:remaining_budget]
+
+                        if partial_line:
+                            truncated_lines.append(partial_line)
+                break
+        else:
+            truncated_lines.append(line)
+            current_length += len(line) + 1
+
+    truncated_content = "\n".join(truncated_lines)
+
+    # Add truncation indicator if content was actually truncated
+    if len(content) > len(truncated_content):
+        truncated_content += (
+            f"\n\n... (content truncated, showing first {len(truncated_content)} characters)"
+        )
+
+    return truncated_content
+
+
+def _create_chunked_analysis_prompt(
+    file_contents: dict[str, str], max_chunk_size: int = 2000
+) -> list[str]:
+    """
+    Create multiple analysis prompts for large files by chunking them intelligently.
+
+    Args:
+        file_contents: Dictionary mapping file paths to their contents
+        max_chunk_size: Maximum size per chunk in characters
+
+    Returns:
+        List of analysis prompts for different chunks
+    """
+    prompts = []
+
+    for file_path, content in file_contents.items():
+        if len(content) <= max_chunk_size:
+            # Small file, create single prompt
+            prompts.append(_create_analysis_prompt({file_path: content}))
+        else:
+            # Large file, split into chunks
+            chunks = _split_content_into_chunks(content, max_chunk_size)
+            for i, chunk in enumerate(chunks):
+                chunk_prompt = _create_analysis_prompt(
+                    {f"{file_path} (part {i+1}/{len(chunks)})": chunk}
+                )
+                prompts.append(chunk_prompt)
+
+    return prompts
+
+
+def _split_content_into_chunks(content: str, max_chunk_size: int) -> list[str]:
+    """
+    Split content into overlapping chunks while preserving code structure.
+
+    Args:
+        content: The content to split
+        max_chunk_size: Maximum size per chunk
+
+    Returns:
+        List of content chunks
+    """
+    if len(content) <= max_chunk_size:
+        return [content]
+
+    lines = content.split("\n")
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    overlap_lines = 10  # Number of lines to overlap between chunks
+
+    for line in lines:
+        if current_length + len(line) + 1 > max_chunk_size and current_chunk:
+            # Current chunk is full, save it and start a new one
+            chunks.append("\n".join(current_chunk))
+
+            # Start new chunk with overlap
+            overlap_start = max(0, len(current_chunk) - overlap_lines)
+            current_chunk = current_chunk[overlap_start:]
+            current_length = sum(len(line) + 1 for line in current_chunk)
+
+        current_chunk.append(line)
+        current_length += len(line) + 1
+
+    # Add the last chunk
+    if current_chunk:
+        chunks.append("\n".join(current_chunk))
+
+    return chunks
 
 
 async def analyze_code_architecture(
-    files: list[str],
-    llm_manager: LLMProviderManager,
-    provider_name: str | None = None,
-    model: str | None = None,
-) -> dict[str, Any]:
+    files: list[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
+) -> dict[str, Any] | None:
     """
-    Perform architectural analysis of the codebase using LLM.
-
-    This function analyzes multiple files to identify architectural patterns,
-    dependencies, and potential improvements.
+    Run architectural analysis on the provided files.
 
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
-        provider_name: Optional specific provider to use
-        model: Optional specific model to use
+        provider_name: Name of the LLM provider to use
 
     Returns:
-        Dictionary with architectural analysis results
+        Dict containing architectural analysis results
     """
-    # Implementation would be similar to run_ai_analysis but with architecture-specific prompts
-    logger.info("Architecture analysis is not yet fully implemented")
-    return {"message": "Architecture analysis will be implemented in a future version"}
+    # Use specialized architecture analysis prompt
+    return await run_ai_analysis(files, llm_manager, provider_name, prompt=ARCHITECTURE_PROMPT)
 
 
 async def analyze_security_issues(
-    files: list[str],
-    llm_manager: LLMProviderManager,
-    provider_name: str | None = None,
-    model: str | None = None,
-) -> dict[str, Any]:
+    files: list[str], llm_manager: LLMProviderManager, provider_name: str = "openai"
+) -> dict[str, Any] | None:
     """
-    Perform security-focused analysis of the codebase using LLM.
-
-    This function specializes in identifying security vulnerabilities and risks
-    that might not be caught by standard security scanning tools.
+    Run security analysis on the provided files.
 
     Args:
         files: List of file paths to analyze
         llm_manager: LLM provider manager
-        provider_name: Optional specific provider to use
-        model: Optional specific model to use
+        provider_name: Name of the LLM provider to use
 
     Returns:
-        Dictionary with security analysis results
+        Dict containing security analysis results
     """
-    # Implementation would be similar to run_ai_analysis but with security-specific prompts
-    logger.info("Security analysis is not yet fully implemented")
-    return {"message": "Security analysis will be implemented in a future version"}
+    # Use specialized security analysis prompt
+    return await run_ai_analysis(files, llm_manager, provider_name, prompt=SECURITY_PROMPT)

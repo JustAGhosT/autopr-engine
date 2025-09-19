@@ -28,7 +28,9 @@ class GroqProvider(BaseLLMProvider):
             if msg.get("content", "").strip()
         ]
 
-    async def _call_groq_api(self, messages: list[dict[str, Any]], **kwargs: Any) -> Any:
+    async def _call_groq_api(
+        self, messages: list[dict[str, Any]], **kwargs: Any
+    ) -> Any:
         groq_messages = self._convert_to_provider_messages(messages, "groq")
         return self.client.chat.completions.create(messages=groq_messages, **kwargs)  # type: ignore[arg-type]
 
@@ -54,7 +56,11 @@ class GroqProvider(BaseLLMProvider):
 
             content = ""
             finish_reason = "stop"
-            if hasattr(response, "choices") and response.choices and len(response.choices) > 0:
+            if (
+                hasattr(response, "choices")
+                and response.choices
+                and len(response.choices) > 0
+            ):
                 choice = response.choices[0]
                 if hasattr(choice, "message") and hasattr(choice.message, "content"):
                     content = choice.message.content or ""
@@ -64,7 +70,9 @@ class GroqProvider(BaseLLMProvider):
             if hasattr(response, "usage") and response.usage:
                 usage = {
                     "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
-                    "completion_tokens": getattr(response.usage, "completion_tokens", 0),
+                    "completion_tokens": getattr(
+                        response.usage, "completion_tokens", 0
+                    ),
                     "total_tokens": getattr(response.usage, "total_tokens", 0),
                 }
 

@@ -1,6 +1,6 @@
+import unittest
 from dataclasses import dataclass
 from pathlib import Path
-import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from autopr.actions.platform_detection.schema import (
@@ -50,7 +50,9 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         self.agent = PlatformAnalysisAgent()
 
     @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
-    def test_get_platform_info_returns_none_for_unknown_platform(self, mock_config_manager):
+    def test_get_platform_info_returns_none_for_unknown_platform(
+        self, mock_config_manager
+    ):
         """Test that None is returned for unknown platform types."""
         # Setup mock to return None for unknown platform
         mock_manager = MagicMock()
@@ -83,7 +85,6 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
             is_beta=False,
             is_deprecated=False,
             version="1.0.0",
-            last_updated="2025-01-01T00:00:00Z",
             supported_languages=["TypeScript", "JavaScript"],
             supported_frameworks=["React", "Next.js"],
             integrations=["Vercel", "Netlify"],
@@ -126,7 +127,6 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         assert not result["is_beta"]
         assert not result["is_deprecated"]
         assert result["version"] == "1.0.0"
-        assert result["last_updated"] == "2025-01-01T00:00:00Z"
         assert result["supported_languages"] == ["TypeScript", "JavaScript"]
         assert result["supported_frameworks"] == ["React", "Next.js"]
         assert result["integrations"] == ["Vercel", "Netlify"]
@@ -157,7 +157,9 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
     def test_get_platform_info_unknown_platform(self):
         """Test getting platform info for an unknown platform value."""
         # Ensure the manager returns None for unknown platforms
-        with patch("autopr.agents.platform_analysis_agent.PlatformConfigManager") as MockMgr:
+        with patch(
+            "autopr.agents.platform_analysis_agent.PlatformConfigManager"
+        ) as MockMgr:
             instance = MockMgr.return_value
             instance.get_platform.return_value = None
 

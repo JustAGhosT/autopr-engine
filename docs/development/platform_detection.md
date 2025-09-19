@@ -21,7 +21,6 @@ category:
 ```json
 {
   "version": "1.0",
-  "last_updated": "YYYY-MM-DD",
   "description": "Description of the platform category",
   "platforms": [
     {
@@ -76,7 +75,6 @@ Each platform has its own configuration file with detailed detection rules:
     "website": "https://platform.example.com",
     "pricing_model": "freemium",
     "supported_languages": ["python", "javascript", "typescript"],
-    "last_updated": "YYYY-MM-DD",
     "version": "1.0.0"
   }
 }
@@ -140,7 +138,6 @@ The platform detector uses a weighted scoring system based on multiple factors:
        "website": "<https://newplatform.ai",>
        "pricing_model": "freemium",
        "supported_languages": ["python", "javascript", "typescript"],
-       "last_updated": "2025-07-27",
        "version": "1.0.0"
      }
    }

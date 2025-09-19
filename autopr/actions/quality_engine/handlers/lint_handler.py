@@ -1,5 +1,5 @@
-from ..handler_base import Handler
-from .lint_issue import LintIssue
+from autopr.actions.quality_engine.handler_base import Handler
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
 
 
 class LintHandler(Handler[LintIssue]):

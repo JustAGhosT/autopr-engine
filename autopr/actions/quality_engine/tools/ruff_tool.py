@@ -26,14 +26,23 @@ class RuffTool(Tool):
         """Get the required command for this tool."""
         return "ruff"
 
-    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def run(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Run ruff on a list of files.
         """
         if not files:
             return []
 
-        command = ["ruff", "check", "--output-format", "json", *files]
+        # Try to use ruff from poetry environment if available
+        import sys
+        if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+            # We're in a virtual environment, try python -m ruff
+            command = [sys.executable, "-m", "ruff", "check", "--output-format", "json", *files]
+        else:
+            # Fall back to system ruff
+            command = ["ruff", "check", "--output-format", "json", *files]
 
         extra_args = config.get("args", [])
         command.extend(extra_args)

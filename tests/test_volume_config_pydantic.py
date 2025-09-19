@@ -2,9 +2,8 @@
 
 import logging
 import os
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 # Set up debug logging
 logging.basicConfig(level=logging.DEBUG)
@@ -15,9 +14,8 @@ project_root = str(Path(__file__).parent.parent.absolute())
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from pydantic import ValidationError
 import pytest
-
+from pydantic import ValidationError
 
 # Debug: Print Python path and current working directory
 logger.debug(f"Python path: {sys.path}")
@@ -39,19 +37,23 @@ def test_volume_config_boolean_validation():
     config = VolumeConfig(volume=500)
     assert isinstance(config.config["enable_ai_agents"], bool)
 
-    # Test with string 'true'/'false'
-    with pytest.raises(ValidationError):
-        VolumeConfig(volume=500, config={"enable_ai_agents": "true"})
+    # Test with string 'true'/'false' (should be converted to booleans)
+    config = VolumeConfig(volume=500, config={"enable_ai_agents": "true"})
+    assert config.config["enable_ai_agents"] is True
 
-    with pytest.raises(ValidationError):
-        VolumeConfig(volume=500, config={"enable_ai_agents": "false"})
+    config = VolumeConfig(volume=500, config={"enable_ai_agents": "false"})
+    assert config.config["enable_ai_agents"] is False
 
-    # Test with integer 0/1
-    with pytest.raises(ValidationError):
-        VolumeConfig(volume=500, config={"enable_ai_agents": 1})
+    # Test with integer 0/1 (should be converted to booleans)
+    config = VolumeConfig(volume=500, config={"enable_ai_agents": 1})
+    assert config.config["enable_ai_agents"] is True
 
+    config = VolumeConfig(volume=500, config={"enable_ai_agents": 0})
+    assert config.config["enable_ai_agents"] is False
+
+    # Test with invalid string (should raise ValidationError)
     with pytest.raises(ValidationError):
-        VolumeConfig(volume=500, config={"enable_ai_agents": 0})
+        VolumeConfig(volume=500, config={"enable_ai_agents": "invalid"})
 
     # Test with actual booleans (should work)
     config = VolumeConfig(volume=500, config={"enable_ai_agents": True})

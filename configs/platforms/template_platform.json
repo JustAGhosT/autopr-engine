@@ -7,7 +7,6 @@
 
   "display_name": "Display Name",
   "version": "1.0.0",
-  "last_updated": "2023-01-01T00:00:00Z",
 
   "status": "active|beta|deprecated|experimental",
   "is_active": true,
@@ -56,3 +55,4 @@
 
   "metadata": {}
 }
+

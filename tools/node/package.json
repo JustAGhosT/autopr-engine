@@ -12,16 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neuralliquid/autopr-engine.git"
+    "url": "git+https://github.com/JustAGhosT/autopr-engine.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/neuralliquid/autopr-engine/issues"
+    "url": "https://github.com/JustAGhosT/autopr-engine/issues"
   },
-  "homepage": "https://github.com/neuralliquid/autopr-engine#readme",
+  "homepage": "https://github.com/JustAGhosT/autopr-engine#readme",
   "devDependencies": {
     "markdownlint-cli2": "^0.18.1"
   }

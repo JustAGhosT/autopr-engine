@@ -1,0 +1,597 @@
+{
+  "name": "autopr",
+  "displayName": "AutoPR",
+  "description": "AI-Powered Code Quality and Automation for VS Code",
+  "version": "1.0.10",
+  "publisher": "autopr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autopr/autopr-engine.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0",
+    "cursor": "^1.85.0",
+    "windsurf": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Snippets",
+    "Testing"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "autopr.qualityCheck",
+        "title": "AutoPR: Run Quality Check",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.qualityCheckFile",
+        "title": "AutoPR: Check Current File",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.qualityCheckWorkspace",
+        "title": "AutoPR: Check Workspace",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.fileSplit",
+        "title": "AutoPR: Split Large File",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.autoFix",
+        "title": "AutoPR: Auto-Fix Issues",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.showDashboard",
+        "title": "AutoPR: Show Dashboard",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.configure",
+        "title": "AutoPR: Configure",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.setVolume",
+        "title": "AutoPR: Set Volume Level",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.toggleTool",
+        "title": "AutoPR: Toggle Tool",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.performanceCheck",
+        "title": "AutoPR: Performance Analysis",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.dependencyScan",
+        "title": "AutoPR: Dependency Scan",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.securityScan",
+        "title": "AutoPR: Security Scan",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.complexityAnalysis",
+        "title": "AutoPR: Complexity Analysis",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.documentationCheck",
+        "title": "AutoPR: Documentation Check",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.learningMemory",
+        "title": "AutoPR: Learning Memory",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.clearCache",
+        "title": "AutoPR: Clear Cache",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.exportResults",
+        "title": "AutoPR: Export Results",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.importConfig",
+        "title": "AutoPR: Import Configuration",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.refreshIssues",
+        "title": "AutoPR: Refresh Issues",
+        "category": "AutoPR"
+      },
+      {
+        "command": "autopr.refreshMetrics",
+        "title": "AutoPR: Refresh Metrics",
+        "category": "AutoPR"
+      },
+             {
+         "command": "autopr.refreshHistory",
+         "title": "AutoPR: Refresh History",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.showVersion",
+         "title": "AutoPR: Show Version",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.refreshAll",
+         "title": "AutoPR: Refresh All Views",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.showViews",
+         "title": "AutoPR: Show Views",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.quickFix",
+         "title": "AutoPR: Quick Fix",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.analyzeWorkspace",
+         "title": "AutoPR: Analyze Workspace",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.generateReport",
+         "title": "AutoPR: Generate Report",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.toggleAutoMode",
+         "title": "AutoPR: Toggle Auto Mode",
+         "category": "AutoPR"
+       },
+       {
+         "command": "autopr.showSettings",
+         "title": "AutoPR: Settings",
+         "category": "AutoPR"
+       },
+               {
+          "command": "autopr.showHelp",
+          "title": "AutoPR: Help",
+          "category": "AutoPR"
+        },
+        {
+          "command": "autopr.checkCompatibility",
+          "title": "AutoPR: Check Compatibility",
+          "category": "AutoPR"
+        },
+        {
+          "command": "autopr.showLogs",
+          "title": "AutoPR: Show Logs",
+          "category": "AutoPR"
+        }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "autopr.qualityCheck",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript"
+        },
+        {
+          "command": "autopr.qualityCheckFile",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript"
+        },
+        {
+          "command": "autopr.qualityCheckWorkspace",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "command": "autopr.fileSplit",
+          "when": "resourceLangId == python"
+        },
+        {
+          "command": "autopr.autoFix",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript"
+        },
+        {
+          "command": "autopr.showDashboard"
+        },
+        {
+          "command": "autopr.configure"
+        },
+        {
+          "command": "autopr.setVolume"
+        },
+        {
+          "command": "autopr.toggleTool"
+        },
+        {
+          "command": "autopr.performanceCheck"
+        },
+        {
+          "command": "autopr.dependencyScan"
+        },
+        {
+          "command": "autopr.securityScan"
+        },
+        {
+          "command": "autopr.complexityAnalysis"
+        },
+        {
+          "command": "autopr.documentationCheck"
+        },
+        {
+          "command": "autopr.learningMemory"
+        },
+        {
+          "command": "autopr.clearCache"
+        },
+        {
+          "command": "autopr.exportResults"
+        },
+        {
+          "command": "autopr.importConfig"
+        },
+        {
+          "command": "autopr.refreshIssues"
+        },
+        {
+          "command": "autopr.refreshMetrics"
+        },
+                 {
+           "command": "autopr.refreshHistory"
+         },
+         {
+           "command": "autopr.showVersion"
+         },
+         {
+           "command": "autopr.refreshAll"
+         },
+         {
+           "command": "autopr.showViews"
+         },
+         {
+           "command": "autopr.quickFix"
+         },
+         {
+           "command": "autopr.analyzeWorkspace"
+         },
+         {
+           "command": "autopr.generateReport"
+         },
+         {
+           "command": "autopr.toggleAutoMode"
+         },
+         {
+           "command": "autopr.showSettings"
+         },
+                   {
+            "command": "autopr.showHelp"
+          },
+          {
+            "command": "autopr.checkCompatibility"
+          },
+          {
+            "command": "autopr.showLogs"
+          }
+      ],
+      "editor/context": [
+        {
+          "command": "autopr.qualityCheckFile",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+          "group": "navigation"
+        },
+        {
+          "command": "autopr.autoFix",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+          "group": "navigation"
+        },
+        {
+          "command": "autopr.complexityAnalysis",
+          "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+          "group": "navigation"
+        },
+                 {
+           "command": "autopr.documentationCheck",
+           "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+           "group": "navigation"
+         },
+         {
+           "command": "autopr.quickFix",
+           "when": "resourceLangId == python || resourceLangId == javascript || resourceLangId == typescript",
+           "group": "navigation"
+         },
+         {
+           "command": "autopr.analyzeWorkspace",
+           "when": "workspaceFolderCount > 0",
+           "group": "navigation"
+         }
+      ],
+      "view/title": [
+        {
+          "command": "autopr.refreshIssues",
+          "when": "view == autoprIssues",
+          "group": "navigation"
+        },
+        {
+          "command": "autopr.refreshMetrics",
+          "when": "view == autoprMetrics",
+          "group": "navigation"
+        },
+        {
+          "command": "autopr.refreshHistory",
+          "when": "view == autoprHistory",
+          "group": "navigation"
+                 }
+       ],
+       "statusBar": [
+         {
+           "command": "autopr.quickFix",
+           "text": "$(lightbulb) AutoPR",
+           "tooltip": "AutoPR: Quick Fix",
+           "alignment": "left"
+         },
+         {
+           "command": "autopr.showViews",
+           "text": "$(graph) Metrics",
+           "tooltip": "AutoPR: Show Metrics",
+           "alignment": "right"
+         }
+       ]
+     },
+    "configuration": {
+      "title": "AutoPR",
+      "properties": {
+        "autopr.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AutoPR extension"
+        },
+        "autopr.qualityMode": {
+          "type": "string",
+          "enum": [
+            "ultra-fast",
+            "fast",
+            "smart",
+            "comprehensive",
+            "ai-enhanced"
+          ],
+          "default": "fast",
+          "description": "Default quality analysis mode"
+        },
+        "autopr.autoFixEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable automatic fixing of issues"
+        },
+        "autopr.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for AutoPR operations"
+        },
+        "autopr.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Path to Python executable"
+        },
+        "autopr.maxFileSize": {
+          "type": "number",
+          "default": 10000,
+          "description": "Maximum file size (in lines) for analysis"
+        },
+        "autopr.volume": {
+          "type": "number",
+          "default": 500,
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "Volume level (0-1000) that automatically configures quality settings"
+        },
+        "autopr.maxFixes": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of fixes to apply automatically"
+        },
+        "autopr.maxIssues": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum issues to report before stopping"
+        },
+        "autopr.enableAIAgents": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI agents for enhanced analysis"
+        },
+        "autopr.aiProvider": {
+          "type": "string",
+          "default": "openai",
+          "enum": ["openai", "azure_openai", "anthropic", "local"],
+          "description": "AI provider for enhanced analysis"
+        },
+        "autopr.aiModel": {
+          "type": "string",
+          "default": "gpt-4",
+          "description": "AI model to use for analysis"
+        },
+        "autopr.verbose": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose logging"
+        },
+        "autopr.configPath": {
+          "type": "string",
+          "default": "pyproject.toml",
+          "description": "Path to configuration file"
+        },
+        "autopr.fileSplitter": {
+          "type": "object",
+          "default": {
+            "maxLinesPerFile": 500,
+            "maxFunctionsPerFile": 10,
+            "maxClassesPerFile": 2,
+            "useAIAnalysis": true,
+            "confidenceThreshold": 0.7,
+            "createBackup": true,
+            "validateSyntax": true,
+            "enableLearning": true
+          },
+          "description": "File splitter configuration"
+        },
+        "autopr.performanceOptimization": {
+          "type": "object",
+          "default": {
+            "enableCaching": true,
+            "enableParallelProcessing": true,
+            "enableMemoryOptimization": true,
+            "cacheTTL": 3600,
+            "maxParallelWorkers": 4,
+            "memoryLimitMB": 512
+          },
+          "description": "Performance optimization settings"
+        },
+                 "autopr.tools": {
+           "type": "object",
+           "default": {
+             "python": { "enabled": true },
+             "javascript": { "enabled": true },
+             "typescript": { "enabled": true },
+             "ruff": { "enabled": true },
+             "mypy": { "enabled": true },
+             "bandit": { "enabled": true },
+             "interrogate": { "enabled": true },
+             "radon": { "enabled": true },
+             "pytest": { "enabled": true },
+             "codeql": { "enabled": true },
+             "sonarqube": { "enabled": true },
+             "ai_feedback": { "enabled": true },
+             "eslint": { "enabled": true },
+             "dependency_scanner": { "enabled": true },
+             "performance_analyzer": { "enabled": true }
+           },
+           "description": "Individual tool configuration"
+         },
+        "autopr.autoFix": {
+          "type": "object",
+          "default": {
+            "enabled": false,
+            "fixTypes": ["high_priority", "medium_priority"],
+            "dryRun": false,
+            "maxFixes": 50,
+            "confidenceThreshold": 0.8
+          },
+          "description": "Auto-fix configuration"
+        },
+                 "autopr.dashboard": {
+           "type": "object",
+           "default": {
+             "port": 8080,
+             "host": "localhost",
+             "autoStart": false,
+             "theme": "dark"
+           },
+           "description": "Dashboard configuration"
+         },
+         "autopr.autoMode": {
+           "type": "boolean",
+           "default": false,
+           "description": "Enable automatic analysis and fixes on file save"
+         },
+         "autopr.quickFixEnabled": {
+           "type": "boolean",
+           "default": true,
+           "description": "Enable quick fix suggestions"
+         },
+         "autopr.reportFormat": {
+           "type": "string",
+           "enum": ["json", "html", "markdown", "pdf"],
+           "default": "html",
+           "description": "Format for generated reports"
+         },
+         "autopr.notificationLevel": {
+           "type": "string",
+           "enum": ["none", "errors", "warnings", "info", "all"],
+           "default": "warnings",
+           "description": "Level of notifications to show"
+         },
+         "autopr.initialized": {
+           "type": "boolean",
+           "default": false,
+           "description": "Whether AutoPR has been initialized for this workspace"
+         }
+      }
+    },
+    "views": {
+      "autopr": [
+        {
+          "id": "autoprIssues",
+          "name": "Issues",
+          "when": "autopr.hasIssues"
+        },
+        {
+          "id": "autoprMetrics",
+          "name": "Metrics"
+        },
+        {
+          "id": "autoprHistory",
+          "name": "History"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "autopr",
+          "title": "AutoPR",
+          "icon": "resources/autopr-icon.svg"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "@vscode/vsce package",
+    "publish": "@vscode/vsce publish",
+    "clean": "rimraf out",
+    "build": "npm run clean && npm run compile"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^2.32.0",
+    "eslint": "^8.26.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
+  }
+}

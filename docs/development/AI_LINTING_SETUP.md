@@ -42,7 +42,7 @@ verification
 
 You need either:
 
-**Option A: Azure OpenAI**
+### Option A: Azure OpenAI
 
 ```powershell
 # Set environment variable
@@ -50,7 +50,7 @@ $env:AZURE_OPENAI_API_KEY = "your-azure-openai-api-key-here"
 $env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"
 ```
 
-**Option B: OpenAI**
+### Option B: OpenAI
 
 ```powershell
 # Set environment variable
@@ -105,7 +105,7 @@ The current configuration will automatically fix:
 
 1. **API Key Errors**
 
-   ```
+   ```text
    Error code: 401 - Access denied due to invalid subscription key
    ```
 
@@ -113,7 +113,7 @@ The current configuration will automatically fix:
 
 1. **No Fixes Applied**
 
-   ```
+   ```text
    Issues processed: 0, Issues fixed: 0
    ```
 

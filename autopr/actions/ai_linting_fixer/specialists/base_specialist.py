@@ -86,7 +86,9 @@ class BaseSpecialist(ABC):
         """Get the system prompt for this specialist."""
         pass
 
-    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
+    def get_user_prompt(
+        self, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> str:
         """Get the user prompt for fixing issues."""
         issue_lines = [f"Line {issue.line_number}: {issue.message}" for issue in issues]
 
@@ -120,7 +122,9 @@ Please fix ONLY the specified issues. Return the corrected code maintaining exac
 
     def can_handle_issue_code(self, code: str) -> bool:
         """Check if this specialist can handle a specific issue code."""
-        return any(code.startswith(supported_code) for supported_code in self.supported_codes)
+        return any(
+            code.startswith(supported_code) for supported_code in self.supported_codes
+        )
 
     def get_confidence_multiplier(self, issue_code: str) -> float:
         """Get confidence multiplier for a specific issue code."""
@@ -164,7 +168,9 @@ Please fix ONLY the specified issues. Return the corrected code maintaining exac
         if self.performance.attempts == 1:
             self.performance.average_confidence = confidence
         else:
-            total_confidence = self.performance.average_confidence * (self.performance.attempts - 1)
+            total_confidence = self.performance.average_confidence * (
+                self.performance.attempts - 1
+            )
             self.performance.average_confidence = (
                 total_confidence + confidence
             ) / self.performance.attempts

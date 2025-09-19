@@ -90,9 +90,13 @@ class HTMLGenerator(BaseFormatGenerator):
             last_updated=self._get_current_date(),
         )
 
-    def generate_comparison_guide(self, platform_analyses: list[TemplateAnalysis]) -> str:
+    def generate_comparison_guide(
+        self, platform_analyses: list[TemplateAnalysis]
+    ) -> str:
         """Generate platform comparison guide in HTML format using YAML template."""
-        markdown_content = self.markdown_generator.generate_comparison_guide(platform_analyses)
+        markdown_content = self.markdown_generator.generate_comparison_guide(
+            platform_analyses
+        )
         html_content = self._markdown_to_html(markdown_content)
 
         return self.html_template_loader.render_template(

@@ -20,14 +20,17 @@ Note: This is the updated agent framework. Legacy agent imports have been remove
 
 import warnings
 
-from autopr.agents.agents import BaseAgent, LintingAgent, VolumeConfig
+# Import base classes
+from autopr.agents.agents import BaseAgent, VolumeConfig
 
 # Import modular agent IO types
 from autopr.agents.code_quality_agent import CodeQualityInputs, CodeQualityOutputs
 
 # Import crew from the crew module
 from autopr.agents.crew.main import AutoPRCrew
-from autopr.agents.linting_agent import LintingInputs, LintingOutputs
+
+# Import linting agent and its types
+from autopr.agents.linting_agent import LintingAgent, LintingInputs, LintingOutputs
 
 # Import models
 from autopr.agents.models import (

@@ -32,7 +32,7 @@ communication tools, and quality gates for comprehensive automation.
    ```
 2. Docker setup:
    ```bash
-   docker run -d -e GITHUB_TOKEN=your_token -e OPENAI_API_KEY=your_key -p 8080:8080 neuralliquid/autopr-engine:latest
+   docker run -d -e GITHUB_TOKEN=your_token -e OPENAI_API_KEY=your_key -p 8080:8080 justaghost/autopr-engine:latest
    ```
 
 ### Running Tests

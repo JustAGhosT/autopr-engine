@@ -56,7 +56,9 @@ class ConfigurationValidator:
             )
 
         if github.app_id and not github.private_key:
-            self.errors.append("GITHUB_PRIVATE_KEY is required when using GITHUB_APP_ID")
+            self.errors.append(
+                "GITHUB_PRIVATE_KEY is required when using GITHUB_APP_ID"
+            )
 
         # URL validation
         if github.base_url:
@@ -68,13 +70,17 @@ class ConfigurationValidator:
         if github.timeout <= 0:
             self.errors.append("GitHub timeout must be positive")
         elif github.timeout < 5:
-            self.warnings.append("GitHub timeout is very low, may cause request failures")
+            self.warnings.append(
+                "GitHub timeout is very low, may cause request failures"
+            )
 
         # Retries validation
         if github.max_retries < 0:
             self.errors.append("GitHub max_retries cannot be negative")
         elif github.max_retries > 10:
-            self.warnings.append("GitHub max_retries is very high, may cause long delays")
+            self.warnings.append(
+                "GitHub max_retries is very high, may cause long delays"
+            )
 
     def _validate_llm_config(self) -> None:
         """Validate LLM configuration."""
@@ -112,7 +118,9 @@ class ConfigurationValidator:
         # Validate fallback order
         for provider in llm.fallback_order:
             if not provider_key_map.get(provider):
-                self.warnings.append(f"Fallback provider '{provider}' has no API key configured")
+                self.warnings.append(
+                    f"Fallback provider '{provider}' has no API key configured"
+                )
 
         # Parameter validation
         if llm.max_tokens <= 0:
@@ -158,7 +166,9 @@ class ConfigurationValidator:
         if redis.url:
             # Validate Redis URL format
             if not redis.url.startswith(("redis://", "rediss://")):
-                self.warnings.append("Redis URL should use redis:// or rediss:// scheme")
+                self.warnings.append(
+                    "Redis URL should use redis:// or rediss:// scheme"
+                )
 
         # Port validation
         if not 1 <= redis.port <= 65535:
@@ -192,7 +202,9 @@ class ConfigurationValidator:
         if security.jwt_expiry <= 0:
             self.errors.append("JWT expiry must be positive")
         elif security.jwt_expiry > 86400:  # 24 hours
-            self.warnings.append("JWT expiry is very long, consider shorter duration for security")
+            self.warnings.append(
+                "JWT expiry is very long, consider shorter duration for security"
+            )
 
         # Rate limiting
         if security.rate_limit_per_minute <= 0:
@@ -201,7 +213,9 @@ class ConfigurationValidator:
         # CORS validation
         if security.enable_cors and not security.allowed_origins:
             if self.settings.environment == Environment.PRODUCTION:
-                self.errors.append("CORS allowed_origins must be specified in production")
+                self.errors.append(
+                    "CORS allowed_origins must be specified in production"
+                )
             else:
                 self.warnings.append("CORS is enabled but no allowed_origins specified")
 
@@ -218,7 +232,9 @@ class ConfigurationValidator:
             self.warnings.append("Tracing is enabled but no Jaeger endpoint configured")
 
         # Sentry validation
-        if monitoring.sentry_dsn and not str(monitoring.sentry_dsn).startswith("https://"):
+        if monitoring.sentry_dsn and not str(monitoring.sentry_dsn).startswith(
+            "https://"
+        ):
             self.warnings.append("Sentry DSN should start with https://")
 
     def _validate_workflow_config(self) -> None:
@@ -235,7 +251,9 @@ class ConfigurationValidator:
         if workflow.timeout <= 0:
             self.errors.append("Workflow timeout must be positive")
         elif workflow.timeout < 30:
-            self.warnings.append("Workflow timeout is very low, may cause premature failures")
+            self.warnings.append(
+                "Workflow timeout is very low, may cause premature failures"
+            )
 
         if workflow.retry_attempts < 0:
             self.errors.append("Workflow retry_attempts cannot be negative")
@@ -336,7 +354,9 @@ def check_environment_variables() -> dict[str, Any]:
     found_env_files = [f for f in env_files if Path(f).exists()]
 
     if not found_env_files:
-        recommendations.append("Consider creating a .env file for environment variables")
+        recommendations.append(
+            "Consider creating a .env file for environment variables"
+        )
 
     # Check for sensitive data in environment
     sensitive_patterns = [

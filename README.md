@@ -1,15 +1,15 @@
 # AutoPR Engine 🤖
 
-**AI-Powered GitHub PR Automation and Issue Management**
+## AI-Powered GitHub PR Automation and Issue Management
 
 [![PyPI version](<https://badge.fury.io/py/autopr-engine.svg)](https://badge.fury.io/py/autopr-engine)>
 [![Python 3.8+](<https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)>
 [![License: MIT](<https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)>
 [![GitHub Marketplace](<https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/autopr-engine)>
 
-[![CI](https://github.com/neuralliquid/autopr-engine/workflows/CI/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3ACI)
-[![Quality](https://github.com/neuralliquid/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
-[![PR Checks](https://github.com/neuralliquid/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/neuralliquid/autopr-engine/actions?query=workflow%3A%22PR+Checks%22)
+[![CI](https://github.com/JustAGhosT/autopr-engine/workflows/CI/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3ACI)
+[![Quality](https://github.com/JustAGhosT/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
+[![PR Checks](https://github.com/JustAGhosT/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Pull+Request+Checks%22)
 
 AutoPR Engine is a comprehensive AI-powered automation platform that transforms GitHub pull request
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
@@ -24,7 +24,7 @@ workflows through intelligent analysis, issue creation, and multi-agent collabor
 
 The AutoPR Engine repository is organized for optimal developer experience and maintainability:
 
-```
+```text
 autopr-engine/
 ├── docs/                      # 📚 All documentation
 │   ├── getting-started/       # Setup and quick start guides
@@ -82,12 +82,57 @@ pip install autopr-engine
 # Or install with all features
 pip install "autopr-engine[full]"
 
-# Docker deployment
+# Docker deployment (build locally)
+docker build -t autopr-engine:latest .
 docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
-  neuralliquid/autopr-engine:latest
+  autopr-engine:latest
+
+# Docker Compose deployment (recommended for full setup)
+# Create a .env file with your environment variables:
+# GITHUB_TOKEN=your_token
+# OPENAI_API_KEY=your_key
+# Then run:
+docker-compose up -d
+
+# Publishing to GitHub Container Registry (GHCR)
+# 1. Build the image:
+docker build -t autopr-engine:latest .
+
+# 2. Tag for GHCR (replace YOUR_USERNAME with your GitHub username):
+docker tag autopr-engine:latest ghcr.io/YOUR_USERNAME/autopr-engine:latest
+
+# 3. Authenticate to GHCR:
+docker login ghcr.io -u YOUR_USERNAME -p YOUR_GITHUB_TOKEN
+
+# 4. Push to GHCR:
+docker push ghcr.io/YOUR_USERNAME/autopr-engine:latest
+
+# 5. Run the published image:
+docker run -d \
+  -e GITHUB_TOKEN=your_token \
+  -e OPENAI_API_KEY=your_key \
+  -p 8080:8080 \
+  ghcr.io/YOUR_USERNAME/autopr-engine:latest
+
+# Publishing to Docker Hub (alternative)
+# 1. Build and tag for Docker Hub:
+docker build -t YOUR_DOCKERHUB_USERNAME/autopr-engine:latest .
+
+# 2. Authenticate to Docker Hub:
+docker login -u YOUR_DOCKERHUB_USERNAME -p YOUR_DOCKERHUB_TOKEN
+
+# 3. Push to Docker Hub:
+docker push YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
+
+# 4. Run the published image:
+docker run -d \
+  -e GITHUB_TOKEN=your_token \
+  -e OPENAI_API_KEY=your_key \
+  -p 8080:8080 \
+  YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
 ```
 
 ### **Basic Configuration**
@@ -131,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: neuralliquid/autopr-engine@v1
+      - uses: JustAGhosT/autopr-engine@v0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -212,7 +257,7 @@ graph TB
 
 ```bash
 # Clone repository
-git clone https://github.com/neuralliquid/autopr-engine.git
+git clone https://github.com/JustAGhosT/autopr-engine.git
 cd autopr-engine
 
 # Create virtual environment
@@ -306,7 +351,7 @@ SENTRY_DSN=https://...                  # Error tracking
 ```yaml
 # autopr.yml
 repositories:
-  - owner: neuralliquid
+  - owner: JustAGhosT
     repos: ["vv-landing", "vv-backend"]
 
 workflows:
@@ -471,13 +516,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 **Support**
 
-- **Documentation**: [https://autopr-engine.readthedocs.io](<https://autopr-engine.readthedocs.io)>
-- **GitHub Issues**: [Report bugs and request
-  features](<https://github.com/neuralliquid/autopr-engine/issues)>
-- **Discussions**: [Community
-  discussions](<https://github.com/neuralliquid/autopr-engine/discussions)>
-- **Email**: [support@neuralliquid.com](mailto:support@neuralliquid.com)
+- **Documentation**: [https://autopr-engine.readthedocs.io](https://autopr-engine.readthedocs.io)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/JustAGhosT/autopr-engine/issues)
+- **Discussions**: [Community discussions](https://github.com/JustAGhosT/autopr-engine/discussions)
+- **Email**: [support@justaghost.com](mailto:support@justaghost.com)
 
 ---
 
-**Made with ❤️ by the NeuralLiquid team**
+## Made with ❤️ by JustAGhosT

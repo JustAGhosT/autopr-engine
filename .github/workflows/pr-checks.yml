@@ -1,99 +1,145 @@
-name: PR Checks
+name: Pull Request Checks
 
 on:
-  pull_request:
-    branches: [main, develop]
+  # Disabled - functionality moved to ci-cd-pipeline.yml
+  workflow_dispatch:
 
 env:
   PYTHON_VERSION: "3.13"
 
-permissions:
-  contents: read
-  pull-requests: write
-
 jobs:
-  essential-checks:
-    name: Essential Checks
+  quality-checks:
+    name: Quality Checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Install quality tools
         run: |
-          python -m pip install --upgrade pip
-          pip install -e .
-          pip install pre-commit pytest pytest-asyncio
+          poetry run pip install ruff mypy bandit
 
-      - name: Detect changed files
-        id: changed
+      - name: Run pre-commit hooks
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}... | tr '\n' ' ')
-          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          poetry run pre-commit install
+          poetry run pre-commit run --all-files
 
-      - name: Run volume-aware pre-commit (fast/quiet)
-        env:
-          AUTOPR_PRECOMMIT_VOLUME: "100"
-          PRECOMMIT_DISABLE_PRETTIER: "1"
+      - name: Run Quality Engine (Fast Mode)
         run: |
-          FILES="${{ steps.changed.outputs.files }}"
-          if [ -z "$FILES" ]; then echo "No changed files to lint"; exit 0; fi
-          pre-commit run volume-precommit --hook-stage manual --files $FILES
+          poetry run python -m autopr.actions.quality_engine --mode fast --files autopr/ --continue-on-errors
 
-      - name: Run minimal tests
-        run: pytest tests/unit/ -v --tb=short --maxfail=3
+      - name: Run basic tests
+        run: |
+          poetry run python -m pytest tests/test_quality_pipeline.py::TestQualityPipeline::test_fast_mode -v
+          poetry run python -m pytest tests/test_performance_optimized_file_splitter.py::TestPerformanceOptimizedFileSplitter::test_performance_optimizer_initialization -v
 
-  draft-validation:
-    name: Draft PR Validation
-    needs: essential-checks
-    if: github.event.pull_request.draft == true
+  security-scan:
+    name: Security Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    continue-on-error: true
+    timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .
+        run: poetry install --no-interaction --no-root
 
-      - name: Quick syntax check
+      - name: Install security tools
         run: |
-          python -c "import autopr; print('✅ Import successful')"
+          poetry run pip install bandit safety
 
-      - name: Comment draft status
-        uses: actions/github-script@v6
+      - name: Run Bandit security scan
+        run: |
+          poetry run bandit -r autopr/ -f json -o bandit-report.json || true
+
+      - name: Run Safety check
+        run: |
+          poetry run safety check --json --output safety-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            const comment = `## Draft PR Quick Check ✅
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+          retention-days: 7
 
-            **Status:** Draft PR validation completed
-            **Essential Checks:** ✅ Passed
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
 
-            **Note:** Comprehensive checks will run when PR is marked as ready for review.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            ---
-            *Draft validation completed*`;
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest tests/ -v --cov=autopr --cov-report=xml --cov-report=html
+          poetry run coverage report --show-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          use_oidc: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            htmlcov/
+          retention-days: 7

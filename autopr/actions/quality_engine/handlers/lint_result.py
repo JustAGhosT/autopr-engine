@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from .lint_issue import LintIssue
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
 
 
 class LintResult(TypedDict):

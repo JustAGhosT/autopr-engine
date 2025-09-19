@@ -117,7 +117,9 @@ class ErrorHandlerWorkflow(Workflow):
             # Create display configuration
             self.display_config = DisplayConfig(
                 mode=(
-                    OutputMode.VERBOSE if self.config.get("verbose", False) else OutputMode.NORMAL
+                    OutputMode.VERBOSE
+                    if self.config.get("verbose", False)
+                    else OutputMode.NORMAL
                 ),
                 use_colors=self.config.get("use_colors", True),
                 use_emojis=self.config.get("use_emojis", True),
@@ -156,9 +158,13 @@ class ErrorHandlerWorkflow(Workflow):
                 },
             )
 
-        def on_recovery_callback(error_info: ErrorInfo, strategy: ErrorRecoveryStrategy) -> None:
+        def on_recovery_callback(
+            error_info: ErrorInfo, strategy: ErrorRecoveryStrategy
+        ) -> None:
             """Callback for recovery attempts."""
-            logger.info(f"Recovery callback: {strategy.value} for {error_info.error_type}")
+            logger.info(
+                f"Recovery callback: {strategy.value} for {error_info.error_type}"
+            )
 
             # Emit workflow event
             self.emit_event(

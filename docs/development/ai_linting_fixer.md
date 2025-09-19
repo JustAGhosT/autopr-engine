@@ -27,7 +27,7 @@ infrastructure to automatically fix Python linting issues using artificial intel
 
 ## 🚀 Quick Start
 
-### 1. Ready to Use - No Setup Required!
+### 1. Ready to Use - No Setup Required
 
 The AI linting fixer comes **pre-configured with Azure OpenAI**:
 
@@ -74,8 +74,7 @@ pre-commit run --hook-stage=manual ai-lint-fixer --all-files
 
 The AI fixer comes with **working Azure OpenAI configuration**:
 
-- **Endpoint**: `[` -
-  jurie-mcnb2krj-swedencentral.openai.azure.com](https://jurie-mcnb2krj-swedencentral.openai.azure.com/`)
+- **Endpoint**: [jurie-mcnb2krj-swedencentral.openai.azure.com](https://jurie-mcnb2krj-swedencentral.openai.azure.com/)
 - **Model**: `gpt-35-turbo`
 - **API Version**: `2024-02-01`
 - **API Key**: Pre-configured and working

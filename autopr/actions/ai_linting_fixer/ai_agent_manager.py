@@ -1,17 +1,18 @@
 """
-AI Agent Manager Module
+AI Agent Manager for AI Linting Fixer
 
-This module manages AI agents and their specializations for different types of linting issues.
-Provides a clean interface between the AI fixer and the modularized specialist system.
+Manages AI agents for different types of code fixes.
 """
 
 import json
 import logging
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.agents import AgentType, SpecialistManager
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.detection import LintingIssue
+from autopr.actions.ai_linting_fixer.issue_converter import convert_detection_issues_to_model_issues
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import AgentType
+from autopr.actions.ai_linting_fixer.specialists.specialist_manager import SpecialistManager
+from autopr.actions.llm.manager import ActionLLMProviderManager
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class AIAgentManager:
         "general_agent": AgentType.GENERAL_FIXER,
     }
 
-    def __init__(self, llm_manager: LLMProviderManager, performance_tracker=None):
+    def __init__(self, llm_manager: ActionLLMProviderManager, performance_tracker=None):
         """
         Initialize the AI agent manager.
 
@@ -67,17 +68,23 @@ class AIAgentManager:
         if not issues:
             return "GeneralSpecialist"
 
-        specialist = self.specialist_manager.get_specialist_for_issues(issues)
-        logger.debug("Selected specialist '%s' for %d issues", specialist.name, len(issues))
+        specialist = self.specialist_manager.get_specialist_for_issues(
+            convert_detection_issues_to_model_issues(issues)
+        )
+        logger.debug(
+            "Selected specialist '%s' for %d issues", specialist.name, len(issues)
+        )
         return specialist.name
 
-    def get_specialized_system_prompt(self, agent_type: str, issues: list[LintingIssue]) -> str:
+    def get_specialized_system_prompt(
+        self, agent_type: str, _issues: list[LintingIssue]
+    ) -> str:
         """
         Get a specialized system prompt for the given agent type.
 
         Args:
             agent_type: String identifier for the agent type
-            issues: List of issues (used for context)
+            _issues: List of issues (used for context, prefixed with _ to indicate unused)
 
         Returns:
             Specialized system prompt for the agent
@@ -86,7 +93,9 @@ class AIAgentManager:
         specialist = self.specialist_manager.get_specialist_by_type(agent_enum)
         return specialist.get_system_prompt()
 
-    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
+    def get_user_prompt(
+        self, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> str:
         """
         Generate a user prompt for fixing the given issues.
 
@@ -98,8 +107,12 @@ class AIAgentManager:
         Returns:
             Specialized user prompt for the issues
         """
-        specialist = self.specialist_manager.get_specialist_for_issues(issues)
-        return specialist.get_user_prompt(file_path, content, issues)
+        specialist = self.specialist_manager.get_specialist_for_issues(
+            convert_detection_issues_to_model_issues(issues)
+        )
+        return specialist.get_user_prompt(
+            file_path, content, convert_detection_issues_to_model_issues(issues)
+        )
 
     def parse_ai_response(self, content: str) -> dict[str, Any]:
         """
@@ -149,7 +162,9 @@ class AIAgentManager:
             # Score different aspects
             confidence = self._score_response_success(ai_response, confidence)
             confidence = self._score_ai_confidence(ai_response, confidence)
-            confidence = self._score_change_size(original_content, fixed_content, confidence)
+            confidence = self._score_change_size(
+                original_content, fixed_content, confidence
+            )
             confidence = self._score_explanation(ai_response, confidence)
             confidence = self._score_changes_list(ai_response, confidence)
             confidence = self._score_issue_complexity(issues, confidence)
@@ -227,17 +242,25 @@ class AIAgentManager:
             "raw_response": content[:300] + "..." if len(content) > 300 else content,
         }
 
-    def _score_response_success(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_response_success(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         """Score based on response success."""
         if ai_response.get("success"):
             confidence += 0.2
         return confidence
 
-    def _score_ai_confidence(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_ai_confidence(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         """Score based on AI's own confidence."""
         if "confidence" in ai_response:
             response_confidence = ai_response["confidence"]
-            if isinstance(response_confidence, (int, float)) and 0 <= response_confidence <= 1:
+            if (
+                isinstance(response_confidence, int | float)
+                and not isinstance(response_confidence, bool)
+                and 0 <= response_confidence <= 1
+            ):
                 confidence = confidence * 0.7 + response_confidence * 0.3
         return confidence
 
@@ -254,7 +277,9 @@ class AIAgentManager:
                 confidence -= 0.1
         return confidence
 
-    def _score_explanation(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_explanation(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         """Score based on explanation quality."""
         explanation = ai_response.get("explanation")
         if explanation:
@@ -263,7 +288,9 @@ class AIAgentManager:
                 confidence += 0.05
         return confidence
 
-    def _score_changes_list(self, ai_response: dict[str, Any], confidence: float) -> float:
+    def _score_changes_list(
+        self, ai_response: dict[str, Any], confidence: float
+    ) -> float:
         """Score based on changes list quality."""
         changes = ai_response.get("changes_made")
         if changes:
@@ -272,7 +299,9 @@ class AIAgentManager:
                 confidence += 0.05
         return confidence
 
-    def _score_issue_complexity(self, issues: list[LintingIssue], confidence: float) -> float:
+    def _score_issue_complexity(
+        self, issues: list[LintingIssue], confidence: float
+    ) -> float:
         """Score based on issue complexity."""
         if len(issues) == 1:
             confidence += 0.1
@@ -282,7 +311,9 @@ class AIAgentManager:
             confidence -= 0.1
         return confidence
 
-    def _score_issue_types(self, issues: list[LintingIssue], confidence: float) -> float:
+    def _score_issue_types(
+        self, issues: list[LintingIssue], confidence: float
+    ) -> float:
         """Score based on issue types and their complexity."""
         for issue in issues:
             code = issue.error_code
@@ -303,4 +334,6 @@ class AIAgentManager:
     ) -> None:
         """Record the result of a specialist's attempt."""
         agent_enum = self.AGENT_TYPE_MAP.get(agent_type, AgentType.GENERAL_FIXER)
-        self.specialist_manager.record_specialist_result(agent_enum, success, confidence)
+        self.specialist_manager.record_specialist_result(
+            agent_enum, success, confidence
+        )

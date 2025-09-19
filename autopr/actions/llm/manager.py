@@ -3,26 +3,22 @@ LLM Provider Manager - Manages multiple LLM providers with fallback support.
 """
 
 import logging
+import os
 from typing import Any
 
 from autopr.actions.llm.base import BaseLLMProvider
-from autopr.actions.llm.providers import (
-    AnthropicProvider,
-    GroqProvider,
-    MistralProvider,
-    OpenAIProvider,
-    PerplexityProvider,
-    TogetherAIProvider,
-)
+from autopr.actions.llm.providers import (AnthropicProvider, GroqProvider,
+                                          MistralProvider, OpenAIProvider,
+                                          PerplexityProvider,
+                                          TogetherAIProvider)
 from autopr.actions.llm.providers.azure_openai import AzureOpenAIProvider
 from autopr.actions.llm.types import LLMResponse
-
 
 logger = logging.getLogger(__name__)
 
 
-class LLMProviderManager:
-    """Manages multiple LLM providers with fallback support."""
+class ActionLLMProviderManager:
+    """Manages multiple LLM providers with fallback support for action-driven use cases."""
 
     def __init__(self, config: dict[str, Any], display=None) -> None:
         self.providers: dict[str, BaseLLMProvider] = {}
@@ -44,10 +40,10 @@ class LLMProviderManager:
             },
             "azure_openai": {
                 "api_key_env": "AZURE_OPENAI_API_KEY",
-                "default_model": "gpt-35-turbo",
-                "azure_endpoint": "https://dev-saf-openai-phoenixvc-ai.openai.azure.com/",
+                "default_model": "gpt-5-chat",
+                "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT", "https://<your-azure-openai-endpoint>/"),
                 "api_version": "2024-02-01",
-                "deployment_name": "gpt-35-turbo",
+                "deployment_name": os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-5-chat"),
             },
             "anthropic": {
                 "api_key_env": "ANTHROPIC_API_KEY",
@@ -102,14 +98,19 @@ class LLMProviderManager:
                 logger.debug(f"Failed to initialize {provider_name} provider: {e}")
 
                 # Only show warning if this provider is in the fallback order or is the default
-                if provider_name in self.fallback_order or provider_name == self.default_provider:
+                if (
+                    provider_name in self.fallback_order
+                    or provider_name == self.default_provider
+                ):
                     if self.display:
                         self.display.error.show_warning(
                             f"Provider {provider_name} not available: {e!s}"
                         )
                     else:
                         # Fallback to logger if no display is available
-                        logger.warning(f"Failed to initialize {provider_name} provider: {e}")
+                        logger.warning(
+                            f"Failed to initialize {provider_name} provider: {e}"
+                        )
 
     def get_provider(self, provider_name: str) -> BaseLLMProvider | None:
         """
@@ -196,7 +197,9 @@ class LLMProviderManager:
 
     def get_available_providers(self) -> list[str]:
         """Get list of available providers."""
-        return [name for name, provider in self.providers.items() if provider.is_available()]
+        return [
+            name for name, provider in self.providers.items() if provider.is_available()
+        ]
 
     def get_provider_info(self) -> dict[str, Any]:
         """Get information about all providers."""
@@ -214,3 +217,7 @@ class LLMProviderManager:
             }
 
         return info
+
+
+# Backward compatibility alias
+LLMProviderManager = ActionLLMProviderManager

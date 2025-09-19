@@ -171,7 +171,9 @@ class BaseAgent[InputT, OutputT]:
             if not str(e):
                 # If the original exception has no message, use our custom one
                 e.args = (f"Error in {self.name}", *e.args[1:])
-            elif not any(self.name in str(arg) for arg in e.args if isinstance(arg, str)):
+            elif not any(
+                self.name in str(arg) for arg in e.args if isinstance(arg, str)
+            ):
                 # If the error message doesn't already contain the agent name, prepend it
                 e.args = (f"Error in {self.name}: {e!s}", *e.args[1:])
 

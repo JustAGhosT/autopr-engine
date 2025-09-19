@@ -58,7 +58,9 @@ class TemplateVariable:
             elif self.type == TemplateVariableType.BOOLEAN:
                 if not isinstance(value, bool):
                     value = str(value).lower() in {"true", "1", "t", "y", "yes"}
-            elif (self.type == TemplateVariableType.LIST and not isinstance(value, list)) or (
+            elif (
+                self.type == TemplateVariableType.LIST and not isinstance(value, list)
+            ) or (
                 self.type == TemplateVariableType.DICT and not isinstance(value, dict)
             ):
                 return False

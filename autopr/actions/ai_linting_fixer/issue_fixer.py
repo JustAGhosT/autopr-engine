@@ -4,18 +4,18 @@ Issue Fixer Module
 This module handles the actual fixing of linting issues using AI agents.
 """
 
+import asyncio
+import inspect
 import logging
 import time
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
 from autopr.actions.ai_linting_fixer.error_handler import (
-    ErrorHandler,
-    create_error_context,
-)
+    ErrorHandler, create_error_context)
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
-from autopr.actions.ai_linting_fixer.models import LintingFixResult, LintingIssue
-
+from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
+                                                    LintingIssue)
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +75,9 @@ class IssueFixer:
             # Process each file
             for file_path, file_issues in issues_by_file.items():
                 try:
+                    # Capture original error codes for this file
+                    original_error_codes = [issue.error_code for issue in file_issues]
+
                     file_result = self._fix_file_issues(
                         file_path=file_path,
                         issues=file_issues,
@@ -83,11 +86,22 @@ class IssueFixer:
                     )
 
                     if file_result["success"]:
-                        fixed_issues.extend(file_result["fixed_issues"])
+                        # Get the error codes that were actually fixed
+                        fixed_error_codes = file_result.get("fixed_issues", [])
+                        fixed_issues.extend(fixed_error_codes)
+
+                        # Compute remaining unfixed issues for this file
+                        remaining_codes = [
+                            code for code in original_error_codes
+                            if code not in fixed_error_codes
+                        ]
+                        remaining_issues.extend(remaining_codes)
+
                         if file_result["modified"]:
                             modified_files.append(file_path)
                     else:
-                        remaining_issues.extend([issue.error_code for issue in file_issues])
+                        # If file processing failed, all issues remain unfixed
+                        remaining_issues.extend(original_error_codes)
 
                 except Exception as e:
                     # Handle file-specific errors
@@ -113,7 +127,8 @@ class IssueFixer:
                         # Could implement retry logic here
                     else:
                         logger.exception(f"Failed to process {file_path}: {e}")
-                        remaining_issues.extend([issue.error_code for issue in file_issues])
+                        # All original issues remain unfixed due to processing error
+                        remaining_issues.extend(original_error_codes)
 
             # Create result
             result = LintingFixResult(
@@ -173,7 +188,8 @@ class IssueFixer:
                 raise FileNotFoundError(msg)
 
             # Validate syntax before processing
-            from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
+            from autopr.actions.ai_linting_fixer.code_analyzer import \
+                CodeAnalyzer
 
             code_analyzer = CodeAnalyzer()
             syntax_valid_before = code_analyzer.validate_python_syntax(original_content)
@@ -201,7 +217,7 @@ class IssueFixer:
                     )
 
                     # Attempt to fix the issue
-                    fix_result = self._fix_single_issue(
+                    fix_result = self.fix_single_issue(
                         file_path=file_path,
                         content=fixed_content,
                         issue=issue,
@@ -280,7 +296,53 @@ class IssueFixer:
                 "modified": False,
             }
 
-    def _fix_single_issue(
+    def _safe_extract_response_content(self, response) -> str:
+        """
+        Safely extract and normalize response content from various response types.
+        
+        Args:
+            response: The response object from LLM (could be None, dict, string, etc.)
+            
+        Returns:
+            str: Normalized string content, or fallback message if extraction fails
+        """
+        if response is None:
+            return "<no response>"
+        
+        # Try to extract content from various response formats
+        content = None
+        
+        # Check if response has a content attribute
+        if hasattr(response, 'content'):
+            content = response.content
+        # Check if response is a dict with content key
+        elif isinstance(response, dict):
+            content = response.get('content')
+        # Check if response is already a string
+        elif isinstance(response, str):
+            content = response
+        # Try to get content via get method
+        elif hasattr(response, 'get'):
+            content = response.get('content')
+        
+        # If we still don't have content, convert to string
+        if content is None:
+            content = str(response)
+        
+        # Ensure content is a string and normalize it
+        if not isinstance(content, str):
+            content = str(content)
+        
+        # Normalize whitespace and ensure UTF-8 encoding
+        content = content.strip()
+        
+        # Handle empty content
+        if not content:
+            return "<empty response>"
+        
+        return content
+
+    def fix_single_issue(
         self,
         file_path: str,
         content: str,
@@ -296,28 +358,49 @@ class IssueFixer:
             agent_type = self.ai_agent_manager.select_agent_for_issues([issue])
 
             # Get prompts
-            system_prompt = self.ai_agent_manager.get_specialized_system_prompt(agent_type, [issue])
-            user_prompt = self.ai_agent_manager.get_user_prompt(file_path, content, [issue])
-
-            # Call AI
-            response = self.ai_agent_manager.llm_manager.complete(
-                {
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "model": model or "gpt-4.1",
-                    "temperature": 0.1,
-                    "max_tokens": 2000,
-                }
+            system_prompt = self.ai_agent_manager.get_specialized_system_prompt(
+                agent_type, [issue]
+            )
+            user_prompt = self.ai_agent_manager.get_user_prompt(
+                file_path, content, [issue]
             )
 
-            # Parse response
-            parsed_response = self.ai_agent_manager.parse_ai_response(response.content)
+            # Call AI - Honor provider override if a specific provider is requested
+            llm_mgr = self.ai_agent_manager.llm_manager
+            request_payload = {
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "model": model or "gpt-4.1",
+                "temperature": 0.1,
+                "max_tokens": 2000,
+            }
+            if provider:
+                request_payload["provider"] = provider
+
+            if provider and hasattr(llm_mgr, "get_llm"):
+                chosen = llm_mgr.get_llm(provider)
+                if chosen:
+                    response = chosen.complete(request_payload)
+                else:
+                    response = llm_mgr.complete(request_payload)
+            else:
+                response = llm_mgr.complete(request_payload)
+
+            # Handle async/sync ambiguity - check if response is a coroutine
+            if inspect.isawaitable(response):
+                response = asyncio.run(response)
+
+            # Parse response - safely extract content first
+            response_content = self._safe_extract_response_content(response)
+            parsed_response = self.ai_agent_manager.parse_ai_response(response_content)
 
             if not parsed_response.get("success", False):
                 error_msg = parsed_response.get("error", "Unknown error")
-                logger.warning(f"AI fix failed for {issue.error_code} in {file_path}: {error_msg}")
+                logger.warning(
+                    f"AI fix failed for {issue.error_code} in {file_path}: {error_msg}"
+                )
 
                 # Log interaction to database if available
                 if self.database:
@@ -331,7 +414,7 @@ class IssueFixer:
                             "model_used": model or "gpt-4.1",
                             "system_prompt": system_prompt[:1000],
                             "user_prompt": user_prompt[:1000],
-                            "ai_response": str(response.content)[:1000],
+                            "ai_response": response_content[:1000],
                             "fix_successful": False,
                             "confidence_score": 0.0,
                             "fixed_codes": "[]",
@@ -353,7 +436,9 @@ class IssueFixer:
                         }
                         self.database.log_interaction(interaction_data)
                     except Exception as e:
-                        logger.warning(f"Failed to log failed interaction to database: {e}")
+                        logger.warning(
+                            f"Failed to log failed interaction to database: {e}"
+                        )
 
                 return {
                     "success": False,
@@ -383,7 +468,9 @@ class IssueFixer:
 
             # Log confidence score to performance tracker
             if hasattr(self.ai_agent_manager, "performance_tracker"):
-                self.ai_agent_manager.performance_tracker.log_confidence_score(confidence)
+                self.ai_agent_manager.performance_tracker.log_confidence_score(
+                    confidence
+                )
 
             # Log interaction to database if available
             if self.database:
@@ -397,7 +484,7 @@ class IssueFixer:
                         "model_used": model or "gpt-4.1",
                         "system_prompt": system_prompt[:1000],  # Truncate for database
                         "user_prompt": user_prompt[:1000],  # Truncate for database
-                        "ai_response": str(response.content)[:1000],  # Truncate for database
+                        "ai_response": response_content[:1000],  # Truncate for database
                         "fix_successful": True,
                         "confidence_score": confidence,
                         "fixed_codes": str(parsed_response.get("changes_made", [])),
@@ -431,7 +518,9 @@ class IssueFixer:
             }
 
         except Exception as e:
-            logger.exception(f"Error fixing issue {issue.error_code} in {file_path}: {e}")
+            logger.exception(
+                f"Error fixing issue {issue.error_code} in {file_path}: {e}"
+            )
             return {"success": False, "error": str(e), "agent_type": "unknown"}
 
     def fix_issues_sync_fallback(

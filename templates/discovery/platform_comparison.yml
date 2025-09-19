@@ -1,7 +1,6 @@
 name: "No-Code Platform Comparison Matrix"
 description: "Comprehensive comparison of no-code platforms for informed decision-making"
 version: "1.0.0"
-last_updated: "2024-01-01"
 
 comparison_criteria:
   ease_of_use:

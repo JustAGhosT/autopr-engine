@@ -7,12 +7,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from implementation_roadmap.task_definitions import (
-    ImplementationPhases,
-    Phase,
-    TaskRegistry,
-)
-from implementation_roadmap.task_executor import TaskExecution, TaskExecutor
+from autopr.ai.implementation_roadmap.task_definitions import (
+    ImplementationPhases, Phase, TaskRegistry)
+from autopr.ai.implementation_roadmap.task_executor import (TaskExecution,
+                                                            TaskExecutor)
 
 
 @dataclass
@@ -39,7 +37,9 @@ class PhaseExecution:
     @property
     def total_tasks(self) -> int:
         """Get total number of tasks in this phase"""
-        return len(self.completed_tasks) + len(self.failed_tasks) + len(self.skipped_tasks)
+        return (
+            len(self.completed_tasks) + len(self.failed_tasks) + len(self.skipped_tasks)
+        )
 
     @property
     def success_rate(self) -> float:
@@ -52,7 +52,9 @@ class PhaseExecution:
 class PhaseManager:
     """Manages implementation phases and their execution"""
 
-    def __init__(self, task_registry: TaskRegistry, task_executor: TaskExecutor) -> None:
+    def __init__(
+        self, task_registry: TaskRegistry, task_executor: TaskExecutor
+    ) -> None:
         self.task_registry = task_registry
         self.task_executor = task_executor
         self.phases = ImplementationPhases()
@@ -60,7 +62,9 @@ class PhaseManager:
         self.current_phase: str | None = None
         self._paused = False
 
-    async def execute_phase(self, phase_name: str, dry_run: bool = False) -> PhaseExecution:
+    async def execute_phase(
+        self, phase_name: str, dry_run: bool = False
+    ) -> PhaseExecution:
         """Execute a specific implementation phase"""
         phase = self.phases.get_phase(phase_name)
         if not phase:
@@ -89,7 +93,9 @@ class PhaseManager:
                     execution.status = "paused"
                     return execution
 
-                task_execution = await self.task_executor.execute_task(task_name, dry_run)
+                task_execution = await self.task_executor.execute_task(
+                    task_name, dry_run
+                )
                 execution.task_executions[task_name] = task_execution
 
                 if task_execution.status == "success":
@@ -124,7 +130,9 @@ class PhaseManager:
 
         return execution
 
-    async def execute_all_phases(self, dry_run: bool = False) -> dict[str, PhaseExecution]:
+    async def execute_all_phases(
+        self, dry_run: bool = False
+    ) -> dict[str, PhaseExecution]:
         """Execute all phases in dependency order"""
         phase_order = ["immediate", "medium", "strategic"]
         results = {}
@@ -182,7 +190,9 @@ class PhaseManager:
             task = self.task_registry.get_task(task_name)
             if task:
                 for dep in task.dependencies:
-                    if dep in task_names:  # Only consider dependencies within this phase
+                    if (
+                        dep in task_names
+                    ):  # Only consider dependencies within this phase
                         visit(dep)
 
             temp_visited.remove(task_name)
@@ -240,7 +250,9 @@ class PhaseManager:
             "phase_name": phase_name,
             "status": execution.status,
             "progress_percentage": (
-                (len(execution.completed_tasks) / total_tasks * 100) if total_tasks > 0 else 0.0
+                (len(execution.completed_tasks) / total_tasks * 100)
+                if total_tasks > 0
+                else 0.0
             ),
             "completed_tasks": len(execution.completed_tasks),
             "failed_tasks": len(execution.failed_tasks),
@@ -248,7 +260,9 @@ class PhaseManager:
             "total_tasks": total_tasks,
             "success_rate": execution.success_rate,
             "duration": execution.duration,
-            "start_time": (execution.start_time.isoformat() if execution.start_time else None),
+            "start_time": (
+                execution.start_time.isoformat() if execution.start_time else None
+            ),
             "end_time": execution.end_time.isoformat() if execution.end_time else None,
         }
 

@@ -30,7 +30,9 @@ class PerplexityProvider(BaseLLMProvider):
         try:
             import openai
 
-            self.client = openai.OpenAI(api_key=self.api_key, base_url="https://api.perplexity.ai")
+            self.client = openai.OpenAI(
+                api_key=self.api_key, base_url="https://api.perplexity.ai"
+            )
             self.available = True
         except ImportError:
             self.available = False
@@ -38,7 +40,10 @@ class PerplexityProvider(BaseLLMProvider):
     def complete(self, request: dict[str, Any]) -> LLMResponse:
         try:
             messages = request.get("messages", [])
-            model = request.get("model", self.default_model) or "llama-3.1-sonar-large-128k-online"
+            model = (
+                request.get("model", self.default_model)
+                or "llama-3.1-sonar-large-128k-online"
+            )
             max_tokens = request.get("max_tokens", 1024)
             temperature = request.get("temperature", 0.7)
 
@@ -60,7 +65,11 @@ class PerplexityProvider(BaseLLMProvider):
             # Extract content and finish reason
             content = ""
             finish_reason = "stop"
-            if hasattr(response, "choices") and response.choices and len(response.choices) > 0:
+            if (
+                hasattr(response, "choices")
+                and response.choices
+                and len(response.choices) > 0
+            ):
                 choice = response.choices[0]
                 if hasattr(choice, "message") and hasattr(choice.message, "content"):
                     content = choice.message.content or ""
@@ -71,7 +80,9 @@ class PerplexityProvider(BaseLLMProvider):
             if hasattr(response, "usage") and response.usage:
                 usage = {
                     "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
-                    "completion_tokens": getattr(response.usage, "completion_tokens", 0),
+                    "completion_tokens": getattr(
+                        response.usage, "completion_tokens", 0
+                    ),
                     "total_tokens": getattr(response.usage, "total_tokens", 0),
                 }
 
@@ -110,7 +121,10 @@ class TogetherAIProvider(BaseLLMProvider):
     def complete(self, request: dict[str, Any]) -> LLMResponse:
         try:
             messages = request.get("messages", [])
-            model = request.get("model", self.default_model) or "meta-llama/Llama-2-70b-chat-hf"
+            model = (
+                request.get("model", self.default_model)
+                or "meta-llama/Llama-2-70b-chat-hf"
+            )
             max_tokens = request.get("max_tokens", 1024)
             temperature = request.get("temperature", 0.7)
 
@@ -132,7 +146,11 @@ class TogetherAIProvider(BaseLLMProvider):
             # Extract content and finish reason
             content = ""
             finish_reason = "stop"
-            if hasattr(response, "choices") and response.choices and len(response.choices) > 0:
+            if (
+                hasattr(response, "choices")
+                and response.choices
+                and len(response.choices) > 0
+            ):
                 choice = response.choices[0]
                 if hasattr(choice, "message") and hasattr(choice.message, "content"):
                     content = choice.message.content or ""
@@ -143,7 +161,9 @@ class TogetherAIProvider(BaseLLMProvider):
             if hasattr(response, "usage") and response.usage:
                 usage = {
                     "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
-                    "completion_tokens": getattr(response.usage, "completion_tokens", 0),
+                    "completion_tokens": getattr(
+                        response.usage, "completion_tokens", 0
+                    ),
                     "total_tokens": getattr(response.usage, "total_tokens", 0),
                 }
 

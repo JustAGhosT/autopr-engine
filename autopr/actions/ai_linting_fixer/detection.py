@@ -130,7 +130,9 @@ class IssueClassifier:
     }
 
     @classmethod
-    def classify_issue(cls, error_code: str) -> tuple[IssueCategory, IssueSeverity, int]:
+    def classify_issue(
+        cls, error_code: str
+    ) -> tuple[IssueCategory, IssueSeverity, int]:
         """Classify an issue by its error code."""
         # Look for exact match first
         if error_code in cls.ISSUE_CLASSIFICATIONS:
@@ -170,7 +172,9 @@ class Flake8Parser:
     def __init__(self):
         self.classifier = IssueClassifier()
 
-    def run_flake8(self, target_path: str, config_file: str | None = None) -> list[LintingIssue]:
+    def run_flake8(
+        self, target_path: str, config_file: str | None = None
+    ) -> list[LintingIssue]:
         """Run flake8 and parse the results."""
         try:
             # Build flake8 command
@@ -179,7 +183,9 @@ class Flake8Parser:
                 cmd.extend(["--config", config_file])
 
             # Run flake8
-            result = subprocess.run(cmd, check=False, capture_output=True, text=True, cwd=".")
+            result = subprocess.run(
+                cmd, check=False, capture_output=True, text=True, cwd="."
+            )
 
             if result.stdout.strip():
                 return self.parse_standard_output(result.stdout)
@@ -266,10 +272,14 @@ class Flake8Parser:
                 if 1 <= line_number <= len(lines):
                     return lines[line_number - 1].rstrip("\n\r")
         except Exception as e:
-            logger.debug("Failed to read line content from %s:%s - %s", file_path, line_number, e)
+            logger.debug(
+                "Failed to read line content from %s:%s - %s", file_path, line_number, e
+            )
         return ""
 
-    def _extract_context(self, file_path: str, line_number: int) -> tuple[str | None, str | None]:
+    def _extract_context(
+        self, file_path: str, line_number: int
+    ) -> tuple[str | None, str | None]:
         """Extract function and class context for the given line."""
         try:
             from pathlib import Path
@@ -307,7 +317,9 @@ class Flake8Parser:
             return function_name, class_name
 
         except Exception as e:
-            logger.debug("Failed to extract context from %s:%s - %s", file_path, line_number, e)
+            logger.debug(
+                "Failed to extract context from %s:%s - %s", file_path, line_number, e
+            )
             return None, None
 
 
@@ -317,7 +329,9 @@ class RuffParser:
     def __init__(self):
         self.classifier = IssueClassifier()
 
-    def run_ruff(self, target_path: str, config_file: str | None = None) -> list[LintingIssue]:
+    def run_ruff(
+        self, target_path: str, config_file: str | None = None
+    ) -> list[LintingIssue]:
         """Run ruff and parse its output."""
         try:
             cmd = ["ruff", "check", target_path, "--output-format=json"]
@@ -335,7 +349,7 @@ class RuffParser:
             return self._parse_ruff_json(result.stdout)
 
         except Exception as e:
-            logger.error("Failed to run ruff: %s", e)
+            logger.exception("Failed to run ruff: %s", e)
             return []
 
     def _parse_ruff_json(self, json_output: str) -> list[LintingIssue]:
@@ -358,16 +372,23 @@ class RuffParser:
             for item in data:
                 try:
                     # Validate required fields
-                    if not all(key in item for key in ["code", "message", "filename", "location"]):
+                    if not all(
+                        key in item
+                        for key in ["code", "message", "filename", "location"]
+                    ):
                         logger.debug("Skipping item with missing fields: %s", item)
                         continue
 
                     # Classify the issue
-                    category, severity, priority = self.classifier.classify_issue(item["code"])
+                    category, severity, priority = self.classifier.classify_issue(
+                        item["code"]
+                    )
                     confidence = self.classifier.estimate_fix_confidence(item["code"])
 
                     # Get line content if possible
-                    line_content = self._get_line_content(item["filename"], item["location"]["row"])
+                    line_content = self._get_line_content(
+                        item["filename"], item["location"]["row"]
+                    )
 
                     issue = LintingIssue(
                         file_path=item["filename"],
@@ -391,7 +412,7 @@ class RuffParser:
             return issues
 
         except Exception as e:
-            logger.error("Failed to parse ruff JSON: %s", e)
+            logger.exception("Failed to parse ruff JSON: %s", e)
             return []
 
     def _get_line_content(self, file_path: str, line_number: int) -> str:
@@ -404,7 +425,9 @@ class RuffParser:
                 if 1 <= line_number <= len(lines):
                     return lines[line_number - 1].rstrip("\n\r")
         except Exception as e:
-            logger.debug("Failed to read line content from %s:%s - %s", file_path, line_number, e)
+            logger.debug(
+                "Failed to read line content from %s:%s - %s", file_path, line_number, e
+            )
         return ""
 
 
@@ -465,11 +488,15 @@ class IssueDetector:
             ]
 
         if min_priority > 1:
-            filtered = [issue for issue in filtered if issue.fix_priority >= min_priority]
+            filtered = [
+                issue for issue in filtered if issue.fix_priority >= min_priority
+            ]
 
         return filtered
 
-    def group_issues_by_file(self, issues: list[LintingIssue]) -> dict[str, list[LintingIssue]]:
+    def group_issues_by_file(
+        self, issues: list[LintingIssue]
+    ) -> dict[str, list[LintingIssue]]:
         """Group issues by file path."""
         grouped: dict[str, list[LintingIssue]] = {}
         for issue in issues:
@@ -500,7 +527,9 @@ class IssueDetector:
         # Count by error code
         error_code_counts: dict[str, int] = {}
         for issue in issues:
-            error_code_counts[issue.error_code] = error_code_counts.get(issue.error_code, 0) + 1
+            error_code_counts[issue.error_code] = (
+                error_code_counts.get(issue.error_code, 0) + 1
+            )
 
         # File statistics
         files_affected = len({issue.file_path for issue in issues})
@@ -515,14 +544,18 @@ class IssueDetector:
             "category_breakdown": category_counts,
             "severity_breakdown": severity_counts,
             "error_code_breakdown": dict(
-                sorted(error_code_counts.items(), key=operator.itemgetter(1), reverse=True)
+                sorted(
+                    error_code_counts.items(), key=operator.itemgetter(1), reverse=True
+                )
             ),
             "average_priority": round(avg_priority, 2),
             "high_priority_issues": high_priority_count,
             "estimated_fix_confidence": round(
                 sum(issue.estimated_confidence for issue in issues) / len(issues), 2
             ),
-            "requires_human_review": sum(1 for issue in issues if issue.requires_human_review),
+            "requires_human_review": sum(
+                1 for issue in issues if issue.requires_human_review
+            ),
         }
 
 

@@ -26,7 +26,6 @@
     "website": "https://v0.dev",
     "pricing_model": "freemium",
     "supported_languages": ["typescript", "javascript", "react", "next.js"],
-    "last_updated": "2025-07-27",
     "version": "1.0.0"
   },
   "priority": "medium",
@@ -40,3 +39,4 @@
   "is_beta": false,
   "is_deprecated": false
 }
+

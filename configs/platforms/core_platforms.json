@@ -1,6 +1,5 @@
 {
   "version": "1.0",
-  "last_updated": "2025-07-27",
   "description": "Configuration for core development platforms. Individual platform configurations are stored in the core/ subdirectory.",
   "platforms": [
     {
@@ -90,3 +89,4 @@
     "schema_version": "1.1.0"
   }
 }
+

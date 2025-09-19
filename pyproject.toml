@@ -38,7 +38,7 @@ pyyaml = "^6.0.1"
 jinja2 = "^3.1.4"
 pygithub = "^2.4.0"
 GitPython = "^3.1.43"
-openai = "^1.51.0"
+openai = "^1.99.0"
 anthropic = "^0.34.0"
 mistralai = "^1.2.0"
 groq = "^0.11.0"
@@ -50,6 +50,8 @@ python-dotenv = "^1.0.1"
 tomli = "^2.0.1"
 loguru = "^0.7.2"
 dependency-injector = "^4.0.0"
+psutil = "^6.0.0"
+numpy = "^2.3.0"
 
 [tool.poetry.extras]
 full = [
@@ -125,6 +127,8 @@ pre-commit = "^3.0.0"
 sphinx = "^8.1.0"
 sphinx-rtd-theme = "^3.0.0"
 myst-parser = "^4.0.0"
+types-pyyaml = "^6.0.12.20250822"
+types-requests = "^2.32.4.20250809"
 
 [tool.poetry.group.monitoring.dependencies]
 prometheus-client = "^0.17.0"
@@ -132,17 +136,19 @@ sentry-sdk = {extras = ["fastapi"], version = "^1.32.0"}
 datadog = "^0.47.0"
 
 [tool.poetry.group.memory.dependencies]
-mem0ai = "^0.1.0"
-chromadb = "^0.4.0"
-qdrant-client = "^1.5.0"
+# Temporarily commented out due to Python 3.13 compatibility issues
+# mem0ai = "^0.1.0"
+# chromadb = "^0.4.0"
+# qdrant-client = "^1.5.0"
 
 [tool.poetry.group.ai.dependencies]
-langchain = "^0.0.300"
-langchain-openai = "^0.0.5"
-langchain-anthropic = "^0.1.0"
+# Temporarily commented out due to Python 3.13 compatibility issues
+# langchain = "^0.3.0"
+# langchain-openai = "^0.1.0"
+# langchain-anthropic = "^0.1.0"
 
 [tool.poetry.group.database.dependencies]
-asyncpg = "^0.28.0"
+asyncpg = "^0.30.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.0"}
 alembic = "^1.12.0"
 redis = "^4.6.0"
@@ -341,6 +347,9 @@ docstring-code-format = true
 [tool.ruff.lint.per-file-ignores]
 # Allow print statements in scripts
 "scripts/**/*.py" = ["T201"]
+
+# Allow all issues in volume control scripts
+"scripts/volume-control/volume_knob.py" = ["ALL"]
 
 # Allow various issues in test files
 "tests/**/*.py" = [

@@ -1,286 +1,214 @@
 #!/usr/bin/env python3
 """
-Template Documentation Generator
-===============================
+Documentation Generator Module
+=============================
 
-Automatically generates comprehensive documentation for no-code platform templates
-including user guides, API documentation, and integration tutorials.
-
-This is the main orchestrator that coordinates the modular documentation generation system.
-
-Features:
-- Markdown documentation generation
-- HTML documentation with styling
-- Platform-specific guides
-- Integration tutorials
-- Code examples and snippets
-- Interactive decision trees
-- Modular architecture with template extraction
+Generates comprehensive documentation for templates using various formats.
+Provides a unified interface for documentation generation across different
+template types and output formats.
 """
 
-from datetime import datetime
+import argparse
 from pathlib import Path
+import sys
+from typing import Any
 
 from discovery.content_analyzer import ContentAnalyzer, TemplateAnalysis
-from discovery.format_generators import DocumentationConfig, FormatGeneratorFactory
-
-# Import modular components
+from discovery.format_generators import FormatGeneratorFactory
+from discovery.format_generators.config import DocumentationConfig
 from discovery.template_loader import TemplateLoader
 
 
 class TemplateDocumentationGenerator:
-    """Generates comprehensive documentation for templates using modular architecture."""
+    """Generates documentation for templates."""
 
-    def __init__(
-        self,
-        templates_root: str | None = None,
-        config: DocumentationConfig | None = None,
-    ) -> None:
-        """Initialize the documentation generator."""
-        if templates_root is None:
-            current_dir = Path(__file__).parent
-            templates_root_path = current_dir.parent
-        else:
-            templates_root_path = Path(templates_root)
+    def __init__(self, template_name: str, **kwargs: Any) -> None:
+        """Initialize the documentation generator.
 
-        self.templates_root = templates_root_path
-        self.config = config or DocumentationConfig()
-        self.output_dir = self.templates_root / "docs"
+        Args:
+            template_name: Name of the template to generate documentation for
+            **kwargs: Additional configuration options
+        """
+        self.template_name = template_name
+        self.config = DocumentationConfig(**kwargs)
+
+        # Initialize components
+        self.template_loader = TemplateLoader()
+        self.content_analyzer = ContentAnalyzer()
+        self.format_factory = FormatGeneratorFactory()
+
+        # Set output format
+        self.output_format = kwargs.get("format", "markdown")
+        self.output_dir = Path(kwargs.get("output_dir", "docs"))
         self.output_dir.mkdir(exist_ok=True)
 
-        # Initialize modular components
-        self.template_loader = TemplateLoader(self.templates_root)
-        self.content_analyzer = ContentAnalyzer(self.templates_root)
-        self.format_generator = FormatGeneratorFactory.create_generator(
-            self.config.output_format, self.config, self.template_loader
-        )
+    def _get_file_extension(self) -> str:
+        """Get file extension based on output format."""
+        format_extensions = {"markdown": "md", "html": "html", "json": "json"}
+        return format_extensions.get(self.output_format, "md")
 
-    def _discover_templates(self) -> list[TemplateAnalysis]:
-        """Discover and analyze all templates in the templates directory."""
-        template_files: list[Path] = []
+    def _get_output_filename(self) -> str:
+        """Get the output filename with correct extension."""
+        ext = self._get_file_extension()
+        return f"{self.template_name}.{ext}"
 
-        # Find all template files
-        for pattern in ["platforms/**/*.yml", "use-cases/*.yml", "integrations/*.yml"]:
-            template_files.extend(self.templates_root.glob(pattern))
+    def generate(self) -> str:
+        """Generate documentation for the template.
 
-        # Exclude platform-categories.yml
-        template_files = [f for f in template_files if f.name != "platform-categories.yml"]
+        Returns:
+            Generated documentation content
 
-        # Analyze all templates
-        analyses = self.content_analyzer.analyze_multiple_templates(template_files)
-        return analyses or []
-
-    def generate_all_documentation(self) -> dict[str, str]:
-        """Generate complete documentation suite using modular architecture."""
-        generated_files: dict[str, str] = {}
-
-        # Discover and analyze all templates
-        template_analyses = self._discover_templates()
-
-        # Generate main index
-        if self.config.generate_index:
-            index_file = self.generate_main_index(template_analyses)
-            generated_files["index"] = index_file
-
-        # Group analyses by category
-        platform_analyses = [a for a in template_analyses if a.category == "platform"]
-        use_case_analyses = [a for a in template_analyses if a.category == "use_case"]
-        integration_analyses = [a for a in template_analyses if a.category == "integration"]
-
-        # Generate platform guides
-        if platform_analyses:
-            guide_files = self.generate_platform_guides(platform_analyses)
-            generated_files.update(guide_files)
-
-        # Generate use case guides
-        if use_case_analyses:
-            guide_files = self.generate_use_case_guides(use_case_analyses)
-            generated_files.update(guide_files)
-
-        # Generate integration guides
-        if integration_analyses:
-            guide_files = self.generate_integration_guides(integration_analyses)
-            generated_files.update(guide_files)
-
-        # Generate comparison guide for platforms
-        if platform_analyses:
-            comparison_file = self.generate_comparison_guide(platform_analyses)
-            generated_files["platform_comparison"] = comparison_file
-
-        return generated_files
-
-    def generate_main_index(self, template_analyses: list[TemplateAnalysis]) -> str:
-        """Generate the main documentation index using modular approach."""
+        Raises:
+            Exception: If template analysis or generation fails
+        """
         try:
-            # Use format generator to generate main index
-            content = self.format_generator.generate_main_index(template_analyses)
+            # Find the template file
+            template_file = self._find_template_file()
+            if not template_file:
+                msg = f"Template file not found for '{self.template_name}'"
+                raise FileNotFoundError(msg)
 
-            return self._save_file("index.md", content)
+            # Analyze the template
+            analysis = self.content_analyzer.analyze_template(template_file)
+
+            # Create format generator
+            generator = self.format_factory.create_generator(
+                self.output_format, self.config, self.template_loader
+            )
+
+            # Generate documentation based on template category
+            if analysis.category == "platform":
+                content = generator.generate_platform_guide(analysis)
+            elif analysis.category == "use_case":
+                content = generator.generate_use_case_guide(analysis)
+            elif analysis.category == "integration":
+                content = generator.generate_integration_guide(analysis)
+            else:
+                # Fallback to generic documentation
+                content = self._generate_generic_documentation(analysis)
+
+            # Write to file
+            output_file = self.output_dir / self._get_output_filename()
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            return content
 
         except Exception as e:
-            # Fallback content if template loading fails
-            fallback_content = self._generate_header("No-Code Platform Templates Documentation")
-            fallback_content += (
-                f"\n\nError loading template: {e}\n\nPlease check the template files and try again."
-            )
-            return self._save_file("index.md", fallback_content)
+            # Preserve previous exception behavior
+            error_content = f"# {self.template_name.title()} Integration Guide\n\nError generating guide: {e}"
 
-    def generate_platform_guides(self, analyses: list[TemplateAnalysis]) -> dict[str, str]:
-        """Generate documentation for all platform templates using modular approach."""
-        generated_files: dict[str, str] = {}
+            # Write error content to file
+            output_file = self.output_dir / self._get_output_filename()
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(error_content)
 
-        try:
-            for analysis in analyses:
-                try:
-                    # Use format generator to create platform guide
-                    content = self.format_generator.generate_platform_guide(analysis)
+            raise
 
-                    # Save the generated documentation
-                    template_name = analysis.name
-                    doc_file = self._save_file(f"platforms/{template_name}.md", content)
-                    generated_files[f"platform_{template_name}"] = doc_file
+    def run(self) -> str:
+        """Alias for generate() method for compatibility."""
+        return self.generate()
 
-                except Exception as e:
-                    # Generate error content for failed templates
-                    template_name = analysis.name
-                    error_content = (
-                        f"# {template_name.title()} Platform Guide\n\nError generating guide: {e}"
-                    )
-                    doc_file = self._save_file(f"platforms/{template_name}.md", error_content)
-                    generated_files[f"platform_{template_name}"] = doc_file
+    def _find_template_file(self) -> Path | None:
+        """Find the template file for the given template name."""
+        # Look in common template directories
+        search_dirs = [
+            Path("templates"),
+            Path("platforms"),
+            Path("use_cases"),
+            Path("integrations"),
+            Path(),
+        ]
 
-            return generated_files
+        for search_dir in search_dirs:
+            if not search_dir.exists():
+                continue
 
-        except Exception:
-            # Return empty dict if discovery fails
-            return generated_files
+            # Try different file extensions
+            for ext in [".yml", ".yaml", ".json"]:
+                template_file = search_dir / f"{self.template_name}{ext}"
+                if template_file.exists():
+                    return template_file
 
-    def generate_use_case_guides(self, analyses: list[TemplateAnalysis]) -> dict[str, str]:
-        """Generate documentation for use case templates using modular approach."""
-        generated_files: dict[str, str] = {}
+        return None
 
-        try:
-            for analysis in analyses:
-                try:
-                    # Use format generator to create use case guide
-                    content = self.format_generator.generate_use_case_guide(analysis)
+    def _generate_generic_documentation(self, analysis: TemplateAnalysis) -> str:
+        """Generate generic documentation when category is unknown."""
+        return f"""# {analysis.name.title()} Documentation
 
-                    # Save the generated documentation
-                    template_name = analysis.name
-                    doc_file = self._save_file(f"use-cases/{template_name}.md", content)
-                    generated_files[f"use_case_{template_name}"] = doc_file
+## Overview
 
-                except Exception as e:
-                    # Generate error content for failed templates
-                    template_name = analysis.name
-                    error_content = (
-                        f"# {template_name.title()} Use Case Guide\n\nError generating guide: {e}"
-                    )
-                    doc_file = self._save_file(f"use-cases/{template_name}.md", error_content)
-                    generated_files[f"use_case_{template_name}"] = doc_file
+This template provides functionality for {analysis.name}.
 
-            return generated_files
+## Key Features
 
-        except Exception:
-            # Return empty dict if discovery fails
-            return generated_files
+{chr(10).join(f"- {feature}" for feature in analysis.key_features)}
 
-    def generate_integration_guides(self, analyses: list[TemplateAnalysis]) -> dict[str, str]:
-        """Generate documentation for integration templates using modular approach."""
-        generated_files: dict[str, str] = {}
+## Configuration
 
-        try:
-            for analysis in analyses:
-                try:
-                    # Use format generator to create integration guide
-                    content = self.format_generator.generate_integration_guide(analysis)
+The following variables can be configured:
 
-                    # Save the generated documentation
-                    template_name = analysis.name
-                    doc_file = self._save_file(f"integrations/{template_name}.md", content)
-                    generated_files[f"integration_{template_name}"] = doc_file
+{chr(10).join(f"- **{key}**: {value}" for key, value in analysis.variables.items())}
 
-                except Exception as e:
-                    # Generate error content for failed templates
-                    template_name = analysis.name
-                    error_content = f"# {template_name.title()} Integration Guide\n\nError generating guide: {e}"
-                    doc_file = self._save_file(f"integrations/{template_name}.md", error_content)
-                    generated_files[f"integration_{template_name}"] = doc_file
+## Dependencies
 
-            return generated_files
+{chr(10).join(f"- {dep}" for dep in analysis.dependencies)}
 
-        except Exception:
-            # Return empty dict if discovery fails
-            return generated_files
+## Best Practices
 
-    def generate_comparison_guide(self, platform_analyses: list[TemplateAnalysis]) -> str:
-        """Generate platform comparison documentation using modular approach."""
-        try:
-            # Use format generator to create comparison guide
-            content = self.format_generator.generate_comparison_guide(platform_analyses)
+{chr(10).join(f"- {practice}" for practice in analysis.best_practices)}
 
-            return self._save_file("platform_comparison.md", content)
+## Troubleshooting
 
-        except Exception as e:
-            # Fallback content if generation fails
-            fallback_content = f"# Platform Comparison Guide\n\nGenerated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\nError generating comparison: {e}"
-            return self._save_file("platform_comparison.md", fallback_content)
+{chr(10).join(f"### {issue}\n{solution}" for issue, solution in analysis.troubleshooting.items())}
 
-    def generate_getting_started_guide(self) -> str:
-        """Generate a comprehensive getting started guide using modular approach."""
-        try:
-            # Use template loader to get getting started template
-            self.template_loader.load_template("getting_started")
+## Examples
 
-            # Prepare template variables
-            template_vars = {
-                "title": "Getting Started with No-Code Platform Templates",
-                "generation_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
+{chr(10).join(f"### Example {i + 1}\n{example.get('description', 'No description')}" for i, example in enumerate(analysis.examples))}
 
-            # Use format generator to render content
-            content = self.format_generator.generate_content("getting_started", **template_vars)
-
-            return self._save_file("getting_started.md", content)
-
-        except Exception as e:
-            # Fallback content if template loading fails
-            fallback_content = self._generate_header(
-                "Getting Started with No-Code Platform Templates"
-            )
-            fallback_content += (
-                f"\n\nError loading template: {e}\n\nPlease check the template files and try again."
-            )
-            return self._save_file("getting_started.md", fallback_content)
-
-    def _generate_header(self, title: str) -> str:
-        """Generate a standard header for documentation files."""
-        return f"""# {title}
-
-*Generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}*
-
+---
+*Generated on {analysis.metadata.get("generation_date", "Unknown date")}*
 """
-
-    def _save_file(self, filename: str, content: str) -> str:
-        """Save content to a file and return the file path."""
-        file_path = self.output_dir / filename
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(content)
-
-        return str(file_path)
 
 
 def main() -> None:
-    """Generate all documentation."""
-    generator = TemplateDocumentationGenerator()
+    """Main entry point for CLI usage."""
+    parser = argparse.ArgumentParser(description="Generate template documentation")
+    parser.add_argument("template_name", help="Name of the template to document")
+    parser.add_argument(
+        "--format",
+        default="markdown",
+        choices=["markdown", "html", "json"],
+        help="Output format (default: markdown)",
+    )
+    parser.add_argument(
+        "--output-dir", default="docs", help="Output directory (default: docs)"
+    )
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
 
-    generated_files = generator.generate_all_documentation()
+    args = parser.parse_args()
 
-    for _doc_type, _file_path in generated_files.items():
-        pass
+    try:
+        # Create generator
+        generator = TemplateDocumentationGenerator(
+            template_name=args.template_name,
+            format=args.format,
+            output_dir=args.output_dir,
+            verbose=args.verbose,
+        )
+
+        # Generate documentation
+        generator.generate()
+
+        if args.verbose:
+            # Get the correct file extension for the format
+            format_extensions = {"markdown": "md", "html": "html", "json": "json"}
+            format_extensions.get(args.format, "md")
+
+        sys.exit(0)
+
+    except Exception:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
