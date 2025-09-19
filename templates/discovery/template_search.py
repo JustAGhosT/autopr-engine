@@ -50,7 +50,11 @@ class TemplateSearchEngine:
         # Filter by platform
         if platform:
             platform_lower = platform.lower()
-            results = [t for t in results if any(platform_lower in p.lower() for p in t.platforms)]
+            results = [
+                t
+                for t in results
+                if any(platform_lower in p.lower() for p in t.platforms)
+            ]
 
         # Filter by complexity
         if complexity:
@@ -60,7 +64,9 @@ class TemplateSearchEngine:
         if use_case:
             use_case_lower = use_case.lower()
             results = [
-                t for t in results if any(use_case_lower in uc.lower() for uc in t.use_cases)
+                t
+                for t in results
+                if any(use_case_lower in uc.lower() for uc in t.use_cases)
             ]
 
         return results
@@ -130,7 +136,9 @@ class TemplateSearchEngine:
 
         return complexity_groups
 
-    def find_similar_templates(self, template: TemplateInfo, limit: int = 5) -> list[TemplateInfo]:
+    def find_similar_templates(
+        self, template: TemplateInfo, limit: int = 5
+    ) -> list[TemplateInfo]:
         """Find templates similar to the given template."""
         if not template:
             return []
@@ -149,7 +157,9 @@ class TemplateSearchEngine:
         similar.sort(key=operator.itemgetter(1), reverse=True)
         return [t for t, _ in similar[:limit]]
 
-    def _calculate_similarity(self, template1: TemplateInfo, template2: TemplateInfo) -> float:
+    def _calculate_similarity(
+        self, template1: TemplateInfo, template2: TemplateInfo
+    ) -> float:
         """Calculate similarity score between two templates."""
         score = 0.0
 
@@ -161,21 +171,24 @@ class TemplateSearchEngine:
         platform_overlap = len(set(template1.platforms) & set(template2.platforms))
         if platform_overlap > 0:
             score += 0.2 * (
-                platform_overlap / max(len(template1.platforms), len(template2.platforms))
+                platform_overlap
+                / max(len(template1.platforms), len(template2.platforms))
             )
 
         # Use case overlap
         use_case_overlap = len(set(template1.use_cases) & set(template2.use_cases))
         if use_case_overlap > 0:
             score += 0.2 * (
-                use_case_overlap / max(len(template1.use_cases), len(template2.use_cases))
+                use_case_overlap
+                / max(len(template1.use_cases), len(template2.use_cases))
             )
 
         # Feature overlap
         feature_overlap = len(set(template1.key_features) & set(template2.key_features))
         if feature_overlap > 0:
             score += 0.2 * (
-                feature_overlap / max(len(template1.key_features), len(template2.key_features))
+                feature_overlap
+                / max(len(template1.key_features), len(template2.key_features))
             )
 
         # Complexity similarity

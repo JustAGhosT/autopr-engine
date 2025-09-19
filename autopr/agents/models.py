@@ -63,7 +63,9 @@ class PlatformComponent(BaseModel):
     """Represents a component of the technology stack."""
 
     name: str = Field(..., description="Name of the component")
-    version: str | None = Field(None, description="Version of the component, if detected")
+    version: str | None = Field(
+        None, description="Version of the component, if detected"
+    )
     confidence: float = Field(
         ..., ge=0, le=1, description="Confidence score for this detection (0-1)"
     )
@@ -93,7 +95,9 @@ class CodeAnalysisReport(BaseModel):
     issues: list[CodeIssue] = Field(
         default_factory=list, description="List of code quality issues found"
     )
-    metrics: dict[str, float] = Field(default_factory=dict, description="Code quality metrics")
+    metrics: dict[str, float] = Field(
+        default_factory=dict, description="Code quality metrics"
+    )
     summary: str = Field(..., description="Human-readable summary of the analysis")
     platform_analysis: PlatformAnalysis = Field(
         ..., description="Analysis of the platform and technology stack"

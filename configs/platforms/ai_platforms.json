@@ -1,6 +1,5 @@
 {
   "version": "1.0.0",
-  "last_updated": "2025-07-27",
   "description": "Configuration for AI development platforms. Individual platform configurations are stored in the ai/ subdirectory.",
   "platforms": [
     {
@@ -107,3 +106,4 @@
     "schema_version": "1.1.0"
   }
 }
+

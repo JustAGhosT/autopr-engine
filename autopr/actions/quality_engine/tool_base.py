@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar, get_args
 
-
 # Change the bound to Any to allow TypedDict
 TConfig = TypeVar("TConfig", bound=Any)
 TIssue = TypeVar("TIssue")
@@ -35,9 +34,10 @@ class Tool[TConfig: Any, TIssue](ABC):
         """
         try:
             # Try to extract the issue type from generic parameters
-            args = get_args(self.__orig_bases__[0])
-            if args and len(args) >= 2:
-                return args[1]
+            if hasattr(self, '__orig_bases__') and self.__orig_bases__:
+                args = get_args(self.__orig_bases__[0])
+                if args and len(args) >= 2:
+                    return args[1]
         except (AttributeError, IndexError):
             pass
 

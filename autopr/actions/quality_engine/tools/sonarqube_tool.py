@@ -26,7 +26,9 @@ class SonarQubeTool(Tool):
         """Get the required command for this tool."""
         return "sonar-scanner"
 
-    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def run(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Run the SonarQube scanner.
         This tool requires server configuration provided in the `config` dictionary.

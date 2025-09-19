@@ -55,13 +55,19 @@ def make_output_mock(
                 else (fallback_platform or cfg.unknown_platform_label)
             ),
             "confidence": (
-                float(getattr(platform_analysis, "confidence", 0.0)) if platform_analysis else 0.0
+                float(getattr(platform_analysis, "confidence", 0.0))
+                if platform_analysis
+                else 0.0
             ),
             "components": (
-                list(getattr(platform_analysis, "components", [])) if platform_analysis else []
+                list(getattr(platform_analysis, "components", []))
+                if platform_analysis
+                else []
             ),
             "recommendations": (
-                list(getattr(platform_analysis, "recommendations", [])) if platform_analysis else []
+                list(getattr(platform_analysis, "recommendations", []))
+                if platform_analysis
+                else []
             ),
         }
 
@@ -102,7 +108,9 @@ def build_platform_model(
 
     plat_data = summary_data.get("platform_analysis", {}) or {}
     cfg = get_settings().report_builder
-    platform_str = str(plat_data.get("platform", last_platform_str or cfg.unknown_platform_label))
+    platform_str = str(
+        plat_data.get("platform", last_platform_str or cfg.unknown_platform_label)
+    )
     return _PA(
         platform=platform_str,
         confidence=float(plat_data.get("confidence", 0.0)),
@@ -140,7 +148,10 @@ def prefer_platform_labels(
 
     try:
         plat_from_summary = summary_data.get("platform_analysis", {}).get("platform")
-        if plat_from_summary and str(plat_from_summary).lower() != cfg.unknown_platform_label:
+        if (
+            plat_from_summary
+            and str(plat_from_summary).lower() != cfg.unknown_platform_label
+        ):
             plat_model.platform = str(plat_from_summary)
     except Exception:
         pass
@@ -186,7 +197,9 @@ def collect_issues(
     issues_list: list[_CI] = []
     raw_issues = list(summary_data.get("issues", []))
     try:
-        cq_issues = code_quality.get("issues", []) if isinstance(code_quality, dict) else []
+        cq_issues = (
+            code_quality.get("issues", []) if isinstance(code_quality, dict) else []
+        )
         for ci in cq_issues:
             raw_issues.append(ci)
     except Exception:
@@ -201,7 +214,9 @@ def collect_issues(
             if isinstance(item, _CI):
                 issues_list.append(item)
             else:
-                issues_list.append(_CI(**(item if isinstance(item, dict) else item.model_dump())))
+                issues_list.append(
+                    _CI(**(item if isinstance(item, dict) else item.model_dump()))
+                )
         except Exception:
             continue
     if not issues_list:
@@ -233,10 +248,14 @@ def collect_issues(
     return issues_list
 
 
-def select_metrics(*, code_quality: dict[str, Any], summary_data: dict[str, Any]) -> dict[str, Any]:
+def select_metrics(
+    *, code_quality: dict[str, Any], summary_data: dict[str, Any]
+) -> dict[str, Any]:
     preferred_metrics: dict[str, Any] = {}
     try:
-        if isinstance(code_quality, dict) and isinstance(code_quality.get("metrics"), dict):
+        if isinstance(code_quality, dict) and isinstance(
+            code_quality.get("metrics"), dict
+        ):
             preferred_metrics = dict(code_quality["metrics"])  # type: ignore[index]
     except Exception:
         preferred_metrics = {}
@@ -244,7 +263,9 @@ def select_metrics(*, code_quality: dict[str, Any], summary_data: dict[str, Any]
         preferred_metrics = dict(summary_data.get("metrics", {}))
     try:
         if "maintainability_index" not in preferred_metrics:
-            preferred_metrics["maintainability_index"] = float(preferred_metrics.get("score", 85))
+            preferred_metrics["maintainability_index"] = float(
+                preferred_metrics.get("score", 85)
+            )
     except Exception:
         preferred_metrics.setdefault("maintainability_index", 85.0)
     return preferred_metrics

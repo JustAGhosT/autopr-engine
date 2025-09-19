@@ -93,11 +93,11 @@
         "apiToken": "development"
       },
       "staging": {
-        "baseUrl": "https://staging-autopr.neuralliquid.com",
+        "baseUrl": "https://staging-autopr.justaghost.com",
         "apiToken": "{{$dotenv AUTOPR_API_TOKEN}}"
       },
       "production": {
-        "baseUrl": "https://autopr.neuralliquid.com",
+        "baseUrl": "https://autopr.justaghost.com",
         "apiToken": "{{$dotenv AUTOPR_PROD_API_TOKEN}}"
       }
     },

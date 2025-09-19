@@ -1,7 +1,7 @@
 """
-AI-Enhanced Code Quality Analyzer
+AI Analyzer for Quality Engine
 
-Provides intelligent code quality analysis using AI models via the AutoPR LLM provider system.
+AI-powered analysis of code quality issues.
 """
 
 import asyncio
@@ -11,8 +11,8 @@ from typing import Any
 
 import structlog
 
-from autopr.ai.base import LLMMessage
-from autopr.ai.providers.manager import LLMProviderManager
+from autopr.ai.core.base import LLMMessage
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 
 logger = structlog.get_logger(__name__)
@@ -49,43 +49,39 @@ class AICodeAnalyzer:
 
     def _get_system_prompt(self) -> str:
         """Generate the system prompt for code analysis."""
-        return """You are CodeQualityGPT, an expert code analysis assistant specialized in identifying improvements, optimizations,
-and potential issues in code. Your task is to analyze code snippets and provide detailed, actionable feedback.
-
-For each code snippet, provide the following:
-
-1. A list of suggestions for improvement, including:
-   - The line number (if applicable)
-   - A clear description of the issue/improvement
-   - An explanation of why this is important
-   - A specific code example showing how to implement the suggestion
-   - A category for the suggestion (performance, security, readability, maintainability, etc.)
-   - A confidence level (0.0-1.0) indicating how certain you are about this suggestion
-
-2. A high-level summary of the code quality
-
-3. Priority issues that should be addressed first
-
-Format your response as a valid JSON object with the following structure:
-```json
-{
-  "suggestions": [
-    {
-      "line": 12,
-      "issue": "Unused variable",
-      "explanation": "The variable 'x' is defined but never used, which adds unnecessary complexity.",
-      "example": "Remove the line: x = calculate_value()",
-      "category": "maintainability",
-      "confidence": 0.95
-    }
-  ],
-  "summary": "This code has good structure but contains a few unused variables and could benefit from better error handling.",
-  "priorities": ["Address security vulnerability in line 45", "Improve error handling throughout"]
-}
-```
-
-Each suggestion should be specific, actionable, and explain both what to change and why.
-"""
+        return (
+            "You are CodeQualityGPT, an expert code analysis assistant specialized in "
+            "identifying improvements, optimizations, and potential issues in code. "
+            "Your task is to analyze code snippets and provide detailed, actionable feedback.\n\n"
+            "For each code snippet, provide the following:\n\n"
+            "1. A list of suggestions for improvement, including:\n"
+            "   - The line number (if applicable)\n"
+            "   - A clear description of the issue/improvement\n"
+            "   - An explanation of why this is important\n"
+            "   - A specific code example showing how to implement the suggestion\n"
+            "   - A category for the suggestion (performance, security, readability, maintainability, etc.)\n"
+            "   - A confidence level (0.0-1.0) indicating how certain you are about this suggestion\n\n"
+            "2. A high-level summary of the code quality\n\n"
+            "3. Priority issues that should be addressed first\n\n"
+            "Format your response as a valid JSON object with the following structure:\n"
+            "```json\n"
+            "{\n"
+            '  "suggestions": [\n'
+            "    {\n"
+            '      "line": 12,\n'
+            '      "issue": "Unused variable",\n'
+            '      "explanation": "The variable \'x\' is defined but never used, which adds unnecessary complexity.",\n'
+            '      "example": "Remove the line: x = calculate_value()",\n'
+            '      "category": "maintainability",\n'
+            '      "confidence": 0.95\n'
+            "    }\n"
+            "  ],\n"
+            '  "summary": "This code has good structure but contains a few unused variables and could benefit from better error handling.",\n'
+            '  "priorities": ["Address security vulnerability in line 45", "Improve error handling throughout"]\n'
+            "}\n"
+            "```\n\n"
+            "Each suggestion should be specific, actionable, and explain both what to change and why."
+        )
 
     async def analyze_code(
         self,
@@ -138,7 +134,7 @@ Each suggestion should be specific, actionable, and explain both what to change 
                 max_tokens=2000,
                 response_format={
                     "type": "json"
-                },  # Request JSON response for easier parsing
+                },  # ✅ Validated and enforced JSON output per provider
             )
 
             if not response:

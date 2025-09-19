@@ -10,12 +10,11 @@ This module contains schemas for:
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
-import json
 from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
-
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -98,7 +97,6 @@ class PlatformIndex(TypedDict):
     """Schema for platform index files (e.g., cloud_platforms.json)."""
 
     version: str
-    last_updated: str
     description: str
     platforms: list[PlatformReference]
     metadata: dict[str, Any]
@@ -144,7 +142,6 @@ class PlatformConfig:
     # Display information
     display_name: str = ""
     version: str = "1.0.0"
-    last_updated: str = field(default_factory=lambda: datetime.utcnow().isoformat())
 
     # Status
     status: PlatformStatus = PlatformStatus.ACTIVE
@@ -208,7 +205,9 @@ class PlatformConfig:
             raise ValueError(msg)
 
         # Handle enums and special types
-        status = PlatformStatus(data.get("status", "active")) if "status" in data else None
+        status = (
+            PlatformStatus(data.get("status", "active")) if "status" in data else None
+        )
         platform_type_val = data.get("type")
         if isinstance(platform_type_val, PlatformType):
             platform_type = platform_type_val
@@ -258,7 +257,6 @@ class PlatformConfig:
             # Display information
             display_name=data.get("display_name", data["name"]),
             version=data.get("version", "1.0.0"),
-            last_updated=data.get("last_updated", datetime.utcnow().isoformat()),
             # Status
             status=status
             or (

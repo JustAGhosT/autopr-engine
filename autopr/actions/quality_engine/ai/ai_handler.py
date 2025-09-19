@@ -1,14 +1,17 @@
 """
-AI-enhanced analysis functionality for the quality engine
+AI Handler for Quality Engine
+
+Handles AI interactions for quality analysis.
 """
 
+import asyncio
+import os
 import time
 from typing import Any
 
 import structlog
 
-from autopr.actions.quality_engine.ai.models import ToolResult
-
+from autopr.actions.quality_engine.models import ToolResult
 
 logger = structlog.get_logger(__name__)
 
@@ -16,8 +19,8 @@ logger = structlog.get_logger(__name__)
 async def run_ai_analysis(
     files: list[str],
     llm_manager: Any,
-    provider_name: str | None = None,
-    model: str | None = None,
+    provider_name: str = "openai",
+    model: str = "gpt-4",
 ) -> dict[str, Any] | None:
     """Run AI-enhanced code analysis.
 
@@ -32,27 +35,85 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from autopr.actions.quality_engine.ai.ai_modes import (
-            run_ai_analysis as run_analysis,
-        )
+        from autopr.actions.quality_engine.ai.ai_modes import \
+            run_ai_analysis as run_analysis
 
-        logger.info("Starting AI-enhanced analysis", file_count=len(files))
+        # Get available providers from the manager
+        available_providers = []
+        if hasattr(llm_manager, "list_providers"):
+            available_providers = llm_manager.list_providers()
+        elif hasattr(llm_manager, "get_available_providers"):
+            available_providers = llm_manager.get_available_providers()
+        # Early return if no providers are available
+        if not available_providers:
+            logger.error("No LLM providers are available for AI analysis")
+            return None
+
+        # Determine the selected provider
+        selected_provider = provider_name
+        if provider_name not in available_providers:
+            # Use manager default if specified provider is not available
+            if hasattr(llm_manager, "get_default_provider"):
+                default_provider = llm_manager.get_default_provider()
+                if default_provider and default_provider in available_providers:
+                    selected_provider = default_provider
+                    logger.info(
+                        "Provider '%s' not available, using default: %s",
+                        provider_name,
+                        selected_provider
+                    )
+                else:
+                    # Use first available provider as fallback
+                    selected_provider = available_providers[0]
+                    logger.info(
+                        "Provider '%s' not available, using first available: %s",
+                        provider_name,
+                        selected_provider
+                    )
+            else:
+                # Use first available provider as fallback
+                selected_provider = available_providers[0]
+                logger.info(
+                    "Provider '%s' not available, using first available: %s",
+                    provider_name,
+                    selected_provider
+                )
+
+        # Get the provider object and align model with provider's default if available
+        provider_obj = None
+        if hasattr(llm_manager, "get_provider"):
+            provider_obj = llm_manager.get_provider(selected_provider)
+        if provider_obj and hasattr(provider_obj, "default_model") and provider_obj.default_model:
+            model = provider_obj.default_model
+            logger.info("Using provider default model: %s", model)
+        # Update provider_name to the resolved selected_provider
+        provider_name = selected_provider
+
+        logger.info(
+            "Starting AI-enhanced analysis",
+            file_count=len(files),
+            provider=provider_name,
+            model=model
+        )
         start_time = time.time()
 
         # Run the AI analysis
         result = await run_analysis(files, llm_manager, provider_name, model)
+        if result is None:
+            logger.warning("AI analysis returned None result")
+            return None
+        else:
+            execution_time = time.time() - start_time
+            logger.info(
+                "AI analysis completed",
+                issues_found=len(result.get("issues", [])),
+                execution_time=f"{execution_time:.2f}s",
+            )
 
-        execution_time = time.time() - start_time
-        logger.info(
-            "AI analysis completed",
-            issues_found=len(result.get("issues", [])),
-            execution_time=f"{execution_time:.2f}s",
-        )
+            # Add execution time to the result
+            result["execution_time"] = execution_time
 
-        # Add execution time to the result
-        result["execution_time"] = execution_time
-
-        return result
+            return result
 
     except Exception as e:
         logger.exception("Error running AI analysis", error=str(e))
@@ -66,21 +127,113 @@ async def initialize_llm_manager() -> Any | None:
         Initialized LLM manager or None if initialization fails
     """
     try:
-        from autopr.ai.providers.manager import LLMProviderManager
-        from autopr.config.settings import AutoPRConfig
+        from autopr.ai.core.providers.manager import LLMProviderManager
 
-        config = AutoPRConfig()
-        llm_manager = LLMProviderManager(config)
-        await llm_manager.initialize()
+        # Basic configuration for quality analysis
+        config: dict[str, Any] = {
+            "providers": {
+                "openai": {
+                    "api_key": os.getenv("OPENAI_API_KEY", ""),
+                    "default_model": "gpt-4",
+                    "max_tokens": 4000,
+                    "temperature": 0.1,
+                },
+                "anthropic": {
+                    "api_key": os.getenv("ANTHROPIC_API_KEY", ""),
+                    "default_model": "claude-3-sonnet-20240229",
+                    "max_tokens": 4000,
+                    "temperature": 0.1,
+                },
+            },
+            "fallback_order": ["openai", "anthropic"],
+            "default_provider": "openai",
+        }
 
-        available_providers = llm_manager.get_available_providers()
-        logger.info("Initialized LLM provider manager", available_providers=available_providers)
+        # Create an AutoPRConfig object with the required attributes
+        from autopr.config import AutoPRConfig
 
-        if not available_providers:
-            logger.warning("No LLM providers available for AI-enhanced analysis")
+        config_obj = AutoPRConfig(
+            openai_api_key=config["providers"]["openai"]["api_key"],
+            anthropic_api_key=config["providers"]["anthropic"]["api_key"],
+            default_llm_provider=config.get("default_provider", "openai")
+        )
+        llm_manager = LLMProviderManager(config_obj)
+
+        # Configure existing providers if they are available
+        if config["providers"]["openai"]["api_key"]:
+            openai_provider = llm_manager.get_provider("openai")
+            if openai_provider:
+                openai_provider.default_model = config["providers"]["openai"]["default_model"]
+                logger.info("OpenAI provider configured")
+            else:
+                logger.info("OpenAI provider not found in manager")
+
+        if config["providers"]["anthropic"]["api_key"]:
+            anthropic_provider = llm_manager.get_provider("anthropic")
+            if anthropic_provider:
+                anthropic_provider.default_model = config["providers"]["anthropic"]["default_model"]
+                logger.info("Anthropic provider configured")
+            else:
+                logger.info("Anthropic provider not found in manager")
+
+        # Set fallback order and default provider
+        # Check if providers are actually registered before setting as default
+        if config["providers"]["openai"]["api_key"] and "openai" in llm_manager.providers:
+            try:
+                llm_manager.set_default_provider("openai")
+                logger.info("Set OpenAI as default provider")
+            except ValueError as e:
+                logger.warning("Failed to set OpenAI as default provider: %s", e)
+        elif config["providers"]["anthropic"]["api_key"] and "anthropic" in llm_manager.providers:
+            try:
+                llm_manager.set_default_provider("anthropic")
+                logger.info("Set Anthropic as default provider")
+            except ValueError as e:
+                logger.warning("Failed to set Anthropic as default provider: %s", e)
+        else:
+            # Try to set any available provider as default
+            available_providers = llm_manager.list_providers()
+            if available_providers:
+                try:
+                    llm_manager.set_default_provider(available_providers[0])
+                    logger.info("Set %s as default provider (fallback)", available_providers[0])
+                except ValueError as e:
+                    logger.warning("Failed to set fallback default provider: %s", e)
+            else:
+                logger.warning("No LLM providers available - AI features will be disabled")
+
+        # Initialize the LLM manager
+        try:
+            if hasattr(llm_manager, "initialize"):
+                initializer = llm_manager.initialize
+                if asyncio.iscoroutinefunction(initializer):
+                    await initializer()
+                else:
+                    # Handle case where initializer may return a coroutine
+                    result = initializer()
+                    if asyncio.iscoroutine(result):
+                        await result
+                logger.info("LLM provider manager initialized successfully")
+            else:
+                logger.info("LLM provider manager does not require initialization")
+        except Exception:
+            logger.exception("Failed to initialize LLM manager")
             return None
+        else:
+            # Get available providers after initialization
+            if hasattr(llm_manager, "list_providers"):
+                available_providers = llm_manager.list_providers()
+            else:
+                available_providers = llm_manager.get_available_providers()
+            logger.info(
+                "LLM provider manager ready", available_providers=available_providers
+            )
 
-        return llm_manager
+            if not available_providers:
+                logger.warning("No LLM providers available for AI-enhanced analysis")
+                return None
+
+            return llm_manager
 
     except Exception as e:
         logger.exception("Failed to initialize LLM provider manager", error=str(e))

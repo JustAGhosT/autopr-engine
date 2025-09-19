@@ -44,7 +44,9 @@ class RunDBMigrations(Action[Inputs, Outputs]):
             filepath = os.path.join(inputs.migrations_path, filename)
             # In a real scenario, you'd use a proper DB client or CLI
             # Simulating with a command: psql -d <conn_string> -f <file>
-            command = f'echo "psql -d {inputs.database_connection_string} -f {filepath}"'
+            command = (
+                f'echo "psql -d {inputs.database_connection_string} -f {filepath}"'
+            )
 
             process = await asyncio.create_subprocess_shell(
                 command,

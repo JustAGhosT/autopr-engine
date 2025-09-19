@@ -101,7 +101,11 @@ def require_permission(
         def wrapper(*args, **kwargs):
             # Extract user info
             user_id = kwargs.get("user_id")
-            if user_id is None and len(args) > 0 and hasattr(args[0], "current_user_id"):
+            if (
+                user_id is None
+                and len(args) > 0
+                and hasattr(args[0], "current_user_id")
+            ):
                 user_id = args[0].current_user_id
 
             # Get user roles (list)
@@ -132,7 +136,11 @@ def require_permission(
 
             # Get authorization manager
             auth_manager = kwargs.get("auth_manager")
-            if auth_manager is None and len(args) > 0 and hasattr(args[0], "auth_manager"):
+            if (
+                auth_manager is None
+                and len(args) > 0
+                and hasattr(args[0], "auth_manager")
+            ):
                 auth_manager = args[0].auth_manager
             if auth_manager is None:
                 auth_manager = get_authorization_manager()

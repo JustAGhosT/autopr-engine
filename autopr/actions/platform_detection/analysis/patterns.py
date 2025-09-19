@@ -2,27 +2,25 @@
 Pattern classes for platform detection.
 """
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-import re
 from re import Pattern
+from typing import Protocol
 
 
-@dataclass
-class BasePattern:
-    """Base class for all pattern types."""
+class BasePattern(Protocol):
+    """Protocol for all pattern types."""
 
     platform_id: str
     """ID of the platform this pattern matches."""
 
-    confidence: float = 1.0
+    confidence: float
     """Confidence score (0.0 to 1.0) that this pattern indicates the platform."""
 
-    def __post_init__(self):
-        """Validate the pattern after initialization."""
-        if not 0.0 <= self.confidence <= 1.0:
-            msg = f"Confidence must be between 0.0 and 1.0, got {self.confidence}"
-            raise ValueError(msg)
+    def matches(self, target) -> bool:
+        """Check if this pattern matches the given target."""
+        ...
 
 
 @dataclass

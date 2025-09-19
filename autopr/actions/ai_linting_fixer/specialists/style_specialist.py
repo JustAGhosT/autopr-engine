@@ -2,7 +2,11 @@
 Style Specialist for fixing style and formatting issues.
 """
 
-from .base_specialist import AgentType, BaseSpecialist, FixStrategy
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class StyleSpecialist(BaseSpecialist):

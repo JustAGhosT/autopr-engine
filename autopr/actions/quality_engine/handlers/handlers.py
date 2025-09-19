@@ -1,17 +1,33 @@
-from ..registry import HandlerRegistry
-from ..results import LintIssue
+import logging
+
+from autopr.actions.quality_engine.handler_base import Handler
+from autopr.actions.quality_engine.handler_registry import register_for_result
+from autopr.actions.quality_engine.handlers.lint_issue import LintIssue
 
 
-registry = HandlerRegistry()
+logger = logging.getLogger(__name__)
 
 
-@registry.register(LintIssue)
-def handle_lint(results: list[LintIssue]):
+@register_for_result(LintIssue)
+class LintIssueHandler(Handler[LintIssue]):
     """
-    Handle lint issues.
-
-    Args:
-        results: The lint issues to process.
+    Handler for lint issues.
     """
-    for _issue in results:
-        pass
+
+    def handle(self, results: list[LintIssue]) -> None:
+        """
+        Handle lint issues.
+
+        Args:
+            results: The lint issues to process.
+        """
+        for issue in results:
+            logger.warning(
+                "Lint issue: %s:%d:%d [%s] %s (%s)",
+                issue["filename"],
+                issue["line_number"],
+                issue["column_number"],
+                issue["code"],
+                issue["message"],
+                issue["level"]
+            )

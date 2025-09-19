@@ -40,11 +40,15 @@ class AxoloReminderService:
                     await self.send_daily_standup_summary()
 
                 # Stale PR reminders
-                elif current_time == reminder_schedule.get("stale_pr_reminder", "15:00"):
+                elif current_time == reminder_schedule.get(
+                    "stale_pr_reminder", "15:00"
+                ):
                     await self.send_stale_pr_reminders()
 
                 # End of day summary
-                elif current_time == reminder_schedule.get("end_of_day_summary", "17:00"):
+                elif current_time == reminder_schedule.get(
+                    "end_of_day_summary", "17:00"
+                ):
                     await self.send_end_of_day_summary()
 
                 # Sleep for 1 minute

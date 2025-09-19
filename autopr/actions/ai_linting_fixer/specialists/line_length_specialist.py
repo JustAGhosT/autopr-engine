@@ -3,8 +3,11 @@ Line Length Specialist for fixing E501 line-too-long errors.
 """
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
-
-from .base_specialist import AgentType, BaseSpecialist, FixStrategy
+from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class LineLengthSpecialist(BaseSpecialist):
@@ -66,11 +69,11 @@ AVOID:
 
 Focus on making clean, readable fixes that improve code quality."""
 
-    def get_user_prompt(self, file_path: str, content: str, issues: list[LintingIssue]) -> str:
+    def get_user_prompt(
+        self, file_path: str, content: str, issues: list[LintingIssue]
+    ) -> str:
         """Get user prompt for line length fixes."""
-        prompt = (
-            f"Please fix the following line length issues in the Python file '{file_path}':\n\n"
-        )
+        prompt = f"Please fix the following line length issues in the Python file '{file_path}':\n\n"
 
         # Add specific issue details
         for issue in issues:

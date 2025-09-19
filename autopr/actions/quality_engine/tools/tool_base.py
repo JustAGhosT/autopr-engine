@@ -2,14 +2,14 @@
 Base tool class for quality analysis tools with timeout handling, error handling, and display output.
 """
 
-from abc import ABC, abstractmethod
 import asyncio
 import shutil
 import time
+from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, TypedDict, TypeVar
 
 import structlog
-
 
 # Change the bound to Any to allow TypedDict
 TConfig = TypeVar("TConfig", bound=Any)
@@ -87,7 +87,7 @@ class Tool[TConfig: Any, TIssue](ABC):
 
     def check_command_availability(self, command: str) -> bool:
         """
-        Check if a command is available in the system PATH.
+        Check if a command is available in the system PATH or poetry virtual environment.
 
         Args:
             command: The command to check
@@ -95,9 +95,41 @@ class Tool[TConfig: Any, TIssue](ABC):
         Returns:
             True if the command is available, False otherwise
         """
-        return shutil.which(command) is not None
+        # First check system PATH
+        if shutil.which(command) is not None:
+            return True
 
-    async def run_with_timeout(self, files: list[str], config: TConfig) -> ToolExecutionResult:
+        # If not in system PATH, check poetry virtual environment
+        try:
+            import subprocess
+            import sys
+
+            # Check if we're running in a poetry environment
+            if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+                # We're in a virtual environment, try to find the command
+                result = subprocess.run(
+                    [sys.executable, "-m", command, "--version"],
+                    capture_output=True,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    return True
+
+                # Also try direct execution in the virtual environment
+                venv_bin = Path(sys.prefix) / "bin" if sys.platform != "win32" else Path(sys.prefix) / "Scripts"
+                command_path = venv_bin / command
+                if command_path.exists():
+                    return True
+
+        except Exception:
+            # If any error occurs during poetry environment check, fall back to system PATH only
+            pass
+
+        return False
+
+    async def run_with_timeout(
+        self, files: list[str], config: TConfig
+    ) -> ToolExecutionResult:
         """
         Run the tool with timeout handling and error management.
 
@@ -120,7 +152,9 @@ class Tool[TConfig: Any, TIssue](ABC):
                 if required_command:
                     error_message = f"Tool '{self.name}' is not available. Required command '{required_command}' not found in PATH. Please install it first."
                 else:
-                    error_message = f"Tool '{self.name}' is not available or properly configured."
+                    error_message = (
+                        f"Tool '{self.name}' is not available or properly configured."
+                    )
                 return ToolExecutionResult(
                     success=False,
                     issues=[],
@@ -132,7 +166,9 @@ class Tool[TConfig: Any, TIssue](ABC):
 
             # Limit files if needed
             if len(files) > self.max_files:
-                warnings.append(f"Limited to first {self.max_files} files (out of {len(files)})")
+                warnings.append(
+                    f"Limited to first {self.max_files} files (out of {len(files)})"
+                )
                 files = files[: self.max_files]
 
             # Run the tool with timeout
@@ -150,9 +186,7 @@ class Tool[TConfig: Any, TIssue](ABC):
             success = True
 
         except TimeoutError:
-            error_message = (
-                f"{self.get_display_name()} execution timed out after {self.timeout} seconds"
-            )
+            error_message = f"{self.get_display_name()} execution timed out after {self.timeout} seconds"
             success = False
             logger.warning(f"Tool {self.name} timed out", timeout=self.timeout)
 
@@ -175,7 +209,9 @@ class Tool[TConfig: Any, TIssue](ABC):
             output_summary=output_summary,
         )
 
-    async def _run_implementation(self, files: list[str], config: TConfig) -> list[TIssue]:
+    async def _run_implementation(
+        self, files: list[str], config: TConfig
+    ) -> list[TIssue]:
         """
         Internal implementation method that tools should override.
         This is called by run_with_timeout with proper error handling.
@@ -278,4 +314,6 @@ class Tool[TConfig: Any, TIssue](ABC):
 
     def __repr__(self) -> str:
         """Detailed string representation of the tool."""
-        return f"{self.__class__.__name__}(name='{self.name}', category='{self.category}')"
+        return (
+            f"{self.__class__.__name__}(name='{self.name}', category='{self.category}')"
+        )

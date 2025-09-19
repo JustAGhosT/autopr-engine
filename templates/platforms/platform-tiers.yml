@@ -4,22 +4,30 @@ description:
   features, and target audience"
 category: "documentation"
 version: "2.0.0"
-last_updated: "2025-07-26"
 
 platform_evolution:
   traditional_no_code:
     description: "Classic drag-and-drop platforms with visual builders"
-    characteristics: ["Visual interfaces", "Template-based", "Limited customization"]
+    characteristics:
+      ["Visual interfaces", "Template-based", "Limited customization"]
 
   vibe_coding:
     description: "AI-powered development using conversational prompts and natural language"
-    characteristics: ["Natural language prompts", "AI assistance", "Intent-focused development"]
+    characteristics:
+      [
+        "Natural language prompts",
+        "AI assistance",
+        "Intent-focused development",
+      ]
 
   ai_agent_builders:
-    description:
-      "Intelligent automation platforms with workflow orchestration and multi-agent systems"
+    description: "Intelligent automation platforms with workflow orchestration and multi-agent systems"
     characteristics:
-      ["Workflow automation", "Multi-agent coordination", "Self-learning capabilities"]
+      [
+        "Workflow automation",
+        "Multi-agent coordination",
+        "Self-learning capabilities",
+      ]
 
 category_definitions:
   no_code_platforms:
@@ -82,7 +90,8 @@ platform_classification:
 
       - name: "Bubble"
         category: "visual_web_app"
-        strengths: ["complex workflows", "database management", "enterprise features"]
+        strengths:
+          ["complex workflows", "database management", "enterprise features"]
 
       - name: "Glide"
         category: "spreadsheet_app"
@@ -94,25 +103,38 @@ platform_classification:
 
       - name: "Lovable"
         category: "ai_web_development"
-        strengths: ["AI-powered development", "GitHub integration", "modern stack"]
+        strengths:
+          ["AI-powered development", "GitHub integration", "modern stack"]
 
       - name: "Thunkable"
         category: "mobile_app_builder"
-        strengths: ["cross-platform mobile", "drag-drop interface", "native features"]
+        strengths:
+          ["cross-platform mobile", "drag-drop interface", "native features"]
 
       - name: "FlutterFlow"
         category: "flutter_development"
-        strengths: ["Flutter code generation", "native performance", "professional features"]
+        strengths:
+          [
+            "Flutter code generation",
+            "native performance",
+            "professional features",
+          ]
 
       # AI Agent Builder Platforms (Tier 1)
       - name: "n8n"
         category: "ai_agent_builder"
-        strengths: ["highly customizable workflows", "self-hosting options", "600+ integrations"]
+        strengths:
+          [
+            "highly customizable workflows",
+            "self-hosting options",
+            "600+ integrations",
+          ]
         ranking: "#1 Best AI Agent Builder (Cybernews 2025)"
 
       - name: "Make.com"
         category: "ai_agent_builder"
-        strengths: ["no-code automation", "1,500+ app integrations", "visual workflows"]
+        strengths:
+          ["no-code automation", "1,500+ app integrations", "visual workflows"]
         ranking: "#2 Best for No-Code AI Automation (Cybernews 2025)"
 
       - name: "Google ADK"
@@ -129,20 +151,31 @@ platform_classification:
       - name: "Gemini CLI"
         category: "ai_agent_builder"
         strengths:
-          ["Completely free", "Terminal integration", "Gemini 2.5 Pro access", "Developer-focused"]
+          [
+            "Completely free",
+            "Terminal integration",
+            "Gemini 2.5 Pro access",
+            "Developer-focused",
+          ]
         target_audience: "Developers, DevOps engineers, terminal users"
 
       - name: "Google Opal"
         category: "vibe_coding_platform"
         strengths:
-          ["Natural language workflows", "Visual editor", "Google backing", "Instant sharing"]
+          [
+            "Natural language workflows",
+            "Visual editor",
+            "Google backing",
+            "Instant sharing",
+          ]
         target_audience: "Creators, innovators, productivity enthusiasts, non-technical users"
 
   tier_2:
     platforms:
       - name: "Webflow"
         category: "visual_web_design"
-        strengths: ["professional design", "CMS capabilities", "responsive design"]
+        strengths:
+          ["professional design", "CMS capabilities", "responsive design"]
         target_audience: "designers and agencies"
 
       - name: "Adalo"
@@ -152,18 +185,25 @@ platform_classification:
 
       - name: "Zapier"
         category: "automation_platform"
-        strengths: ["workflow automation", "extensive integrations", "no-code logic"]
+        strengths:
+          ["workflow automation", "extensive integrations", "no-code logic"]
         target_audience: "business process automation"
 
       # AI Agent Builder Platforms (Tier 2)
       - name: "Flowise"
         category: "ai_agent_builder"
-        strengths: ["open-source LLM integration", "modular AI components", "self-hosting"]
+        strengths:
+          [
+            "open-source LLM integration",
+            "modular AI components",
+            "self-hosting",
+          ]
         ranking: "#3 Best Open-Source AI Agent Builder (Cybernews 2025)"
 
       - name: "Gumloop"
         category: "ai_agent_builder"
-        strengths: ["conversational AI", "real-time NLP", "customer interactions"]
+        strengths:
+          ["conversational AI", "real-time NLP", "customer interactions"]
         ranking: "#4 Best for AI-Powered Customer Interactions (Cybernews 2025)"
 
       - name: "Airtable"
@@ -183,7 +223,8 @@ platform_classification:
 
       - name: "Softr"
         category: "web_app_builder"
-        strengths: ["Airtable integration", "client portals", "membership sites"]
+        strengths:
+          ["Airtable integration", "client portals", "membership sites"]
         target_audience: "small businesses and freelancers"
 
       - name: "Carrd"
@@ -193,7 +234,13 @@ platform_classification:
 
       - name: "Appsmith"
         category: "internal_tools"
-        strengths: ["open-source", "developer-friendly", "custom code support", "self-hosting"]
+        strengths:
+          [
+            "open-source",
+            "developer-friendly",
+            "custom code support",
+            "self-hosting",
+          ]
         target_audience: "developers and technical users"
 
       - name: "Microsoft Power Apps"
@@ -220,7 +267,13 @@ platform_classification:
 
       - name: "Budibase"
         category: "open-source"
-        strengths: ["open-source", "self-hosting", "no vendor lock-in", "workflow automation"]
+        strengths:
+          [
+            "open-source",
+            "self-hosting",
+            "no vendor lock-in",
+            "workflow automation",
+          ]
         target_audience: "developers and technical users"
 
       - name: "Mendix"
@@ -237,13 +290,23 @@ platform_classification:
       - name: "Betty Blocks"
         category: "enterprise"
         strengths:
-          ["AI toolkit", "visual development", "enterprise integrations", "real-time collaboration"]
+          [
+            "AI toolkit",
+            "visual development",
+            "enterprise integrations",
+            "real-time collaboration",
+          ]
         target_audience: "enterprises and large businesses"
 
       - name: "WeWeb"
         category: "frontend"
         strengths:
-          ["pixel-perfect design", "data source integrations", "PWA support", "custom CSS/JS"]
+          [
+            "pixel-perfect design",
+            "data source integrations",
+            "PWA support",
+            "custom CSS/JS",
+          ]
         target_audience: "designers and developers"
 
   tier_3:
@@ -255,12 +318,14 @@ platform_classification:
 
       - name: "Buildship"
         category: "backend_automation"
-        strengths: ["visual backend builder", "API creation", "workflow automation"]
+        strengths:
+          ["visual backend builder", "API creation", "workflow automation"]
         target_audience: "developers and technical users"
 
       - name: "Supabase"
         category: "backend_as_service"
-        strengths: ["PostgreSQL database", "real-time features", "authentication"]
+        strengths:
+          ["PostgreSQL database", "real-time features", "authentication"]
         target_audience: "developers building full-stack apps"
 
       - name: "Plasmic"
@@ -270,7 +335,8 @@ platform_classification:
 
       - name: "Stacker"
         category: "app_from_spreadsheet"
-        strengths: ["spreadsheet to app", "team collaboration", "custom workflows"]
+        strengths:
+          ["spreadsheet to app", "team collaboration", "custom workflows"]
         target_audience: "teams using spreadsheets"
 
       - name: "Bravo Studio"
@@ -292,14 +358,32 @@ expansion_strategy:
   phase_4_tier_2:
     priority: "high"
     platforms_to_implement:
-      ["webflow", "adalo", "zapier", "airtable", "notion", "retool", "softr", "carrd"]
+      [
+        "webflow",
+        "adalo",
+        "zapier",
+        "airtable",
+        "notion",
+        "retool",
+        "softr",
+        "carrd",
+      ]
     timeline: "2-3 weeks"
     focus: "specialized use cases and professional features"
 
   phase_5_tier_3:
     priority: "medium"
     platforms_to_implement:
-      ["framer", "buildship", "supabase", "plasmic", "stacker", "bravo_studio", "draftbit", "xano"]
+      [
+        "framer",
+        "buildship",
+        "supabase",
+        "plasmic",
+        "stacker",
+        "bravo_studio",
+        "draftbit",
+        "xano",
+      ]
     timeline: "3-4 weeks"
     focus: "innovative features and emerging technologies"
 

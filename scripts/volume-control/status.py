@@ -27,7 +27,9 @@ def main():
 
     # Show current status
     print("CURRENT VOLUME SETTINGS:")
-    print(f"  Dev Volume:    {dev_knob.get_volume()}/1000 - {dev_knob.get_volume_description()}")
+    print(
+        f"  Dev Volume:    {dev_knob.get_volume()}/1000 - {dev_knob.get_volume_description()}"
+    )
     print(
         f"  Commit Volume: {commit_knob.get_volume()}/1000 - {commit_knob.get_volume_description()}"
     )
@@ -44,7 +46,9 @@ def main():
     commit_config = Path("../../.volume-commit.json")
 
     print(f"  Dev config:    {'YES' if dev_config.exists() else 'NO'} {dev_config}")
-    print(f"  Commit config: {'YES' if commit_config.exists() else 'NO'} {commit_config}")
+    print(
+        f"  Commit config: {'YES' if commit_config.exists() else 'NO'} {commit_config}"
+    )
 
     print("\nVOLUME KNOB USAGE:")
     print("  Set dev volume:      python scripts/volume.py dev <0-1000>")
@@ -56,9 +60,15 @@ def main():
     print("  Show status:         python scripts/volume-control/status.py")
 
     print("\nEXAMPLE SCENARIOS:")
-    print("  Quiet coding:        dev=50, commit=200   (light IDE, basic commit checks)")
-    print("  Development mode:    dev=200, commit=500  (basic IDE, standard commit checks)")
-    print("  Production ready:    dev=500, commit=1000 (full IDE, maximum commit checks)")
+    print(
+        "  Quiet coding:        dev=50, commit=200   (light IDE, basic commit checks)"
+    )
+    print(
+        "  Development mode:    dev=200, commit=500  (basic IDE, standard commit checks)"
+    )
+    print(
+        "  Production ready:    dev=500, commit=1000 (full IDE, maximum commit checks)"
+    )
     print("  Complete silence:    dev=0, commit=0     (no IDE noise, no commit checks)")
 
 

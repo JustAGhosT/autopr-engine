@@ -16,7 +16,9 @@ class AnthropicProvider(BaseLLMProvider):
         try:
             import anthropic
 
-            self.client = anthropic.Anthropic(api_key=self.api_key, base_url=self.base_url)
+            self.client = anthropic.Anthropic(
+                api_key=self.api_key, base_url=self.base_url
+            )
             self.available = True
         except ImportError:
             self.available = False
@@ -24,7 +26,9 @@ class AnthropicProvider(BaseLLMProvider):
     def complete(self, request: dict[str, Any]) -> LLMResponse:
         try:
             messages = request.get("messages", [])
-            model = request.get("model", self.default_model) or "claude-3-sonnet-20240229"
+            model = (
+                request.get("model", self.default_model) or "claude-3-sonnet-20240229"
+            )
             max_tokens = request.get("max_tokens", 1024)
             temperature = request.get("temperature", 0.7)
 
@@ -73,7 +77,9 @@ class AnthropicProvider(BaseLLMProvider):
             finish_reason = getattr(response, "stop_reason", "stop")
             usage = {
                 "prompt_tokens": getattr(response, "usage", {}).get("input_tokens", 0),
-                "completion_tokens": getattr(response, "usage", {}).get("output_tokens", 0),
+                "completion_tokens": getattr(response, "usage", {}).get(
+                    "output_tokens", 0
+                ),
                 "total_tokens": getattr(response, "usage", {}).get("input_tokens", 0)
                 + getattr(response, "usage", {}).get("output_tokens", 0),
             }

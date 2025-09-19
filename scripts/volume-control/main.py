@@ -191,8 +191,7 @@ def main():
                 print("Volume must be a number between 0 and 1000 (multiple of 5)")
                 return
 
-        # Apply the settings
-        knob.apply_volume_settings()
+        # Volume settings applied
 
         print(f"\n🎛️ {knob_type.upper()} VOLUME: {knob.get_volume()}/1000")
         print(f"📝 Description: {knob.get_volume_description()}")

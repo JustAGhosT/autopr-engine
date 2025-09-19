@@ -94,7 +94,9 @@ class AutoPRConfig:
                 if attr_name in {"max_concurrent_workflows", "workflow_timeout"}:
                     setattr(self, attr_name, int(env_value))
                 elif attr_name == "enable_debug_logging":
-                    setattr(self, attr_name, env_value.lower() in {"true", "1", "yes", "on"})
+                    setattr(
+                        self, attr_name, env_value.lower() in {"true", "1", "yes", "on"}
+                    )
                 else:
                     setattr(self, attr_name, env_value)
 

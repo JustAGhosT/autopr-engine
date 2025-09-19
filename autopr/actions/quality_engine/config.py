@@ -41,8 +41,12 @@ def _merge_quality_from_dict(
 
     # Merge tools
     if isinstance(quality_config.get("tools"), dict):
-        merged_tools: dict[str, Any] = dict(cast("dict[str, Any]", default_config.get("tools", {})))
-        for tool, tool_config in cast("dict[str, Any]", quality_config["tools"]).items():
+        merged_tools: dict[str, Any] = dict(
+            cast("dict[str, Any]", default_config.get("tools", {}))
+        )
+        for tool, tool_config in cast(
+            "dict[str, Any]", quality_config["tools"]
+        ).items():
             merged_tools[cast("str", tool)] = cast("dict[str, Any]", tool_config)
         default_config["tools"] = merged_tools
 

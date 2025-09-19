@@ -30,7 +30,9 @@ class BanditTool(Tool):
         """Get the required command for this tool."""
         return "bandit"
 
-    async def run(self, files: list[str], config: dict[str, Any]) -> list[dict[str, Any]]:
+    async def run(
+        self, files: list[str], config: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """
         Run bandit on a list of files.
         """

@@ -118,7 +118,9 @@ class AuthorizationMiddleware:
                     msg = "Request object not found"
                     raise ValueError(msg)
 
-                if not self.check_authorization(request, resource_type, resource_id, action):
+                if not self.check_authorization(
+                    request, resource_type, resource_id, action
+                ):
                     msg = "Access denied"
                     raise PermissionError(msg)
 

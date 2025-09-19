@@ -122,7 +122,7 @@ class TaskRegistry:
                     "autopr/database/models.py",
                     "autopr/database/__init__.py",
                 ],
-                packages_required=["asyncpg>=0.28.0", "alembic>=1.12.0"],
+                packages_required=["asyncpg>=0.30.0", "alembic>=1.12.0"],
             ),
             "implement_prometheus_metrics": Task(
                 name="implement_prometheus_metrics",
@@ -375,7 +375,9 @@ class ImplementationPhases:
         phase = self.get_phase(phase_name)
 
         return [
-            dep_phase for dep_phase in phase.depends_on if not self._is_phase_completed(dep_phase)
+            dep_phase
+            for dep_phase in phase.depends_on
+            if not self._is_phase_completed(dep_phase)
         ]
 
     def _is_phase_completed(self, phase_name: str) -> bool:

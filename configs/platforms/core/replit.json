@@ -5,7 +5,6 @@
   "description": "Online IDE and hosting platform for rapid development",
   "display_name": "Replit",
   "version": "1.0.0",
-  "last_updated": "2025-07-27T20:22:40.052514",
   "status": "active",
   "is_active": true,
   "type": "general",
@@ -42,3 +41,4 @@
   "is_beta": false,
   "is_deprecated": false
 }
+

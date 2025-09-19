@@ -6,7 +6,7 @@ types of linting issues, with tailored prompts and strategies for each issue typ
 """
 
 # Import from the modular specialists package
-from .specialists import (
+from autopr.actions.ai_linting_fixer.specialists import (
     AgentPerformance,
     AgentType,
     BaseSpecialist,

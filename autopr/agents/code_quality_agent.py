@@ -1,16 +1,16 @@
 """
-Code Quality Agent for AutoPR.
+Code Quality Agent
 
-This module provides the CodeQualityAgent class which is responsible for analyzing
-and improving code quality based on various metrics and best practices.
+Agent for managing code quality operations.
 """
 
 from dataclasses import dataclass
 import json
-from json import JSONDecodeError
+from json.decoder import JSONDecodeError
 from typing import Any
 
-from autopr.agents.base import BaseAgent
+from autopr.agents.base.agent import BaseAgent
+from autopr.ai.core.providers.manager import LLMProviderManager
 
 
 @dataclass
@@ -75,7 +75,10 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         """
         super().__init__(
             name="Code Quality Analyst",
-            role="Analyze and improve code quality by identifying issues and suggesting improvements.",
+            role=(
+                "Analyze and improve code quality by identifying issues and "
+                "suggesting improvements."
+            ),
             backstory=(
                 "You are a meticulous code quality analyst with deep knowledge of "
                 "software engineering best practices, design patterns, and code smells. "
@@ -90,8 +93,6 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         )
         # Initialize LLM provider if not done by BaseAgent
         if not hasattr(self, "llm_provider"):
-            from autopr.actions.llm.manager import LLMProviderManager
-
             # Minimal default config; provider selection handled later
             self.llm_provider = LLMProviderManager(
                 {"default_provider": "azure_openai", "providers": {}}
@@ -138,13 +139,15 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
                 pass
 
             return CodeQualityOutputs(
-                issues=[{"message": f"Error analyzing code: {e!s}", "severity": "error"}],
+                issues=[
+                    {"message": f"Error analyzing code: {e!s}", "severity": "error"}
+                ],
                 score=0.0,
                 metrics={"error": str(e)},
                 suggestions=["Failed to analyze code quality due to an error."],
             )
 
-    def _build_prompt(self, inputs: CodeQualityInputs, config: dict[str, Any]) -> str:
+    def _build_prompt(self, inputs: CodeQualityInputs) -> str:
         """Build the prompt for the LLM based on inputs and configuration.
 
         Args:
@@ -156,7 +159,9 @@ class CodeQualityAgent(BaseAgent[CodeQualityInputs, CodeQualityOutputs]):
         """
         # Get the quality mode name for the prompt
         quality_mode = self.volume_config.quality_mode
-        quality_mode_name = quality_mode.name if quality_mode is not None else "STANDARD"
+        quality_mode_name = (
+            quality_mode.name if quality_mode is not None else "STANDARD"
+        )
 
         return f"""
 Analyze the following code for quality issues and provide improvement suggestions.
@@ -222,7 +227,7 @@ Format your response as a JSON object with the following structure:
             # Validate the response structure
             if not isinstance(result, dict):
                 msg = "Response is not a JSON object"
-                raise ValueError(msg)
+                raise TypeError(msg)
 
             # Ensure required fields exist
             if "issues" not in result:
@@ -233,8 +238,6 @@ Format your response as a JSON object with the following structure:
                 result["metrics"] = {}
             if "suggestions" not in result:
                 result["suggestions"] = []
-
-            return result
 
         except JSONDecodeError as e:
             # If JSON parsing fails, return a default response with the error
@@ -251,3 +254,5 @@ Format your response as a JSON object with the following structure:
                     "The code quality analysis could not be completed due to a parsing error."
                 ],
             }
+        else:
+            return result

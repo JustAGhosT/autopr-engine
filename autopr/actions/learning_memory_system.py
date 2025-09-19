@@ -3,32 +3,31 @@ AutoPR Action: Learning & Memory System
 Tracks patterns, user preferences, and project context to improve decision-making over time.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 import hashlib
-import os
 import pathlib
 import sqlite3
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MemoryInputs(BaseModel):
-    action_type: str  # "record_fix", "record_preference", "get_patterns", "get_recommendations"
+    action_type: Literal["record_fix", "record_preference", "get_patterns", "get_preferences"]
     user_id: str | None = None
     file_path: str | None = None
     comment_type: str | None = None
     fix_applied: str | None = None
     success: bool | None = None
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class MemoryOutputs(BaseModel):
     success: bool
-    patterns: list[dict[str, Any]] = []
-    recommendations: list[str] = []
-    confidence_scores: dict[str, float] = {}
-    learned_preferences: dict[str, Any] = {}
+    patterns: list[dict[str, Any]] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    confidence_scores: dict[str, float] = Field(default_factory=dict)
+    learned_preferences: dict[str, Any] = Field(default_factory=dict)
 
 
 class LearningMemorySystem:
@@ -66,7 +65,7 @@ class LearningMemorySystem:
                 preference_type TEXT,
                 preference_value TEXT,
                 confidence REAL,
-                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                UNIQUE(user_id, preference_type)
             )
         """
         )
@@ -111,7 +110,9 @@ class LearningMemorySystem:
         cursor = conn.cursor()
 
         try:
-            file_ext = os.path.splitext(inputs.file_path or "")[1] if inputs.file_path else ""
+            file_ext = (
+                pathlib.Path(inputs.file_path or "").suffix if inputs.file_path else ""
+            )
 
             # Check if pattern exists
             cursor.execute(
@@ -138,14 +139,15 @@ class LearningMemorySystem:
                     SET usage_count = ?, success_rate = ?, last_used = ?
                     WHERE id = ?
                 """,
-                    (new_usage_count, new_success_rate, datetime.now(), pattern_id),
+                    (new_usage_count, new_success_rate, datetime.now(UTC), pattern_id),
                 )
             else:
                 # Create new pattern
                 cursor.execute(
                     """
                     INSERT INTO fix_patterns
-                    (comment_type, file_extension, fix_type, fix_code, success_rate, usage_count, last_used)
+                    (comment_type, file_extension, fix_type, fix_code,
+                     success_rate, usage_count, last_used)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
@@ -155,14 +157,15 @@ class LearningMemorySystem:
                         inputs.context.get("fix_code", ""),
                         1.0 if inputs.success else 0.0,
                         1,
-                        datetime.now(),
+                        datetime.now(UTC),
                     ),
                 )
 
             conn.commit()
-            return True
         except Exception:
             return False
+        else:
+            return True
         finally:
             conn.close()
 
@@ -182,22 +185,22 @@ class LearningMemorySystem:
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO user_preferences
-                (user_id, preference_type, preference_value, confidence, last_updated)
-                VALUES (?, ?, ?, ?, ?)
+                (user_id, preference_type, preference_value, confidence)
+                VALUES (?, ?, ?, ?)
             """,
                 (
                     user_id,
                     preference_type,
                     preference_value,
                     confidence,
-                    datetime.now(),
                 ),
             )
 
             conn.commit()
-            return True
         except Exception:
             return False
+        else:
+            return True
         finally:
             conn.close()
 
@@ -209,7 +212,7 @@ class LearningMemorySystem:
         cursor = conn.cursor()
 
         try:
-            file_ext = os.path.splitext(file_path or "")[1] if file_path else ""
+            file_ext = pathlib.Path(file_path or "").suffix if file_path else ""
 
             # Get patterns ordered by success rate and usage
             cursor.execute(
@@ -237,9 +240,10 @@ class LearningMemorySystem:
                     }
                 )
 
-            return recommendations
         except Exception:
             return []
+        else:
+            return recommendations
         finally:
             conn.close()
 
@@ -263,9 +267,10 @@ class LearningMemorySystem:
             for pref_type, pref_value, confidence in cursor.fetchall():
                 preferences[pref_type] = {"value": pref_value, "confidence": confidence}
 
-            return preferences
         except Exception:
             return {}
+        else:
+            return preferences
         finally:
             conn.close()
 
@@ -302,7 +307,7 @@ class LearningMemorySystem:
         for file_path in files[:10]:
             if file_path.endswith((".js", ".ts", ".tsx", ".jsx")):
                 try:
-                    with open(file_path, encoding="utf-8") as f:
+                    with pathlib.Path(file_path).open(encoding="utf-8") as f:
                         content = f.read()
 
                     # Count style indicators
@@ -328,7 +333,9 @@ class LearningMemorySystem:
                 else "double"
             ),
             "indentation": (
-                "spaces" if style_indicators["spaces"] > style_indicators["tabs"] else "tabs"
+                "spaces"
+                if style_indicators["spaces"] > style_indicators["tabs"]
+                else "tabs"
             ),
         }
 
@@ -372,7 +379,9 @@ class LearningMemorySystem:
 
         return patterns
 
-    def _store_project_context(self, project_hash: str, patterns: dict[str, Any]) -> None:
+    def _store_project_context(
+        self, project_hash: str, patterns: dict[str, Any]
+    ) -> None:
         """Store project context in database."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -391,7 +400,7 @@ class LearningMemorySystem:
                         str(pattern_data),
                         1,
                         1.0,
-                        datetime.now(),
+                        datetime.now(UTC),
                     ),
                 )
 
@@ -422,7 +431,9 @@ def learning_memory_action(inputs: MemoryInputs) -> MemoryOutputs:
         recommendations = memory_system.get_fix_recommendations(
             inputs.comment_type, inputs.file_path
         )
-        confidence_scores = {rec["fix_type"]: rec["confidence"] for rec in recommendations}
+        confidence_scores = {
+            rec["fix_type"]: rec["confidence"] for rec in recommendations
+        }
         return MemoryOutputs(
             success=True,
             recommendations=[rec["fix_type"] for rec in recommendations],

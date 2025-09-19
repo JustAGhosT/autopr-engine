@@ -38,7 +38,9 @@ class UpdateMigrationPlan(Action[Inputs, Outputs]):
                     new_line = re.sub(r"\[.\]", inputs.status, line, count=1)
                     # Replace text if provided
                     if inputs.text:
-                        new_line = re.sub(r"(\d+\.\s*)(.*)", f"\\1{inputs.text}", new_line)
+                        new_line = re.sub(
+                            r"(\d+\.\s*)(.*)", f"\\1{inputs.text}", new_line
+                        )
 
                     lines[i] = new_line
                     updated = True
@@ -50,7 +52,9 @@ class UpdateMigrationPlan(Action[Inputs, Outputs]):
             with open(plan_path, "w", encoding="utf-8") as f:
                 f.writelines(lines)
 
-            return Outputs(success=True, updated_line=lines[i].strip() if updated else None)
+            return Outputs(
+                success=True, updated_line=lines[i].strip() if updated else None
+            )
 
         except FileNotFoundError:
             return Outputs(success=False)

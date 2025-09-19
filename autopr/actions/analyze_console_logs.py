@@ -67,7 +67,9 @@ if __name__ == "__main__":
 
     # Create a dummy file with a console.log for testing
     Path("dummy_log_file.ts").write_text("console.log('hello');", encoding="utf-8")
-    Path("dummy_log_file.test.ts").write_text("console.log('hello in test');", encoding="utf-8")
+    Path("dummy_log_file.test.ts").write_text(
+        "console.log('hello in test');", encoding="utf-8"
+    )
     asyncio.run(
         run_action_manually(
             action=AnalyzeConsoleLogs,

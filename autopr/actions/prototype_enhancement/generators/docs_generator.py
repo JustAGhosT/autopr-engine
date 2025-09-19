@@ -64,7 +64,9 @@ class DocsGenerator(BaseGenerator):
 
         # Generate CONTRIBUTING.md
         if kwargs.get("include_contributing", True):
-            generated_files.extend(self._generate_contributing(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_contributing(output_dir, template_vars)
+            )
 
         # Generate CHANGELOG.md
         if kwargs.get("include_changelog", True):
@@ -72,7 +74,9 @@ class DocsGenerator(BaseGenerator):
 
         # Generate CODE_OF_CONDUCT.md
         if kwargs.get("include_code_of_conduct", True):
-            generated_files.extend(self._generate_code_of_conduct(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_code_of_conduct(output_dir, template_vars)
+            )
 
         # Generate LICENSE
         if kwargs.get("include_license", True):
@@ -84,7 +88,9 @@ class DocsGenerator(BaseGenerator):
 
         # Generate GitHub Actions workflows
         if kwargs.get("include_github_actions", True):
-            generated_files.extend(self._generate_github_actions(output_dir, template_vars))
+            generated_files.extend(
+                self._generate_github_actions(output_dir, template_vars)
+            )
 
         return generated_files
 
@@ -144,7 +150,9 @@ This project is licensed under the {variables["license"]} License - see the [LIC
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_contributing(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_contributing(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate CONTRIBUTING.md file."""
         content = self._render_template("docs/CONTRIBUTING.md", variables)
         if not content:
@@ -212,7 +220,9 @@ Please use the [GitHub issue tracker]({variables["repo_url"]}/issues) to report 
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_changelog(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_changelog(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate CHANGELOG.md file."""
         content = self._render_template("docs/CHANGELOG.md", variables)
         if not content:
@@ -238,7 +248,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_code_of_conduct(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_code_of_conduct(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate CODE_OF_CONDUCT.md file."""
         content = self._render_template("docs/CODE_OF_CONDUCT.md", variables)
         if not content:
@@ -294,7 +306,9 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage], versi
         self._write_file(file_path, content)
         return [file_path]
 
-    def _generate_license(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_license(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate LICENSE file."""
         license_type = variables.get("license", "MIT").lower()
         content = self._render_template(f"docs/licenses/{license_type}.txt", variables)
@@ -330,7 +344,9 @@ SOFTWARE.
 
         return []
 
-    def _generate_api_docs(self, docs_dir: Path, variables: dict[str, Any]) -> list[str]:
+    def _generate_api_docs(
+        self, docs_dir: Path, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate API documentation."""
         generated_files = []
         language = variables.get("language", "")
@@ -487,7 +503,9 @@ Indices and tables
 
         return generated_files
 
-    def _generate_github_actions(self, output_dir: str, variables: dict[str, Any]) -> list[str]:
+    def _generate_github_actions(
+        self, output_dir: str, variables: dict[str, Any]
+    ) -> list[str]:
         """Generate GitHub Actions workflows."""
         generated_files = []
         workflows_dir = Path(output_dir) / ".github" / "workflows"

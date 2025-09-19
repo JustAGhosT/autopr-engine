@@ -42,7 +42,9 @@ class ScaffoldApiRoute(Action[Inputs, Outputs]):
         os.makedirs(route_dir, exist_ok=True)
 
         method_handlers = "\\n".join(
-            METHOD_HANDLER_TEMPLATE.format(method=method.upper(), route_name=inputs.route_name)
+            METHOD_HANDLER_TEMPLATE.format(
+                method=method.upper(), route_name=inputs.route_name
+            )
             for method in inputs.http_methods
         )
 

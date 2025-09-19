@@ -8,7 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from implementation_roadmap.task_definitions import Task, TaskRegistry
+from autopr.ai.implementation_roadmap.task_definitions import (Task,
+                                                               TaskRegistry)
 
 
 @dataclass
@@ -20,8 +21,8 @@ class TaskExecution:
     start_time: datetime
     end_time: datetime | None = None
     error_message: str | None = None
-    files_created: list[str] = None
-    logs: list[str] = None
+    files_created: list[str] | None = None
+    logs: list[str] | None = None
 
     def __post_init__(self) -> None:
         if self.files_created is None:
@@ -45,10 +46,14 @@ class TaskExecutor:
         self.project_root = Path.cwd()
         self.executions: dict[str, TaskExecution] = {}
 
-    async def execute_task(self, task_name: str, dry_run: bool = False) -> TaskExecution:
+    async def execute_task(
+        self, task_name: str, dry_run: bool = False
+    ) -> TaskExecution:
         """Execute a specific task"""
         task = self.task_registry.get_task(task_name)
-        execution = TaskExecution(task_name=task_name, status="running", start_time=datetime.now())
+        execution = TaskExecution(
+            task_name=task_name, status="running", start_time=datetime.now()
+        )
 
         self.executions[task_name] = execution
 
@@ -129,7 +134,9 @@ def initialize_sentry():
         execution.logs.append("✅ Sentry monitoring setup complete")
         return execution
 
-    async def _implement_structured_logging(self, execution: TaskExecution) -> TaskExecution:
+    async def _implement_structured_logging(
+        self, execution: TaskExecution
+    ) -> TaskExecution:
         """Implement structured JSON logging"""
         execution.logs.append("Implementing structured logging...")
 
@@ -210,7 +217,9 @@ cache = RedisCache()
 '''
 
         await self._write_file(str(caching_dir / "redis_cache.py"), redis_cache)
-        await self._write_file(str(caching_dir / "__init__.py"), "from .redis_cache import cache")
+        await self._write_file(
+            str(caching_dir / "__init__.py"), "from .redis_cache import cache"
+        )
         await self._add_requirement("redis>=4.6.0")
 
         execution.logs.append("✅ Redis caching setup complete")
@@ -262,7 +271,9 @@ health_checker = HealthChecker()
         execution.logs.append("✅ Health checks created")
         return execution
 
-    async def _implement_basic_circuit_breakers(self, execution: TaskExecution) -> TaskExecution:
+    async def _implement_basic_circuit_breakers(
+        self, execution: TaskExecution
+    ) -> TaskExecution:
         """Implement circuit breaker pattern"""
         execution.logs.append("Implementing circuit breakers...")
 
@@ -318,7 +329,9 @@ class CircuitBreaker:
             self.state = CircuitState.OPEN
 '''
 
-        await self._write_file(str(resilience_dir / "circuit_breaker.py"), circuit_breaker)
+        await self._write_file(
+            str(resilience_dir / "circuit_breaker.py"), circuit_breaker
+        )
         await self._write_file(
             str(resilience_dir / "__init__.py"),
             "from .circuit_breaker import CircuitBreaker",
@@ -380,7 +393,9 @@ class CircuitBreaker:
         if requirements_file.exists():
             with open(requirements_file, encoding="utf-8") as f:
                 existing_requirements = {
-                    line.strip() for line in f if line.strip() and not line.startswith("#")
+                    line.strip()
+                    for line in f
+                    if line.strip() and not line.startswith("#")
                 }
 
         # Add new requirement if not already present
@@ -392,8 +407,12 @@ class CircuitBreaker:
     def get_execution_summary(self) -> dict[str, Any]:
         """Get summary of all task executions"""
         total_tasks = len(self.executions)
-        successful_tasks = sum(1 for exec in self.executions.values() if exec.status == "success")
-        failed_tasks = sum(1 for exec in self.executions.values() if exec.status == "error")
+        successful_tasks = sum(
+            1 for exec in self.executions.values() if exec.status == "success"
+        )
+        failed_tasks = sum(
+            1 for exec in self.executions.values() if exec.status == "error"
+        )
 
         return {
             "total_tasks": total_tasks,

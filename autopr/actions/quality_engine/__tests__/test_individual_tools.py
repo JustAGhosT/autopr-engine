@@ -7,15 +7,14 @@ from unittest.mock import patch
 import pytest
 
 from autopr.actions.quality_engine.tools.bandit_tool import BanditTool
-from autopr.actions.quality_engine.tools.dependency_scanner_tool import (
-    DependencyScannerTool,
-)
+from autopr.actions.quality_engine.tools.dependency_scanner_tool import \
+    DependencyScannerTool
 from autopr.actions.quality_engine.tools.eslint_tool import ESLintTool
-from autopr.actions.quality_engine.tools.interrogate_tool import InterrogateTool
+from autopr.actions.quality_engine.tools.interrogate_tool import \
+    InterrogateTool
 from autopr.actions.quality_engine.tools.mypy_tool import MyPyTool
-from autopr.actions.quality_engine.tools.performance_analyzer_tool import (
-    PerformanceAnalyzerTool,
-)
+from autopr.actions.quality_engine.tools.performance_analyzer_tool import \
+    PerformanceAnalyzerTool
 from autopr.actions.quality_engine.tools.pytest_tool import PyTestTool
 from autopr.actions.quality_engine.tools.radon_tool import RadonTool
 from autopr.actions.quality_engine.tools.ruff_tool import RuffTool
@@ -103,6 +102,54 @@ class TestMyPyTool:
                 result.success is True
             )  # MyPy returns 1 for errors but we consider it successful execution
             assert result.issues_found > 0
+
+    def test_mypy_parse_output_windows_paths(self):
+        """Test MyPy output parsing with Windows drive-letter paths."""
+        # Test Windows-style path with drive letter
+        windows_output = "C:\\path\\to\\file.py:12:3: error: Incompatible return value type (got \"int\", expected \"str\")  [return-value]\n"
+        
+        issues = self.tool._parse_output(windows_output)
+        
+        assert len(issues) == 1
+        issue = issues[0]
+        assert issue["filename"] == "C:\\path\\to\\file.py"
+        assert issue["line_number"] == 12
+        assert issue["column_number"] == 3
+        assert issue["level"] == "error"
+        assert issue["message"] == "Incompatible return value type (got \"int\", expected \"str\")"
+        assert issue["code"] == "return-value"
+
+    def test_mypy_parse_output_unix_paths(self):
+        """Test MyPy output parsing with Unix-style paths (regression test)."""
+        # Test Unix-style path
+        unix_output = "/home/user/project/file.py:5:12: error: Incompatible types  [assignment]\n"
+        
+        issues = self.tool._parse_output(unix_output)
+        
+        assert len(issues) == 1
+        issue = issues[0]
+        assert issue["filename"] == "/home/user/project/file.py"
+        assert issue["line_number"] == 5
+        assert issue["column_number"] == 12
+        assert issue["level"] == "error"
+        assert issue["message"] == "Incompatible types"
+        assert issue["code"] == "assignment"
+
+    def test_mypy_parse_output_relative_paths(self):
+        """Test MyPy output parsing with relative paths."""
+        # Test relative path
+        relative_output = "src/module.py:8:1: warning: Missing return type annotation  [no-untyped-def]\n"
+        
+        issues = self.tool._parse_output(relative_output)
+        
+        assert len(issues) == 1
+        issue = issues[0]
+        assert issue["filename"] == "src/module.py"
+        assert issue["line_number"] == 8
+        assert issue["column_number"] == 1
+        assert issue["level"] == "warning"
+        assert issue["message"] == "Missing return type annotation"
+        assert issue["code"] == "no-untyped-def"
 
 
 class TestBanditTool:

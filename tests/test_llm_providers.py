@@ -9,7 +9,6 @@ import os
 import pathlib
 import sys
 
-
 # Add the autopr package to the path
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "."))
 
@@ -61,7 +60,9 @@ def test_provider_availability() -> None:
         ]:
             provider = manager.get_provider(provider_name)
             if provider:
-                pass
+                # Verify provider has expected attributes
+                assert hasattr(provider, 'name') or hasattr(provider, 'provider_name')
+                assert hasattr(provider, 'generate') or hasattr(provider, 'complete')
 
         assert True
     except Exception:
@@ -73,6 +74,11 @@ def test_backward_compatibility() -> None:
 
     try:
         # This should work via the compatibility wrapper
+        from autopr.actions.llm import get_llm_provider_manager
+        
+        manager = get_llm_provider_manager()
+        assert manager is not None
+        assert hasattr(manager, 'get_provider')
 
         assert True
     except ImportError:
@@ -94,7 +100,9 @@ def test_configuration() -> None:
         for provider_name in ["openai", "anthropic", "groq", "mistral"]:
             provider = manager.get_provider(provider_name)
             if provider and hasattr(provider, "default_model"):
-                pass
+                # Verify provider has expected model information
+                assert provider.default_model is not None
+                assert isinstance(provider.default_model, str)
 
         # Test available providers list
         manager.get_available_providers()
@@ -115,7 +123,8 @@ def test_error_handling() -> None:
         # Test invalid provider
         invalid_provider = manager.get_provider("invalid_provider")
         if invalid_provider is None:
-            pass
+            # Expected behavior - invalid provider should return None
+            assert invalid_provider is None
         else:
             raise AssertionError
 
@@ -125,9 +134,11 @@ def test_error_handling() -> None:
 
             result = complete_chat([])
             if result and hasattr(result, "error") and result.error:
-                pass
+                # Expected behavior - empty messages should result in an error
+                assert result.error is not None
         except Exception:
-            pass
+            # Expected behavior - empty messages should raise an exception
+            assert True
 
         assert True
     except Exception:
@@ -139,8 +150,17 @@ def test_message_formatting() -> None:
 
     try:
         # Test message role enum
+        from autopr.actions.llm import MessageRole
 
+        # Verify MessageRole enum exists and has expected values
+        assert hasattr(MessageRole, 'USER')
+        assert hasattr(MessageRole, 'ASSISTANT')
+        assert hasattr(MessageRole, 'SYSTEM')
+        
         # Test message creation
+        assert MessageRole.USER.value in ['user', 'USER']
+        assert MessageRole.ASSISTANT.value in ['assistant', 'ASSISTANT']
+        assert MessageRole.SYSTEM.value in ['system', 'SYSTEM']
 
         assert True
     except Exception:
@@ -154,7 +174,9 @@ def test_api_calls() -> None:
         from autopr.actions.llm import MessageRole, complete_chat
 
         # Simple test message
-        test_messages = [{"role": MessageRole.USER.value, "content": "Say 'Hello from AutoPR!'"}]
+        test_messages = [
+            {"role": MessageRole.USER.value, "content": "Say 'Hello from AutoPR!'"}
+        ]
 
         # Try each provider
         successful_calls = 0

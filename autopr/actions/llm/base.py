@@ -17,6 +17,7 @@ class BaseLLMProvider(ABC):
         self.api_key = config.get("api_key") or os.getenv(config.get("api_key_env", ""))
         self.base_url = config.get("base_url")
         self.default_model = config.get("default_model")
+        self.name = config.get("name", self.__class__.__name__.lower().replace("provider", ""))
 
     @abstractmethod
     def complete(self, request: dict[str, Any]) -> LLMResponse:

@@ -5,16 +5,16 @@ Handles AI interaction logging, performance metrics, and full-text search
 for the modular AI linting system.
 """
 
-from datetime import UTC, datetime
 import json
 import logging
-from pathlib import Path
 import sqlite3
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.queue_manager import IssueQueueManager
-from autopr.actions.ai_linting_fixer.reporting import get_database_info as _get_db_info
-
+from autopr.actions.ai_linting_fixer.reporting import \
+    get_database_info as _get_db_info
 
 logger = logging.getLogger(__name__)
 
@@ -374,11 +374,15 @@ VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_t
                 "successful_fixes": successful_fixes,
                 "failed_fixes": failed_fixes,
                 "success_rate": (
-                    (successful_fixes / total_interactions * 100) if total_interactions > 0 else 0
+                    (successful_fixes / total_interactions * 100)
+                    if total_interactions > 0
+                    else 0
                 ),
                 "confidence_stats": {
                     "average_confidence": (
-                        confidence_stats["average_confidence"] if confidence_stats else 0.0
+                        confidence_stats["average_confidence"]
+                        if confidence_stats
+                        else 0.0
                     ),
                     "median_confidence": 0.0,  # Would need more complex query
                     "min_confidence": (
@@ -388,10 +392,14 @@ VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_t
                         confidence_stats["max_confidence"] if confidence_stats else 0.0
                     ),
                     "high_confidence_count": (
-                        confidence_stats["high_confidence_count"] if confidence_stats else 0
+                        confidence_stats["high_confidence_count"]
+                        if confidence_stats
+                        else 0
                     ),
                     "low_confidence_count": (
-                        confidence_stats["low_confidence_count"] if confidence_stats else 0
+                        confidence_stats["low_confidence_count"]
+                        if confidence_stats
+                        else 0
                     ),
                     "high_confidence_percentage": high_confidence_percentage,
                     "low_confidence_percentage": low_confidence_percentage,
@@ -417,9 +425,13 @@ VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_t
                 },
                 "file_stats": {
                     "unique_files": file_stats["unique_files"] if file_stats else 0,
-                    "average_file_size": (file_stats["average_file_size"] if file_stats else 0),
+                    "average_file_size": (
+                        file_stats["average_file_size"] if file_stats else 0
+                    ),
                     "most_processed_file": (
-                        most_processed_file["file_path"] if most_processed_file else "None"
+                        most_processed_file["file_path"]
+                        if most_processed_file
+                        else "None"
                     ),
                 },
             }
@@ -497,6 +509,12 @@ VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_t
 
         return info
 
+    def close(self) -> None:
+        """Close the database connection (placeholder for compatibility)."""
+        # SQLite connections are automatically closed when using context managers
+        # This method exists for compatibility with the main module
+        pass
+
 
 # Use IssueQueueManager from queue_manager module
 
@@ -506,7 +524,7 @@ class DatabaseManager:
 
     def __init__(self, db_path: str = "ai_linting_interactions.db"):
         self.db = AIInteractionDB(db_path)
-        self.queue_manager = IssueQueueManager(self.db)
+        self.queue_manager = IssueQueueManager("issue_queue.db")
 
     def export_to_json(self, filepath: str, include_sessions: bool = True):
         """Export database contents to JSON file."""
@@ -517,7 +535,9 @@ class DatabaseManager:
         }
 
         if include_sessions:
-            export_data["performance_sessions"] = self.db.get_session_performance(limit=100)
+            export_data["performance_sessions"] = self.db.get_session_performance(
+                limit=100
+            )
 
         # Include queue statistics
         export_data["queue_statistics"] = self.queue_manager.get_queue_statistics()
@@ -587,5 +607,6 @@ class DatabaseManager:
 
 # Global database instances for convenience
 default_db = AIInteractionDB()
-issue_queue = IssueQueueManager(default_db)
-db_manager = DatabaseManager()
+issue_queue = IssueQueueManager("issue_queue.db")
+# Comment out the problematic global instance to avoid initialization errors
+# db_manager = DatabaseManager()

@@ -46,7 +46,9 @@ class QualityScorer:
         metrics.category_scores = self._calculate_category_scores(issues, total_checks)
 
         # Calculate overall score
-        metrics.overall_score = self._calculate_overall_score(metrics.category_scores, issues)
+        metrics.overall_score = self._calculate_overall_score(
+            metrics.category_scores, issues
+        )
 
         return metrics
 
@@ -116,7 +118,9 @@ class QualityScorer:
 
         return min(100.0, final_score)  # Cap at 100
 
-    def compare_metrics(self, metrics1: QualityMetrics, metrics2: QualityMetrics) -> dict[str, Any]:
+    def compare_metrics(
+        self, metrics1: QualityMetrics, metrics2: QualityMetrics
+    ) -> dict[str, Any]:
         """Compare two quality metrics."""
         comparison: dict[str, Any] = {
             "template1": {
@@ -150,7 +154,9 @@ class QualityScorer:
             comparison["better_template"] = "tie"
 
         # Category comparison
-        all_categories = set(metrics1.category_scores.keys()) | set(metrics2.category_scores.keys())
+        all_categories = set(metrics1.category_scores.keys()) | set(
+            metrics2.category_scores.keys()
+        )
         category_comparison: dict[str, Any] = {}
 
         for category in all_categories:

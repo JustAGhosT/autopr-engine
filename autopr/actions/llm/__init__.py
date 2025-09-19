@@ -28,7 +28,7 @@ from typing import Any
 from autopr.actions.llm.base import BaseLLMProvider
 
 # Export manager
-from autopr.actions.llm.manager import LLMProviderManager
+from autopr.actions.llm.manager import ActionLLMProviderManager
 
 # Export providers
 from autopr.actions.llm.providers import (
@@ -51,10 +51,10 @@ from autopr.actions.llm.types import (
 
 
 # Global provider manager instance
-_provider_manager: LLMProviderManager | None = None
+_provider_manager: ActionLLMProviderManager | None = None
 
 
-def get_llm_provider_manager() -> LLMProviderManager:
+def get_llm_provider_manager() -> ActionLLMProviderManager:
     """
     Get or create the global LLM provider manager with configuration from environment variables.
 
@@ -69,15 +69,17 @@ def get_llm_provider_manager() -> LLMProviderManager:
     # Allow disabling LLM provider initialization in tests/CI to avoid network calls
     if os.getenv("AUTOPR_DISABLE_LLM_INIT", "0") in {"1", "true", "True"}:
         # Create a manager with no providers to satisfy callers
-        _provider_manager = LLMProviderManager({"default_provider": "none", "providers": {}})
+        _provider_manager = ActionLLMProviderManager(
+            {"default_provider": "none", "providers": {}}
+        )
         return _provider_manager
 
     # Load configuration from environment
     config: dict[str, Any] = {
         "default_provider": os.getenv("AUTOPR_DEFAULT_LLM_PROVIDER", "openai"),
-        "fallback_order": os.getenv("AUTOPR_LLM_FALLBACK_ORDER", "openai,anthropic,mistral").split(
-            ","
-        ),
+        "fallback_order": os.getenv(
+            "AUTOPR_LLM_FALLBACK_ORDER", "openai,anthropic,mistral"
+        ).split(","),
         "providers": {
             "openai": {
                 "api_key_env": "OPENAI_API_KEY",
@@ -86,11 +88,15 @@ def get_llm_provider_manager() -> LLMProviderManager:
             },
             "anthropic": {
                 "api_key_env": "ANTHROPIC_API_KEY",
-                "default_model": os.getenv("AUTOPR_ANTHROPIC_MODEL", "claude-3-sonnet-20240229"),
+                "default_model": os.getenv(
+                    "AUTOPR_ANTHROPIC_MODEL", "claude-3-sonnet-20240229"
+                ),
             },
             "mistral": {
                 "api_key_env": "MISTRAL_API_KEY",
-                "default_model": os.getenv("AUTOPR_MISTRAL_MODEL", "mistral-large-latest"),
+                "default_model": os.getenv(
+                    "AUTOPR_MISTRAL_MODEL", "mistral-large-latest"
+                ),
             },
             "groq": {
                 "api_key_env": "GROQ_API_KEY",
@@ -113,7 +119,7 @@ def get_llm_provider_manager() -> LLMProviderManager:
     }
 
     # Initialize the provider manager with the configuration
-    _provider_manager = LLMProviderManager(config)
+    _provider_manager = ActionLLMProviderManager(config)
     return _provider_manager
 
 
@@ -141,13 +147,15 @@ def complete_chat(
         **kwargs,
     }
 
-    manager: LLMProviderManager = get_llm_provider_manager()
+    manager: ActionLLMProviderManager = get_llm_provider_manager()
 
     # If a specific provider is requested, get it directly from the manager
     if provider is not None:
         provider_instance = manager.get_provider(provider)
         if provider_instance is None:
-            return LLMResponse.from_error(f"Provider '{provider}' not found", model or "unknown")
+            return LLMResponse.from_error(
+                f"Provider '{provider}' not found", model or "unknown"
+            )
         return provider_instance.complete(request)
 
     # Otherwise, use the manager's complete method which handles fallback
@@ -162,7 +170,7 @@ __all__ = [
     "GroqProvider",
     "LLMConfig",
     # Manager
-    "LLMProviderManager",
+    "ActionLLMProviderManager",
     "LLMProviderType",
     "LLMResponse",
     "Message",
