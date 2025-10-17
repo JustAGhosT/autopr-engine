@@ -148,7 +148,7 @@ class LLMConfig(BaseModel):
 
     @field_validator("temperature")
     @classmethod
-    def validate_temperature(cls, v):
+    def validate_temperature(cls, v: float) -> float:
         if not 0 <= v <= 2:
             msg = "temperature must be between 0 and 2"
             raise ValueError(msg)
@@ -528,10 +528,10 @@ class AutoPRSettings(BaseSettings):
         # Add common settings
         config.update(
             {
-                "max_tokens": str(self.llm.max_tokens),
-                "temperature": str(self.llm.temperature),
-                "timeout": str(self.llm.timeout),
-                "max_retries": str(self.llm.max_retries),
+                "max_tokens": self.llm.max_tokens,
+                "temperature": self.llm.temperature,
+                "timeout": self.llm.timeout,
+                "max_retries": self.llm.max_retries,
             }
         )
 

@@ -91,7 +91,7 @@ class AuthenticationError(AutoPRException):
         super().__init__(message, "AUTH_ERROR")
 
 
-class PermissionError(AutoPRException):
+class AutoPRPermissionError(AutoPRException):
     """Raised when permission is denied."""
 
     def __init__(self, message: str):

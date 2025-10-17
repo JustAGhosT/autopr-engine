@@ -14,6 +14,7 @@ from autopr.actions.registry import ActionRegistry
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
+from autopr.integrations.registry import IntegrationRegistry
 from autopr.quality.metrics_collector import MetricsCollector
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
@@ -46,13 +47,30 @@ class AutoPREngine:
 
         logger.info("AutoPR Engine initialized successfully")
 
+    async def __aenter__(self) -> "AutoPREngine":
+        """Async context manager entry."""
+        await self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Async context manager exit."""
+        await self.stop()
+
     async def start(self) -> None:
         """Start the AutoPR Engine and initialize all components."""
         try:
+            # Validate configuration before starting
+            if not self.config.validate():
+                msg = "Invalid configuration: Missing required authentication or LLM provider keys"
+                logger.error(msg)
+                raise ConfigurationError(msg)
+            
             await self.workflow_engine.start()
             await self.integration_registry.initialize()
             await self.llm_manager.initialize()
             logger.info("AutoPR Engine started successfully")
+        except ConfigurationError:
+            raise
         except Exception as e:
             logger.exception(f"Failed to start AutoPR Engine: {e}")
             msg = f"Engine startup failed: {e}"

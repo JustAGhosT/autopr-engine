@@ -7,6 +7,7 @@ Orchestrates workflow execution and manages workflow lifecycle.
 import asyncio
 from datetime import datetime
 import logging
+import time
 from typing import Any
 
 from autopr.config import AutoPRConfig
@@ -15,6 +16,9 @@ from autopr.workflows.base import Workflow
 
 
 logger = logging.getLogger(__name__)
+
+# Configuration constants
+MAX_WORKFLOW_HISTORY = 1000  # Maximum number of workflow executions to keep in history
 
 
 class WorkflowEngine:
@@ -36,6 +40,16 @@ class WorkflowEngine:
         self.running_workflows: dict[str, asyncio.Task] = {}
         self.workflow_history: list[dict[str, Any]] = []
         self._is_running = False
+        
+        # Metrics tracking
+        self.metrics = {
+            "total_executions": 0,
+            "successful_executions": 0,
+            "failed_executions": 0,
+            "timeout_executions": 0,
+            "total_execution_time": 0.0,
+            "average_execution_time": 0.0,
+        }
 
         logger.info("Workflow engine initialized")
 
@@ -108,6 +122,7 @@ class WorkflowEngine:
 
         workflow = self.workflows[workflow_name]
         execution_id = workflow_id or f"{workflow_name}_{datetime.now().isoformat()}"
+        start_time = time.time()
 
         try:
             logger.info("Starting workflow execution: %s", execution_id)
@@ -123,6 +138,10 @@ class WorkflowEngine:
             # Wait for completion with timeout
             result = await asyncio.wait_for(task, timeout=self.config.workflow_timeout)
 
+            # Update metrics
+            execution_time = time.time() - start_time
+            self._update_metrics("success", execution_time)
+
             # Record successful execution
             self._record_execution(execution_id, workflow_name, "completed", result)
 
@@ -132,6 +151,11 @@ class WorkflowEngine:
         except TimeoutError:
             error_msg = f"Workflow execution timed out: {execution_id}"
             logger.exception("Workflow execution timed out: %s", execution_id)
+            
+            # Update metrics
+            execution_time = time.time() - start_time
+            self._update_metrics("timeout", execution_time)
+            
             self._record_execution(
                 execution_id, workflow_name, "timeout", {"error": error_msg}
             )
@@ -140,6 +164,11 @@ class WorkflowEngine:
         except Exception as e:
             error_msg = f"Workflow execution failed: {e}"
             logger.exception("Workflow execution failed: %s - %s", execution_id, e)
+            
+            # Update metrics
+            execution_time = time.time() - start_time
+            self._update_metrics("failed", execution_time)
+            
             self._record_execution(
                 execution_id, workflow_name, "failed", {"error": str(e)}
             )
@@ -241,9 +270,33 @@ class WorkflowEngine:
             }
         )
 
-        # Keep only last 1000 executions
-        if len(self.workflow_history) > 1000:
-            self.workflow_history = self.workflow_history[-1000:]
+        # Keep only last MAX_WORKFLOW_HISTORY executions
+        if len(self.workflow_history) > MAX_WORKFLOW_HISTORY:
+            self.workflow_history = self.workflow_history[-MAX_WORKFLOW_HISTORY:]
+
+    def _update_metrics(self, status: str, execution_time: float) -> None:
+        """
+        Update workflow execution metrics.
+        
+        Args:
+            status: Execution status (success, failed, timeout)
+            execution_time: Time taken for execution in seconds
+        """
+        self.metrics["total_executions"] += 1
+        self.metrics["total_execution_time"] += execution_time
+        
+        if status == "success":
+            self.metrics["successful_executions"] += 1
+        elif status == "failed":
+            self.metrics["failed_executions"] += 1
+        elif status == "timeout":
+            self.metrics["timeout_executions"] += 1
+        
+        # Update average execution time
+        if self.metrics["total_executions"] > 0:
+            self.metrics["average_execution_time"] = (
+                self.metrics["total_execution_time"] / self.metrics["total_executions"]
+            )
 
     def get_status(self) -> dict[str, Any]:
         """Get workflow engine status."""
@@ -253,6 +306,25 @@ class WorkflowEngine:
             "running_workflows": len(self.running_workflows),
             "total_executions": len(self.workflow_history),
             "workflows": list(self.workflows.keys()),
+            "metrics": self.metrics,
+        }
+
+    def get_metrics(self) -> dict[str, Any]:
+        """
+        Get workflow execution metrics.
+        
+        Returns:
+            Dictionary containing execution metrics
+        """
+        success_rate = 0.0
+        if self.metrics["total_executions"] > 0:
+            success_rate = (
+                self.metrics["successful_executions"] / self.metrics["total_executions"]
+            ) * 100
+        
+        return {
+            **self.metrics,
+            "success_rate_percent": round(success_rate, 2),
         }
 
     def get_workflow_history(self, limit: int = 100) -> list[dict[str, Any]]:
