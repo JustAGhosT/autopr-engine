@@ -12,6 +12,7 @@ from typing import Any
 from autopr.ai.core.base import (CompletionRequest, LLMMessage, LLMProvider,
                                  LLMResponse)
 from autopr.config import AutoPRConfig
+from autopr.utils.resilience import CircuitBreaker, CircuitBreakerError
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class LLMProviderManager:
         self.config = config
         self.providers: dict[str, LLMProvider] = {}
         self.default_provider: str | None = None
+        self.circuit_breakers: dict[str, CircuitBreaker] = {}
         self._initialize_providers()
 
     def _initialize_providers(self) -> None:
@@ -84,7 +86,14 @@ class LLMProviderManager:
             provider: Provider instance to register
         """
         self.providers[name] = provider
-        logger.info("Registered provider: %s", name)
+        # Create circuit breaker for this provider
+        self.circuit_breakers[name] = CircuitBreaker(
+            name=f"llm_provider_{name}",
+            failure_threshold=5,
+            timeout_seconds=60,
+            success_threshold=2,
+        )
+        logger.info("Registered provider: %s with circuit breaker", name)
 
         # Set as default if this is the first provider
         if self.default_provider is None:
@@ -133,19 +142,58 @@ class LLMProviderManager:
             raise ValueError(msg)
 
         provider_instance = self.providers[target_provider]
+        circuit_breaker = self.circuit_breakers.get(target_provider)
 
         # Initialize provider if not already initialized
         if not getattr(provider_instance, "_is_initialized", False):
             await provider_instance.initialize(provider_instance.config)
 
-        # Call the provider's generate_completion method
-        return await provider_instance.generate_completion(
-            messages=request.messages,
-            model=request.model,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
-            **kwargs,
-        )
+        # Call the provider's generate_completion method with circuit breaker protection
+        async def make_completion_call():
+            return await provider_instance.generate_completion(
+                messages=request.messages,
+                model=request.model,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+                **kwargs,
+            )
+
+        if circuit_breaker:
+            try:
+                return await circuit_breaker.call(make_completion_call)
+            except CircuitBreakerError as e:
+                logger.error(f"Circuit breaker open for provider '{target_provider}': {e}")
+                # Try fallback to another provider if available
+                fallback_result = await self._try_fallback_provider(
+                    request, target_provider, **kwargs
+                )
+                if fallback_result:
+                    return fallback_result
+                raise
+        else:
+            return await make_completion_call()
+
+    async def _try_fallback_provider(
+        self, request: CompletionRequest, failed_provider: str, **kwargs: Any
+    ) -> LLMResponse | None:
+        """Try to use a fallback provider when primary fails."""
+        available_providers = [p for p in self.providers.keys() if p != failed_provider]
+
+        for fallback_provider in available_providers:
+            breaker = self.circuit_breakers.get(fallback_provider)
+            if breaker and breaker.state.value != "open":
+                logger.info(
+                    f"Attempting fallback to provider '{fallback_provider}' "
+                    f"after '{failed_provider}' failure"
+                )
+                try:
+                    return await self.complete_async(request, fallback_provider, **kwargs)
+                except Exception as e:
+                    logger.warning(f"Fallback provider '{fallback_provider}' also failed: {e}")
+                    continue
+
+        logger.error("All fallback providers exhausted")
+        return None
 
     async def complete(
         self,
@@ -183,3 +231,15 @@ class LLMProviderManager:
         else:
             error_msg = f"Provider '{provider_name}' not found"
             raise ValueError(error_msg)
+
+    def get_circuit_breaker_status(self) -> dict[str, Any]:
+        """
+        Get status of all circuit breakers.
+
+        Returns:
+            Dictionary mapping provider names to their circuit breaker status
+        """
+        return {
+            provider_name: breaker.get_status()
+            for provider_name, breaker in self.circuit_breakers.items()
+        }

@@ -14,6 +14,7 @@ from autopr.actions.registry import ActionRegistry
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
+from autopr.health import HealthChecker
 from autopr.integrations.registry import IntegrationRegistry
 from autopr.quality.metrics_collector import MetricsCollector
 from autopr.utils.error_handlers import handle_operation_error
@@ -46,6 +47,7 @@ class AutoPREngine:
         self.action_registry: ActionRegistry = ActionRegistry()
         self.integration_registry = IntegrationRegistry()
         self.llm_manager = LLMProviderManager(self.config)
+        self.health_checker = HealthChecker(self)
 
         logger.info("AutoPR Engine initialized successfully")
 
@@ -127,3 +129,38 @@ class AutoPREngine:
         from autopr import __version__
 
         return __version__
+
+    async def health_check(self) -> dict[str, Any]:
+        """
+        Perform comprehensive health check of all engine components.
+
+        Returns:
+            Dictionary containing health status for all components and overall status
+        """
+        try:
+            health_results = await self.health_checker.check_all()
+            overall_status = self.health_checker.get_overall_status(health_results)
+
+            return {
+                "overall_status": overall_status,
+                "components": {
+                    name: {
+                        "status": result.status,
+                        "message": result.message,
+                        "details": result.details,
+                        "response_time_ms": result.response_time_ms,
+                        "timestamp": result.timestamp.isoformat(),
+                    }
+                    for name, result in health_results.items()
+                },
+                "timestamp": health_results[list(health_results.keys())[0]].timestamp.isoformat()
+                if health_results
+                else None,
+            }
+        except Exception as e:
+            logger.exception("Health check failed")
+            return {
+                "overall_status": "unhealthy",
+                "error": str(e),
+                "components": {},
+            }
