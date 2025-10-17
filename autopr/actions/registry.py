@@ -73,6 +73,10 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
 
         Returns:
             Action instance or None if not found
+
+        Note:
+            This method maintains backward compatibility by returning None
+            for missing actions, but logs detailed errors for instantiation failures.
         """
         if action_name not in self._actions:
             logger.warning(f"Action not found: {action_name}")
@@ -82,8 +86,13 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
         if action_name in self._instances:
             return self._instances[action_name]
 
-        # Create new instance
-        return self._create_action_instance(action_name)
+        # Create new instance (may raise exceptions)
+        try:
+            return self._create_action_instance(action_name)
+        except (KeyError, RuntimeError) as e:
+            # Log the detailed error but maintain backward compatibility
+            logger.error(f"Failed to get action '{action_name}': {e}")
+            return None
 
     def _create_action_instance(self, action_name: str) -> ActionT | None:
         """
@@ -94,15 +103,27 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
             
         Returns:
             Action instance or None if creation fails
+            
+        Raises:
+            KeyError: If action is not registered
+            Exception: If action instantiation fails with detailed error
         """
+        if action_name not in self._actions:
+            logger.error(f"Action '{action_name}' not found in registry")
+            raise KeyError(f"Action '{action_name}' is not registered")
+        
         try:
             action_cls = self._actions[action_name]
             instance = action_cls(action_name, f"Instance of {action_name}")
             self._instances[action_name] = instance
+            logger.debug(f"Successfully created action instance '{action_name}'")
             return instance
         except Exception as e:
             logger.exception(f"Failed to create action instance '{action_name}': {e}")
-            return None
+            # Re-raise with more context instead of silently returning None
+            raise RuntimeError(
+                f"Failed to instantiate action '{action_name}': {type(e).__name__}: {e}"
+            ) from e
 
     def get_all_actions(self) -> list[str]:
         """

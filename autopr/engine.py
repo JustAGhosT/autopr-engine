@@ -16,44 +16,11 @@ from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.integrations.registry import IntegrationRegistry
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.utils.error_handlers import handle_operation_error
 from autopr.workflows.engine import WorkflowEngine
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 logger = logging.getLogger(__name__)
-
-
-def handle_operation_error(
-    operation_name: str,
-    exception: Exception,
-    error_class: type[AutoPRException] = AutoPRException,
-    *,
-    log_level: str = "exception",
-    reraise: bool = True,
-) -> None:
-    """
-    Standardized error handling helper for engine operations.
-    
-    Args:
-        operation_name: Name of the operation that failed
-        exception: The exception that was raised
-        error_class: Exception class to raise (default: AutoPRException)
-        log_level: Logging level to use ('exception', 'error', 'warning')
-        reraise: Whether to reraise the exception after logging
-        
-    Raises:
-        error_class: The specified exception class with formatted message
-    """
-    error_msg = f"{operation_name} failed: {exception}"
-    
-    if log_level == "exception":
-        logger.exception(error_msg)
-    elif log_level == "error":
-        logger.error(error_msg)
-    elif log_level == "warning":
-        logger.warning(error_msg)
-    
-    if reraise:
-        raise error_class(error_msg) from exception
 
 
 class AutoPREngine:

@@ -54,78 +54,77 @@ class MetricsCollector:
 
     def init_database(self) -> None:
         """Initialize metrics database."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        # Create metrics table
-        cursor.execute(
+            # Create metrics table
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS metrics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    metric_name TEXT NOT NULL,
+                    value REAL NOT NULL,
+                    metadata TEXT,
+                    session_id TEXT,
+                    user_id TEXT,
+                    comment_id TEXT
+                )
             """
-            CREATE TABLE IF NOT EXISTS metrics (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                metric_name TEXT NOT NULL,
-                value REAL NOT NULL,
-                metadata TEXT,
-                session_id TEXT,
-                user_id TEXT,
-                comment_id TEXT
             )
-        """
-        )
 
-        # Create events table for detailed tracking
-        cursor.execute(
+            # Create events table for detailed tracking
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    event_type TEXT NOT NULL,
+                    event_data TEXT,
+                    success BOOLEAN,
+                    duration_ms INTEGER,
+                    user_id TEXT,
+                    comment_id TEXT,
+                    pr_number INTEGER
+                )
             """
-            CREATE TABLE IF NOT EXISTS events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                event_type TEXT NOT NULL,
-                event_data TEXT,
-                success BOOLEAN,
-                duration_ms INTEGER,
-                user_id TEXT,
-                comment_id TEXT,
-                pr_number INTEGER
             )
-        """
-        )
 
-        # Create user feedback table
-        cursor.execute(
+            # Create user feedback table
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS user_feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    user_id TEXT NOT NULL,
+                    comment_id TEXT,
+                    rating INTEGER,  -- 1-5 scale
+                    feedback_text TEXT,
+                    category TEXT,  -- "helpful", "accurate", "fast", etc.
+                    autopr_action TEXT  -- what AutoPR did
+                )
             """
-            CREATE TABLE IF NOT EXISTS user_feedback (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                user_id TEXT NOT NULL,
-                comment_id TEXT,
-                rating INTEGER,  -- 1-5 scale
-                feedback_text TEXT,
-                category TEXT,  -- "helpful", "accurate", "fast", etc.
-                autopr_action TEXT  -- what AutoPR did
             )
-        """
-        )
 
-        # Create performance benchmarks table
-        cursor.execute(
+            # Create performance benchmarks table
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS benchmarks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    benchmark_name TEXT NOT NULL,
+                    test_case TEXT,
+                    expected_result TEXT,
+                    actual_result TEXT,
+                    success BOOLEAN,
+                    duration_ms INTEGER,
+                    provider TEXT,
+                    model TEXT
+                )
             """
-            CREATE TABLE IF NOT EXISTS benchmarks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                benchmark_name TEXT NOT NULL,
-                test_case TEXT,
-                expected_result TEXT,
-                actual_result TEXT,
-                success BOOLEAN,
-                duration_ms INTEGER,
-                provider TEXT,
-                model TEXT
             )
-        """
-        )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
     def record_metric(
         self,
@@ -137,26 +136,25 @@ class MetricsCollector:
         comment_id: str | None = None,
     ) -> None:
         """Record a single metric point."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO metrics (metric_name, value, metadata, session_id, user_id, comment_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """,
-            (
-                metric_name,
-                value,
-                json.dumps(metadata) if metadata else None,
-                session_id,
-                user_id,
-                comment_id,
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT INTO metrics (metric_name, value, metadata, session_id, user_id, comment_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    metric_name,
+                    value,
+                    json.dumps(metadata) if metadata else None,
+                    session_id,
+                    user_id,
+                    comment_id,
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
     def record_event(
         self,
@@ -169,27 +167,26 @@ class MetricsCollector:
         pr_number: int | None = None,
     ) -> None:
         """Record a detailed event."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO events (event_type, event_data, success, duration_ms, user_id, comment_id, pr_number)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                event_type,
-                json.dumps(event_data),
-                success,
-                duration_ms,
-                user_id,
-                comment_id,
-                pr_number,
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT INTO events (event_type, event_data, success, duration_ms, user_id, comment_id, pr_number)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    event_type,
+                    json.dumps(event_data),
+                    success,
+                    duration_ms,
+                    user_id,
+                    comment_id,
+                    pr_number,
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
     def record_user_feedback(
         self,
@@ -201,26 +198,25 @@ class MetricsCollector:
         comment_id: str | None = None,
     ) -> None:
         """Record user feedback."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO user_feedback (user_id, rating, feedback_text, category, autopr_action, comment_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """,
-            (
-                user_id,
-                rating,
-                feedback_text,
-                category,
-                autopr_action,
-                comment_id,
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT INTO user_feedback (user_id, rating, feedback_text, category, autopr_action, comment_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    user_id,
+                    rating,
+                    feedback_text,
+                    category,
+                    autopr_action,
+                    comment_id,
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
     def record_benchmark(
         self,
@@ -234,66 +230,63 @@ class MetricsCollector:
         model: str | None = None,
     ) -> None:
         """Record benchmark test results."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO benchmarks (benchmark_name, test_case, expected_result, actual_result,
-                                  success, duration_ms, provider, model)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                benchmark_name,
-                test_case,
-                expected_result,
-                actual_result,
-                success,
-                duration_ms,
-                provider,
-                model,
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT INTO benchmarks (benchmark_name, test_case, expected_result, actual_result,
+                                      success, duration_ms, provider, model)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    benchmark_name,
+                    test_case,
+                    expected_result,
+                    actual_result,
+                    success,
+                    duration_ms,
+                    provider,
+                    model,
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
     def get_metrics_summary(self, timeframe: str = "7d") -> EvaluationMetrics:
         """Get comprehensive metrics summary for a timeframe."""
         start_time = self._get_start_time(timeframe)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        # Calculate accuracy metrics
-        fix_success_rate = self._calculate_fix_success_rate(cursor, start_time)
-        classification_accuracy = self._calculate_classification_accuracy(
-            cursor, start_time
-        )
-        false_positive_rate = self._calculate_false_positive_rate(cursor, start_time)
-        user_satisfaction = self._calculate_user_satisfaction(cursor, start_time)
+            # Calculate accuracy metrics
+            fix_success_rate = self._calculate_fix_success_rate(cursor, start_time)
+            classification_accuracy = self._calculate_classification_accuracy(
+                cursor, start_time
+            )
+            false_positive_rate = self._calculate_false_positive_rate(cursor, start_time)
+            user_satisfaction = self._calculate_user_satisfaction(cursor, start_time)
 
-        # Calculate efficiency metrics
-        avg_response_time = self._calculate_avg_response_time(cursor, start_time)
-        avg_resolution_time = self._calculate_avg_resolution_time(cursor, start_time)
-        api_cost = self._calculate_api_cost(cursor, start_time)
-        coverage_rate = self._calculate_coverage_rate(cursor, start_time)
+            # Calculate efficiency metrics
+            avg_response_time = self._calculate_avg_response_time(cursor, start_time)
+            avg_resolution_time = self._calculate_avg_resolution_time(cursor, start_time)
+            api_cost = self._calculate_api_cost(cursor, start_time)
+            coverage_rate = self._calculate_coverage_rate(cursor, start_time)
 
-        # Calculate quality metrics
-        code_quality_score = self._calculate_code_quality_score(cursor, start_time)
-        test_pass_rate = self._calculate_test_pass_rate(cursor, start_time)
-        security_score = self._calculate_security_score(cursor, start_time)
-        maintainability_index = self._calculate_maintainability_index(
-            cursor, start_time
-        )
+            # Calculate quality metrics
+            code_quality_score = self._calculate_code_quality_score(cursor, start_time)
+            test_pass_rate = self._calculate_test_pass_rate(cursor, start_time)
+            security_score = self._calculate_security_score(cursor, start_time)
+            maintainability_index = self._calculate_maintainability_index(
+                cursor, start_time
+            )
 
-        # Calculate system metrics
-        uptime = self._calculate_uptime(cursor, start_time)
-        error_rate = self._calculate_error_rate(cursor, start_time)
-        throughput = self._calculate_throughput(cursor, start_time)
-        resource_utilization = self._calculate_resource_utilization(cursor, start_time)
-
-        conn.close()
+            # Calculate system metrics
+            uptime = self._calculate_uptime(cursor, start_time)
+            error_rate = self._calculate_error_rate(cursor, start_time)
+            throughput = self._calculate_throughput(cursor, start_time)
+            resource_utilization = self._calculate_resource_utilization(cursor, start_time)
 
         return EvaluationMetrics(
             fix_success_rate=fix_success_rate,
@@ -320,41 +313,40 @@ class MetricsCollector:
         """Get benchmark test results."""
         start_time = self._get_start_time(timeframe)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        query = """
-            SELECT benchmark_name, COUNT(*) as total_tests,
-                   SUM(CASE WHEN success THEN 1 ELSE 0 END) as passed_tests,
-                   AVG(duration_ms) as avg_duration,
-                   provider, model
-            FROM benchmarks
-            WHERE timestamp >= ?
-        """
-        params: list[Any] = [start_time]
+            query = """
+                SELECT benchmark_name, COUNT(*) as total_tests,
+                       SUM(CASE WHEN success THEN 1 ELSE 0 END) as passed_tests,
+                       AVG(duration_ms) as avg_duration,
+                       provider, model
+                FROM benchmarks
+                WHERE timestamp >= ?
+            """
+            params: list[Any] = [start_time]
 
-        if benchmark_name:
-            query += " AND benchmark_name = ?"
-            params.append(benchmark_name)
+            if benchmark_name:
+                query += " AND benchmark_name = ?"
+                params.append(benchmark_name)
 
-        query += " GROUP BY benchmark_name, provider, model"
+            query += " GROUP BY benchmark_name, provider, model"
 
-        cursor.execute(query, params)
-        results = cursor.fetchall()
+            cursor.execute(query, params)
+            results = cursor.fetchall()
 
-        benchmark_data = {}
-        for row in results:
-            name, total, passed, avg_duration, provider, model = row
-            benchmark_data[f"{name}_{provider}_{model}"] = {
-                "total_tests": total,
-                "passed_tests": passed,
-                "success_rate": passed / total if total > 0 else 0,
-                "avg_duration_ms": avg_duration,
-                "provider": provider,
-                "model": model,
-            }
+            benchmark_data = {}
+            for row in results:
+                name, total, passed, avg_duration, provider, model = row
+                benchmark_data[f"{name}_{provider}_{model}"] = {
+                    "total_tests": total,
+                    "passed_tests": passed,
+                    "success_rate": passed / total if total > 0 else 0,
+                    "avg_duration_ms": avg_duration,
+                    "provider": provider,
+                    "model": model,
+                }
 
-        conn.close()
         return benchmark_data
 
     def get_trend_analysis(
@@ -363,49 +355,47 @@ class MetricsCollector:
         """Get trend analysis for a specific metric."""
         start_time = self._get_start_time(timeframe)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            SELECT DATE(timestamp) as date, AVG(value) as avg_value
-            FROM metrics
-            WHERE metric_name = ? AND timestamp >= ?
-            GROUP BY DATE(timestamp)
-            ORDER BY date
-        """,
-            (metric_name, start_time),
-        )
-
-        results = cursor.fetchall()
-
-        if not results:
-            return {"trend": "no_data", "change": 0, "values": []}
-
-        dates = [row[0] for row in results]
-        values = [row[1] for row in results]
-
-        # Calculate trend
-        if len(values) >= 2:
-            recent_avg = (
-                statistics.mean(values[-7:]) if len(values) >= 7 else values[-1]
-            )
-            older_avg = statistics.mean(values[:7]) if len(values) >= 14 else values[0]
-            change_percent = (
-                ((recent_avg - older_avg) / older_avg * 100) if older_avg != 0 else 0
+            cursor.execute(
+                """
+                SELECT DATE(timestamp) as date, AVG(value) as avg_value
+                FROM metrics
+                WHERE metric_name = ? AND timestamp >= ?
+                GROUP BY DATE(timestamp)
+                ORDER BY date
+            """,
+                (metric_name, start_time),
             )
 
-            if change_percent > 5:
-                trend = "improving"
-            elif change_percent < -5:
-                trend = "declining"
+            results = cursor.fetchall()
+
+            if not results:
+                return {"trend": "no_data", "change": 0, "values": []}
+
+            dates = [row[0] for row in results]
+            values = [row[1] for row in results]
+
+            # Calculate trend
+            if len(values) >= 2:
+                recent_avg = (
+                    statistics.mean(values[-7:]) if len(values) >= 7 else values[-1]
+                )
+                older_avg = statistics.mean(values[:7]) if len(values) >= 14 else values[0]
+                change_percent = (
+                    ((recent_avg - older_avg) / older_avg * 100) if older_avg != 0 else 0
+                )
+
+                if change_percent > 5:
+                    trend = "improving"
+                elif change_percent < -5:
+                    trend = "declining"
+                else:
+                    trend = "stable"
             else:
-                trend = "stable"
-        else:
-            trend = "insufficient_data"
-            change_percent = 0
-
-        conn.close()
+                trend = "insufficient_data"
+                change_percent = 0
 
         return {
             "trend": trend,
