@@ -72,6 +72,14 @@ class AutoPREngine:
             await self.workflow_engine.start()
             await self.integration_registry.initialize()
             await self.llm_manager.initialize()
+            
+            # Validate configuration (allow tests to skip this with test_mode)
+            if not getattr(self.config, 'test_mode', False):
+                if not self.integration_registry.get_all_integrations() and not self.llm_manager.get_available_providers():
+                    msg = "Missing required authentication or LLM provider keys"
+                    logger.error(f"Invalid configuration: {msg}")
+                    raise ConfigurationError(msg)
+            
             logger.info("AutoPR Engine started successfully")
         except ConfigurationError:
             raise

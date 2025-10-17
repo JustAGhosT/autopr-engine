@@ -4,6 +4,7 @@ AutoPR Integration Registry
 Registry for managing and discovering integrations.
 """
 
+import inspect
 import logging
 from typing import Any
 
@@ -34,6 +35,12 @@ class IntegrationRegistry:
         Args:
             integration_class: Integration class to register
         """
+        # Check if class is abstract
+        if inspect.isabstract(integration_class):
+            msg = f"Cannot register abstract class {integration_class.__name__}"
+            logger.error(msg)
+            raise TypeError(msg)
+        
         # Create a temporary instance to get the name
         temp_instance = integration_class("temp", "temp")
         integration_name = temp_instance.name
@@ -183,6 +190,15 @@ class IntegrationRegistry:
                 # Create temporary instance for metadata
                 try:
                     integration_class = self._integrations[integration_name]
+                    # Skip if abstract (shouldn't happen if register_integration works correctly)
+                    if inspect.isabstract(integration_class):
+                        metadata[integration_name] = {
+                            "name": integration_name,
+                            "error": "abstract_class",
+                            "description": "Abstract class cannot be instantiated"
+                        }
+                        continue
+                    
                     temp_instance = integration_class(integration_name, "Temporary")
                     metadata[integration_name] = temp_instance.get_metadata()
                 except Exception:
