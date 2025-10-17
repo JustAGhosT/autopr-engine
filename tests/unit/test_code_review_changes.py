@@ -185,13 +185,22 @@ def test_create_action_instance_helper():
     class TestAction(Action):
         def __init__(self, name, description):
             super().__init__(name, description)
+        
+        async def execute(self, context):
+            return {"success": True}
+        
+        def validate_inputs(self, context):
+            return True
     
     registry.register("test_action", TestAction)
     
+    # First, verify action is registered
+    assert "test_action" in registry._actions
+    
     # Test the helper creates instances
     instance = registry._create_action_instance("test_action")
-    assert instance is not None
-    assert instance.name == "test_action"
+    assert instance is not None, "Instance should not be None"
+    assert instance.name == "test_action", f"Expected 'test_action', got '{instance.name}'"
 
 
 # Test Enhancement #2: Async context manager

@@ -16,6 +16,7 @@ from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.integrations.registry import IntegrationRegistry
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.workflows.engine import WorkflowEngine
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 logger = logging.getLogger(__name__)
