@@ -22,34 +22,35 @@ logger = logging.getLogger(__name__)
 MAX_WORKFLOW_HISTORY = 1000  # Maximum number of workflow executions to keep in history
 
 
-def handle_workflow_error(error: Exception, workflow_name: str, context: dict[str, Any]) -> dict[str, Any]:
+def handle_workflow_error(
+    workflow_name: str,
+    operation: str,
+    exception: Exception,
+    *,
+    log_level: str = "exception",
+) -> None:
     """
-    Handle workflow execution errors with standardized error response.
+    Standardized error handling helper for workflow operations.
     
     Args:
-        error: The exception that occurred
-        workflow_name: Name of the workflow that failed
-        context: Execution context
+        workflow_name: Name of the workflow
+        operation: Operation that failed (e.g., 'execution', 'validation')
+        exception: The exception that was raised
+        log_level: Logging level to use ('exception', 'error', 'warning')
         
-    Returns:
-        Standardized error response dictionary
+    Raises:
+        WorkflowError: Workflow error with formatted message
     """
-    error_response = {
-        "status": "error",
-        "workflow_name": workflow_name,
-        "error_type": type(error).__name__,
-        "error_message": str(error),
-        "context": context,
-    }
+    error_msg = f"Workflow {operation} failed: {exception}"
     
-    logger.error(
-        "Workflow error in '%s': %s - %s",
-        workflow_name,
-        type(error).__name__,
-        str(error)
-    )
+    if log_level == "exception":
+        logger.exception(error_msg)
+    elif log_level == "error":
+        logger.error(error_msg)
+    elif log_level == "warning":
+        logger.warning(error_msg)
     
-    return error_response
+    raise WorkflowError(error_msg, workflow_name) from exception
 
 
 class WorkflowEngine:

@@ -32,6 +32,12 @@ class TestBug1IntegrationRegistryCleanup:
 
         # Create mock integration class
         class MockIntegration(Integration):
+            async def initialize(self, config: dict):
+                self.is_initialized = True
+            
+            async def health_check(self) -> dict:
+                return {"status": "healthy"}
+            
             async def execute(self, inputs, context):
                 return {"success": True}
 
@@ -58,6 +64,12 @@ class TestBug1IntegrationRegistryCleanup:
         registry = IntegrationRegistry()
 
         class FailingIntegration(Integration):
+            async def initialize(self, config: dict):
+                self.is_initialized = True
+            
+            async def health_check(self) -> dict:
+                return {"status": "healthy"}
+            
             async def execute(self, inputs, context):
                 return {"success": True}
 
