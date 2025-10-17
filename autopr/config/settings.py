@@ -398,20 +398,18 @@ class AutoPRSettings(BaseSettings):
         env_config_file = config_dir / f"{self.environment.value}.yaml"
 
         if env_config_file.exists():
-            try:
-                with open(env_config_file, encoding="utf-8") as f:
-                    env_config = yaml.safe_load(f)
+            env_config = self._load_yaml_config(env_config_file)
+            if env_config:
+                self._apply_config_overrides(env_config)
 
-                if env_config:
-                    self._apply_config_overrides(env_config)
-            except Exception as e:
-                logging.warning(
-                    f"Failed to load environment config from {env_config_file}: {e}"
-                )
-
-    def _load_custom_config(self) -> None:
-        """Load custom configuration from various sources."""
-        config_paths = [
+    def _get_config_file_paths(self) -> list[Path]:
+        """
+        Get list of potential configuration file paths in priority order.
+        
+        Returns:
+            List of Path objects to check for configuration files
+        """
+        return [
             Path.cwd() / "autopr.yaml",
             Path.cwd() / "autopr.yml",
             Path.cwd() / ".autopr.yaml",
@@ -420,19 +418,33 @@ class AutoPRSettings(BaseSettings):
             Path.home() / ".autopr.yml",
         ]
 
+    def _load_yaml_config(self, config_path: Path) -> dict[str, Any] | None:
+        """
+        Load YAML configuration from a file.
+        
+        Args:
+            config_path: Path to the configuration file
+            
+        Returns:
+            Parsed configuration dictionary or None if loading fails
+        """
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                return yaml.safe_load(f)
+        except Exception as e:
+            logging.warning(f"Failed to load config from {config_path}: {e}")
+            return None
+
+    def _load_custom_config(self) -> None:
+        """Load custom configuration from various sources."""
+        config_paths = self._get_config_file_paths()
+
         for config_path in config_paths:
             if config_path.exists():
-                try:
-                    with open(config_path, encoding="utf-8") as f:
-                        custom_config = yaml.safe_load(f)
-
-                    if custom_config:
-                        self._apply_config_overrides(custom_config)
-                        break
-                except Exception as e:
-                    logging.warning(
-                        f"Failed to load custom config from {config_path}: {e}"
-                    )
+                custom_config = self._load_yaml_config(config_path)
+                if custom_config:
+                    self._apply_config_overrides(custom_config)
+                    break
 
     def _apply_config_overrides(self, overrides: dict[str, Any]) -> None:
         """Apply configuration overrides."""
@@ -489,42 +501,37 @@ class AutoPRSettings(BaseSettings):
 
         return errors
 
-    def get_provider_config(self, provider: LLMProvider) -> dict[str, Any]:
-        """Get configuration for a specific LLM provider."""
-        provider_configs = {
-            LLMProvider.OPENAI: {
-                "api_key": self.llm.openai_api_key,
-                "base_url": self.llm.openai_base_url,
-                "default_model": self.llm.openai_default_model,
-            },
-            LLMProvider.ANTHROPIC: {
-                "api_key": self.llm.anthropic_api_key,
-                "base_url": self.llm.anthropic_base_url,
-                "default_model": self.llm.anthropic_default_model,
-            },
-            LLMProvider.MISTRAL: {
-                "api_key": self.llm.mistral_api_key,
-                "base_url": self.llm.mistral_base_url,
-                "default_model": self.llm.mistral_default_model,
-            },
-            LLMProvider.GROQ: {
-                "api_key": self.llm.groq_api_key,
-                "base_url": self.llm.groq_base_url,
-                "default_model": self.llm.groq_default_model,
-            },
-            LLMProvider.PERPLEXITY: {
-                "api_key": self.llm.perplexity_api_key,
-                "base_url": self.llm.perplexity_base_url,
-                "default_model": self.llm.perplexity_default_model,
-            },
-            LLMProvider.TOGETHER: {
-                "api_key": self.llm.together_api_key,
-                "base_url": self.llm.together_base_url,
-                "default_model": self.llm.together_default_model,
-            },
+    def _get_provider_specific_config(self, provider: LLMProvider) -> dict[str, Any]:
+        """
+        Get provider-specific configuration using a pattern-based approach.
+        
+        Args:
+            provider: LLM provider to get config for
+            
+        Returns:
+            Dictionary with provider-specific configuration
+        """
+        provider_name = provider.value.lower()
+        
+        return {
+            "api_key": getattr(self.llm, f"{provider_name}_api_key", None),
+            "base_url": getattr(self.llm, f"{provider_name}_base_url", None),
+            "default_model": getattr(self.llm, f"{provider_name}_default_model", None),
         }
 
-        config = provider_configs.get(provider, {})
+    def get_provider_config(self, provider: LLMProvider) -> dict[str, Any]:
+        """
+        Get configuration for a specific LLM provider.
+        
+        Args:
+            provider: LLM provider to get config for
+            
+        Returns:
+            Dictionary with complete provider configuration including common settings
+        """
+        # Get provider-specific config using pattern-based approach
+        config = self._get_provider_specific_config(provider)
+        
         # Add common settings
         config.update(
             {
