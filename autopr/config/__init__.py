@@ -56,6 +56,8 @@ class AutoPRConfig:
     # Engine configuration
     max_concurrent_workflows: int = 10
     workflow_timeout: int = 300  # seconds
+    workflow_retry_attempts: int = 3
+    workflow_retry_delay: int = 5  # seconds
     enable_debug_logging: bool = False
 
     # Database configuration
@@ -84,6 +86,8 @@ class AutoPRConfig:
             "REDIS_URL": "redis_url",
             "MAX_CONCURRENT_WORKFLOWS": "max_concurrent_workflows",
             "WORKFLOW_TIMEOUT": "workflow_timeout",
+            "WORKFLOW_RETRY_ATTEMPTS": "workflow_retry_attempts",
+            "WORKFLOW_RETRY_DELAY": "workflow_retry_delay",
             "ENABLE_DEBUG_LOGGING": "enable_debug_logging",
         }
 
@@ -91,7 +95,7 @@ class AutoPRConfig:
             env_value = os.getenv(env_var)
             if env_value is not None:
                 # Handle type conversion
-                if attr_name in {"max_concurrent_workflows", "workflow_timeout"}:
+                if attr_name in {"max_concurrent_workflows", "workflow_timeout", "workflow_retry_attempts", "workflow_retry_delay"}:
                     setattr(self, attr_name, int(env_value))
                 elif attr_name == "enable_debug_logging":
                     setattr(
