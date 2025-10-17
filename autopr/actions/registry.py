@@ -5,6 +5,7 @@ Registry for managing and discovering actions.
 """
 
 from collections.abc import Callable
+from functools import lru_cache
 import logging
 from typing import Any, Protocol, TypeVar
 
@@ -82,6 +83,18 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
             return self._instances[action_name]
 
         # Create new instance
+        return self._create_action_instance(action_name)
+
+    def _create_action_instance(self, action_name: str) -> ActionT | None:
+        """
+        Create a new action instance.
+        
+        Args:
+            action_name: Name of action to create
+            
+        Returns:
+            Action instance or None if creation fails
+        """
         try:
             action_cls = self._actions[action_name]
             instance = action_cls(action_name, f"Instance of {action_name}")

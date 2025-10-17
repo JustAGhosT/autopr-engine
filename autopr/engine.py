@@ -14,10 +14,46 @@ from autopr.actions.registry import ActionRegistry
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
+from autopr.integrations.registry import IntegrationRegistry
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.workflows.engine import WorkflowEngine
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 logger = logging.getLogger(__name__)
+
+
+def handle_operation_error(
+    operation_name: str,
+    exception: Exception,
+    error_class: type[AutoPRException] = AutoPRException,
+    *,
+    log_level: str = "exception",
+    reraise: bool = True,
+) -> None:
+    """
+    Standardized error handling helper for engine operations.
+    
+    Args:
+        operation_name: Name of the operation that failed
+        exception: The exception that was raised
+        error_class: Exception class to raise (default: AutoPRException)
+        log_level: Logging level to use ('exception', 'error', 'warning')
+        reraise: Whether to reraise the exception after logging
+        
+    Raises:
+        error_class: The specified exception class with formatted message
+    """
+    error_msg = f"{operation_name} failed: {exception}"
+    
+    if log_level == "exception":
+        logger.exception(error_msg)
+    elif log_level == "error":
+        logger.error(error_msg)
+    elif log_level == "warning":
+        logger.warning(error_msg)
+    
+    if reraise:
+        raise error_class(error_msg) from exception
 
 
 class AutoPREngine:
@@ -46,17 +82,32 @@ class AutoPREngine:
 
         logger.info("AutoPR Engine initialized successfully")
 
+    async def __aenter__(self) -> "AutoPREngine":
+        """Async context manager entry."""
+        await self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Async context manager exit."""
+        await self.stop()
+
     async def start(self) -> None:
         """Start the AutoPR Engine and initialize all components."""
         try:
+            # Validate configuration before starting
+            if not self.config.validate():
+                msg = "Invalid configuration: Missing required authentication or LLM provider keys"
+                logger.error(msg)
+                raise ConfigurationError(msg)
+            
             await self.workflow_engine.start()
             await self.integration_registry.initialize()
             await self.llm_manager.initialize()
             logger.info("AutoPR Engine started successfully")
+        except ConfigurationError:
+            raise
         except Exception as e:
-            logger.exception(f"Failed to start AutoPR Engine: {e}")
-            msg = f"Engine startup failed: {e}"
-            raise AutoPRException(msg)
+            handle_operation_error("Engine startup", e, AutoPRException)
 
     async def stop(self) -> None:
         """Stop the AutoPR Engine and cleanup resources."""
@@ -66,9 +117,7 @@ class AutoPREngine:
             await self.llm_manager.cleanup()
             logger.info("AutoPR Engine stopped successfully")
         except Exception as e:
-            logger.exception(f"Error during engine shutdown: {e}")
-            msg = f"Engine shutdown failed: {e}"
-            raise AutoPRException(msg)
+            handle_operation_error("Engine shutdown", e, AutoPRException)
 
     async def process_event(
         self, event_type: str, event_data: dict[str, Any]
@@ -88,9 +137,7 @@ class AutoPREngine:
             logger.info(f"Successfully processed {event_type} event")
             return result
         except Exception as e:
-            logger.exception(f"Failed to process {event_type} event: {e}")
-            msg = f"Event processing failed: {e}"
-            raise AutoPRException(msg)
+            handle_operation_error("Event processing", e, AutoPRException)
 
     def get_status(self) -> dict[str, Any]:
         """

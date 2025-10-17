@@ -97,33 +97,6 @@ __package_info__ = {
     ],
 }
 
-# Optional dependency warnings
-try:
-    pass
-except ImportError:
-    import warnings
-
-    warnings.warn(
-        "AutoGen is not installed. Multi-agent features will be unavailable. "
-        "Install with: pip install 'autopr-engine[ai]'",
-        ImportWarning,
-        stacklevel=2,
-    )
-
-# Mem0 is an optional dependency for advanced memory features
-mem0 = None
-try:
-    pass
-except ImportError:
-    import warnings
-
-    warnings.warn(
-        "Mem0 is not installed. Advanced memory features will be unavailable. "
-        "Install with: pip install 'autopr-engine[memory]'",
-        ImportWarning,
-        stacklevel=2,
-    )
-
 # Setup logging defaults
 
 
@@ -154,9 +127,6 @@ def configure_logging(level: str = "INFO", *, format_json: bool = False) -> None
         )
 
 
-log_level = os.getenv("AUTOPR_LOG_LEVEL", "INFO")
-json_logging = os.getenv("AUTOPR_JSON_LOGGING", "false").lower() == "true"
-configure_logging(level=log_level, format_json=json_logging)
 log_level = os.getenv("AUTOPR_LOG_LEVEL", "INFO")
 json_logging = os.getenv("AUTOPR_JSON_LOGGING", "false").lower() == "true"
 configure_logging(level=log_level, format_json=json_logging)
