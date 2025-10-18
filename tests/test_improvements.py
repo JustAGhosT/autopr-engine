@@ -137,6 +137,7 @@ class TestImprovement4HealthCheckEndpoint:
     async def test_health_check_returns_status(self):
         """Test that health check returns comprehensive status."""
         config = AutoPRConfig()
+        config.test_mode = True
         engine = AutoPREngine(config)
 
         # Start engine to initialize components
@@ -169,6 +170,7 @@ class TestImprovement4HealthCheckEndpoint:
     async def test_health_check_workflow_engine(self):
         """Test that workflow engine health check works."""
         config = AutoPRConfig()
+        config.test_mode = True
         engine = AutoPREngine(config)
         await engine.start()
 

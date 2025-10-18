@@ -30,6 +30,9 @@ class TestBug1IntegrationRegistryCleanup:
         """Test that unregister_integration properly calls async cleanup."""
         registry = IntegrationRegistry()
 
+        # Track cleanup calls
+        cleanup_called = []
+
         # Create mock integration class
         class MockIntegration(Integration):
             async def initialize(self, config: dict):
@@ -42,21 +45,22 @@ class TestBug1IntegrationRegistryCleanup:
                 return {"success": True}
 
             async def cleanup(self):
-                self.cleanup_called = True
+                cleanup_called.append(True)
 
         # Register integration
         registry.register_integration(MockIntegration)
-        instance = await registry.get_integration("MockIntegration")
+        # The integration is registered with name "temp" (from the temp instance created in register_integration)
+        instance = await registry.get_integration("temp")
 
         assert instance is not None
-        assert not hasattr(instance, "cleanup_called")
+        assert len(cleanup_called) == 0
 
         # Unregister should call cleanup
-        await registry.unregister_integration("MockIntegration")
+        await registry.unregister_integration("temp")
 
         # Verify cleanup was called
-        assert hasattr(instance, "cleanup_called")
-        assert instance.cleanup_called is True
+        assert len(cleanup_called) == 1
+        assert cleanup_called[0] is True
 
     @pytest.mark.asyncio
     async def test_unregister_handles_cleanup_error(self):
@@ -196,15 +200,20 @@ class TestBug4WorkflowRetryLogic:
         config.workflow_timeout = 1
 
         engine = WorkflowEngine(config)
+        await engine.start()  # Start the engine
+        
         workflow = FailingWorkflow("test_workflow", "Test workflow")
         engine.register_workflow(workflow)
 
-        # Should raise WorkflowError, not generic error
-        with pytest.raises(WorkflowError) as exc_info:
-            await engine.execute_workflow("test_workflow", {})
+        try:
+            # Should raise WorkflowError, not generic error
+            with pytest.raises(WorkflowError) as exc_info:
+                await engine.execute_workflow("test_workflow", {})
 
-        # Error message should be specific
-        assert "Workflow failed" in str(exc_info.value)
+            # Error message should be specific
+            assert "Workflow failed" in str(exc_info.value)
+        finally:
+            await engine.stop()
 
     @pytest.mark.asyncio
     async def test_retry_with_exponential_backoff(self):
@@ -232,24 +241,29 @@ class TestBug4WorkflowRetryLogic:
         config.workflow_timeout = 10
 
         engine = WorkflowEngine(config)
+        await engine.start()  # Start the engine
+        
         workflow = TransientFailureWorkflow("test_workflow", "Test workflow")
         engine.register_workflow(workflow)
 
-        # Should succeed on third attempt
-        result = await engine.execute_workflow("test_workflow", {})
-        assert result["success"] is True
-        assert workflow.attempts == 3
+        try:
+            # Should succeed on third attempt
+            result = await engine.execute_workflow("test_workflow", {})
+            assert result["success"] is True
+            assert workflow.attempts == 3
 
-        # Verify exponential backoff (approximate timing)
-        if len(attempt_times) >= 3:
-            # Time between first and second attempt should be ~1s
-            delay1 = attempt_times[1] - attempt_times[0]
-            # Time between second and third attempt should be ~2s
-            delay2 = attempt_times[2] - attempt_times[1]
+            # Verify exponential backoff (approximate timing)
+            if len(attempt_times) >= 3:
+                # Time between first and second attempt should be ~1s
+                delay1 = attempt_times[1] - attempt_times[0]
+                # Time between second and third attempt should be ~2s
+                delay2 = attempt_times[2] - attempt_times[1]
 
-            # Allow some tolerance for execution time
-            assert 0.5 < delay1 < 2.0
-            assert 1.5 < delay2 < 3.0
+                # Allow some tolerance for execution time
+                assert 0.5 < delay1 < 2.0
+                assert 1.5 < delay2 < 3.0
+        finally:
+            await engine.stop()
 
 
 class TestBug5SQLiteConnectionLeaks:

@@ -40,6 +40,7 @@ class TestCodeReviewIntegration:
     async def test_health_check_with_metrics_lock(self):
         """Test health check works with workflow metrics lock."""
         config = AutoPRConfig()
+        config.test_mode = True
         engine = AutoPREngine(config)
 
         await engine.start()
@@ -64,6 +65,7 @@ class TestCodeReviewIntegration:
     async def test_concurrent_operations_with_locks(self):
         """Test that concurrent operations don't cause race conditions."""
         config = AutoPRConfig()
+        config.test_mode = True
         engine = AutoPREngine(config)
 
         await engine.start()
@@ -169,6 +171,7 @@ class TestCodeReviewIntegration:
     async def test_engine_lifecycle_with_cleanup(self):
         """Test complete engine lifecycle with proper cleanup."""
         config = AutoPRConfig()
+        config.test_mode = True
         engine = AutoPREngine(config)
 
         # Start engine
@@ -231,6 +234,7 @@ class TestEndToEndScenario:
     async def test_complete_workflow_with_health_checks(self):
         """Test a complete workflow execution with health monitoring."""
         config = AutoPRConfig()
+        config.test_mode = True
         engine = AutoPREngine(config)
 
         await engine.start()
