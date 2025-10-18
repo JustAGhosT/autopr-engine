@@ -268,10 +268,12 @@ class TestImprovement5MetricsBatching:
         """Test that metrics collector uses context managers consistently."""
         from autopr.quality.metrics_collector import MetricsCollector
         import sqlite3
+        import time
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
 
+        conn = None
         try:
             collector = MetricsCollector(db_path)
 
@@ -284,17 +286,24 @@ class TestImprovement5MetricsBatching:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM metrics")
             count = cursor.fetchone()[0]
-            conn.close()
 
             assert count == 100
 
         finally:
-            Path(db_path).unlink(missing_ok=True)
+            if conn:
+                conn.close()
+            # Small delay for Windows to release file locks
+            time.sleep(0.1)
+            try:
+                Path(db_path).unlink()
+            except (PermissionError, OSError):
+                pass  # Ignore cleanup errors
 
     def test_metrics_concurrent_writes(self):
         """Test that metrics can be written concurrently without locks."""
         from autopr.quality.metrics_collector import MetricsCollector
         import sqlite3
+        import time
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
@@ -322,7 +331,12 @@ class TestImprovement5MetricsBatching:
                 assert events_count == 50
 
         finally:
-            Path(db_path).unlink(missing_ok=True)
+            # Small delay for Windows to release file locks
+            time.sleep(0.1)
+            try:
+                Path(db_path).unlink()
+            except (PermissionError, OSError):
+                pass  # Ignore cleanup errors
 
 
 if __name__ == "__main__":

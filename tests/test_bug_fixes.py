@@ -274,6 +274,7 @@ class TestBug5SQLiteConnectionLeaks:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
 
+        conn = None
         try:
             collector = MetricsCollector(db_path)
 
@@ -299,33 +300,47 @@ class TestBug5SQLiteConnectionLeaks:
             feedback_count = cursor.fetchone()[0]
             assert feedback_count == 1
 
-            conn.close()
-
         finally:
-            Path(db_path).unlink(missing_ok=True)
+            if conn:
+                conn.close()
+            # Small delay for Windows to release file locks
+            import time
+            time.sleep(0.1)
+            try:
+                Path(db_path).unlink()
+            except (PermissionError, OSError):
+                pass  # Ignore cleanup errors
 
     def test_context_manager_closes_connection_on_error(self):
         """Test that connections are closed even when errors occur."""
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
 
+        conn = None
         try:
             collector = MetricsCollector(db_path)
 
             # Try to execute invalid SQL (should fail gracefully)
             try:
-                with sqlite3.connect(collector.db_path) as conn:
-                    cursor = conn.cursor()
+                with sqlite3.connect(collector.db_path) as conn_temp:
+                    cursor = conn_temp.cursor()
                     cursor.execute("SELECT * FROM nonexistent_table")
             except sqlite3.OperationalError:
                 pass
 
             # Connection should be closed, allowing us to open again
             conn = sqlite3.connect(db_path)
-            conn.close()
 
         finally:
-            Path(db_path).unlink(missing_ok=True)
+            if conn:
+                conn.close()
+            # Small delay for Windows to release file locks
+            import time
+            time.sleep(0.1)
+            try:
+                Path(db_path).unlink()
+            except (PermissionError, OSError):
+                pass  # Ignore cleanup errors
 
     def test_no_database_locks_under_concurrent_access(self):
         """Test that concurrent access doesn't cause database locks."""
@@ -350,7 +365,13 @@ class TestBug5SQLiteConnectionLeaks:
                 assert cursor.fetchone()[0] == 10
 
         finally:
-            Path(db_path).unlink(missing_ok=True)
+            # Small delay for Windows to release file locks
+            import time
+            time.sleep(0.1)
+            try:
+                Path(db_path).unlink()
+            except (PermissionError, OSError):
+                pass  # Ignore cleanup errors
 
 
 if __name__ == "__main__":

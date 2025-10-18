@@ -138,10 +138,12 @@ class TestCodeReviewIntegration:
         """Test that metrics can be collected rapidly without database locks."""
         from autopr.quality.metrics_collector import MetricsCollector
         import sqlite3
+        import time
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
 
+        conn = None
         try:
             collector = MetricsCollector(db_path)
 
@@ -162,10 +164,15 @@ class TestCodeReviewIntegration:
             events_count = cursor.fetchone()[0]
             assert events_count == 100
 
-            conn.close()
-
         finally:
-            Path(db_path).unlink(missing_ok=True)
+            if conn:
+                conn.close()
+            # Small delay for Windows to release file locks
+            time.sleep(0.1)
+            try:
+                Path(db_path).unlink()
+            except (PermissionError, OSError):
+                pass  # Ignore cleanup errors
 
     @pytest.mark.asyncio
     async def test_engine_lifecycle_with_cleanup(self):
