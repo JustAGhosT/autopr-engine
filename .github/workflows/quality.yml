@@ -49,31 +49,15 @@ jobs:
           poetry run pre-commit run --all-files
 
       - name: Comment PR with quality results
-        if: github.event_name == 'pull_request' && github.event.pull_request && !github.event.pull_request.head.repo.fork
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const comment = `## Quality Feedback ✅
-
-            **Python Version:** ${{ matrix.python-version }}
-
-            **Pre-commit Hooks:** ✅ Passed
-
-            **Note:** Comprehensive quality checks are run in the CI workflow with volume-aware execution.
-
-            ---
-            *Quality feedback completed successfully*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+        # Note: This workflow is disabled and doesn't trigger on pull requests
+        # The PR feedback functionality has been moved to ci-cd-pipeline.yml
+        run: |
+          echo "This workflow is disabled - PR feedback moved to ci-cd-pipeline.yml"
 
   security-feedback:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request && !github.event.pull_request.head.repo.fork
+    # Note: This workflow is disabled and doesn't trigger on pull requests
+    # The security feedback functionality has been moved to ci-cd-pipeline.yml
 
     steps:
       - name: Checkout code
@@ -112,64 +96,7 @@ jobs:
             safety-report.json
 
       - name: Comment security results
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-
-            let securityComment = '## Security Scan Results 🔒\n\n';
-
-            // Read bandit report
-            try {
-              if (fs.existsSync('bandit-report.json')) {
-                const banditReport = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
-                const issues = banditReport.results || [];
-                
-                securityComment += `**Bandit Security Issues:** ${issues.length}\n`;
-                
-                if (issues.length > 0) {
-                  securityComment += '\n### Security Issues Found:\n';
-                  issues.slice(0, 5).forEach(issue => {
-                    securityComment += `- **${issue.issue_severity}**: ${issue.issue_text} (${issue.filename}:${issue.line_number})\n`;
-                  });
-                  
-                  if (issues.length > 5) {
-                    securityComment += `- ... and ${issues.length - 5} more issues\n`;
-                  }
-                }
-              }
-            } catch (error) {
-              securityComment += '**Bandit Security Issues:** ✅ No issues found\n';
-            }
-
-            // Read safety report
-            try {
-              if (fs.existsSync('safety-report.json')) {
-                const safetyReport = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
-                const vulnerabilities = safetyReport.vulnerabilities || [];
-                
-                securityComment += `\n**Dependency Vulnerabilities:** ${vulnerabilities.length}\n`;
-                
-                if (vulnerabilities.length > 0) {
-                  securityComment += '\n### Vulnerable Dependencies:\n';
-                  vulnerabilities.slice(0, 5).forEach(vuln => {
-                    securityComment += `- **${vuln.package}**: ${vuln.vulnerability_id} - ${vuln.advisory}\n`;
-                  });
-                  
-                  if (vulnerabilities.length > 5) {
-                    securityComment += `- ... and ${vulnerabilities.length - 5} more vulnerabilities\n`;
-                  }
-                }
-              }
-            } catch (error) {
-              securityComment += '\n**Dependency Vulnerabilities:** ✅ No vulnerabilities found\n';
-            }
-
-            securityComment += '\n---\n*Security scan completed*';
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: securityComment
-            });
+        # Note: This workflow is disabled and doesn't trigger on pull requests
+        # The security feedback functionality has been moved to ci-cd-pipeline.yml
+        run: |
+          echo "This workflow is disabled - security feedback moved to ci-cd-pipeline.yml"
