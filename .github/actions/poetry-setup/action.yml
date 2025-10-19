@@ -1,0 +1,89 @@
+name: 'Poetry Setup'
+description: 'Setup Poetry environment with caching and dependencies'
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: true
+  cache-key:
+    description: 'Cache key for dependencies'
+    required: true
+  install-dev:
+    description: 'Install development dependencies'
+    required: false
+    default: 'false'
+  install-quality:
+    description: 'Install quality tools'
+    required: false
+    default: 'false'
+  quality-tools:
+    description: 'Quality tools to install'
+    required: false
+    default: 'ruff mypy bandit'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Remove incompatible virtual environment
+      shell: bash
+      run: |
+        if [ -d ".venv" ]; then
+          rm -rf .venv
+          echo "Removed incompatible virtual environment"
+        fi
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+    - name: Configure Poetry to use correct Python version
+      shell: bash
+      run: |
+        poetry env use python
+        poetry env info
+
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: ${{ inputs.cache-key }}
+
+    - name: Install Python dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        poetry env use python
+        if [ "${{ inputs.install-dev }}" == "true" ]; then
+          poetry install --no-interaction --no-root --with dev
+        else
+          poetry install --no-interaction --no-root
+        fi
+
+    - name: Install quality tools
+      if: ${{ inputs.install-quality == 'true' }}
+      shell: bash
+      run: |
+        poetry run pip install ${{ inputs.quality-tools }}
+
+    - name: Install Node.js dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Install TypeScript dependencies (if needed)
+      shell: bash
+      run: |
+        if [ -f "package.json" ] && grep -q "typescript\|@types" package.json; then
+          echo "Installing TypeScript dependencies..."
+          npm install --save-dev typescript @types/node @types/react @types/react-dom
+        else
+          echo "No TypeScript dependencies needed"
+        fi

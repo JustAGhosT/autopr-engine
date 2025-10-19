@@ -3,20 +3,22 @@
 Comprehensive tests for metrics collector module.
 """
 
+from datetime import datetime, timedelta
 import json
 import os
 import tempfile
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.quality.metrics_collector import (EvaluationMetrics,
-                                                  MetricPoint,
-                                                  MetricsCollector,
-                                                  PerformanceMetrics)
+    from autopr.quality.metrics_collector import (
+        EvaluationMetrics,
+        MetricPoint,
+        MetricsCollector,
+        PerformanceMetrics,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -33,7 +35,7 @@ class TestMetricPoint:
             timestamp=timestamp,
             tags={"tag1": "value1", "tag2": "value2"}
         )
-        
+
         assert metric_point.name == "test_metric"
         assert metric_point.value == 42.5
         assert metric_point.timestamp == timestamp
@@ -48,7 +50,7 @@ class TestMetricPoint:
             timestamp=timestamp,
             tags={"environment": "test"}
         )
-        
+
         result = metric_point.to_dict()
         expected = {
             "name": "test_metric",
@@ -66,7 +68,7 @@ class TestMetricPoint:
             "timestamp": "2023-01-01T12:00:00",
             "tags": {"service": "api"}
         }
-        
+
         metric_point = MetricPoint.from_dict(data)
         assert metric_point.name == "test_metric"
         assert metric_point.value == 75.5
@@ -80,7 +82,7 @@ class TestEvaluationMetrics:
     def test_evaluation_metrics_initialization(self):
         """Test EvaluationMetrics initialization."""
         metrics = EvaluationMetrics()
-        
+
         assert metrics.success_rate == 0.0
         assert metrics.total_fixes == 0
         assert metrics.successful_fixes == 0
@@ -91,7 +93,7 @@ class TestEvaluationMetrics:
     def test_evaluation_metrics_record_fix(self):
         """Test recording a fix."""
         metrics = EvaluationMetrics()
-        
+
         # Record successful fix
         metrics.record_fix(success=True, fix_time=1.5)
         assert metrics.total_fixes == 1
@@ -100,7 +102,7 @@ class TestEvaluationMetrics:
         assert metrics.success_rate == 1.0
         assert metrics.average_fix_time == 1.5
         assert metrics.fix_times == [1.5]
-        
+
         # Record failed fix
         metrics.record_fix(success=False, fix_time=2.0)
         assert metrics.total_fixes == 2
@@ -113,15 +115,15 @@ class TestEvaluationMetrics:
     def test_evaluation_metrics_calculate_success_rate(self):
         """Test success rate calculation."""
         metrics = EvaluationMetrics()
-        
+
         # No fixes
         assert metrics.calculate_success_rate() == 0.0
-        
+
         # All successful
         metrics.record_fix(success=True, fix_time=1.0)
         metrics.record_fix(success=True, fix_time=1.0)
         assert metrics.calculate_success_rate() == 1.0
-        
+
         # Mixed results
         metrics.record_fix(success=False, fix_time=1.0)
         assert metrics.calculate_success_rate() == 2/3
@@ -131,7 +133,7 @@ class TestEvaluationMetrics:
         metrics = EvaluationMetrics()
         metrics.record_fix(success=True, fix_time=1.0)
         metrics.record_fix(success=False, fix_time=2.0)
-        
+
         result = metrics.to_dict()
         expected = {
             "success_rate": 0.5,
@@ -150,7 +152,7 @@ class TestPerformanceMetrics:
     def test_performance_metrics_initialization(self):
         """Test PerformanceMetrics initialization."""
         metrics = PerformanceMetrics()
-        
+
         assert metrics.total_processing_time == 0.0
         assert metrics.average_response_time == 0.0
         assert metrics.response_times == []
@@ -160,11 +162,11 @@ class TestPerformanceMetrics:
     def test_performance_metrics_record_response_time(self):
         """Test recording response time."""
         metrics = PerformanceMetrics()
-        
+
         metrics.record_response_time(1.5)
         assert metrics.response_times == [1.5]
         assert metrics.average_response_time == 1.5
-        
+
         metrics.record_response_time(2.5)
         assert metrics.response_times == [1.5, 2.5]
         assert metrics.average_response_time == 2.0
@@ -172,7 +174,7 @@ class TestPerformanceMetrics:
     def test_performance_metrics_update_system_metrics(self):
         """Test updating system metrics."""
         metrics = PerformanceMetrics()
-        
+
         metrics.update_system_metrics(memory_usage=512.0, cpu_usage=25.5)
         assert metrics.memory_usage == 512.0
         assert metrics.cpu_usage == 25.5
@@ -183,7 +185,7 @@ class TestPerformanceMetrics:
         metrics.record_response_time(1.0)
         metrics.record_response_time(2.0)
         metrics.update_system_metrics(memory_usage=256.0, cpu_usage=15.0)
-        
+
         result = metrics.to_dict()
         expected = {
             "total_processing_time": 0.0,
@@ -220,7 +222,7 @@ class TestMetricsCollector:
             timestamp=timestamp,
             tags={"test": "value"}
         )
-        
+
         assert len(metrics_collector.events) == 1
         event = metrics_collector.events[0]
         assert event.name == "test_metric"
@@ -231,7 +233,7 @@ class TestMetricsCollector:
     def test_record_event(self, metrics_collector):
         """Test recording an event."""
         metrics_collector.record_event("test_event", {"data": "value"})
-        
+
         assert len(metrics_collector.events) == 1
         event = metrics_collector.events[0]
         assert event.name == "test_event"
@@ -245,7 +247,7 @@ class TestMetricsCollector:
             "user_id": "user123"
         }
         metrics_collector.record_feedback(feedback_data)
-        
+
         assert len(metrics_collector.feedback) == 1
         assert metrics_collector.feedback[0] == feedback_data
 
@@ -257,7 +259,7 @@ class TestMetricsCollector:
             "memory_usage": 256.0
         }
         metrics_collector.record_benchmark(benchmark_data)
-        
+
         assert len(metrics_collector.benchmarks) == 1
         assert metrics_collector.benchmarks[0] == benchmark_data
 
@@ -268,9 +270,9 @@ class TestMetricsCollector:
         metrics_collector.evaluation_metrics.record_fix(success=False, fix_time=2.0)
         metrics_collector.performance_metrics.record_response_time(1.5)
         metrics_collector.record_event("test_event", {"data": "value"})
-        
+
         summary = metrics_collector.generate_summary()
-        
+
         assert "evaluation_metrics" in summary
         assert "performance_metrics" in summary
         assert "total_events" in summary
@@ -286,9 +288,9 @@ class TestMetricsCollector:
         metrics_collector.evaluation_metrics.record_fix(success=True, fix_time=1.0)
         metrics_collector.performance_metrics.record_response_time(1.5)
         metrics_collector.record_event("test_event", {"data": "value"})
-        
+
         report = metrics_collector.generate_report()
-        
+
         assert "summary" in report
         assert "events" in report
         assert "feedback" in report
@@ -300,22 +302,22 @@ class TestMetricsCollector:
         # Add test data
         metrics_collector.record_metric("test_metric", 42.0)
         metrics_collector.record_event("test_event", {"data": "value"})
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_file = f.name
-        
+
         try:
             metrics_collector.save_metrics_to_file(temp_file)
-            
+
             # Verify file was created and contains data
             assert os.path.exists(temp_file)
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 data = json.load(f)
-            
+
             assert "events" in data
             assert "summary" in data
             assert len(data["events"]) == 2  # metric + event
-            
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -337,18 +339,18 @@ class TestMetricsCollector:
                 "total_benchmarks": 0
             }
         }
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             json.dump(test_data, f)
             temp_file = f.name
-        
+
         try:
             loaded_collector = MetricsCollector.load_metrics_from_file(temp_file)
-            
+
             assert len(loaded_collector.events) == 1
             assert loaded_collector.events[0].name == "test_metric"
             assert loaded_collector.events[0].value == 42.0
-            
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -359,9 +361,9 @@ class TestMetricsCollector:
         metrics_collector.performance_metrics.record_response_time(1.0)
         metrics_collector.performance_metrics.record_response_time(2.0)
         metrics_collector.performance_metrics.record_response_time(3.0)
-        
+
         performance = metrics_collector.calculate_performance_metrics()
-        
+
         assert performance["average_response_time"] == 2.0
         assert performance["min_response_time"] == 1.0
         assert performance["max_response_time"] == 3.0
@@ -372,17 +374,17 @@ class TestMetricsCollector:
         now = datetime.now()
         past = now - timedelta(hours=1)
         future = now + timedelta(hours=1)
-        
+
         # Add metrics with different timestamps
         metrics_collector.record_metric("metric1", 1.0, timestamp=past)
         metrics_collector.record_metric("metric2", 2.0, timestamp=now)
         metrics_collector.record_metric("metric3", 3.0, timestamp=future)
-        
+
         # Get metrics for the last hour
         recent_metrics = metrics_collector.get_metrics_by_time_range(
             start_time=past, end_time=now
         )
-        
+
         assert len(recent_metrics) == 2  # metric1 and metric2
         assert any(m.name == "metric1" for m in recent_metrics)
         assert any(m.name == "metric2" for m in recent_metrics)

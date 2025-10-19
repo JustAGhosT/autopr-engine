@@ -4,9 +4,10 @@ Simple CLI script to run the AI Linting Fixer
 """
 
 import argparse
+import os
 from pathlib import Path
 import sys
-import os
+
 
 # Load environment variables from .env file
 try:
@@ -16,7 +17,7 @@ except ImportError:
     # If python-dotenv is not available, try to load .env manually
     env_file = Path(__file__).parent / ".env"
     if env_file.exists():
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:

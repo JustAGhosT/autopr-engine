@@ -2,17 +2,18 @@
 Basic tests for autopr/actions/ai_linting_fixer/display.py
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-import sys
 from pathlib import Path
+import sys
+
+import pytest
+
 
 # Add the parent directory to sys.path to import the module
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
     # Import the module being tested
-    module = __import__(f"autopr.autopr.actions.ai_linting_fixer.display.py", fromlist=['*'])
+    module = __import__("autopr.autopr.actions.ai_linting_fixer.display.py", fromlist=['*'])
 except ImportError as e:
     pytest.skip(f"Could not import module: {e}")
 

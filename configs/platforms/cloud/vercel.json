@@ -15,8 +15,22 @@
   "min_autopr_version": "0.1.0",
   "subcategory": "hosting",
   "tags": ["static_sites", "serverless", "ci_cd"],
-  "supported_languages": ["javascript", "typescript", "python", "go", "ruby", "java"],
-  "supported_frameworks": ["nextjs", "create-react-app", "vue", "nuxt", "sveltekit", "astro"],
+  "supported_languages": [
+    "javascript",
+    "typescript",
+    "python",
+    "go",
+    "ruby",
+    "java"
+  ],
+  "supported_frameworks": [
+    "nextjs",
+    "create-react-app",
+    "vue",
+    "nuxt",
+    "sveltekit",
+    "astro"
+  ],
   "detection": {
     "files": ["vercel.json", "vercel.config.js", ".vercelignore"],
     "dependencies": ["@vercel/node", "@vercel/static", "vercel"],
@@ -46,7 +60,11 @@
       "preview_deployments",
       "custom_domains"
     ],
-    "configuration_files": ["vercel.json", "vercel.config.js", ".vercel/project.json"]
+    "configuration_files": [
+      "vercel.json",
+      "vercel.config.js",
+      ".vercel/project.json"
+    ]
   },
   "documentation_url": "https://vercel.com/docs",
   "setup_guide": "https://vercel.com/docs/get-started",
@@ -55,4 +73,3 @@
   "license": "UNLICENSED",
   "integrations": ["github", "gitlab", "bitbucket", "sentry", "datadog"]
 }
-

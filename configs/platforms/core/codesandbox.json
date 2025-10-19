@@ -10,8 +10,18 @@
     "vite.config.ts"
   ],
   "dependencies": ["@codesandbox/sandpack-react", "@codesandbox/nodebox"],
-  "commit_patterns": ["codesandbox", "sandbox", "created with codesandbox", "codesandbox.io"],
-  "content_patterns": ["sandbox.config.json", "codesandbox", "sandpack", "sandbox:"],
+  "commit_patterns": [
+    "codesandbox",
+    "sandbox",
+    "created with codesandbox",
+    "codesandbox.io"
+  ],
+  "content_patterns": [
+    "sandbox.config.json",
+    "codesandbox",
+    "sandpack",
+    "sandbox:"
+  ],
   "folder_patterns": [".codesandbox/", "sandbox/"],
   "package_scripts": {
     "start": "codesandbox dev",

@@ -3,14 +3,13 @@ Report Generator for Implementation Roadmap
 Handles analytics, reporting, and progress visualization
 """
 
-import operator
 from datetime import datetime, timedelta
+import operator
 from pathlib import Path
 from typing import Any
 
 from autopr.ai.implementation_roadmap.phase_manager import PhaseManager
-from autopr.ai.implementation_roadmap.task_definitions import (
-    ImplementationPhases, TaskRegistry)
+from autopr.ai.implementation_roadmap.task_definitions import ImplementationPhases, TaskRegistry
 from autopr.ai.implementation_roadmap.task_executor import TaskExecutor
 
 

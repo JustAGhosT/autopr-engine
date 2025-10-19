@@ -10,4 +10,5 @@ from autopr.utils.resilience.circuit_breaker import (
     CircuitBreakerState,
 )
 
+
 __all__ = ["CircuitBreaker", "CircuitBreakerError", "CircuitBreakerState"]

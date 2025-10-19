@@ -9,15 +9,12 @@ import asyncio
 import contextlib
 import os
 import sys
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, Mock, patch
 
-import pytest
 
 # Commented out unused imports that don't exist
 # from autopr.actions.quality_engine.ai.ai_handler import AIHandler
 # from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
-from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autopr"))
 
@@ -28,8 +25,7 @@ async def test_ai_handler_fixes():
     # Test 1: Import and initialization
     try:
         # This should work without import errors
-        from autopr.actions.quality_engine.ai.ai_handler import \
-            initialize_llm_manager
+        from autopr.actions.quality_engine.ai.ai_handler import initialize_llm_manager
 
     except ImportError:
         return
@@ -54,7 +50,7 @@ async def test_ai_handler_fixes():
         # Test that environment variables are read correctly
         openai_key = os.getenv("OPENAI_API_KEY", "")
         anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-        
+
         # Verify environment variables can be read (may be empty)
         assert isinstance(openai_key, str)
         assert isinstance(anthropic_key, str)
@@ -74,8 +70,7 @@ async def test_ai_handler_fixes():
 
         # Verify we're not using the old one
         with contextlib.suppress(ImportError):
-            from autopr.actions.llm.manager import \
-                LLMProviderManager as OldLLMProviderManager
+            from autopr.actions.llm.manager import LLMProviderManager as OldLLMProviderManager
 
             # If old import succeeds, verify it's different from new one
             assert LLMProviderManager != OldLLMProviderManager

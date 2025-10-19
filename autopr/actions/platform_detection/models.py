@@ -19,9 +19,11 @@ class PlatformDetectorInputs(BaseModel):
 
 class PlatformDetectorOutputs(BaseModel):
     """Outputs from platform detection."""
-    detected_platform: str  # "replit", "lovable", "bolt", "same", "emergent", "unknown"
-    confidence_score: float
-    platform_specific_config: dict[str, Any]
-    recommended_workflow: str
-    migration_suggestions: list[str]
-    enhancement_opportunities: list[str]
+    primary_platform: str
+    secondary_platforms: list[str] = []
+    confidence_scores: dict[str, float] = {}
+    workflow_type: str = "single_platform"
+    platform_specific_configs: dict[str, Any] = {}
+    recommended_enhancements: list[str] = []
+    migration_opportunities: list[str] = []
+    hybrid_workflow_analysis: dict[str, Any] | None = None

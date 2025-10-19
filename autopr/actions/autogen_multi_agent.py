@@ -5,7 +5,7 @@ Collaborative PR comment handling using specialized AutoGen agents.
 
 import json
 import os
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -19,21 +19,21 @@ except ImportError:
     # Create dummy classes for type annotations
     class ConversableAgent:
         def __init__(self, *args: Any, **kwargs: Any) -> None: pass
-        def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        def initiate_chat(self, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
             return []
 
     class GroupChat:
-        def __init__(self, agents: List[ConversableAgent], messages: Optional[List[Dict[str, Any]]] = None,
+        def __init__(self, agents: list[ConversableAgent], messages: list[dict[str, Any]] | None = None,
                      max_round: int = 10, speaker_selection_method: str = "round_robin") -> None:
-            self.messages: List[Dict[str, Any]] = messages or []
-            self.agents: List[ConversableAgent] = agents
+            self.messages: list[dict[str, Any]] = messages or []
+            self.agents: list[ConversableAgent] = agents
             self.max_round: int = max_round
             self.speaker_selection_method: str = speaker_selection_method
 
     class GroupChatManager:
-        def __init__(self, groupchat: GroupChat, llm_config: Dict[str, Any]) -> None:
+        def __init__(self, groupchat: GroupChat, llm_config: dict[str, Any]) -> None:
             self.groupchat: GroupChat = groupchat
-            self.llm_config: Dict[str, Any] = llm_config
+            self.llm_config: dict[str, Any] = llm_config
 
 
 # Type alias for improved readability
@@ -44,33 +44,33 @@ T = TypeVar('T')
 
 class AutoGenInputs(BaseModel):
     comment_body: str
-    file_path: Optional[str] = None
-    file_content: Optional[str] = None
-    pr_context: Dict[str, Any] = Field(default_factory=dict)
+    file_path: str | None = None
+    file_content: str | None = None
+    pr_context: dict[str, Any] = Field(default_factory=dict)
     task_type: str = (
         "analyze_and_fix"  # "analyze_and_fix", "code_review", "security_audit"
     )
-    agents_config: Dict[str, Any] = Field(default_factory=dict)
+    agents_config: dict[str, Any] = Field(default_factory=dict)
 
 
 class AutoGenOutputs(BaseModel):
     success: bool
-    analysis: Dict[str, Any] = Field(default_factory=dict)
-    recommendations: List[str] = Field(default_factory=list)
-    fix_code: Optional[str] = None
-    agent_conversations: List[Dict[str, str]] = Field(default_factory=list)
-    consensus: Optional[str] = None
-    error_message: Optional[str] = None
+    analysis: dict[str, Any] = Field(default_factory=dict)
+    recommendations: list[str] = Field(default_factory=list)
+    fix_code: str | None = None
+    agent_conversations: list[dict[str, str]] = Field(default_factory=list)
+    consensus: str | None = None
+    error_message: str | None = None
 
 
 class AutoGenAgentSystem:
-    def __init__(self, llm_config: Dict[str, Any]) -> None:
+    def __init__(self, llm_config: dict[str, Any]) -> None:
         if not AUTOGEN_AVAILABLE:
             msg = "AutoGen not installed. Install with: pip install pyautogen"
             raise ImportError(msg)
 
-        self.llm_config: Dict[str, Any] = llm_config
-        self.agents: Dict[str, ConversableAgent] = {}
+        self.llm_config: dict[str, Any] = llm_config
+        self.agents: dict[str, ConversableAgent] = {}
         self._initialize_agents()
 
     def _initialize_agents(self) -> None:
@@ -173,7 +173,7 @@ class AutoGenAgentSystem:
             """
 
             # Create group chat for collaboration
-            participants: List[ConversableAgent] = [
+            participants: list[ConversableAgent] = [
                 self.agents["code_analyzer"],
                 self.agents["code_fixer"],
                 self.agents["quality_reviewer"],
@@ -234,7 +234,7 @@ class AutoGenAgentSystem:
             """
 
             # Security-focused conversation
-            participants: List[ConversableAgent] = [
+            participants: list[ConversableAgent] = [
                 self.agents["security_auditor"],
                 self.agents["code_analyzer"],
                 self.agents["project_manager"],
@@ -280,7 +280,7 @@ class AutoGenAgentSystem:
             5. Testing considerations
             """
 
-            participants: List[ConversableAgent] = [
+            participants: list[ConversableAgent] = [
                 self.agents["quality_reviewer"],
                 self.agents["code_analyzer"],
                 self.agents["code_fixer"],
@@ -316,7 +316,7 @@ class AutoGenAgentSystem:
         """Extract structured results from agent conversations."""
         try:
             # Get all messages from the chat - handle ChatResult objects or plain lists
-            messages: List[Dict[str, Any]] = []
+            messages: list[dict[str, Any]] = []
 
             # Check if chat_result has a chat_history attribute (ChatResult-like object)
             if hasattr(chat_result, 'chat_history') and hasattr(chat_result.chat_history, '__iter__'):
@@ -331,19 +331,19 @@ class AutoGenAgentSystem:
                 messages = []
 
             # Extract agent conversations
-            agent_conversations: List[Dict[str, str]] = [
+            agent_conversations: list[dict[str, str]] = [
                 {"agent": str(msg.get("name", "")), "message": str(msg.get("content", ""))}
                 for msg in messages
                 if isinstance(msg, dict) and "name" in msg and "content" in msg
             ]
 
             # Analyze conversations for key insights
-            analysis: Dict[str, Any] = self._analyze_conversations(agent_conversations)
-            recommendations: List[str] = self._extract_recommendations(
+            analysis: dict[str, Any] = self._analyze_conversations(agent_conversations)
+            recommendations: list[str] = self._extract_recommendations(
                 agent_conversations
             )
-            fix_code: Optional[str] = self._extract_fix_code(agent_conversations)
-            consensus: Optional[str] = self._extract_consensus(agent_conversations)
+            fix_code: str | None = self._extract_fix_code(agent_conversations)
+            consensus: str | None = self._extract_consensus(agent_conversations)
 
             return AutoGenOutputs(
                 success=True,
@@ -360,10 +360,10 @@ class AutoGenAgentSystem:
             )
 
     def _analyze_conversations(
-        self, conversations: List[Dict[str, str]]
-    ) -> Dict[str, Any]:
+        self, conversations: list[dict[str, str]]
+    ) -> dict[str, Any]:
         """Analyze agent conversations for key insights."""
-        analysis: Dict[str, Any] = {
+        analysis: dict[str, Any] = {
             "total_messages": len(conversations),
             "participating_agents": list({conv["agent"] for conv in conversations}),
             "key_topics": [],
@@ -372,7 +372,7 @@ class AutoGenAgentSystem:
 
         # Extract key topics from conversations
         all_content: str = " ".join(conv["message"] for conv in conversations)
-        key_terms: List[str] = [
+        key_terms: list[str] = [
             "fix",
             "security",
             "performance",
@@ -396,10 +396,10 @@ class AutoGenAgentSystem:
         return analysis
 
     def _extract_recommendations(
-        self, conversations: List[Dict[str, str]]
-    ) -> List[str]:
+        self, conversations: list[dict[str, str]]
+    ) -> list[str]:
         """Extract actionable recommendations from conversations."""
-        recommendations: List[str] = []
+        recommendations: list[str] = []
 
         for conv in conversations:
             content: str = conv["message"].lower()
@@ -410,7 +410,7 @@ class AutoGenAgentSystem:
                 for phrase in ["recommend", "suggest", "should", "consider"]
             ):
                 # Extract the sentence containing the recommendation
-                sentences: List[str] = conv["message"].split(".")
+                sentences: list[str] = conv["message"].split(".")
                 recommendations.extend(
                     sentence.strip()
                     for sentence in sentences
@@ -422,19 +422,19 @@ class AutoGenAgentSystem:
 
         return recommendations[:5]  # Limit to top 5 recommendations
 
-    def _extract_fix_code(self, conversations: List[Dict[str, str]]) -> Optional[str]:
+    def _extract_fix_code(self, conversations: list[dict[str, str]]) -> str | None:
         """Extract proposed code fixes from conversations."""
         for conv in conversations:
             if conv["agent"] == "code_fixer" and "```" in conv["message"]:
                 # Extract code blocks
-                parts: List[str] = conv["message"].split("```")
+                parts: list[str] = conv["message"].split("```")
                 for i, part in enumerate(parts):
                     if i % 2 == 1:  # Odd indices are code blocks
                         return part.strip()
 
         return None
 
-    def _extract_consensus(self, conversations: List[Dict[str, str]]) -> Optional[str]:
+    def _extract_consensus(self, conversations: list[dict[str, str]]) -> str | None:
         """Extract final consensus from project manager."""
         for conv in reversed(conversations):  # Start from the end
             if conv["agent"] == "project_manager" and any(
@@ -450,7 +450,7 @@ class AutoGenMultiAgent:
     def __init__(self) -> None:
         self.available = AUTOGEN_AVAILABLE
 
-    def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """Runs the multi-agent workflow."""
         if not self.available:
             msg = "AutoGen not available."
@@ -469,7 +469,7 @@ def autogen_multi_agent_action(inputs: AutoGenInputs) -> AutoGenOutputs:
 
     try:
         # Configure LLM based on environment variables
-        llm_config: Dict[str, Any] = {
+        llm_config: dict[str, Any] = {
             "config_list": [
                 {
                     "model": os.getenv("AUTOGEN_MODEL", "gpt-4"),

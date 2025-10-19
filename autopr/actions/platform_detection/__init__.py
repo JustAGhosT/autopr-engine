@@ -12,6 +12,7 @@ from .patterns import PlatformPatterns
 from .scoring import PlatformScoringEngine
 from .utils import calculate_confidence_score, get_confidence_level
 
+
 __all__ = [
     "PlatformDetector",
     "FileAnalyzer",

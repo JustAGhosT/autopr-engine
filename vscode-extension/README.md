@@ -5,22 +5,26 @@ AI-Powered Code Quality and Automation for VS Code
 ## Features
 
 ### 🚀 Quality Analysis
+
 - **Multi-mode Analysis**: Ultra-fast, Fast, Smart, Comprehensive, and AI-Enhanced modes
 - **Real-time Feedback**: Instant quality checks as you code
 - **File & Workspace Analysis**: Check individual files or entire workspaces
 - **Intelligent Issue Detection**: AI-powered code quality analysis
 
 ### 🔧 Auto-Fix Capabilities
+
 - **Automatic Issue Resolution**: Fix common code quality issues automatically
 - **Smart Suggestions**: AI-driven recommendations for code improvements
 - **Safe Auto-fix**: Preview changes before applying
 
 ### 📁 File Management
+
 - **AI-Enhanced File Splitting**: Intelligently split large files based on complexity
 - **Component Analysis**: Understand file structure and complexity
 - **Backup & Validation**: Safe file operations with automatic backups
 
 ### 📊 Dashboard & Metrics
+
 - **Quality Dashboard**: Web-based interface for detailed analysis
 - **Performance Metrics**: Track code quality improvements over time
 - **Issue History**: View and manage quality issues
@@ -28,6 +32,7 @@ AI-Powered Code Quality and Automation for VS Code
 ## Installation
 
 ### From VSIX Package
+
 1. Download the latest `.vsix` package
 2. Open VS Code
 3. Go to Extensions (Ctrl+Shift+X)
@@ -35,6 +40,7 @@ AI-Powered Code Quality and Automation for VS Code
 5. Select the downloaded package
 
 ### From Source
+
 1. Clone the repository
 2. Navigate to the `vscode-extension` directory
 3. Run `npm install`
@@ -44,6 +50,7 @@ AI-Powered Code Quality and Automation for VS Code
 ## Usage
 
 ### Quick Start
+
 1. Open a Python, JavaScript, or TypeScript file
 2. Right-click in the editor or use Command Palette (Ctrl+Shift+P)
 3. Select "AutoPR: Check Current File"
@@ -52,20 +59,25 @@ AI-Powered Code Quality and Automation for VS Code
 ### Commands
 
 #### Quality Analysis
+
 - **AutoPR: Run Quality Check** - Quick quality check with default settings
 - **AutoPR: Check Current File** - Analyze the currently open file
 - **AutoPR: Check Workspace** - Analyze all files in the workspace
 
 #### File Operations
+
 - **AutoPR: Split Large File** - Split large files into manageable components
 - **AutoPR: Auto-Fix Issues** - Automatically fix detected issues
 
 #### Configuration
+
 - **AutoPR: Show Dashboard** - Open the web-based dashboard
 - **AutoPR: Configure** - Open extension settings
 
 ### Context Menu
+
 Right-click in the editor to access:
+
 - Check Current File
 - Auto-Fix Issues
 
@@ -93,11 +105,13 @@ Right-click in the editor to access:
 ## Development
 
 ### Prerequisites
+
 - Node.js 16+
 - TypeScript 4.8+
 - VS Code Extension Development Tools
 
 ### Build Commands
+
 ```bash
 npm install          # Install dependencies
 npm run compile      # Compile TypeScript
@@ -107,6 +121,7 @@ npm run test         # Run tests
 ```
 
 ### Project Structure
+
 ```
 vscode-extension/
 ├── src/
@@ -118,6 +133,7 @@ vscode-extension/
 ```
 
 ### Testing
+
 1. Run `npm run test` to execute unit tests
 2. Press F5 to launch extension in debug mode
 3. Use the Extension Test configuration for integration tests
@@ -127,21 +143,25 @@ vscode-extension/
 ### Common Issues
 
 **Extension not activating**
+
 - Check that you have Python installed and accessible
 - Verify the `autopr.pythonPath` setting
 - Check the AutoPR output panel for error messages
 
 **Quality checks failing**
+
 - Ensure AutoPR CLI is installed: `pip install autopr`
 - Check Python environment and dependencies
 - Verify file permissions
 
 **Auto-fix not working**
+
 - Enable `autopr.autoFixEnabled` in settings
 - Check that the file is saved before running auto-fix
 - Review the output panel for specific error messages
 
 ### Debug Mode
+
 1. Open the extension in VS Code
 2. Press F5 to launch debug mode
 3. Check the Debug Console for detailed logs

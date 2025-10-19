@@ -3,21 +3,21 @@
 Comprehensive tests for enforce import order module.
 """
 
-import json
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.enforce_import_order import (ImportAnalyzer,
-                                                     ImportConfig,
-                                                     ImportFormatter,
-                                                     ImportOrderEnforcer,
-                                                     ImportValidator)
+    from autopr.actions.enforce_import_order import (
+        ImportAnalyzer,
+        ImportConfig,
+        ImportFormatter,
+        ImportOrderEnforcer,
+        ImportValidator,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -34,7 +34,7 @@ class TestImportConfig:
             max_line_length=88,
             ignore_comments=True
         )
-        
+
         assert config.enforce_order is True
         assert config.group_imports is True
         assert config.sort_within_groups is True
@@ -44,7 +44,7 @@ class TestImportConfig:
     def test_import_config_defaults(self):
         """Test ImportConfig with default values."""
         config = ImportConfig()
-        
+
         assert config.enforce_order is True
         assert config.group_imports is True
         assert config.sort_within_groups is True
@@ -57,7 +57,7 @@ class TestImportConfig:
             enforce_order=False,
             max_line_length=100
         )
-        
+
         result = config.to_dict()
         assert result["enforce_order"] is False
         assert result["max_line_length"] == 100
@@ -71,7 +71,7 @@ class TestImportConfig:
             "max_line_length": 120,
             "ignore_comments": False
         }
-        
+
         config = ImportConfig.from_dict(data)
         assert config.enforce_order is True
         assert config.group_imports is False
@@ -102,9 +102,9 @@ from pathlib import Path
 import tempfile
 from unittest.mock import Mock, patch
 """
-        
+
         result = import_analyzer.analyze_imports(code)
-        
+
         assert "imports" in result
         assert "groups" in result
         assert "violations" in result
@@ -119,9 +119,9 @@ def test_function():
 class TestClass:
     pass
 """
-        
+
         result = import_analyzer.analyze_imports(code)
-        
+
         assert result["imports"] == []
         assert result["groups"] == []
         assert result["violations"] == []
@@ -140,9 +140,9 @@ from unittest.mock import Mock
 # Local imports
 from . import local_module
 """
-        
+
         result = import_analyzer.analyze_imports(code)
-        
+
         assert len(result["imports"]) > 0
         assert "groups" in result
 
@@ -155,9 +155,9 @@ from . import local_module
             "from unittest.mock import Mock",
             "from . import local_module"
         ]
-        
+
         groups = import_analyzer.get_import_groups(imports)
-        
+
         assert "standard_library" in groups
         assert "third_party" in groups
         assert "local" in groups
@@ -185,9 +185,9 @@ class TestImportFormatter:
             "import pytest",
             "from unittest.mock import Mock"
         ]
-        
+
         result = import_formatter.format_imports(imports)
-        
+
         assert isinstance(result, str)
         assert "import os" in result
         assert "import sys" in result
@@ -202,9 +202,9 @@ class TestImportFormatter:
             "from unittest.mock import Mock",
             "from . import local_module"
         ]
-        
+
         result = import_formatter.format_imports_with_groups(imports)
-        
+
         assert isinstance(result, str)
         assert "import os" in result
         assert "import sys" in result
@@ -217,9 +217,9 @@ class TestImportFormatter:
             "import os",
             "import pytest"
         ]
-        
+
         sorted_imports = import_formatter.sort_imports(imports)
-        
+
         assert len(sorted_imports) == 3
         assert sorted_imports[0] == "import os"
         assert sorted_imports[1] == "import pytest"
@@ -228,9 +228,9 @@ class TestImportFormatter:
     def test_format_import_line(self, import_formatter):
         """Test formatting a single import line."""
         import_line = "from unittest.mock import Mock, patch, MagicMock"
-        
+
         result = import_formatter.format_import_line(import_line)
-        
+
         assert isinstance(result, str)
         assert "Mock" in result
         assert "patch" in result
@@ -259,9 +259,9 @@ class TestImportValidator:
             "import pytest",
             "from unittest.mock import Mock"
         ]
-        
+
         result = import_validator.validate_import_order(imports)
-        
+
         assert result.is_valid is True
         assert "violations" in result
 
@@ -272,9 +272,9 @@ class TestImportValidator:
             "import os",  # Should come before pytest
             "import sys"
         ]
-        
+
         result = import_validator.validate_import_order(imports)
-        
+
         assert result.is_valid is False
         assert len(result.violations) > 0
 
@@ -286,9 +286,9 @@ class TestImportValidator:
             "import pytest",
             "from unittest.mock import Mock"
         ]
-        
+
         result = import_validator.validate_import_grouping(imports)
-        
+
         assert result.is_valid is True
         assert "groups" in result
 
@@ -299,9 +299,9 @@ class TestImportValidator:
             "import sys",
             "from unittest.mock import Mock, patch, MagicMock"
         ]
-        
+
         result = import_validator.validate_import_formatting(imports)
-        
+
         assert result.is_valid is True
         assert "formatting_issues" in result
 
@@ -333,9 +333,9 @@ from unittest.mock import Mock
 def test_function():
     return True
 """
-        
+
         result = import_order_enforcer.enforce_import_order(code)
-        
+
         assert result.success is True
         assert "formatted_code" in result
         assert "import os" in result.formatted_code
@@ -354,19 +354,19 @@ def test_function():
     return True
 """)
             temp_file = f.name
-        
+
         try:
             result = import_order_enforcer.enforce_import_order_file(temp_file)
-            
+
             assert result.success is True
             assert "formatted_code" in result
-            
+
             # Check that file was updated
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 content = f.read()
                 assert "import os" in content
                 assert "import sys" in content
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -379,9 +379,9 @@ import sys
 import pytest
 from unittest.mock import Mock
 """
-        
+
         result = import_order_enforcer.validate_imports(code)
-        
+
         assert result.is_valid is True
         assert "violations" in result
         assert "suggestions" in result
@@ -394,9 +394,9 @@ import sys
 import pytest
 from unittest.mock import Mock
 """
-        
+
         stats = import_order_enforcer.get_import_statistics(code)
-        
+
         assert "total_imports" in stats
         assert "import_groups" in stats
         assert "violations" in stats

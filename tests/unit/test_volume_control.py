@@ -3,11 +3,10 @@
 
 import json
 import os
+from pathlib import Path
 import shutil
 import sys
 import tempfile
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -31,7 +30,7 @@ class TestVolumeKnob:
         self.temp_dir = Path(tempfile.mkdtemp())
         self.original_cwd = Path.cwd()
         os.chdir(self.temp_dir)
-        
+
         # Create .vscode directory for settings tests
         (self.temp_dir / ".vscode").mkdir(exist_ok=True)
 
@@ -53,17 +52,17 @@ class TestVolumeKnob:
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
         knob.set_volume(100)
-        
+
         # Verify volume was set correctly
         assert knob.get_volume() == 100
         assert knob.get_volume_level() == "QUIET"
         assert knob.get_volume_description() == "Basic syntax only"
-        
+
         # Verify config file was created
         assert knob.config_file.exists()
-        
+
         # Verify config file content
-        with open(knob.config_file, 'r') as f:
+        with open(knob.config_file) as f:
             config = json.load(f)
         assert config["volume"] == 100
 
@@ -72,12 +71,12 @@ class TestVolumeKnob:
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
         knob.set_volume(800)
-        
+
         # Verify volume was set correctly
         assert knob.get_volume() == 800
         assert knob.get_volume_level() == "LOUD"
         assert knob.get_volume_description() == "Extreme checks"
-        
+
         # Verify config file was created
         assert knob.config_file.exists()
 
@@ -86,12 +85,12 @@ class TestVolumeKnob:
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
         knob.set_volume(0)
-        
+
         # Verify volume was set correctly
         assert knob.get_volume() == 0
         assert knob.get_volume_level() == "OFF"
         assert knob.get_volume_description() == "No linting/checks"
-        
+
         # Verify config file was created
         assert knob.config_file.exists()
 
@@ -99,18 +98,18 @@ class TestVolumeKnob:
         """Test volume validation."""
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
-        
+
         # Test volume clamping to valid range
         knob.set_volume(-1)
         assert knob.get_volume() == 0
-        
+
         knob.set_volume(1001)
         assert knob.get_volume() == 1000
-        
+
         # Test volume rounding to multiples of 5
         knob.set_volume(123)
         assert knob.get_volume() == 120
-        
+
         knob.set_volume(127)
         assert knob.get_volume() == 125
 
@@ -118,7 +117,7 @@ class TestVolumeKnob:
         """Test volume level descriptions."""
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
-        
+
         # Test various volume levels
         test_cases = [
             (0, "OFF", "No linting/checks"),
@@ -134,7 +133,7 @@ class TestVolumeKnob:
             (850, "VERY LOUD", "Maximum strictness"),
             (950, "MAXIMUM", "Nuclear mode"),
         ]
-        
+
         for volume, expected_level, expected_description in test_cases:
             knob.set_volume(volume)
             assert knob.get_volume_level() == expected_level
@@ -144,14 +143,14 @@ class TestVolumeKnob:
         """Test volume_up and volume_down methods (backward compatibility)."""
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
-        
+
         # These methods are no-op for backward compatibility
         # They should not raise errors
         knob.volume_up()
         knob.volume_up(5)
         knob.volume_down()
         knob.volume_down(3)
-        
+
         # Volume should remain at default
         assert knob.get_volume() == 0
 
@@ -160,7 +159,7 @@ class TestVolumeKnob:
         _, _, VolumeKnob = volume_knob_classes
         knob1 = VolumeKnob("test")
         knob1.set_volume(250)
-        
+
         # Create new instance
         knob2 = VolumeKnob("test")
         assert knob2.get_volume() == 250
@@ -169,18 +168,18 @@ class TestVolumeKnob:
         """Test handling of invalid config files."""
         _, _, VolumeKnob = volume_knob_classes
         knob = VolumeKnob("test")
-        
+
         # Create invalid JSON file
         with open(knob.config_file, 'w') as f:
             f.write("invalid json")
-        
+
         # Should return 0 for invalid JSON
         assert knob.get_volume() == 0
-        
+
         # Create config with missing volume key
         with open(knob.config_file, 'w') as f:
             json.dump({"other_key": "value"}, f)
-        
+
         # Should return 0 for missing volume key
         assert knob.get_volume() == 0
 
@@ -210,7 +209,7 @@ class TestDevVolumeKnob:
         """Test DevVolumeKnob functionality."""
         _, DevVolumeKnob, _ = volume_knob_classes
         knob = DevVolumeKnob()
-        
+
         # Test volume setting
         knob.set_volume(300)
         assert knob.get_volume() == 300
@@ -243,7 +242,7 @@ class TestCommitVolumeKnob:
         """Test CommitVolumeKnob functionality."""
         CommitVolumeKnob, _, _ = volume_knob_classes
         knob = CommitVolumeKnob()
-        
+
         # Test volume setting
         knob.set_volume(500)
         assert knob.get_volume() == 500
@@ -253,25 +252,25 @@ class TestCommitVolumeKnob:
 
 class TestVolumeController:
     """Test VolumeController functionality (simulated)."""
-    
+
     def test_volume_controller_simulation(self, volume_knob_classes):
         """Test VolumeController simulation since it doesn't exist yet."""
         # Create both knobs
         CommitVolumeKnob, DevVolumeKnob, _ = volume_knob_classes
         dev_knob = DevVolumeKnob()
         commit_knob = CommitVolumeKnob()
-        
+
         # Test initial volumes (should be 0 when no config exists)
         assert dev_knob.get_volume() == 0
         assert commit_knob.get_volume() == 0
-        
+
         # Test setting different volumes
         dev_knob.set_volume(50)
         commit_knob.set_volume(200)
-        
+
         assert dev_knob.get_volume() == 50
         assert commit_knob.get_volume() == 200
-        
+
         # Test volume levels
         assert dev_knob.get_volume_level() == "ULTRA QUIET"
         assert commit_knob.get_volume_level() == "LOW"

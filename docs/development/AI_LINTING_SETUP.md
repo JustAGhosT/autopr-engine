@@ -25,7 +25,15 @@ verification
   types: [python]
   pass_filenames: false
   args:
-    [--max-fixes=3, --fix-types=E501, F401, F841, --provider=azure_openai, --model=gpt-4.1, --quiet]
+    [
+      --max-fixes=3,
+      --fix-types=E501,
+      F401,
+      F841,
+      --provider=azure_openai,
+      --model=gpt-4.1,
+      --quiet,
+    ]
   stages: [pre-commit] # Now runs automatically on pre-commit
 ```
 

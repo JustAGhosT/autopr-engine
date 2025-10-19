@@ -130,6 +130,7 @@ The AutoPR VS Code extension provides seamless integration with your development
 #### Context Menu Integration
 
 Right-click on files or in the editor to access:
+
 - Quality check options
 - Auto-fix functionality
 - File splitting tools
@@ -145,30 +146,33 @@ Right-click on files or in the editor to access:
 
 ```json
 {
-    "autopr.enabled": true,
-    "autopr.qualityMode": "fast",
-    "autopr.autoFixEnabled": false,
-    "autopr.showNotifications": true,
-    "autopr.pythonPath": "python",
-    "autopr.maxFileSize": 10000
+  "autopr.enabled": true,
+  "autopr.qualityMode": "fast",
+  "autopr.autoFixEnabled": false,
+  "autopr.showNotifications": true,
+  "autopr.pythonPath": "python",
+  "autopr.maxFileSize": 10000
 }
 ```
 
 ### Usage Examples
 
 #### Quick File Check
+
 1. Open a Python file
 2. Press `Ctrl+Shift+P` (Cmd+Shift+P on Mac)
 3. Type "AutoPR: Check Current File"
 4. View results in Problems panel
 
 #### Auto-Fix Issues
+
 1. Right-click in editor
 2. Select "AutoPR: Auto-Fix Issues"
 3. Review changes in diff view
 4. Apply fixes
 
 #### Split Large File
+
 1. Open a large file (>500 lines)
 2. Press `Ctrl+Shift+P`
 3. Type "AutoPR: Split Large File"
@@ -182,17 +186,20 @@ AutoPR git hooks automate quality checks and ensure code quality standards.
 ### Available Hooks
 
 #### Pre-commit Hook
+
 - Runs quality checks on staged files
 - Prevents commits with quality issues
 - Optionally applies auto-fixes
 - Configurable quality modes
 
 #### Post-commit Hook
+
 - Collects metrics after successful commits
 - Updates quality history
 - Runs background analysis
 
 #### Commit-msg Hook
+
 - Validates commit message format
 - Ensures conventional commit standards
 - Provides helpful error messages
@@ -213,21 +220,22 @@ Create `hooks_config.json`:
 
 ```json
 {
-    "quality_mode": "fast",
-    "auto_fix": true,
-    "max_file_size": 10000,
-    "enabled_hooks": ["pre-commit", "post-commit", "commit-msg"],
-    "notifications": {
-        "show_success": true,
-        "show_warnings": true,
-        "show_errors": true
-    }
+  "quality_mode": "fast",
+  "auto_fix": true,
+  "max_file_size": 10000,
+  "enabled_hooks": ["pre-commit", "post-commit", "commit-msg"],
+  "notifications": {
+    "show_success": true,
+    "show_warnings": true,
+    "show_errors": true
+  }
 }
 ```
 
 ### Hook Behavior
 
 #### Pre-commit Hook
+
 ```bash
 # Automatically runs on git commit
 git add file.py
@@ -236,6 +244,7 @@ git commit -m "feat: add new feature"
 ```
 
 #### Post-commit Hook
+
 ```bash
 # Runs after successful commit
 git commit -m "feat: add new feature"
@@ -243,6 +252,7 @@ git commit -m "feat: add new feature"
 ```
 
 #### Commit-msg Hook
+
 ```bash
 # Validates commit message format
 git commit -m "invalid message"
@@ -270,24 +280,28 @@ autopr dashboard --open-browser
 ### Dashboard Features
 
 #### Real-time Metrics
+
 - Total quality checks performed
 - Issues found and resolved
 - Success rates and processing times
 - Quality mode usage statistics
 
 #### Quick Actions
+
 - **Run Quality Check**: Execute checks from web interface
 - **Split Large File**: File splitting with visual feedback
 - **Configuration**: Manage AutoPR settings
 - **Refresh Data**: Update metrics in real-time
 
 #### Activity History
+
 - Recent quality check results
 - Processing times and issue counts
 - Success/failure status
 - Timestamp and mode information
 
 #### Configuration Management
+
 - Quality mode settings
 - Auto-fix preferences
 - File size limits
@@ -349,28 +363,28 @@ Create `~/.autopr/config.json`:
 
 ```json
 {
-    "quality": {
-        "default_mode": "fast",
-        "auto_fix": false,
-        "max_file_size": 10000,
-        "enabled_tools": ["ruff", "mypy", "bandit"]
-    },
-    "ai": {
-        "provider": "openai",
-        "model": "gpt-4",
-        "temperature": 0.1,
-        "max_tokens": 2000
-    },
-    "dashboard": {
-        "host": "localhost",
-        "port": 8080,
-        "refresh_interval": 30
-    },
-    "git_hooks": {
-        "enabled": true,
-        "quality_mode": "fast",
-        "auto_fix": true
-    }
+  "quality": {
+    "default_mode": "fast",
+    "auto_fix": false,
+    "max_file_size": 10000,
+    "enabled_tools": ["ruff", "mypy", "bandit"]
+  },
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.1,
+    "max_tokens": 2000
+  },
+  "dashboard": {
+    "host": "localhost",
+    "port": 8080,
+    "refresh_interval": 30
+  },
+  "git_hooks": {
+    "enabled": true,
+    "quality_mode": "fast",
+    "auto_fix": true
+  }
 }
 ```
 
@@ -427,7 +441,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Install AutoPR
         run: pip install autopr-engine[full]
       - name: Run quality check
@@ -454,12 +468,12 @@ repos:
 ```json
 // .vscode/settings.json
 {
-    "autopr.enabled": true,
-    "autopr.qualityMode": "smart",
-    "autopr.autoFixEnabled": true,
-    "autopr.showNotifications": true,
-    "autopr.pythonPath": "python",
-    "autopr.maxFileSize": 10000
+  "autopr.enabled": true,
+  "autopr.qualityMode": "smart",
+  "autopr.autoFixEnabled": true,
+  "autopr.showNotifications": true,
+  "autopr.pythonPath": "python",
+  "autopr.maxFileSize": 10000
 }
 ```
 
@@ -468,6 +482,7 @@ repos:
 ### Common Issues
 
 #### CLI Not Found
+
 ```bash
 # Ensure AutoPR is installed
 pip install autopr-engine[full]
@@ -481,12 +496,14 @@ pip install autopr-engine[full]
 ```
 
 #### VS Code Extension Issues
+
 1. Check Python path in settings
 2. Ensure AutoPR CLI is accessible
 3. Restart VS Code after installation
 4. Check Output panel for error messages
 
 #### Git Hooks Not Working
+
 ```bash
 # Check hook installation
 ls -la .git/hooks/
@@ -500,6 +517,7 @@ chmod +x .git/hooks/pre-commit
 ```
 
 #### Dashboard Won't Start
+
 ```bash
 # Check port availability
 netstat -an | grep 8080
@@ -552,4 +570,4 @@ pip install flask flask-cors
 
 ---
 
-*For more information, visit [https://autopr.dev](https://autopr.dev) or join our [Discord community](https://discord.gg/autopr).*
+_For more information, visit [https://autopr.dev](https://autopr.dev) or join our [Discord community](https://discord.gg/autopr)._

@@ -2,6 +2,7 @@
 Quality Engine - Main engine for running quality analysis tools.
 """
 
+import asyncio
 import os
 from typing import Any
 
@@ -10,20 +11,72 @@ import structlog
 from autopr.actions.base.action import Action
 from autopr.actions.quality_engine.config import load_config
 from autopr.actions.quality_engine.handler_registry import HandlerRegistry
-from autopr.actions.quality_engine.models import (QualityInputs, QualityMode,
-                                                  QualityOutputs)
+from autopr.actions.quality_engine.models import QualityInputs, QualityMode, QualityOutputs
 from autopr.actions.quality_engine.platform_detector import PlatformDetector
 from autopr.actions.quality_engine.tool_runner import run_tool
 from autopr.actions.quality_engine.tools.registry import ToolRegistry
 from autopr.utils.volume_utils import get_volume_level_name
 
+
 logger = structlog.get_logger(__name__)
 
 
-class QualityEngine(Action):
-    """Engine for all code quality operations"""
+class ToolConfigAdapter:
+    """Adapter to normalize tool configuration from both dict and Pydantic model sources."""
 
-    id = "quality_engine"
+    def __init__(self, config: Any):
+        self.config = config
+
+    def get_enabled(self, tool_name: str) -> bool:
+        """Get whether a tool is enabled."""
+        if not self.config:
+            return True
+
+        # Handle Pydantic model
+        if hasattr(self.config, "tools"):
+            tools_config = getattr(self.config, "tools", {})
+            if isinstance(tools_config, dict):
+                tool_config = tools_config.get(tool_name, {})
+                return tool_config.get("enabled", True)
+
+        # Handle dictionary access
+        try:
+            if hasattr(self.config, "get") and callable(getattr(self.config, "get", None)):
+                tools_config = self.config.get("tools", {})
+                if isinstance(tools_config, dict):
+                    tool_config = tools_config.get(tool_name, {})
+                    return tool_config.get("enabled", True)
+        except (AttributeError, TypeError):
+            pass
+
+        return True
+
+    def get_tool_config(self, tool_name: str) -> dict[str, Any]:
+        """Get the configuration for a specific tool."""
+        if not self.config:
+            return {}
+
+        # Handle Pydantic model
+        if hasattr(self.config, "tools"):
+            tools_config = getattr(self.config, "tools", {})
+            if isinstance(tools_config, dict):
+                tool_config = tools_config.get(tool_name, {})
+                return tool_config.get("config", {})
+
+        # Handle dictionary access
+        try:
+            if hasattr(self.config, "get") and callable(getattr(self.config, "get", None)):
+                tools_config = self.config.get("tools", {})
+                if isinstance(tools_config, dict):
+                    tool_config = tools_config.get(tool_name, {})
+                    return tool_config.get("config", {})
+        except (AttributeError, TypeError):
+            pass
+
+        return {}
+
+
+class QualityEngine(Action):
 
     def __init__(
         self,
@@ -71,6 +124,7 @@ class QualityEngine(Action):
 
         self.handler_registry = handler_registry
         self.config = config or load_config(config_path)
+        self.config_adapter = ToolConfigAdapter(self.config)  # Use the adapter for cleaner access
         self.llm_manager: Any = None
 
         logger.info(
@@ -123,30 +177,6 @@ class QualityEngine(Action):
                 # Remove CodeQL and keep Semgrep
                 self.tools.pop("codeql", None)
 
-    def _get_tool_config(self, tool_name: str) -> dict[str, Any]:
-        """Get configuration for a specific tool."""
-        if not self.config:
-            return {"enabled": True, "config": {}}
-
-        # Handle Pydantic model
-        if hasattr(self.config, "tools"):
-            tools_config = getattr(self.config, "tools", {})
-            if isinstance(tools_config, dict):
-                return tools_config.get(tool_name, {"enabled": True, "config": {}})
-
-        # Fallback to dictionary access
-        try:
-            if hasattr(self.config, "get") and callable(
-                getattr(self.config, "get", None)
-            ):
-                return self.config.get("tools", {}).get(
-                    tool_name, {"enabled": True, "config": {}}
-                )
-            else:
-                return {"enabled": True, "config": {}}
-        except (AttributeError, TypeError):
-            return {"enabled": True, "config": {}}
-
     def _validate_volume(self, volume: int) -> int:
         """Validate and clamp volume to valid range."""
         if not isinstance(volume, int):
@@ -167,8 +197,7 @@ class QualityEngine(Action):
 
             # Import AI Linting Fixer
             from autopr.actions.ai_linting_fixer import AILintingFixer
-            from autopr.actions.ai_linting_fixer.models import \
-                AILintingFixerInputs
+            from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
 
             # Prepare fixer inputs
             target_path = files_to_check[0] if files_to_check else "."
@@ -296,8 +325,7 @@ class QualityEngine(Action):
         if has_js_files and "eslint" in available_tools:
             # Check if ESLint is actually available before adding it
             try:
-                from autopr.actions.quality_engine.tools.eslint_tool import \
-                    ESLintTool
+                from autopr.actions.quality_engine.tools.eslint_tool import ESLintTool
                 eslint_tool = ESLintTool()
                 if eslint_tool.is_available():
                     selected_tools.append("eslint")
@@ -333,7 +361,7 @@ class QualityEngine(Action):
         return selected_tools
 
     async def execute(
-        self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None
+        self, inputs: QualityInputs, context: dict[str, Any], volume: int | None = None, progress_callback: Any | None = None
     ) -> QualityOutputs:
         """Execute the quality engine with the given inputs and volume level.
 
@@ -342,6 +370,8 @@ class QualityEngine(Action):
             context: Context dictionary for the execution
             volume: Volume level from 0-1000 that influences quality strictness.
                    If None, uses inputs.volume if set, otherwise defaults to 500.
+            progress_callback: Optional callback function to report progress.
+                             Should accept (stage: str, progress: float, message: str) parameters.
 
         Returns:
             QualityOutputs with the results of the quality checks
@@ -380,12 +410,18 @@ class QualityEngine(Action):
             volume_level=volume_level,
         )
 
+        # Report initial progress
+        if progress_callback:
+            progress_callback("initialization", 0.05, f"Initializing Quality Engine in {inputs.mode.value} mode")
+
         # Determine files to check
         files_to_check = inputs.files or []
 
         # If no files are provided, return early with success
         if not files_to_check:
             logger.info("No files provided for analysis")
+            if progress_callback:
+                progress_callback("complete", 1.0, "No files to analyze")
             return QualityOutputs(
                 success=True,
                 total_issues_found=0,
@@ -412,8 +448,13 @@ class QualityEngine(Action):
             total_tools_available=len(self.tools),
         )
 
+        if progress_callback:
+            progress_callback("tool_selection", 0.1, f"Selected {len(tools_to_run)} tools for analysis")
+
         if not tools_to_run:
             logger.warning("No tools available for the specified mode and files")
+            if progress_callback:
+                progress_callback("complete", 1.0, "No tools available for analysis")
             return QualityOutputs(
                 success=True,
                 total_issues_found=0,
@@ -447,6 +488,9 @@ class QualityEngine(Action):
                 file_count=len(files_to_check),
             )
 
+        if progress_callback:
+            progress_callback("tool_preparation", 0.15, "Preparing tools for execution")
+
         # Run tools in parallel for better performance
         tool_tasks = []
         for tool_name in tools_to_run:
@@ -455,14 +499,10 @@ class QualityEngine(Action):
                 logger.warning("Tool not available", tool=tool_name)
                 continue
 
-            tool_config = self._get_tool_config(tool_name)
+            tool_config = self.config_adapter.get_tool_config(tool_name)
 
             # Handle both dict and Pydantic model
-            enabled = True
-            if isinstance(tool_config, dict):
-                enabled = tool_config.get("enabled", True)
-            elif hasattr(tool_config, "enabled"):
-                enabled = tool_config.enabled
+            enabled = self.config_adapter.get_enabled(tool_name)
 
             if enabled:
                 task = run_tool(
@@ -478,21 +518,36 @@ class QualityEngine(Action):
                 )
                 tool_tasks.append((tool_name, task))
 
-        # Execute tools and gather results
-        for tool_name, task in tool_tasks:
-            tool_result = await task
-            if tool_result:
-                results[tool_name] = tool_result
+        # Execute tools in parallel for better performance
+        if tool_tasks:
+            # Run all tools concurrently using asyncio.gather
+            tasks = [task for _, task in tool_tasks]
+            tool_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Process results, handling any exceptions
+            for i, (tool_name, _) in enumerate(tool_tasks):
+                tool_result = tool_results[i]
+                if isinstance(tool_result, Exception):
+                    logger.warning("Tool execution failed", tool=tool_name, error=str(tool_result))
+                elif tool_result:
+                    results[tool_name] = tool_result
+
+                # Report progress for each tool completion
+                progress = 0.2 + (0.6 * (i + 1) / len(tool_tasks))
+                if progress_callback:
+                    progress_callback("tool_execution", progress, f"Completed tool: {tool_name}")
 
         # Handle AI-enhanced mode
         ai_result = None
         ai_summary = None
 
+        if progress_callback:
+            progress_callback("ai_analysis", 0.8, "Running AI-enhanced analysis")
+
         if inputs.mode == QualityMode.AI_ENHANCED and inputs.enable_ai_agents:
             # Lazy load the LLM manager if needed
             if not self.llm_manager:
-                from autopr.actions.quality_engine.ai import \
-                    initialize_llm_manager
+                from autopr.actions.quality_engine.ai import initialize_llm_manager
 
                 self.llm_manager = await initialize_llm_manager()
 
@@ -507,13 +562,15 @@ class QualityEngine(Action):
                 )
 
                 if ai_result:
-                    from autopr.actions.quality_engine.ai import \
-                        create_tool_result_from_ai_analysis
+                    from autopr.actions.quality_engine.ai import create_tool_result_from_ai_analysis
 
                     results["ai_analysis"] = create_tool_result_from_ai_analysis(
                         ai_result
                     )
                     ai_summary = ai_result.get("summary")
+
+        if progress_callback:
+            progress_callback("ai_analysis", 0.9, "AI analysis completed")
 
         # Handle auto-fix if requested
         auto_fix_applied = False
@@ -531,9 +588,11 @@ class QualityEngine(Action):
                 fix_errors,
             ) = await self._run_auto_fix(inputs, files_to_check)
 
+        if progress_callback:
+            progress_callback("auto_fix", 0.95, "Auto-fix process completed" if auto_fix_applied else "Auto-fix skipped")
+
         # Build the comprehensive summary
-        from autopr.actions.quality_engine.summary import \
-            build_comprehensive_summary
+        from autopr.actions.quality_engine.summary import build_comprehensive_summary
 
         summary = build_comprehensive_summary(results, ai_summary)
 
@@ -557,6 +616,9 @@ class QualityEngine(Action):
         unique_files_with_issues = set()
         for result in results.values():
             unique_files_with_issues.update(result.files_with_issues)
+
+        if progress_callback:
+            progress_callback("complete", 1.0, f"Analysis completed: {total_issues_found} issues found")
 
         return QualityOutputs(
             success=total_issues_found == 0,

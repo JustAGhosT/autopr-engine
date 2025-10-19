@@ -3,20 +3,24 @@ AutoPR Action: AutoGen Multi-Agent Implementation
 Uses AutoGen for complex multi-agent development tasks
 """
 
+from datetime import UTC, datetime
 import json
 import os
 import re
-from datetime import UTC, datetime
 from typing import Any, TypeVar, cast
 
 from autopr.actions.autogen import AutoGenInputs, AutoGenOutputs
+
 
 # Define custom typing for ConversableAgent to avoid partial unknown types
 ConversableAgentType = Any
 
 try:
-    from autogen import ConversableAgent  # type: ignore[import-not-found]
-    from autogen import GroupChat, GroupChatManager
+    from autogen import (
+        ConversableAgent,  # type: ignore[import-not-found]
+        GroupChat,
+        GroupChatManager,
+    )
     AUTOGEN_AVAILABLE = True
 except ImportError:
     # Create dummy classes for type annotations when AutoGen is not available

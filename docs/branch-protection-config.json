@@ -6,7 +6,10 @@
       "Quality Feedback / security-feedback (pull_request)",
       "PR Checks / Essential Checks (pull_request)"
     ],
-    "optional_status_checks": ["CI / setup (pull_request)", "CI / notify (pull_request)"],
+    "optional_status_checks": [
+      "CI / setup (pull_request)",
+      "CI / notify (pull_request)"
+    ],
     "deprecated_checks": [
       "build",
       "e2e",

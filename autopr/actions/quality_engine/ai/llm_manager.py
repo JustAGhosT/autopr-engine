@@ -4,13 +4,13 @@ LLM Manager for Quality Engine
 Manages LLM interactions for quality analysis.
 """
 
-import asyncio
 import logging
 import os
 from typing import Any
 
 from autopr.ai.core.base import LLMMessage
 from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 

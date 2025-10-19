@@ -51,7 +51,11 @@
     "dependencies": ["@aws-sdk/client-codewhisperer", "aws-toolkit-vscode"],
     "folder_patterns": ["codewhisperer", "aws-codewhisperer"],
     "commit_patterns": ["codewhisperer", "aws codewhisperer"],
-    "content_patterns": ["aws.amazon.com/codewhisperer", "aws_codewhisperer", "CodeWhisperer"],
+    "content_patterns": [
+      "aws.amazon.com/codewhisperer",
+      "aws_codewhisperer",
+      "CodeWhisperer"
+    ],
     "confidence_weights": {
       "files": 0.4,
       "dependencies": 0.3,
@@ -75,4 +79,3 @@
     "configuration_files": [".code-whisperer/config.json", ".aws/credentials"]
   }
 }
-

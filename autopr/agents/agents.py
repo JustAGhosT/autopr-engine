@@ -11,8 +11,7 @@ from pydantic import BaseModel, field_validator
 
 from autopr.actions import platform_detection
 from autopr.actions.ai_linting_fixer import AILintingFixer as _AILintingFixer
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs)
+from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs, AILintingFixerOutputs
 from autopr.actions.quality_engine import QualityEngine
 from autopr.actions.quality_engine.models import QualityInputs, QualityMode
 from autopr.agents.models import CodeIssue, IssueSeverity

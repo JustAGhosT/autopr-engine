@@ -13,6 +13,7 @@ import structlog
 
 from autopr.actions.quality_engine.models import ToolResult
 
+
 logger = structlog.get_logger(__name__)
 
 
@@ -35,8 +36,7 @@ async def run_ai_analysis(
     """
     try:
         # Lazy import to avoid circular dependencies
-        from autopr.actions.quality_engine.ai.ai_modes import \
-            run_ai_analysis as run_analysis
+        from autopr.actions.quality_engine.ai.ai_modes import run_ai_analysis as run_analysis
 
         # Get available providers from the manager
         available_providers = []

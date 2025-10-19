@@ -6,19 +6,21 @@ Comprehensive tests for exception specialist module.
 import json
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.exception_specialist import (ExceptionAnalyzer,
-                                                     ExceptionConfig,
-                                                     ExceptionHandler,
-                                                     ExceptionPattern,
-                                                     ExceptionReporter,
-                                                     ExceptionSpecialist)
+    from autopr.actions.exception_specialist import (
+        ExceptionAnalyzer,
+        ExceptionConfig,
+        ExceptionHandler,
+        ExceptionPattern,
+        ExceptionReporter,
+        ExceptionSpecialist,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -37,7 +39,7 @@ class TestExceptionConfig:
             auto_retry=True,
             retry_attempts=3
         )
-        
+
         assert config.enable_analysis is True
         assert config.enable_handling is True
         assert config.enable_reporting is True
@@ -49,7 +51,7 @@ class TestExceptionConfig:
     def test_exception_config_defaults(self):
         """Test ExceptionConfig with default values."""
         config = ExceptionConfig()
-        
+
         assert config.enable_analysis is True
         assert config.enable_handling is True
         assert config.enable_reporting is True
@@ -65,7 +67,7 @@ class TestExceptionConfig:
             auto_retry=True,
             retry_attempts=5
         )
-        
+
         result = config.to_dict()
         assert result["enable_analysis"] is False
         assert result["auto_retry"] is True
@@ -82,7 +84,7 @@ class TestExceptionConfig:
             "auto_retry": True,
             "retry_attempts": 4
         }
-        
+
         config = ExceptionConfig.from_dict(data)
         assert config.enable_analysis is True
         assert config.enable_handling is False
@@ -96,7 +98,7 @@ class TestExceptionConfig:
         """Test ExceptionConfig validation."""
         valid_config = ExceptionConfig(max_exception_history=100, retry_attempts=3)
         assert valid_config.is_valid() is True
-        
+
         invalid_config = ExceptionConfig(max_exception_history=0, retry_attempts=0)
         assert invalid_config.is_valid() is False
 
@@ -113,7 +115,7 @@ class TestExceptionPattern:
             category="network",
             suggested_fix="Check network connectivity"
         )
-        
+
         assert pattern.name == "connection_error"
         assert pattern.pattern == ".*Connection.*failed.*"
         assert pattern.severity == "high"
@@ -123,7 +125,7 @@ class TestExceptionPattern:
     def test_exception_pattern_defaults(self):
         """Test ExceptionPattern with default values."""
         pattern = ExceptionPattern(name="test_pattern", pattern=".*test.*")
-        
+
         assert pattern.name == "test_pattern"
         assert pattern.pattern == ".*test.*"
         assert pattern.severity == "medium"
@@ -137,11 +139,11 @@ class TestExceptionPattern:
             pattern=".*timeout.*",
             severity="high"
         )
-        
+
         # Matching exception
         matching_exception = "Connection timeout after 30 seconds"
         assert pattern.matches(matching_exception) is True
-        
+
         # Non-matching exception
         non_matching_exception = "File not found"
         assert pattern.matches(non_matching_exception) is False
@@ -155,7 +157,7 @@ class TestExceptionPattern:
             category="input",
             suggested_fix="Validate input data"
         )
-        
+
         result = pattern.to_dict()
         assert result["name"] == "validation_error"
         assert result["pattern"] == ".*validation.*failed.*"
@@ -172,7 +174,7 @@ class TestExceptionPattern:
             "category": "security",
             "suggested_fix": "Check file permissions"
         }
-        
+
         pattern = ExceptionPattern.from_dict(data)
         assert pattern.name == "permission_error"
         assert pattern.pattern == ".*permission.*denied.*"
@@ -201,7 +203,7 @@ class TestExceptionAnalyzer:
             pattern=".*test.*",
             severity="medium"
         )
-        
+
         exception_analyzer.add_pattern(pattern)
         assert len(exception_analyzer.patterns) == 1
         assert exception_analyzer.patterns[0] == pattern
@@ -216,11 +218,11 @@ class TestExceptionAnalyzer:
             category="network"
         )
         exception_analyzer.add_pattern(pattern)
-        
+
         # Analyze matching exception
         exception_message = "Connection failed to database"
         result = exception_analyzer.analyze_exception(exception_message)
-        
+
         assert result.matched_patterns == [pattern]
         assert result.severity == "high"
         assert result.category == "network"
@@ -230,7 +232,7 @@ class TestExceptionAnalyzer:
         """Test analyzing an exception with no matching patterns."""
         exception_message = "Unknown error occurred"
         result = exception_analyzer.analyze_exception(exception_message)
-        
+
         assert result.matched_patterns == []
         assert result.severity == "unknown"
         assert result.category == "unknown"
@@ -245,9 +247,9 @@ class TestExceptionAnalyzer:
             return a / b
         ZeroDivisionError: division by zero
         """
-        
+
         result = exception_analyzer.analyze_exception_stack_trace(stack_trace)
-        
+
         assert result.exception_type == "ZeroDivisionError"
         assert result.exception_message == "division by zero"
         assert result.file_name == "math.py"
@@ -258,16 +260,16 @@ class TestExceptionAnalyzer:
         # Add some patterns and analyze exceptions
         pattern1 = ExceptionPattern(name="error1", pattern=".*error1.*", severity="high")
         pattern2 = ExceptionPattern(name="error2", pattern=".*error2.*", severity="medium")
-        
+
         exception_analyzer.add_pattern(pattern1)
         exception_analyzer.add_pattern(pattern2)
-        
+
         exception_analyzer.analyze_exception("This is error1 message")
         exception_analyzer.analyze_exception("This is error2 message")
         exception_analyzer.analyze_exception("This is error1 again")
-        
+
         stats = exception_analyzer.get_exception_statistics()
-        
+
         assert stats["total_exceptions"] == 3
         assert stats["high_severity"] == 2
         assert stats["medium_severity"] == 1
@@ -293,7 +295,7 @@ class TestExceptionHandler:
         """Test registering an exception handler."""
         def connection_handler(exception):
             return "Retry connection"
-        
+
         exception_handler.register_handler("ConnectionError", connection_handler)
         assert "ConnectionError" in exception_handler.handlers
 
@@ -301,12 +303,12 @@ class TestExceptionHandler:
         """Test handling an exception."""
         def test_handler(exception):
             return f"Handled: {exception}"
-        
+
         exception_handler.register_handler("TestError", test_handler)
-        
+
         exception = Exception("Test error message")
         exception.__class__.__name__ = "TestError"
-        
+
         result = exception_handler.handle_exception(exception)
         assert result == "Handled: Test error message"
 
@@ -314,7 +316,7 @@ class TestExceptionHandler:
         """Test handling an exception with no registered handler."""
         exception = Exception("Unknown error")
         exception.__class__.__name__ = "UnknownError"
-        
+
         result = exception_handler.handle_exception(exception)
         assert result is None
 
@@ -322,14 +324,14 @@ class TestExceptionHandler:
         """Test retrying a function that raises an exception."""
         def failing_function():
             raise ValueError("Test error")
-        
+
         def success_function():
             return "Success"
-        
+
         # Test failing function
         result = exception_handler.retry_with_exception(failing_function)
         assert result is None  # Should fail after retries
-        
+
         # Test successful function
         result = exception_handler.retry_with_exception(success_function)
         assert result == "Success"
@@ -338,15 +340,15 @@ class TestExceptionHandler:
         """Test handling an exception with additional context."""
         def context_handler(exception, context):
             return f"Handled {exception} with context: {context}"
-        
+
         exception_handler.register_handler("ContextError", context_handler)
-        
+
         exception = Exception("Context error")
         exception.__class__.__name__ = "ContextError"
-        
+
         context = {"user_id": 123, "operation": "save"}
         result = exception_handler.handle_exception_with_context(exception, context)
-        
+
         assert "Context error" in result
         assert "user_id" in result
         assert "save" in result
@@ -374,7 +376,7 @@ class TestExceptionReporter:
             category="test",
             suggestions=["Fix the issue"]
         )
-        
+
         exception_reporter.add_exception_report(exception, analysis_result)
         assert len(exception_reporter.reports) == 1
 
@@ -390,9 +392,9 @@ class TestExceptionReporter:
                 suggestions=[f"Fix {i}"]
             )
             exception_reporter.add_exception_report(exception, analysis_result)
-        
+
         report = exception_reporter.generate_exception_report()
-        
+
         assert "total_exceptions" in report
         assert "severity_breakdown" in report
         assert "category_breakdown" in report
@@ -410,9 +412,9 @@ class TestExceptionReporter:
                 suggestions=["Fix it"]
             )
             exception_reporter.add_exception_report(exception, analysis_result)
-        
+
         summary = exception_reporter.generate_exception_summary()
-        
+
         assert summary["total_exceptions"] == 3
         assert summary["high_severity"] == 1
         assert summary["medium_severity"] == 1
@@ -429,21 +431,21 @@ class TestExceptionReporter:
             suggestions=["Fix export"]
         )
         exception_reporter.add_exception_report(exception, analysis_result)
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_file = f.name
-        
+
         try:
             result = exception_reporter.export_exception_report(temp_file, "json")
             assert result is True
             assert os.path.exists(temp_file)
-            
-            with open(temp_file, 'r') as f:
+
+            with open(temp_file) as f:
                 content = f.read()
                 report_data = json.loads(content)
                 assert "total_exceptions" in report_data
                 assert report_data["total_exceptions"] == 1
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -460,9 +462,9 @@ class TestExceptionReporter:
                 suggestions=["Fix it"]
             )
             exception_reporter.add_exception_report(exception, analysis_result)
-        
+
         assert len(exception_reporter.reports) == 3
-        
+
         exception_reporter.clear_exception_reports()
         assert len(exception_reporter.reports) == 0
 
@@ -486,9 +488,9 @@ class TestExceptionSpecialist:
     def test_handle_exception_comprehensive(self, exception_specialist):
         """Test comprehensive exception handling."""
         exception = Exception("Comprehensive test error")
-        
+
         result = exception_specialist.handle_exception_comprehensive(exception)
-        
+
         assert result.analyzed is True
         assert result.handled is True
         assert result.reported is True
@@ -500,7 +502,7 @@ class TestExceptionSpecialist:
             pattern=".*test.*",
             severity="medium"
         )
-        
+
         exception_specialist.add_exception_pattern(pattern)
         assert len(exception_specialist.analyzer.patterns) == 1
 
@@ -508,16 +510,16 @@ class TestExceptionSpecialist:
         """Test registering an exception handler."""
         def test_handler(exception):
             return "Handled test exception"
-        
+
         exception_specialist.register_exception_handler("TestError", test_handler)
         assert "TestError" in exception_specialist.handler.handlers
 
     def test_analyze_and_handle_exception(self, exception_specialist):
         """Test analyzing and handling an exception."""
         exception = Exception("Analyze and handle test")
-        
+
         result = exception_specialist.analyze_and_handle_exception(exception)
-        
+
         assert result.analysis is not None
         assert result.handling_result is not None
 
@@ -527,9 +529,9 @@ class TestExceptionSpecialist:
         for i in range(3):
             exception = Exception(f"Error {i}")
             exception_specialist.handle_exception_comprehensive(exception)
-        
+
         stats = exception_specialist.get_exception_statistics()
-        
+
         assert "total_exceptions" in stats
         assert "analysis_stats" in stats
         assert "handling_stats" in stats
@@ -541,9 +543,9 @@ class TestExceptionSpecialist:
         for i in range(2):
             exception = Exception(f"Report error {i}")
             exception_specialist.handle_exception_comprehensive(exception)
-        
+
         report = exception_specialist.generate_exception_report()
-        
+
         assert "summary" in report
         assert "details" in report
         assert "recommendations" in report
@@ -554,10 +556,10 @@ class TestExceptionSpecialist:
         # Add some data first
         exception = Exception("Test error")
         exception_specialist.handle_exception_comprehensive(exception)
-        
+
         # Clear data
         exception_specialist.clear_exception_data()
-        
+
         # Verify data is cleared
         stats = exception_specialist.get_exception_statistics()
         assert stats["total_exceptions"] == 0

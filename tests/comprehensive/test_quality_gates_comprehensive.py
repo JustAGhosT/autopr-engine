@@ -3,22 +3,23 @@
 Comprehensive tests for quality gates module.
 """
 
-import json
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.quality_gates import (QualityGateChecker,
-                                              QualityGateConfig,
-                                              QualityGateInputs,
-                                              QualityGateOutputs,
-                                              QualityGateResult, QualityGates,
-                                              QualityGateValidator)
+    from autopr.actions.quality_gates import (
+        QualityGateChecker,
+        QualityGateConfig,
+        QualityGateInputs,
+        QualityGateOutputs,
+        QualityGateResult,
+        QualityGates,
+        QualityGateValidator,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -34,7 +35,7 @@ class TestQualityGateInputs:
             quality_threshold=0.8,
             checks=["syntax", "style", "complexity"]
         )
-        
+
         assert inputs.file_path == "test.py"
         assert inputs.code_content == "def test(): pass"
         assert inputs.quality_threshold == 0.8
@@ -43,7 +44,7 @@ class TestQualityGateInputs:
     def test_quality_gate_inputs_defaults(self):
         """Test QualityGateInputs with default values."""
         inputs = QualityGateInputs(file_path="test.py")
-        
+
         assert inputs.file_path == "test.py"
         assert inputs.code_content == ""
         assert inputs.quality_threshold == 0.7
@@ -57,7 +58,7 @@ class TestQualityGateInputs:
             quality_threshold=0.9,
             checks=["syntax", "style", "complexity", "security"]
         )
-        
+
         result = inputs.to_dict()
         expected = {
             "file_path": "test.py",
@@ -75,7 +76,7 @@ class TestQualityGateInputs:
             "quality_threshold": 0.85,
             "checks": ["syntax", "style"]
         }
-        
+
         inputs = QualityGateInputs.from_dict(data)
         assert inputs.file_path == "test.py"
         assert inputs.code_content == "def test(): pass"
@@ -94,7 +95,7 @@ class TestQualityGateOutputs:
             issues=["line too long", "missing docstring"],
             recommendations=["add docstring", "shorten line"]
         )
-        
+
         assert outputs.passed is True
         assert outputs.score == 0.85
         assert outputs.issues == ["line too long", "missing docstring"]
@@ -103,7 +104,7 @@ class TestQualityGateOutputs:
     def test_quality_gate_outputs_defaults(self):
         """Test QualityGateOutputs with default values."""
         outputs = QualityGateOutputs()
-        
+
         assert outputs.passed is False
         assert outputs.score == 0.0
         assert outputs.issues == []
@@ -117,7 +118,7 @@ class TestQualityGateOutputs:
             issues=["minor style issue"],
             recommendations=["consider adding type hints"]
         )
-        
+
         result = outputs.to_dict()
         expected = {
             "passed": True,
@@ -135,7 +136,7 @@ class TestQualityGateOutputs:
             "issues": ["syntax error", "complexity too high"],
             "recommendations": ["fix syntax", "refactor code"]
         }
-        
+
         outputs = QualityGateOutputs.from_dict(data)
         assert outputs.passed is False
         assert outputs.score == 0.65
@@ -155,7 +156,7 @@ class TestQualityGateResult:
             details="No syntax errors found",
             errors=[]
         )
-        
+
         assert result.check_name == "syntax"
         assert result.passed is True
         assert result.score == 0.95
@@ -172,7 +173,7 @@ class TestQualityGateResult:
             details="Multiple syntax errors found",
             errors=errors
         )
-        
+
         assert result.check_name == "syntax"
         assert result.passed is False
         assert result.score == 0.0
@@ -188,7 +189,7 @@ class TestQualityGateResult:
             details="Style check passed",
             errors=[]
         )
-        
+
         result_dict = result.to_dict()
         expected = {
             "check_name": "style",
@@ -208,7 +209,7 @@ class TestQualityGateResult:
             "details": "Cyclomatic complexity too high",
             "errors": ["Function has complexity of 15, max allowed is 10"]
         }
-        
+
         result = QualityGateResult.from_dict(data)
         assert result.check_name == "complexity"
         assert result.passed is False
@@ -234,7 +235,7 @@ class TestQualityGateConfig:
             security_threshold=0.9,
             performance_threshold=0.6
         )
-        
+
         assert config.syntax_check is True
         assert config.style_check is True
         assert config.complexity_check is True
@@ -249,7 +250,7 @@ class TestQualityGateConfig:
     def test_quality_gate_config_defaults(self):
         """Test QualityGateConfig with default values."""
         config = QualityGateConfig()
-        
+
         assert config.syntax_check is True
         assert config.style_check is True
         assert config.complexity_check is False
@@ -268,7 +269,7 @@ class TestQualityGateConfig:
             security_check=True,
             performance_check=False
         )
-        
+
         result = config.to_dict()
         expected = {
             "syntax_check": True,
@@ -298,7 +299,7 @@ class TestQualityGateConfig:
             "security_threshold": 0.95,
             "performance_threshold": 0.7
         }
-        
+
         config = QualityGateConfig.from_dict(data)
         assert config.syntax_check is True
         assert config.style_check is False
@@ -320,7 +321,7 @@ class TestQualityGateConfig:
             security_check=True,
             performance_check=False
         )
-        
+
         enabled_checks = config.get_enabled_checks()
         assert "syntax" in enabled_checks
         assert "style" in enabled_checks
@@ -352,14 +353,14 @@ class TestQualityGateChecker:
                 details="No syntax errors",
                 errors=[]
             )
-        
+
         quality_checker.add_checker("syntax", syntax_checker)
         assert "syntax" in quality_checker.checkers
 
     def test_check_syntax(self, quality_checker):
         """Test syntax checking."""
         valid_code = "def test_function():\n    return True"
-        
+
         result = quality_checker.check_syntax(valid_code)
         assert result.check_name == "syntax"
         assert result.passed is True
@@ -368,7 +369,7 @@ class TestQualityGateChecker:
     def test_check_syntax_with_error(self, quality_checker):
         """Test syntax checking with error."""
         invalid_code = "def test_function():\n    return True\n    invalid syntax"
-        
+
         result = quality_checker.check_syntax(invalid_code)
         assert result.check_name == "syntax"
         assert result.passed is False
@@ -378,7 +379,7 @@ class TestQualityGateChecker:
     def test_check_style(self, quality_checker):
         """Test style checking."""
         good_style_code = "def test_function():\n    return True"
-        
+
         result = quality_checker.check_style(good_style_code)
         assert result.check_name == "style"
         assert result.score >= 0.0
@@ -387,7 +388,7 @@ class TestQualityGateChecker:
     def test_check_style_with_issues(self, quality_checker):
         """Test style checking with issues."""
         bad_style_code = "def test_function():\nreturn True"  # Missing indentation
-        
+
         result = quality_checker.check_style(bad_style_code)
         assert result.check_name == "style"
         assert result.score < 1.0
@@ -395,7 +396,7 @@ class TestQualityGateChecker:
     def test_check_complexity(self, quality_checker):
         """Test complexity checking."""
         simple_code = "def simple_function():\n    return 1"
-        
+
         result = quality_checker.check_complexity(simple_code)
         assert result.check_name == "complexity"
         assert result.score >= 0.0
@@ -422,7 +423,7 @@ def complex_function(x):
     else:
         return "non-positive"
 """
-        
+
         result = quality_checker.check_complexity(complex_code)
         assert result.check_name == "complexity"
         assert result.score < 1.0  # Should have lower score due to high complexity
@@ -430,7 +431,7 @@ def complex_function(x):
     def test_check_security(self, quality_checker):
         """Test security checking."""
         secure_code = "def secure_function():\n    return 'safe'"
-        
+
         result = quality_checker.check_security(secure_code)
         assert result.check_name == "security"
         assert result.score >= 0.0
@@ -443,7 +444,7 @@ import os
 def vulnerable_function(user_input):
     os.system(user_input)  # Dangerous!
 """
-        
+
         result = quality_checker.check_security(vulnerable_code)
         assert result.check_name == "security"
         assert result.score < 1.0  # Should have lower score due to security issues
@@ -451,7 +452,7 @@ def vulnerable_function(user_input):
     def test_check_performance(self, quality_checker):
         """Test performance checking."""
         efficient_code = "def efficient_function():\n    return sum(range(100))"
-        
+
         result = quality_checker.check_performance(efficient_code)
         assert result.check_name == "performance"
         assert result.score >= 0.0
@@ -466,7 +467,7 @@ def inefficient_function():
         result.append(i)
     return result
 """
-        
+
         result = quality_checker.check_performance(inefficient_code)
         assert result.check_name == "performance"
         assert result.score < 1.0  # Should have lower score due to inefficiency
@@ -474,12 +475,12 @@ def inefficient_function():
     def test_run_all_checks(self, quality_checker):
         """Test running all enabled checks."""
         test_code = "def test_function():\n    return True"
-        
+
         results = quality_checker.run_all_checks(test_code)
-        
+
         assert isinstance(results, list)
         assert len(results) > 0
-        
+
         for result in results:
             assert isinstance(result, QualityGateResult)
             assert result.check_name in ["syntax", "style", "complexity", "security", "performance"]
@@ -491,7 +492,7 @@ def inefficient_function():
             QualityGateResult("style", True, 0.8, "Minor issues", []),
             QualityGateResult("complexity", True, 0.9, "Good complexity", [])
         ]
-        
+
         overall_score = quality_checker.calculate_overall_score(results)
         assert overall_score >= 0.0
         assert overall_score <= 1.0
@@ -519,9 +520,9 @@ class TestQualityGateValidator:
             quality_threshold=0.8,
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_validator.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.score >= 0.0
         assert outputs.score <= 1.0
@@ -530,16 +531,16 @@ class TestQualityGateValidator:
         """Test validating a fix that's below threshold."""
         # Create code with style issues
         bad_code = "def bad_function():\nreturn True"  # Missing indentation
-        
+
         inputs = QualityGateInputs(
             file_path="test.py",
             code_content=bad_code,
             quality_threshold=0.9,  # High threshold
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_validator.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.passed is False  # Should fail due to style issues
         assert outputs.score < 0.9
@@ -547,16 +548,16 @@ class TestQualityGateValidator:
     def test_validate_fix_above_threshold(self, quality_validator):
         """Test validating a fix that's above threshold."""
         good_code = "def good_function():\n    return True"
-        
+
         inputs = QualityGateInputs(
             file_path="test.py",
             code_content=good_code,
             quality_threshold=0.7,  # Lower threshold
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_validator.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.passed is True  # Should pass with good code
         assert outputs.score >= 0.7
@@ -569,9 +570,9 @@ class TestQualityGateValidator:
             quality_threshold=0.8,
             checks=["syntax"]  # Only syntax check
         )
-        
+
         outputs = quality_validator.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.score >= 0.0
         assert outputs.score <= 1.0
@@ -580,32 +581,32 @@ class TestQualityGateValidator:
         """Test validating a fix that generates recommendations."""
         # Code that could be improved
         improvable_code = "def function():\n    return 1"  # Missing docstring, generic name
-        
+
         inputs = QualityGateInputs(
             file_path="test.py",
             code_content=improvable_code,
             quality_threshold=0.6,
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_validator.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert len(outputs.recommendations) > 0  # Should have recommendations
 
     def test_validate_fix_with_issues(self, quality_validator):
         """Test validating a fix that has issues."""
         problematic_code = "def function():\n    return"  # Missing return value
-        
+
         inputs = QualityGateInputs(
             file_path="test.py",
             code_content=problematic_code,
             quality_threshold=0.8,
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_validator.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert len(outputs.issues) > 0  # Should have issues
 
@@ -631,9 +632,9 @@ class TestQualityGates:
             quality_threshold=0.8,
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_gates.quality_gates_action(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.score >= 0.0
         assert outputs.score <= 1.0
@@ -646,9 +647,9 @@ class TestQualityGates:
             quality_threshold=0.8,
             checks=["syntax", "style"]
         )
-        
+
         outputs = quality_gates.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.score >= 0.0
         assert outputs.score <= 1.0
@@ -656,7 +657,7 @@ class TestQualityGates:
     def test_check_syntax(self, quality_gates):
         """Test _check_syntax method."""
         valid_code = "def test_function():\n    return True"
-        
+
         result = quality_gates._check_syntax(valid_code)
         assert result.check_name == "syntax"
         assert result.passed is True
@@ -665,7 +666,7 @@ class TestQualityGates:
     def test_check_style(self, quality_gates):
         """Test _check_style method."""
         good_style_code = "def test_function():\n    return True"
-        
+
         result = quality_gates._check_style(good_style_code)
         assert result.check_name == "style"
         assert result.score >= 0.0
@@ -674,7 +675,7 @@ class TestQualityGates:
     def test_check_complexity(self, quality_gates):
         """Test _check_complexity method."""
         simple_code = "def simple_function():\n    return 1"
-        
+
         result = quality_gates._check_complexity(simple_code)
         assert result.check_name == "complexity"
         assert result.score >= 0.0
@@ -683,7 +684,7 @@ class TestQualityGates:
     def test_check_security(self, quality_gates):
         """Test _check_security method."""
         secure_code = "def secure_function():\n    return 'safe'"
-        
+
         result = quality_gates._check_security(secure_code)
         assert result.check_name == "security"
         assert result.score >= 0.0
@@ -692,7 +693,7 @@ class TestQualityGates:
     def test_check_performance(self, quality_gates):
         """Test _check_performance method."""
         efficient_code = "def efficient_function():\n    return sum(range(100))"
-        
+
         result = quality_gates._check_performance(efficient_code)
         assert result.check_name == "performance"
         assert result.score >= 0.0
@@ -701,7 +702,7 @@ class TestQualityGates:
     def test_run_tests(self, quality_gates):
         """Test _run_tests method."""
         test_code = "def test_function():\n    return True"
-        
+
         result = quality_gates._run_tests(test_code)
         assert result.check_name == "tests"
         assert result.score >= 0.0
@@ -712,7 +713,7 @@ class TestQualityGates:
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
             f.write("def test_function():\n    return True")
             test_file = f.name
-        
+
         try:
             result = quality_gates._run_test_file(test_file)
             assert result.check_name == "tests"
@@ -727,7 +728,7 @@ class TestQualityGates:
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
             f.write("import os\nimport sys\ndef test_function():\n    return True")
             test_file = f.name
-        
+
         try:
             result = quality_gates._check_dependencies(test_file)
             assert result.check_name == "dependencies"
@@ -740,7 +741,7 @@ class TestQualityGates:
     def test_calculate_python_complexity(self, quality_gates):
         """Test _calculate_python_complexity method."""
         simple_code = "def simple_function():\n    return 1"
-        
+
         complexity = quality_gates._calculate_python_complexity(simple_code)
         assert complexity >= 1  # At least 1 for the function definition
 
@@ -756,7 +757,7 @@ def complex_function(x):
     else:
         return "non-positive"
 """
-        
+
         complexity = quality_gates._calculate_python_complexity(complex_code)
         assert complexity > 1  # Should be higher than simple function
 
@@ -765,7 +766,7 @@ def complex_function(x):
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
             f.write("def test_function():\n    return True")
             test_file = f.name
-        
+
         try:
             inputs = QualityGateInputs(
                 file_path=test_file,
@@ -773,9 +774,9 @@ def complex_function(x):
                 quality_threshold=0.8,
                 checks=["syntax", "style"]
             )
-            
+
             outputs = quality_gates.validate_fix(inputs)
-            
+
             assert isinstance(outputs, QualityGateOutputs)
             assert outputs.score >= 0.0
             assert outputs.score <= 1.0
@@ -791,9 +792,9 @@ def complex_function(x):
             quality_threshold=0.5,
             checks=["syntax", "style", "complexity", "security", "performance"]
         )
-        
+
         outputs = quality_gates.validate_fix(inputs)
-        
+
         assert isinstance(outputs, QualityGateOutputs)
         assert outputs.score >= 0.0
         assert outputs.score <= 1.0

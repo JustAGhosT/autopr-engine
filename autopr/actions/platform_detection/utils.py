@@ -4,9 +4,7 @@ Platform Detection Utilities
 Helper functions for platform detection and analysis.
 """
 
-import re
-from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 def calculate_confidence_score(
@@ -51,13 +49,13 @@ def get_confidence_level(score: float) -> str:
         return "low"
 
 
-def extract_platform_config(platform: str, workspace_path: str) -> Dict[str, Any]:
+def extract_platform_config(platform: str, workspace_path: str) -> dict[str, Any]:
     """Extract platform-specific configuration."""
     # Implementation would go here
     return {}
 
 
-def generate_migration_suggestions(platform: str) -> List[str]:
+def generate_migration_suggestions(platform: str) -> list[str]:
     """Generate migration suggestions for detected platform."""
     # Implementation would go here
     return []

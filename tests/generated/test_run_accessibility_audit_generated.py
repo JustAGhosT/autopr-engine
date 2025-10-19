@@ -2,11 +2,9 @@
 Generated tests for run_accessibility_audit module.
 """
 
-import sys
 from pathlib import Path
-from unittest.mock import Mock, patch
+import sys
 
-import pytest
 
 # Add the parent directory to sys.path to import the module
 sys.path.insert(0, str(Path(__file__).parent.parent))

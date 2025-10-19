@@ -4,14 +4,15 @@ This module includes volume-based warning control and other test configurations.
 """
 
 import asyncio
+from collections.abc import AsyncGenerator
 import os
+from pathlib import Path
 import sys
 import warnings
-from collections.abc import AsyncGenerator
-from pathlib import Path
 
 import pytest  # type: ignore
 import pytest_asyncio  # type: ignore
+
 
 # Prefer stdlib tomllib (Py3.11+), then fallback to tomli; avoid requiring 'toml' package
 try:  # Python 3.11+
@@ -19,9 +20,9 @@ try:  # Python 3.11+
 except ModuleNotFoundError:  # Fallback for older interpreters
     import tomli as toml  # type: ignore[import-not-found]
 
-import contextlib
 
 from aiohttp import ClientSession
+
 
 # Import volume utilities (placeholder for future use)
 
@@ -116,18 +117,18 @@ _global_event_loop = None
 def _ensure_event_loop():
     """Ensure a global event loop exists and is set."""
     global _global_event_loop
-    
+
     if _global_event_loop is None:
         # Set up event loop policy for Windows
         if sys.platform.startswith("win"):
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-        
+
         try:
             _global_event_loop = asyncio.get_event_loop()
         except RuntimeError:
             _global_event_loop = asyncio.new_event_loop()
             asyncio.set_event_loop(_global_event_loop)
-    
+
     return _global_event_loop
 
 
@@ -154,7 +155,7 @@ def pytest_configure(config):
         category=RuntimeWarning,
         message=r"coroutine '.*' was never awaited",
     )
-    
+
     # Ensure global event loop is set up
     _ensure_event_loop()
 
@@ -168,25 +169,25 @@ def pytest_sessionstart(session):
 def pytest_sessionfinish(session, exitstatus):
     """Clean up event loop at the end of the test session."""
     global _global_event_loop
-    
+
     if _global_event_loop is not None:
         try:
             # Cancel all pending tasks
             pending = asyncio.all_tasks(_global_event_loop)
             for task in pending:
                 task.cancel()
-            
+
             # Wait for all tasks to be cancelled
             if pending:
                 _global_event_loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
         except Exception:
             pass
-        
+
         try:
             _global_event_loop.close()
         except Exception:
             pass
-        
+
         _global_event_loop = None
 
 
@@ -196,26 +197,26 @@ def event_loop():
     # Set up event loop policy for Windows
     if sys.platform.startswith("win"):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    
+
     # Create a new event loop for each test
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    
+
     yield loop
-    
+
     # Clean up
     try:
         # Cancel all pending tasks
         pending = asyncio.all_tasks(loop)
         for task in pending:
             task.cancel()
-        
+
         # Wait for all tasks to be cancelled
         if pending:
             loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
     except Exception:
         pass
-    
+
     try:
         loop.close()
     except Exception:

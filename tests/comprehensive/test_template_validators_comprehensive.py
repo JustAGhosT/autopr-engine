@@ -6,19 +6,20 @@ Comprehensive tests for template validators module.
 import json
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from templates.discovery.template_validators import (ContentValidator,
-                                                         FormatValidator,
-                                                         SchemaValidator,
-                                                         TemplateValidator,
-                                                         ValidationError,
-                                                         ValidationResult)
+    from templates.discovery.template_validators import (
+        ContentValidator,
+        FormatValidator,
+        SchemaValidator,
+        TemplateValidator,
+        ValidationError,
+        ValidationResult,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -34,7 +35,7 @@ class TestValidationResult:
             warnings=["Warning 1", "Warning 2"],
             metadata={"test": "value"}
         )
-        
+
         assert result.is_valid is True
         assert result.errors == []
         assert result.warnings == ["Warning 1", "Warning 2"]
@@ -51,7 +52,7 @@ class TestValidationResult:
             errors=errors,
             warnings=[]
         )
-        
+
         assert result.is_valid is False
         assert len(result.errors) == 2
         assert result.errors[0].message == "Field 'name' is required"
@@ -66,7 +67,7 @@ class TestValidationResult:
             warnings=["Test warning"],
             metadata={"count": 1}
         )
-        
+
         result_dict = result.to_dict()
         expected = {
             "is_valid": False,
@@ -84,7 +85,7 @@ class TestValidationResult:
             "warnings": ["Test warning"],
             "metadata": {"count": 1}
         }
-        
+
         result = ValidationResult.from_dict(data)
         assert result.is_valid is True
         assert len(result.errors) == 1
@@ -104,7 +105,7 @@ class TestValidationError:
             code="REQUIRED_FIELD",
             severity="error"
         )
-        
+
         assert error.message == "Field is required"
         assert error.field == "name"
         assert error.code == "REQUIRED_FIELD"
@@ -113,7 +114,7 @@ class TestValidationError:
     def test_validation_error_defaults(self):
         """Test ValidationError with default values."""
         error = ValidationError("Test message", "test_field")
-        
+
         assert error.message == "Test message"
         assert error.field == "test_field"
         assert error.code == "VALIDATION_ERROR"
@@ -127,7 +128,7 @@ class TestValidationError:
             code="INVALID_FORMAT",
             severity="warning"
         )
-        
+
         error_dict = error.to_dict()
         expected = {
             "message": "Invalid format",
@@ -145,7 +146,7 @@ class TestValidationError:
             "code": "TEST_ERROR",
             "severity": "error"
         }
-        
+
         error = ValidationError.from_dict(data)
         assert error.message == "Test error"
         assert error.field == "test_field"
@@ -176,7 +177,7 @@ class TestSchemaValidator:
             },
             "required": ["name"]
         }
-        
+
         schema_validator.register_schema("user", schema)
         assert "user" in schema_validator.schemas
         assert schema_validator.schemas["user"] == schema
@@ -186,7 +187,7 @@ class TestSchemaValidator:
         schema = {"type": "object"}
         schema_validator.register_schema("default", schema)
         schema_validator.set_default_schema("default")
-        
+
         assert schema_validator.default_schema == "default"
 
     def test_validate_with_schema(self, schema_validator):
@@ -200,13 +201,13 @@ class TestSchemaValidator:
             "required": ["name"]
         }
         schema_validator.register_schema("user", schema)
-        
+
         # Valid data
         valid_data = {"name": "John", "age": 30}
         result = schema_validator.validate(valid_data, "user")
         assert result.is_valid is True
         assert len(result.errors) == 0
-        
+
         # Invalid data
         invalid_data = {"age": "not_a_number"}
         result = schema_validator.validate(invalid_data, "user")
@@ -223,7 +224,7 @@ class TestSchemaValidator:
         }
         schema_validator.register_schema("default", schema)
         schema_validator.set_default_schema("default")
-        
+
         data = {"name": "John"}
         result = schema_validator.validate(data)
         assert result.is_valid is True
@@ -232,7 +233,7 @@ class TestSchemaValidator:
         """Test validation with invalid schema."""
         data = {"name": "John"}
         result = schema_validator.validate(data, "nonexistent")
-        
+
         assert result.is_valid is False
         assert len(result.errors) > 0
         assert any("Schema not found" in error.message for error in result.errors)
@@ -257,7 +258,7 @@ class TestContentValidator:
             if "name" not in data:
                 return ValidationError("Name is required", "name")
             return None
-        
+
         content_validator.add_rule(name_rule)
         assert len(content_validator.rules) == 1
 
@@ -267,7 +268,7 @@ class TestContentValidator:
             if "@" not in value:
                 return ValidationError("Invalid email format", "email")
             return None
-        
+
         content_validator.add_custom_validator("email", email_validator)
         assert "email" in content_validator.custom_validators
 
@@ -278,15 +279,15 @@ class TestContentValidator:
             if "name" not in data:
                 return ValidationError("Name is required", "name")
             return None
-        
+
         content_validator.add_rule(name_rule)
-        
+
         # Valid data
         valid_data = {"name": "John", "email": "john@example.com"}
         result = content_validator.validate(valid_data)
         assert result.is_valid is True
         assert len(result.errors) == 0
-        
+
         # Invalid data
         invalid_data = {"email": "john@example.com"}
         result = content_validator.validate(invalid_data)
@@ -300,13 +301,13 @@ class TestContentValidator:
             if "@" not in value:
                 return ValidationError("Invalid email format", "email")
             return None
-        
+
         content_validator.add_custom_validator("email", email_validator)
-        
+
         # Valid email
         result = content_validator.validate_field("john@example.com", "email")
         assert result is None
-        
+
         # Invalid email
         result = content_validator.validate_field("invalid-email", "email")
         assert result is not None
@@ -318,15 +319,15 @@ class TestContentValidator:
             if "name" not in data:
                 return ValidationError("Name is required", "name")
             return None
-        
+
         def age_rule(data):
             if "age" in data and data["age"] < 0:
                 return ValidationError("Age must be positive", "age")
             return None
-        
+
         content_validator.add_rule(name_rule)
         content_validator.add_rule(age_rule)
-        
+
         # Data with multiple issues
         invalid_data = {"age": -5}
         result = content_validator.validate(invalid_data)
@@ -355,7 +356,7 @@ class TestFormatValidator:
             if not re.match(pattern, value):
                 return ValidationError("Invalid phone format", "phone")
             return None
-        
+
         format_validator.register_format("phone", phone_format)
         assert "phone" in format_validator.formats
 
@@ -367,13 +368,13 @@ class TestFormatValidator:
             if not re.match(pattern, value):
                 return ValidationError("Invalid email format", "email")
             return None
-        
+
         format_validator.register_format("email", email_format)
-        
+
         # Valid email
         result = format_validator.validate_format("john@example.com", "email")
         assert result is None
-        
+
         # Invalid email
         result = format_validator.validate_format("invalid-email", "email")
         assert result is not None
@@ -393,21 +394,21 @@ class TestFormatValidator:
             if not re.match(pattern, value):
                 return ValidationError("Invalid email format", "email")
             return None
-        
+
         def phone_format(value):
             import re
             pattern = r'^\+?1?\d{9,15}$'
             if not re.match(pattern, value):
                 return ValidationError("Invalid phone format", "phone")
             return None
-        
+
         format_validator.register_format("email", email_format)
         format_validator.register_format("phone", phone_format)
-        
+
         # Valid formats
         assert format_validator.validate_format("john@example.com", "email") is None
         assert format_validator.validate_format("+1234567890", "phone") is None
-        
+
         # Invalid formats
         assert format_validator.validate_format("invalid-email", "email") is not None
         assert format_validator.validate_format("invalid-phone", "phone") is not None
@@ -439,14 +440,14 @@ class TestTemplateValidator:
             "required": ["name"]
         }
         template_validator.schema_validator.register_schema("user", schema)
-        
+
         # Add content rule
         def email_rule(data):
             if "email" in data and "@" not in data["email"]:
                 return ValidationError("Invalid email format", "email")
             return None
         template_validator.content_validator.add_rule(email_rule)
-        
+
         # Valid template
         valid_template = {
             "name": "John Doe",
@@ -455,7 +456,7 @@ class TestTemplateValidator:
         result = template_validator.validate_template(valid_template, "user")
         assert result.is_valid is True
         assert len(result.errors) == 0
-        
+
         # Invalid template
         invalid_template = {
             "email": "invalid-email"
@@ -472,11 +473,11 @@ class TestTemplateValidator:
             "version": "1.0",
             "fields": ["name", "email"]
         }
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             json.dump(template_data, f)
             temp_file = f.name
-        
+
         try:
             # Set up schema for template file
             schema = {
@@ -489,10 +490,10 @@ class TestTemplateValidator:
                 "required": ["name", "version", "fields"]
             }
             template_validator.schema_validator.register_schema("template_file", schema)
-            
+
             result = template_validator.validate_template_file(temp_file, "template_file")
             assert result.is_valid is True
-            
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -504,12 +505,12 @@ class TestTemplateValidator:
             # Create template files
             template1 = {"name": "Template 1", "version": "1.0"}
             template2 = {"name": "Template 2", "version": "1.0"}
-            
+
             with open(os.path.join(temp_dir, "template1.json"), 'w') as f:
                 json.dump(template1, f)
             with open(os.path.join(temp_dir, "template2.json"), 'w') as f:
                 json.dump(template2, f)
-            
+
             # Set up schema
             schema = {
                 "type": "object",
@@ -520,7 +521,7 @@ class TestTemplateValidator:
                 "required": ["name", "version"]
             }
             template_validator.schema_validator.register_schema("template", schema)
-            
+
             results = template_validator.validate_template_directory(temp_dir, "template")
             assert len(results) == 2
             assert all(result.is_valid for result in results.values())
@@ -531,12 +532,12 @@ class TestTemplateValidator:
         results = {
             "template1.json": ValidationResult(is_valid=True, errors=[], warnings=[]),
             "template2.json": ValidationResult(
-                is_valid=False, 
+                is_valid=False,
                 errors=[ValidationError("Invalid format", "name")],
                 warnings=["Deprecated field"]
             )
         }
-        
+
         summary = template_validator.get_validation_summary(results)
         assert summary["total_templates"] == 2
         assert summary["valid_templates"] == 1
@@ -551,17 +552,17 @@ class TestTemplateValidator:
             if "name" in data and len(data["name"]) < 2:
                 return ValidationError("Name must be at least 2 characters", "name")
             return None
-        
+
         template_validator.content_validator.add_rule(custom_rule)
-        
+
         # Add custom format validator
         def custom_format(value):
             if not value.startswith("test_"):
                 return ValidationError("Value must start with 'test_'", "prefix")
             return None
-        
+
         template_validator.format_validator.register_format("test_prefix", custom_format)
-        
+
         # Test validation
         data = {"name": "a", "prefix": "invalid"}
         result = template_validator.validate_template(data)
@@ -598,9 +599,9 @@ class TestTemplateValidator:
             },
             "required": ["metadata", "fields"]
         }
-        
+
         template_validator.schema_validator.register_schema("complex_template", schema)
-        
+
         # Valid complex template
         valid_template = {
             "metadata": {
@@ -614,6 +615,6 @@ class TestTemplateValidator:
                 {"name": "age", "type": "integer", "required": False}
             ]
         }
-        
+
         result = template_validator.validate_template(valid_template, "complex_template")
         assert result.is_valid is True

@@ -1766,9 +1766,7 @@
     "jsx",
     "tsx"
   ],
-  "dictionaries": [
-    "en_us"
-  ],
+  "dictionaries": ["en_us"],
   "dictionaryDefinitions": [
     {
       "name": "en_us",
@@ -1779,16 +1777,11 @@
   "overrides": [
     {
       "filename": "**/*.md",
-      "ignoreRegExpList": [
-        "`[^`]*`",
-        "\\$[^$]+\\$"
-      ]
+      "ignoreRegExpList": ["`[^`]*`", "\\$[^$]+\\$"]
     },
     {
       "filename": "**/*.{js,jsx,ts,tsx,py}",
-      "ignoreRegExpList": [
-        "(['\"]).*?\\1"
-      ]
+      "ignoreRegExpList": ["(['\"]).*?\\1"]
     }
   ]
 }

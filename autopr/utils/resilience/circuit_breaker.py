@@ -5,10 +5,12 @@ Prevents repeated calls to failing services and provides graceful degradation.
 """
 
 import asyncio
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 import logging
-from typing import Any, Callable
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 

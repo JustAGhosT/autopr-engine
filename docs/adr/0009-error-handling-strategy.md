@@ -55,7 +55,11 @@ We will implement a comprehensive error handling strategy with the following com
 
    ```typescript
    class ErrorFactory {
-     static createError(type: ErrorType, message: string, details?: any): AppError {
+     static createError(
+       type: ErrorType,
+       message: string,
+       details?: any,
+     ): AppError {
        return new AppError({
          type,
          message,

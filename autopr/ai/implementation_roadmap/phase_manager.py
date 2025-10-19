@@ -8,9 +8,11 @@ from datetime import datetime
 from typing import Any
 
 from autopr.ai.implementation_roadmap.task_definitions import (
-    ImplementationPhases, Phase, TaskRegistry)
-from autopr.ai.implementation_roadmap.task_executor import (TaskExecution,
-                                                            TaskExecutor)
+    ImplementationPhases,
+    Phase,
+    TaskRegistry,
+)
+from autopr.ai.implementation_roadmap.task_executor import TaskExecution, TaskExecutor
 
 
 @dataclass

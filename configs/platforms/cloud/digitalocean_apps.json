@@ -4,8 +4,18 @@
   "description": "Platform for building, deploying, and scaling applications",
   "files": ["app.yaml", "app.spec.yaml", "Dockerfile", "DOKKU_SCALE", "dokku"],
   "dependencies": ["doctl", "@digitalocean/app-plugin-deploy"],
-  "commit_patterns": ["digitalocean", "do apps", "deployed to digitalocean", "doctl apps"],
-  "content_patterns": ["digitalocean.com/apps", "app.spec.yaml", "doctl apps", "digitalocean.app"],
+  "commit_patterns": [
+    "digitalocean",
+    "do apps",
+    "deployed to digitalocean",
+    "doctl apps"
+  ],
+  "content_patterns": [
+    "digitalocean.com/apps",
+    "app.spec.yaml",
+    "doctl apps",
+    "digitalocean.app"
+  ],
   "folder_patterns": [".do/", "deploy/"],
   "confidence_weights": {
     "files": 0.45,

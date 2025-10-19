@@ -2,7 +2,13 @@
   "name": "AWS Amplify",
   "category": "cloud_hosting",
   "description": "AWS service for building full-stack web and mobile applications",
-  "files": ["amplify/", "amplify.yml", "amplify.yaml", "aws-exports.js", "awsconfiguration.json"],
+  "files": [
+    "amplify/",
+    "amplify.yml",
+    "amplify.yaml",
+    "aws-exports.js",
+    "awsconfiguration.json"
+  ],
   "dependencies": [
     "@aws-amplify/cli",
     "aws-amplify",
@@ -10,7 +16,12 @@
     "@aws-amplify/auth",
     "@aws-amplify/storage"
   ],
-  "commit_patterns": ["amplify", "aws amplify", "deployed with amplify", "aws deployment"],
+  "commit_patterns": [
+    "amplify",
+    "aws amplify",
+    "deployed with amplify",
+    "aws deployment"
+  ],
   "content_patterns": [
     "aws-exports.js",
     "awsconfiguration.json",

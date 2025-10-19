@@ -4,8 +4,7 @@ Test script to demonstrate AI fixer integration with volume control system
 """
 
 from autopr.actions.ai_linting_fixer.specialists import SpecialistManager
-from autopr.utils.volume_utils import (_get_ai_fixer_issue_types,
-                                       get_volume_config)
+from autopr.utils.volume_utils import _get_ai_fixer_issue_types, get_volume_config
 
 
 def test_volume_ai_integration():

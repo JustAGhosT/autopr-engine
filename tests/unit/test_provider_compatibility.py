@@ -8,17 +8,16 @@ Tests for LLM provider compatibility and functionality.
 import asyncio
 import os
 import sys
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, Mock, patch
 
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autopr"))
 
 import contextlib
 
 from autopr.actions.quality_engine.ai.ai_modes import (
-    _smart_truncate_content, _split_content_into_chunks)
+    _smart_truncate_content,
+    _split_content_into_chunks,
+)
 from autopr.ai.core.base import AnthropicProvider, LLMMessage, OpenAIProvider
 
 

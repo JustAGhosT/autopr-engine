@@ -9,6 +9,7 @@ import os
 import pathlib
 import sys
 
+
 # Add the autopr package to the path
 sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "."))
 
@@ -75,7 +76,7 @@ def test_backward_compatibility() -> None:
     try:
         # This should work via the compatibility wrapper
         from autopr.actions.llm import get_llm_provider_manager
-        
+
         manager = get_llm_provider_manager()
         assert manager is not None
         assert hasattr(manager, 'get_provider')
@@ -156,7 +157,7 @@ def test_message_formatting() -> None:
         assert hasattr(MessageRole, 'USER')
         assert hasattr(MessageRole, 'ASSISTANT')
         assert hasattr(MessageRole, 'SYSTEM')
-        
+
         # Test message creation
         assert MessageRole.USER.value in ['user', 'USER']
         assert MessageRole.ASSISTANT.value in ['assistant', 'ASSISTANT']

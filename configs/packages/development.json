@@ -1,6 +1,11 @@
 {
   "common": ["nodemon", "concurrently"],
-  "react": ["@storybook/react", "@storybook/addon-essentials", "eslint-plugin-react", "prettier"],
+  "react": [
+    "@storybook/react",
+    "@storybook/addon-essentials",
+    "eslint-plugin-react",
+    "prettier"
+  ],
   "typescript": [
     "typescript",
     "@types/node",

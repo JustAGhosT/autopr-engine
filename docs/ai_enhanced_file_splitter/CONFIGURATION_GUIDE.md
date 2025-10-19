@@ -80,12 +80,12 @@ config = SplitConfig(
     max_lines_per_file=500,
     max_functions_per_file=10,
     max_classes_per_file=5,
-    
+
     # AI analysis settings
     use_ai_analysis=True,           # Enable AI-powered analysis
     confidence_threshold=0.7,       # Minimum confidence for AI decisions
     enable_learning=True,           # Enable learning memory system
-    
+
     # Safety settings
     create_backup=True,
     validate_syntax=True
@@ -106,35 +106,35 @@ The file splitter automatically adapts its behavior based on volume settings. He
 
 ### Volume-Based Configuration Function
 
-```python
+````python
 def create_volume_based_config(volume: int) -> SplitConfig:
     """
     Create configuration based on volume level.
-    
+
     Volume ranges:
     - 0-200: Fast mode (basic splitting)
     - 200-500: Smart mode (with validation)
     - 500-800: AI-enhanced mode (with learning)
     - 800-1000: Maximum mode (full AI analysis)
     """
-    
+
     # Base configuration
     config = SplitConfig()
-    
+
     # Adjust limits based on volume with proper clamping
     config.max_lines_per_file = max(10, 1000 - (volume // 10))  # Minimum 10 lines
     config.max_functions_per_file = max(1, 20 - (volume // 50))  # Minimum 1 function
     config.max_classes_per_file = max(1, 10 - (volume // 100))   # Minimum 1 class
-    
+
     # AI analysis settings
     config.use_ai_analysis = volume >= 600
     config.confidence_threshold = min(1.0, max(0.0, 0.5 + (volume / 2000)))  # Clamp to [0, 1]
     config.enable_learning = volume >= 500
-    
+
     # Safety settings
     config.create_backup = volume >= 400
     config.validate_syntax = volume >= 200
-    
+
     return config
 
 ### Configuration Validation
@@ -174,7 +174,7 @@ config_900 = create_volume_based_config(900)
 config_1000 = create_volume_based_config(1000)
 # Result: max_lines=900, max_functions=1, max_classes=1 (clamped to minimums)
 # AI analysis: True, Backup: True, Validation: True
-```
+````
 
 ## AI Analysis Settings
 
@@ -465,33 +465,33 @@ research_config = SplitConfig(
 def validate_config(config: SplitConfig) -> List[str]:
     """Validate configuration and return list of warnings/errors."""
     issues = []
-    
+
     # Check parameter ranges
     if config.max_lines_per_file < 50:
         issues.append("max_lines_per_file is very low (< 50)")
     elif config.max_lines_per_file > 2000:
         issues.append("max_lines_per_file is very high (> 2000)")
-    
+
     if config.max_functions_per_file < 1:
         issues.append("max_functions_per_file must be at least 1")
     elif config.max_functions_per_file > 50:
         issues.append("max_functions_per_file is very high (> 50)")
-    
+
     if config.max_classes_per_file < 1:
         issues.append("max_classes_per_file must be at least 1")
     elif config.max_classes_per_file > 20:
         issues.append("max_classes_per_file is very high (> 20)")
-    
+
     if config.confidence_threshold < 0.0 or config.confidence_threshold > 1.0:
         issues.append("confidence_threshold must be between 0.0 and 1.0")
-    
+
     # Check safety settings
     if not config.create_backup and config.use_ai_analysis:
         issues.append("Warning: AI analysis enabled without backup")
-    
+
     if not config.validate_syntax:
         issues.append("Warning: Syntax validation disabled")
-    
+
     return issues
 
 # Usage

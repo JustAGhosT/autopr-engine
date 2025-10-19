@@ -8,9 +8,9 @@ import hashlib
 import logging
 from typing import Any
 
-from autopr.actions.ai_linting_fixer.performance_optimizer import \
-    IntelligentCache
+from autopr.actions.ai_linting_fixer.performance_optimizer import IntelligentCache
 from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 

@@ -5,19 +5,13 @@ Test File Splitter
 Tests for file splitting functionality.
 """
 
-import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, Mock, patch
+import tempfile
 
 import pytest
 
-from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
-    FileComplexityAnalyzer
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
-                                                           SplitConfig)
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.ai.core.providers.manager import LLMProviderManager
+from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import FileComplexityAnalyzer
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 
 
 def create_test_file(content: str, filename: str = "test_file.py") -> str:

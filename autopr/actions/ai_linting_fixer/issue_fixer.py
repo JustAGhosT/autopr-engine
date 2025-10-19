@@ -11,11 +11,10 @@ import time
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.ai_agent_manager import AIAgentManager
-from autopr.actions.ai_linting_fixer.error_handler import (
-    ErrorHandler, create_error_context)
+from autopr.actions.ai_linting_fixer.error_handler import ErrorHandler, create_error_context
 from autopr.actions.ai_linting_fixer.file_manager import FileManager
-from autopr.actions.ai_linting_fixer.models import (LintingFixResult,
-                                                    LintingIssue)
+from autopr.actions.ai_linting_fixer.models import LintingFixResult, LintingIssue
+
 
 logger = logging.getLogger(__name__)
 
@@ -188,8 +187,7 @@ class IssueFixer:
                 raise FileNotFoundError(msg)
 
             # Validate syntax before processing
-            from autopr.actions.ai_linting_fixer.code_analyzer import \
-                CodeAnalyzer
+            from autopr.actions.ai_linting_fixer.code_analyzer import CodeAnalyzer
 
             code_analyzer = CodeAnalyzer()
             syntax_valid_before = code_analyzer.validate_python_syntax(original_content)
@@ -308,10 +306,10 @@ class IssueFixer:
         """
         if response is None:
             return "<no response>"
-        
+
         # Try to extract content from various response formats
         content = None
-        
+
         # Check if response has a content attribute
         if hasattr(response, 'content'):
             content = response.content
@@ -324,22 +322,22 @@ class IssueFixer:
         # Try to get content via get method
         elif hasattr(response, 'get'):
             content = response.get('content')
-        
+
         # If we still don't have content, convert to string
         if content is None:
             content = str(response)
-        
+
         # Ensure content is a string and normalize it
         if not isinstance(content, str):
             content = str(content)
-        
+
         # Normalize whitespace and ensure UTF-8 encoding
         content = content.strip()
-        
+
         # Handle empty content
         if not content:
             return "<empty response>"
-        
+
         return content
 
     def fix_single_issue(

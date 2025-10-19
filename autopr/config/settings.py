@@ -512,7 +512,7 @@ class AutoPRSettings(BaseSettings):
             Dictionary with provider-specific configuration
         """
         provider_name = provider.value.lower()
-        
+
         return {
             "api_key": getattr(self.llm, f"{provider_name}_api_key", None),
             "base_url": getattr(self.llm, f"{provider_name}_base_url", None),
@@ -531,7 +531,7 @@ class AutoPRSettings(BaseSettings):
         """
         # Get provider-specific config using pattern-based approach
         config = self._get_provider_specific_config(provider)
-        
+
         # Add common settings
         config.update(
             {

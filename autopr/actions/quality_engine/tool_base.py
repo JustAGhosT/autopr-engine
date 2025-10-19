@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar, get_args
 
+
 # Change the bound to Any to allow TypedDict
 TConfig = TypeVar("TConfig", bound=Any)
 TIssue = TypeVar("TIssue")

@@ -78,8 +78,13 @@
     "framework": "replit",
     "deployment_targets": ["cloud"],
     "common_files": [".replit", "replit.nix"],
-    "features": ["browser_based_ide", "ai_code_completion", "collaboration", "hosting", "database"],
+    "features": [
+      "browser_based_ide",
+      "ai_code_completion",
+      "collaboration",
+      "hosting",
+      "database"
+    ],
     "configuration_files": [".replit", "replit.nix"]
   }
 }
-

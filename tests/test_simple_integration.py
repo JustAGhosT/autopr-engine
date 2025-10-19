@@ -6,13 +6,13 @@ This test demonstrates the core integration of the file splitter
 with the AI fixer components without complex database dependencies.
 """
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
+
 # Import the core components
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
-                                                           SplitConfig)
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 
 

@@ -4,21 +4,21 @@ AutoPR Engine - Core Engine Implementation
 Main engine class that orchestrates AutoPR operations.
 """
 
-import asyncio
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from autopr.actions.registry import ActionRegistry
+
 # from autopr.agents.agents import AgentManager  # Not implemented yet
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.health import HealthChecker
 from autopr.integrations.registry import IntegrationRegistry
-from autopr.quality.metrics_collector import MetricsCollector
 from autopr.utils.error_handlers import handle_operation_error
 from autopr.workflows.engine import WorkflowEngine
+
+
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 logger = logging.getLogger(__name__)
@@ -68,11 +68,11 @@ class AutoPREngine:
                 msg = "Invalid configuration: Missing required authentication or LLM provider keys"
                 logger.error(msg)
                 raise ConfigurationError(msg)
-            
+
             await self.workflow_engine.start()
             await self.integration_registry.initialize()
             await self.llm_manager.initialize()
-            
+
             logger.info("AutoPR Engine started successfully")
         except ConfigurationError:
             raise

@@ -12,7 +12,6 @@ from typing import Any
 
 from autopr.config import AutoPRConfig
 from autopr.exceptions import WorkflowError
-from autopr.utils.error_handlers import handle_operation_error
 from autopr.workflows.base import Workflow
 
 
@@ -42,14 +41,14 @@ def handle_workflow_error(
         WorkflowError: Workflow error with formatted message
     """
     error_msg = f"Workflow {operation} failed: {exception}"
-    
+
     if log_level == "exception":
         logger.exception(error_msg)
     elif log_level == "error":
         logger.error(error_msg)
     elif log_level == "warning":
         logger.warning(error_msg)
-    
+
     raise WorkflowError(error_msg, workflow_name) from exception
 
 
@@ -72,7 +71,7 @@ class WorkflowEngine:
         self.running_workflows: dict[str, asyncio.Task] = {}
         self.workflow_history: list[dict[str, Any]] = []
         self._is_running = False
-        
+
         # Metrics tracking
         self.metrics = {
             "total_executions": 0,
@@ -82,7 +81,7 @@ class WorkflowEngine:
             "total_execution_time": 0.0,
             "average_execution_time": 0.0,
         }
-        
+
         # Lock for thread-safe metrics updates
         self._metrics_lock = asyncio.Lock()
 
@@ -157,26 +156,26 @@ class WorkflowEngine:
 
         workflow = self.workflows[workflow_name]
         execution_id = workflow_id or f"{workflow_name}_{datetime.now().isoformat()}"
-        
+
         # Retry logic with exponential backoff
         max_attempts = getattr(self.config, 'workflow_retry_attempts', 3)
         base_delay = getattr(self.config, 'workflow_retry_delay', 5)
-        
+
         # Initialize last_exception to ensure it's always set
         last_exception: Exception = WorkflowError(
             f"Workflow execution failed for unknown reason: {execution_id}", workflow_name
         )
-        
+
         for attempt in range(max_attempts):
             start_time = time.time()
-            
+
             try:
                 if attempt > 0:
                     # Exponential backoff: delay * (2 ^ attempt)
                     delay = base_delay * (2 ** (attempt - 1))
                     logger.info(f"Retrying workflow {execution_id} after {delay}s (attempt {attempt + 1}/{max_attempts})")
                     await asyncio.sleep(delay)
-                
+
                 logger.info("Starting workflow execution: %s (attempt %d/%d)", execution_id, attempt + 1, max_attempts)
 
                 # Create execution task
@@ -203,15 +202,15 @@ class WorkflowEngine:
             except TimeoutError as e:
                 last_exception = e
                 execution_time = time.time() - start_time
-                
+
                 if attempt == max_attempts - 1:
                     # Final attempt failed
                     error_msg = f"Workflow execution timed out after {max_attempts} attempts: {execution_id}"
                     logger.exception("Workflow execution timed out: %s", execution_id)
-                    
+
                     # Update metrics
                     await self._update_metrics("timeout", execution_time)
-                    
+
                     self._record_execution(
                         execution_id, workflow_name, "timeout", {"error": error_msg}
                     )
@@ -222,15 +221,15 @@ class WorkflowEngine:
             except Exception as e:
                 last_exception = e
                 execution_time = time.time() - start_time
-                
+
                 if attempt == max_attempts - 1:
                     # Final attempt failed
                     error_msg = f"Workflow execution failed after {max_attempts} attempts: {e}"
                     logger.exception("Workflow execution failed: %s - %s", execution_id, e)
-                    
+
                     # Update metrics
                     await self._update_metrics("failed", execution_time)
-                    
+
                     self._record_execution(
                         execution_id, workflow_name, "failed", {"error": str(e)}
                     )
@@ -242,11 +241,11 @@ class WorkflowEngine:
                 # Clean up running workflow tracking
                 if execution_id in self.running_workflows:
                     del self.running_workflows[execution_id]
-        
+
         # This should never be reached, but just in case
         if last_exception:
             raise WorkflowError(f"Workflow execution failed: {last_exception}", workflow_name)
-        
+
         msg = f"Workflow execution failed for unknown reason: {execution_id}"
         raise WorkflowError(msg, workflow_name)
 
@@ -356,14 +355,14 @@ class WorkflowEngine:
         async with self._metrics_lock:
             self.metrics["total_executions"] += 1
             self.metrics["total_execution_time"] += execution_time
-            
+
             if status == "success":
                 self.metrics["successful_executions"] += 1
             elif status == "failed":
                 self.metrics["failed_executions"] += 1
             elif status == "timeout":
                 self.metrics["timeout_executions"] += 1
-            
+
             # Update average execution time
             if self.metrics["total_executions"] > 0:
                 self.metrics["average_execution_time"] = (
@@ -393,7 +392,7 @@ class WorkflowEngine:
             success_rate = (
                 self.metrics["successful_executions"] / self.metrics["total_executions"]
             ) * 100
-        
+
         return {
             **self.metrics,
             "success_rate_percent": round(success_rate, 2),

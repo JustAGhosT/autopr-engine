@@ -8,7 +8,10 @@ import ast
 
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.specialists.base_specialist import (
-    AgentType, BaseSpecialist, FixStrategy)
+    AgentType,
+    BaseSpecialist,
+    FixStrategy,
+)
 
 
 class ImportSpecialist(BaseSpecialist):

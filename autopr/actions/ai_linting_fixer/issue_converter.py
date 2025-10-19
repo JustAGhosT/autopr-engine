@@ -7,17 +7,16 @@ to avoid circular imports and schema mismatches.
 
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from autopr.actions.ai_linting_fixer.detection import LintingIssue
-    from autopr.actions.ai_linting_fixer.models import \
-        LintingIssue as ModelLintingIssue
+    from autopr.actions.ai_linting_fixer.models import LintingIssue as ModelLintingIssue
 
 
 def convert_detection_issue_to_model_issue(detection_issue: "LintingIssue") -> "ModelLintingIssue":
     """Convert a LintingIssue from detection module to models module."""
     # Import here to avoid circular imports
-    from autopr.actions.ai_linting_fixer.models import \
-        LintingIssue as ModelLintingIssue
+    from autopr.actions.ai_linting_fixer.models import LintingIssue as ModelLintingIssue
 
     # Build a candidate dict with superset keys
     candidate = {

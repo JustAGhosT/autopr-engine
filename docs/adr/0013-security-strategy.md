@@ -29,7 +29,11 @@ We will implement a defense-in-depth security strategy with the following layers
 
 ```typescript
 // Example: JWT authentication middleware
-const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {

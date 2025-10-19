@@ -9,8 +9,18 @@
     "firestore.rules",
     "storage.rules"
   ],
-  "dependencies": ["firebase", "firebase-admin", "firebase-functions", "firebase-tools"],
-  "commit_patterns": ["firebase", "firebase deploy", "firebase hosting", "deployed to firebase"],
+  "dependencies": [
+    "firebase",
+    "firebase-admin",
+    "firebase-functions",
+    "firebase-tools"
+  ],
+  "commit_patterns": [
+    "firebase",
+    "firebase deploy",
+    "firebase hosting",
+    "deployed to firebase"
+  ],
   "content_patterns": [
     "firebaseConfig",
     "firebase.initializeApp",

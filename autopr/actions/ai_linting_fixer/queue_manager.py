@@ -6,9 +6,10 @@ Manages the queue of linting issues for processing by AI agents.
 
 import json
 import logging
-import sqlite3
 from pathlib import Path
+import sqlite3
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -98,10 +99,10 @@ class IssueQueueManager:
         """Get the next batch of issues to process."""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
-            
+
             # Set to autocommit mode to avoid transaction within transaction error
             conn.isolation_level = None
-            
+
             # Use a transaction to ensure atomicity
             conn.execute("BEGIN IMMEDIATE")
 
@@ -130,7 +131,7 @@ class IssueQueueManager:
                         RETURNING *
                     """
                     params_with_worker = [worker_id] + params + [limit]
-                    
+
                     cursor = conn.execute(query, params_with_worker)
                     issues = [dict(row) for row in cursor.fetchall()]
                 else:
@@ -142,13 +143,13 @@ class IssueQueueManager:
                         LIMIT ?
                     """
                     params.append(limit)
-                    
+
                     cursor = conn.execute(query, params)
                     issues = [dict(row) for row in cursor.fetchall()]
 
                 conn.commit()
                 return issues
-                
+
             except Exception as e:
                 conn.rollback()
                 logger.error(f"Error in get_next_issues: {e}")

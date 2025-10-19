@@ -4,7 +4,8 @@ AutoGen Agents
 Specialized agents for different tasks in the AutoGen system.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 
 try:
     from autogen import ConversableAgent  # type: ignore
@@ -14,7 +15,7 @@ except ImportError:
     # Create dummy class for type annotations
     class ConversableAgentDummy:
         def __init__(self, *args: Any, **kwargs: Any) -> None: pass
-        def initiate_chat(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        def initiate_chat(self, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
             return []
 
     ConversableAgent = ConversableAgentDummy
@@ -24,7 +25,7 @@ class AutoGenAgentFactory:
     """Factory for creating specialized AutoGen agents."""
 
     @staticmethod
-    def create_code_analyzer(llm_config: Dict[str, Any]) -> ConversableAgent:
+    def create_code_analyzer(llm_config: dict[str, Any]) -> ConversableAgent:
         """Create a code analyzer agent."""
         if not AUTOGEN_AVAILABLE:
             raise ImportError("AutoGen not installed. Install with: pip install pyautogen")
@@ -43,7 +44,7 @@ class AutoGenAgentFactory:
         )
 
     @staticmethod
-    def create_code_fixer(llm_config: Dict[str, Any]) -> ConversableAgent:
+    def create_code_fixer(llm_config: dict[str, Any]) -> ConversableAgent:
         """Create a code fixer agent."""
         if not AUTOGEN_AVAILABLE:
             raise ImportError("AutoGen not installed. Install with: pip install pyautogen")
@@ -60,7 +61,7 @@ class AutoGenAgentFactory:
         )
 
     @staticmethod
-    def create_security_auditor(llm_config: Dict[str, Any]) -> ConversableAgent:
+    def create_security_auditor(llm_config: dict[str, Any]) -> ConversableAgent:
         """Create a security auditor agent."""
         if not AUTOGEN_AVAILABLE:
             raise ImportError("AutoGen not installed. Install with: pip install pyautogen")

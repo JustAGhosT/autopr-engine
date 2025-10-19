@@ -4,7 +4,8 @@ AutoGen System
 Core system for managing AutoGen multi-agent interactions.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 
 try:
     from autogen import GroupChat, GroupChatManager  # type: ignore
@@ -13,17 +14,17 @@ except ImportError:
     AUTOGEN_AVAILABLE = False
     # Create dummy classes for type annotations
     class GroupChatDummy:
-        def __init__(self, agents: List[Any], messages: Optional[List[Dict[str, Any]]] = None,
+        def __init__(self, agents: list[Any], messages: list[dict[str, Any]] | None = None,
                      max_round: int = 10, speaker_selection_method: str = "round_robin") -> None:
-            self.messages: List[Dict[str, Any]] = messages or []
-            self.agents: List[Any] = agents
+            self.messages: list[dict[str, Any]] = messages or []
+            self.agents: list[Any] = agents
             self.max_round: int = max_round
             self.speaker_selection_method: str = speaker_selection_method
 
     class GroupChatManagerDummy:
-        def __init__(self, groupchat: GroupChatDummy, llm_config: Dict[str, Any]) -> None:
+        def __init__(self, groupchat: GroupChatDummy, llm_config: dict[str, Any]) -> None:
             self.groupchat: GroupChatDummy = groupchat
-            self.llm_config: Dict[str, Any] = llm_config
+            self.llm_config: dict[str, Any] = llm_config
 
     GroupChat = GroupChatDummy
     GroupChatManager = GroupChatManagerDummy
@@ -32,13 +33,13 @@ except ImportError:
 class AutoGenAgentSystem:
     """Manages AutoGen multi-agent interactions."""
 
-    def __init__(self, llm_config: Dict[str, Any]) -> None:
+    def __init__(self, llm_config: dict[str, Any]) -> None:
         if not AUTOGEN_AVAILABLE:
             msg = "AutoGen not installed. Install with: pip install pyautogen"
             raise ImportError(msg)
 
-        self.llm_config: Dict[str, Any] = llm_config
-        self.agents: Dict[str, Any] = {}
+        self.llm_config: dict[str, Any] = llm_config
+        self.agents: dict[str, Any] = {}
         self._initialize_agents()
 
     def _initialize_agents(self) -> None:
@@ -49,7 +50,7 @@ class AutoGenAgentSystem:
         self.agents["code_fixer"] = AutoGenAgentFactory.create_code_fixer(self.llm_config)
         self.agents["security_auditor"] = AutoGenAgentFactory.create_security_auditor(self.llm_config)
 
-    def create_group_chat(self, agent_names: List[str], max_rounds: int = 10) -> GroupChat:
+    def create_group_chat(self, agent_names: list[str], max_rounds: int = 10) -> GroupChat:
         """Create a group chat with specified agents."""
         selected_agents = [self.agents[name] for name in agent_names if name in self.agents]
         return GroupChat(
@@ -58,7 +59,7 @@ class AutoGenAgentSystem:
             speaker_selection_method="round_robin"
         )
 
-    def run_analysis(self, task_type: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    def run_analysis(self, task_type: str, context: dict[str, Any]) -> dict[str, Any]:
         """Run analysis using appropriate agents based on task type."""
         # Implementation would go here
         return {}

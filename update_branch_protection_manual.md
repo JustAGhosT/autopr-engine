@@ -1,13 +1,16 @@
 # Fix Branch Protection Rules - Manual Steps
 
 ## Current Issue
+
 The branch protection rules are expecting status checks that don't match our actual workflow:
+
 - Expecting: `test (3.8)`, `test (3.9)`, `test (3.10)`, `test (3.11)`, `test (3.12)`
 - Our workflow has: `quality-assurance`, `testing`, `security`, `performance`, `build`, `documentation`
 
 ## Solution Options
 
 ### Option 1: Update Branch Protection Rules (Recommended)
+
 Update the branch protection rules to match our actual workflow:
 
 1. **Go to GitHub Repository Settings**:
@@ -22,6 +25,7 @@ Update the branch protection rules to match our actual workflow:
 3. **Save Changes**
 
 ### Option 2: Use GitHub CLI (When Authenticated)
+
 If you have proper GitHub CLI authentication:
 
 ```bash
@@ -35,6 +39,7 @@ gh api repos/JustAGhosT/autopr-engine/branches/main/protection \
 ```
 
 ### Option 3: Remove Job Aliases (Alternative)
+
 If you prefer to keep the current branch protection rules, we can remove the job aliases we just added and keep the current workflow as-is.
 
 ## Recommended Status Checks for Our Workflow
@@ -42,7 +47,7 @@ If you prefer to keep the current branch protection rules, we can remove the job
 Based on our `ci-cd-pipeline.yml`, the essential status checks should be:
 
 1. **quality-assurance** - Quality analysis and linting
-2. **testing** - Unit and integration tests  
+2. **testing** - Unit and integration tests
 3. **security** - Security scanning
 4. **performance** - Performance testing
 5. **build** - Package building

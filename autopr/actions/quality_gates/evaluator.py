@@ -4,15 +4,12 @@ Quality Gates Evaluator
 Core evaluation logic for quality gate validation.
 """
 
-import ast
-import json
+from collections.abc import Callable
 import os
-import pathlib
-import re
-import subprocess
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from .models import QualityGateInputs, QualityGateOutputs
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable

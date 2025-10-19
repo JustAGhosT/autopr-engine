@@ -138,7 +138,12 @@ Your code has been thoroughly reviewed and committed.
       "label": "Comprehensive Commit",
       "type": "shell",
       "command": "powershell",
-      "args": ["-ExecutionPolicy", "Bypass", "-File", "./scripts/comprehensive-commit.ps1"],
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "./scripts/comprehensive-commit.ps1"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,

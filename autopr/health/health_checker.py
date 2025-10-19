@@ -8,9 +8,11 @@ import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime
 import logging
-import psutil
 import sqlite3
 from typing import Any
+
+import psutil
+
 
 logger = logging.getLogger(__name__)
 

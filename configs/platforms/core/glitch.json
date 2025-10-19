@@ -2,9 +2,20 @@
   "name": "Glitch",
   "category": "rapid_prototyping",
   "description": "Platform for building and deploying web apps",
-  "files": [".glitch-assets", "glitch.json", ".glitchdotcom", "server.js", "app.js"],
+  "files": [
+    ".glitch-assets",
+    "glitch.json",
+    ".glitchdotcom",
+    "server.js",
+    "app.js"
+  ],
   "dependencies": ["glitch-env", "@glitchdotcom/glitch-express"],
-  "commit_patterns": ["glitch", "glitch.com", "remix on glitch", "glitch deployment"],
+  "commit_patterns": [
+    "glitch",
+    "glitch.com",
+    "remix on glitch",
+    "glitch deployment"
+  ],
   "content_patterns": ["glitch", "glitch.json", "glitch-env", "glitch.com"],
   "folder_patterns": [".glitch-assets", ".glitchdotcom", "public/"],
   "package_scripts": {

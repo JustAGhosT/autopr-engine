@@ -5,10 +5,9 @@ This module tests all 5 enhancements to ensure they work correctly.
 """
 
 import asyncio
-from datetime import UTC, datetime, timedelta
-import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+import tempfile
 
 import pytest
 
@@ -211,7 +210,7 @@ class TestImprovement4HealthCheckEndpoint:
 
     def test_health_checker_overall_status_logic(self):
         """Test the logic for determining overall health status."""
-        from autopr.health import HealthCheckResult, HealthChecker
+        from autopr.health import HealthChecker, HealthCheckResult
 
         config = AutoPRConfig()
         engine = AutoPREngine(config)
@@ -266,9 +265,10 @@ class TestImprovement5MetricsBatching:
 
     def test_metrics_context_manager_usage(self):
         """Test that metrics collector uses context managers consistently."""
-        from autopr.quality.metrics_collector import MetricsCollector
         import sqlite3
         import time
+
+        from autopr.quality.metrics_collector import MetricsCollector
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
@@ -301,9 +301,10 @@ class TestImprovement5MetricsBatching:
 
     def test_metrics_concurrent_writes(self):
         """Test that metrics can be written concurrently without locks."""
-        from autopr.quality.metrics_collector import MetricsCollector
         import sqlite3
         import time
+
+        from autopr.quality.metrics_collector import MetricsCollector
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name

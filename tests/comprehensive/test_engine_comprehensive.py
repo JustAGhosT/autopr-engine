@@ -3,21 +3,24 @@
 Comprehensive tests for engine module.
 """
 
-import asyncio
 import json
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.engine import (AutoPREngine, EngineConfig,
-                                       EngineManager, EngineMonitor,
-                                       EngineRunner, EngineState,
-                                       EngineValidator)
+    from autopr.actions.engine import (
+        AutoPREngine,
+        EngineConfig,
+        EngineManager,
+        EngineMonitor,
+        EngineRunner,
+        EngineState,
+        EngineValidator,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -38,7 +41,7 @@ class TestEngineConfig:
             auto_save=True,
             save_interval=60
         )
-        
+
         assert config.max_workers == 4
         assert config.timeout == 300
         assert config.retry_attempts == 3
@@ -52,7 +55,7 @@ class TestEngineConfig:
     def test_engine_config_defaults(self):
         """Test EngineConfig with default values."""
         config = EngineConfig()
-        
+
         assert config.max_workers == 2
         assert config.timeout == 600
         assert config.retry_attempts == 2
@@ -72,7 +75,7 @@ class TestEngineConfig:
             enable_logging=False,
             log_level="DEBUG"
         )
-        
+
         result = config.to_dict()
         assert result["max_workers"] == 8
         assert result["timeout"] == 180
@@ -93,7 +96,7 @@ class TestEngineConfig:
             "auto_save": True,
             "save_interval": 120
         }
-        
+
         config = EngineConfig.from_dict(data)
         assert config.max_workers == 6
         assert config.timeout == 240
@@ -110,7 +113,7 @@ class TestEngineConfig:
         # Test valid config
         config = EngineConfig(max_workers=4, timeout=300)
         assert config.is_valid() is True
-        
+
         # Test invalid config
         invalid_config = EngineConfig(max_workers=0, timeout=-1)
         assert invalid_config.is_valid() is False
@@ -130,7 +133,7 @@ class TestEngineState:
             error_count=0,
             success_count=5
         )
-        
+
         assert state.status == "idle"
         assert state.current_task == "test_task"
         assert state.progress == 0.5
@@ -142,7 +145,7 @@ class TestEngineState:
     def test_engine_state_defaults(self):
         """Test EngineState with default values."""
         state = EngineState()
-        
+
         assert state.status == "stopped"
         assert state.current_task is None
         assert state.progress == 0.0
@@ -161,7 +164,7 @@ class TestEngineState:
             error_count=1,
             success_count=10
         )
-        
+
         result = state.to_dict()
         assert result["status"] == "running"
         assert result["current_task"] == "processing"
@@ -180,7 +183,7 @@ class TestEngineState:
             "error_count": 2,
             "success_count": 15
         }
-        
+
         state = EngineState.from_dict(data)
         assert state.status == "completed"
         assert state.current_task == "final_task"
@@ -193,16 +196,16 @@ class TestEngineState:
     def test_engine_state_update(self):
         """Test updating engine state."""
         state = EngineState()
-        
+
         state.update_status("running")
         assert state.status == "running"
-        
+
         state.update_progress(0.25)
         assert state.progress == 0.25
-        
+
         state.increment_success()
         assert state.success_count == 1
-        
+
         state.increment_error()
         assert state.error_count == 1
 
@@ -224,7 +227,7 @@ class TestEngineValidator:
         """Test adding a validation rule."""
         def config_rule(config):
             return config.max_workers > 0
-        
+
         engine_validator.add_validation_rule(config_rule)
         assert len(engine_validator.validation_rules) == 1
 
@@ -234,7 +237,7 @@ class TestEngineValidator:
         valid_config = EngineConfig(max_workers=4, timeout=300)
         result = engine_validator.validate_config(valid_config)
         assert result.is_valid is True
-        
+
         # Invalid config
         invalid_config = EngineConfig(max_workers=0, timeout=-1)
         result = engine_validator.validate_config(invalid_config)
@@ -247,7 +250,7 @@ class TestEngineValidator:
         valid_state = EngineState(status="idle", progress=0.0)
         result = engine_validator.validate_state(valid_state)
         assert result.is_valid is True
-        
+
         # Invalid state
         invalid_state = EngineState(status="invalid_status", progress=1.5)
         result = engine_validator.validate_state(invalid_state)
@@ -260,7 +263,7 @@ class TestEngineValidator:
         valid_task = {"name": "test_task", "priority": "high", "timeout": 60}
         result = engine_validator.validate_task(valid_task)
         assert result.is_valid is True
-        
+
         # Invalid task
         invalid_task = {"name": "", "priority": "invalid", "timeout": -1}
         result = engine_validator.validate_task(invalid_task)
@@ -299,7 +302,7 @@ class TestEngineMonitor:
         """Test recording engine metrics."""
         engine_monitor.record_metric("cpu_usage", 75.5)
         engine_monitor.record_metric("memory_usage", 1024)
-        
+
         assert "cpu_usage" in engine_monitor.metrics
         assert "memory_usage" in engine_monitor.metrics
         assert engine_monitor.metrics["cpu_usage"] == 75.5
@@ -311,9 +314,9 @@ class TestEngineMonitor:
         engine_monitor.record_metric("cpu_usage", 50.0)
         engine_monitor.record_metric("memory_usage", 2048)
         engine_monitor.record_metric("task_count", 10)
-        
+
         summary = engine_monitor.get_metrics_summary()
-        
+
         assert "cpu_usage" in summary
         assert "memory_usage" in summary
         assert "task_count" in summary
@@ -325,7 +328,7 @@ class TestEngineMonitor:
         """Test adding engine alerts."""
         engine_monitor.add_alert("high_cpu", "CPU usage is high", "warning")
         engine_monitor.add_alert("low_memory", "Memory usage is low", "info")
-        
+
         assert len(engine_monitor.alerts) == 2
         assert engine_monitor.alerts[0]["type"] == "high_cpu"
         assert engine_monitor.alerts[0]["message"] == "CPU usage is high"
@@ -335,7 +338,7 @@ class TestEngineMonitor:
         """Test clearing engine alerts."""
         engine_monitor.add_alert("test_alert", "Test message", "info")
         assert len(engine_monitor.alerts) == 1
-        
+
         engine_monitor.clear_alerts()
         assert len(engine_monitor.alerts) == 0
 
@@ -387,7 +390,7 @@ class TestEngineRunner:
     def test_submit_task(self, engine_runner):
         """Test submitting a task to the engine."""
         task = {"name": "test_task", "priority": "high", "timeout": 30}
-        
+
         result = engine_runner.submit_task(task)
         assert result is True
 
@@ -395,7 +398,7 @@ class TestEngineRunner:
         """Test getting task status."""
         task_id = "test_task_123"
         status = engine_runner.get_task_status(task_id)
-        
+
         assert status in ["pending", "running", "completed", "failed", "unknown"]
 
     def test_cancel_task(self, engine_runner):
@@ -407,7 +410,7 @@ class TestEngineRunner:
     def test_get_engine_status(self, engine_runner):
         """Test getting engine status."""
         status = engine_runner.get_engine_status()
-        
+
         assert "status" in status
         assert "current_task" in status
         assert "progress" in status
@@ -448,7 +451,7 @@ class TestEngineManager:
         """Test getting an engine by name."""
         engine_name = "test_engine"
         engine_manager.create_engine(engine_name)
-        
+
         engine = engine_manager.get_engine(engine_name)
         assert engine is not None
         assert engine.name == engine_name
@@ -457,7 +460,7 @@ class TestEngineManager:
         """Test listing all engines."""
         engine_manager.create_engine("engine1")
         engine_manager.create_engine("engine2")
-        
+
         engines = engine_manager.list_engines()
         assert len(engines) == 2
         assert "engine1" in engines
@@ -467,10 +470,10 @@ class TestEngineManager:
         """Test removing an engine."""
         engine_name = "test_engine"
         engine_manager.create_engine(engine_name)
-        
+
         result = engine_manager.remove_engine(engine_name)
         assert result is True
-        
+
         engines = engine_manager.list_engines()
         assert engine_name not in engines
 
@@ -478,7 +481,7 @@ class TestEngineManager:
         """Test starting all engines."""
         engine_manager.create_engine("engine1")
         engine_manager.create_engine("engine2")
-        
+
         result = engine_manager.start_all_engines()
         assert result is True
 
@@ -487,7 +490,7 @@ class TestEngineManager:
         engine_manager.create_engine("engine1")
         engine_manager.create_engine("engine2")
         engine_manager.start_all_engines()
-        
+
         result = engine_manager.stop_all_engines()
         assert result is True
 
@@ -495,7 +498,7 @@ class TestEngineManager:
         """Test getting status of all engines."""
         engine_manager.create_engine("engine1")
         engine_manager.create_engine("engine2")
-        
+
         status = engine_manager.get_engine_status_all()
         assert len(status) == 2
         assert "engine1" in status
@@ -505,7 +508,7 @@ class TestEngineManager:
         """Test validating all engines."""
         engine_manager.create_engine("engine1")
         engine_manager.create_engine("engine2")
-        
+
         results = engine_manager.validate_all_engines()
         assert len(results) == 2
         assert all(result.is_valid for result in results.values())
@@ -554,14 +557,14 @@ class TestAutoPREngine:
             "url": "https://github.com/test/repo",
             "branch": "main"
         }
-        
+
         result = auto_pr_engine.process_repository(repo_config)
         assert result is True
 
     def test_analyze_code(self, auto_pr_engine):
         """Test analyzing code."""
         code_content = "def test_function():\n    return True"
-        
+
         result = auto_pr_engine.analyze_code(code_content)
         assert result is not None
         assert "analysis" in result
@@ -572,7 +575,7 @@ class TestAutoPREngine:
             {"type": "syntax", "message": "Missing colon", "line": 1},
             {"type": "style", "message": "Line too long", "line": 2}
         ]
-        
+
         fixes = auto_pr_engine.generate_fixes(issues)
         assert len(fixes) > 0
 
@@ -582,7 +585,7 @@ class TestAutoPREngine:
         fixes = [
             {"type": "syntax", "line": 1, "fix": "def test_function():\n    return True"}
         ]
-        
+
         result = auto_pr_engine.apply_fixes(code_content, fixes)
         assert result is True
 
@@ -594,14 +597,14 @@ class TestAutoPREngine:
             "branch": "fix/syntax-issues",
             "files": ["test.py"]
         }
-        
+
         result = auto_pr_engine.create_pull_request(pr_data)
         assert result is True
 
     def test_get_engine_status(self, auto_pr_engine):
         """Test getting engine status."""
         status = auto_pr_engine.get_engine_status()
-        
+
         assert "status" in status
         assert "current_task" in status
         assert "progress" in status
@@ -611,7 +614,7 @@ class TestAutoPREngine:
     def test_get_processing_summary(self, auto_pr_engine):
         """Test getting processing summary."""
         summary = auto_pr_engine.get_processing_summary()
-        
+
         assert "total_repositories" in summary
         assert "processed_repositories" in summary
         assert "total_issues_found" in summary
@@ -622,19 +625,19 @@ class TestAutoPREngine:
         """Test saving engine state."""
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_file = f.name
-        
+
         try:
             result = auto_pr_engine.save_engine_state(temp_file)
             assert result is True
             assert os.path.exists(temp_file)
-            
+
             # Verify file content
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 content = f.read()
                 state_data = json.loads(content)
                 assert "status" in state_data
                 assert "current_task" in state_data
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -649,17 +652,17 @@ class TestAutoPREngine:
             "repositories_processed": 2,
             "pull_requests_created": 1
         }
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             json.dump(test_state, f)
             temp_file = f.name
-        
+
         try:
             result = auto_pr_engine.load_engine_state(temp_file)
             assert result is True
             assert auto_pr_engine.state.status == "running"
             assert auto_pr_engine.state.current_task == "processing_repo"
-            
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)

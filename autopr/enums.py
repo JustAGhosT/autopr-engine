@@ -26,28 +26,20 @@ class QualityMode(str, Enum):
         Returns:
             QualityMode: The appropriate quality mode for the given volume
         """
-        MAX_VOLUME = 1000
-        MIN_VOLUME = 0
-        if not MIN_VOLUME <= volume <= MAX_VOLUME:
-            msg = f"Volume must be between {MIN_VOLUME} and {MAX_VOLUME}, got {volume}"
+        if not 0 <= volume <= 1000:
+            msg = f"Volume must be between 0 and 1000, got {volume}"
             raise ValueError(msg)
 
-        # Thresholds aligned with tests:
-        # 0 -> ULTRA_FAST
-        # 100-299 -> FAST
-        # 300-599 -> SMART
-        # 600-799 -> COMPREHENSIVE
-        # 800-1000 -> AI_ENHANCED
-        THRESH_FAST = 100
-        THRESH_SMART = 300
-        THRESH_COMPREHENSIVE = 600
-        THRESH_AI = 800
-        if volume < THRESH_FAST:
+        # Import here to avoid circular dependency
+        from autopr.utils.volume_utils import VOLUME_THRESHOLDS
+
+        # Use the centralized thresholds
+        if volume < VOLUME_THRESHOLDS.ULTRA_FAST_MAX:
             return cls.ULTRA_FAST
-        if volume < THRESH_SMART:
+        if volume < VOLUME_THRESHOLDS.FAST_MAX:
             return cls.FAST
-        if volume < THRESH_COMPREHENSIVE:
+        if volume < VOLUME_THRESHOLDS.SMART_MAX:
             return cls.SMART
-        if volume < THRESH_AI:
+        if volume < VOLUME_THRESHOLDS.COMPREHENSIVE_MAX:
             return cls.COMPREHENSIVE
         return cls.AI_ENHANCED

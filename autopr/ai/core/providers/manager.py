@@ -9,10 +9,10 @@ import logging
 import os
 from typing import Any
 
-from autopr.ai.core.base import (CompletionRequest, LLMMessage, LLMProvider,
-                                 LLMResponse)
+from autopr.ai.core.base import CompletionRequest, LLMMessage, LLMProvider, LLMResponse
 from autopr.config import AutoPRConfig
 from autopr.utils.resilience import CircuitBreaker, CircuitBreakerError
+
 
 logger = logging.getLogger(__name__)
 

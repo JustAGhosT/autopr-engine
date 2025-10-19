@@ -40,7 +40,7 @@ class IntegrationRegistry:
             msg = f"Cannot register abstract class {integration_class.__name__}"
             logger.error(msg)
             raise TypeError(msg)
-        
+
         # Create a temporary instance to get the name
         temp_instance = integration_class("temp", "temp")
         integration_name = temp_instance.name
@@ -198,7 +198,7 @@ class IntegrationRegistry:
                             "description": "Abstract class cannot be instantiated"
                         }
                         continue
-                    
+
                     temp_instance = integration_class(integration_name, "Temporary")
                     metadata[integration_name] = temp_instance.get_metadata()
                 except Exception:

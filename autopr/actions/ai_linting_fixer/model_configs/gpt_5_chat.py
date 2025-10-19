@@ -7,6 +7,7 @@ and performance characteristics for code linting fixes.
 
 from autopr.actions.ai_linting_fixer.model_configs.spec import ModelSpec
 
+
 # GPT-5-Chat Model Configuration
 GPT_5_CHAT_CONFIG = ModelSpec(
     name="gpt-5-chat",

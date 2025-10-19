@@ -2,22 +2,24 @@
 Generated tests for autopr/actions/ai_linting_fixer/display.py
 """
 
-import sys
 from io import StringIO
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+import sys
 
 import pytest
+
 
 # Add the parent directory to sys.path to import the module
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from autopr.actions.ai_linting_fixer.display import (DisplayConfig,
-                                                         DisplayFormatter,
-                                                         DisplayTheme,
-                                                         OutputMode,
-                                                         SystemStatusDisplay)
+    from autopr.actions.ai_linting_fixer.display import (
+        DisplayConfig,
+        DisplayFormatter,
+        DisplayTheme,
+        OutputMode,
+        SystemStatusDisplay,
+    )
 except ImportError:
     # If direct import fails, try alternative approaches
     pass
@@ -56,7 +58,7 @@ class TestDisplayConfig:
         """Test is_quiet method."""
         config = DisplayConfig(mode=OutputMode.QUIET)
         assert config.is_quiet() is True
-        
+
         config = DisplayConfig(mode=OutputMode.NORMAL)
         assert config.is_quiet() is False
 
@@ -64,10 +66,10 @@ class TestDisplayConfig:
         """Test is_verbose method."""
         config = DisplayConfig(mode=OutputMode.VERBOSE)
         assert config.is_verbose() is True
-        
+
         config = DisplayConfig(mode=OutputMode.DEBUG)
         assert config.is_verbose() is True
-        
+
         config = DisplayConfig(mode=OutputMode.NORMAL)
         assert config.is_verbose() is False
 
@@ -87,7 +89,7 @@ class TestDisplayFormatter:
         assert "✅" in formatter.emoji("success")
         assert "❌" in formatter.emoji("error")
         assert "⚠️" in formatter.emoji("warning")
-        
+
         # Test with unknown emoji
         assert formatter.emoji("unknown") == ""
 
@@ -197,7 +199,7 @@ class TestSystemStatusDisplay:
         config = DisplayConfig(mode=OutputMode.QUIET, output_stream=StringIO())
         formatter = DisplayFormatter(config)
         status_display = SystemStatusDisplay(formatter)
-        
+
         # Should not output anything in quiet mode
         status_display.show_system_status({"version": "1.0.0"})
         assert config.output_stream.getvalue() == ""
@@ -208,7 +210,7 @@ class TestSystemStatusDisplay:
         config = DisplayConfig(output_stream=output_stream)
         formatter = DisplayFormatter(config)
         status_display = SystemStatusDisplay(formatter)
-        
+
         status = {
             "version": "1.0.0",
             "components": {
@@ -216,10 +218,10 @@ class TestSystemStatusDisplay:
                 "backup_system": False
             }
         }
-        
+
         status_display.show_system_status(status)
         output = output_stream.getvalue()
-        
+
         assert "AI Linting Fixer - System Status" in output
         assert "Version: 1.0.0" in output
         assert "Components Status" in output
@@ -230,7 +232,7 @@ class TestSystemStatusDisplay:
         config = DisplayConfig(mode=OutputMode.VERBOSE, output_stream=output_stream)
         formatter = DisplayFormatter(config)
         status_display = SystemStatusDisplay(formatter)
-        
+
         status = {
             "version": "1.0.0",
             "components": {"ai_provider": True},
@@ -242,10 +244,10 @@ class TestSystemStatusDisplay:
                 }
             }
         }
-        
+
         status_display.show_system_status(status)
         output = output_stream.getvalue()
-        
+
         assert "Agent Performance" in output
         assert "test_agent" in output
         assert "8/10 (80.0%)" in output

@@ -4,8 +4,8 @@ Comprehensive tests for the Quality Pipeline
 Tests all quality modes, edge cases, and integration scenarios.
 """
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 import pytest
 
@@ -438,15 +438,15 @@ var unused = "unused";
 
         # Verify that faster modes execute more quickly (with tolerance for system load)
         tolerance = 0.1  # 100ms tolerance for system load variations
-        
+
         ultra_fast_time = results[QualityMode.ULTRA_FAST]["execution_time"]
         fast_time = results[QualityMode.FAST]["execution_time"]
         smart_time = results[QualityMode.SMART]["execution_time"]
-        
+
         assert (
             ultra_fast_time <= fast_time + tolerance
         ), f"Ultra-fast mode ({ultra_fast_time:.3f}s) should be faster than fast mode ({fast_time:.3f}s)"
-        
+
         assert (
             fast_time <= smart_time + tolerance
         ), f"Fast mode ({fast_time:.3f}s) should be faster than smart mode ({smart_time:.3f}s)"

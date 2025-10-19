@@ -6,10 +6,9 @@ and prevent regressions.
 """
 
 import asyncio
+from pathlib import Path
 import sqlite3
 import tempfile
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -37,10 +36,10 @@ class TestBug1IntegrationRegistryCleanup:
         class MockIntegration(Integration):
             async def initialize(self, config: dict):
                 self.is_initialized = True
-            
+
             async def health_check(self) -> dict:
                 return {"status": "healthy"}
-            
+
             async def execute(self, inputs, context):
                 return {"success": True}
 
@@ -70,10 +69,10 @@ class TestBug1IntegrationRegistryCleanup:
         class FailingIntegration(Integration):
             async def initialize(self, config: dict):
                 self.is_initialized = True
-            
+
             async def health_check(self) -> dict:
                 return {"status": "healthy"}
-            
+
             async def execute(self, inputs, context):
                 return {"success": True}
 
@@ -201,7 +200,7 @@ class TestBug4WorkflowRetryLogic:
 
         engine = WorkflowEngine(config)
         await engine.start()  # Start the engine
-        
+
         workflow = FailingWorkflow("test_workflow", "Test workflow")
         engine.register_workflow(workflow)
 
@@ -218,8 +217,9 @@ class TestBug4WorkflowRetryLogic:
     @pytest.mark.asyncio
     async def test_retry_with_exponential_backoff(self):
         """Test that retries use exponential backoff."""
-        from autopr.workflows.base import Workflow
         import time
+
+        from autopr.workflows.base import Workflow
 
         attempt_times = []
 
@@ -242,7 +242,7 @@ class TestBug4WorkflowRetryLogic:
 
         engine = WorkflowEngine(config)
         await engine.start()  # Start the engine
-        
+
         workflow = TransientFailureWorkflow("test_workflow", "Test workflow")
         engine.register_workflow(workflow)
 

@@ -61,6 +61,27 @@ class QualityTool(abc.ABC):
     def __init__(self, config: QualityToolConfig | None = None):
         self.config = config or QualityToolConfig()
         self.logger = get_logger(self.__class__.__name__)
+        # Pre-compile patterns for better performance
+        self._compiled_exclude_patterns = self._compile_patterns(self.config.exclude_patterns)
+        self._compiled_include_patterns = self._compile_patterns(self.config.include_patterns) if self.config.include_patterns else []
+
+    def _compile_patterns(self, patterns: list[str]) -> list[Any]:
+        """Compile patterns for faster matching."""
+        import re
+        compiled = []
+        for pattern in patterns:
+            # Check if it's a glob pattern (contains *, ?, [, ])
+            if any(char in pattern for char in '*?[]'):
+                # For glob patterns, we'll use fnmatch which handles them properly
+                compiled.append(('glob', pattern))
+            else:
+                # For simple string patterns, compile as regex for speed
+                try:
+                    compiled.append(('regex', re.compile(pattern)))
+                except re.error:
+                    # Fallback to simple string matching if regex compilation fails
+                    compiled.append(('string', pattern))
+        return compiled
 
     @property
     @abc.abstractmethod
@@ -115,24 +136,55 @@ class QualityTool(abc.ABC):
             )
 
     def filter_files(self, files: list[str]) -> list[str]:
-        """Filter files based on include/exclude patterns"""
-        # This is a simplified implementation - in a real system,
-        # you would use proper glob pattern matching
+        """Filter files based on include/exclude patterns using pre-compiled patterns"""
         if not files:
             return []
 
         result = files.copy()
 
-        # Apply exclusions
-        for pattern in self.config.exclude_patterns:
-            result = [f for f in result if pattern not in f]
+        # Apply exclusions using pre-compiled patterns
+        for pattern_type, pattern in self._compiled_exclude_patterns:
+            filtered_result = []
+            for file_path in result:
+                should_exclude = False
 
-        # Apply inclusions if specified
-        if self.config.include_patterns:
-            result = [
-                f
-                for f in result
-                if any(pattern in f for pattern in self.config.include_patterns)
-            ]
+                if pattern_type == 'glob':
+                    # Use fnmatch for glob patterns
+                    import fnmatch
+                    should_exclude = fnmatch.fnmatch(file_path, pattern)
+                elif pattern_type == 'regex':
+                    should_exclude = pattern.search(file_path) is not None
+                else:  # string pattern
+                    should_exclude = pattern in file_path
+
+                if not should_exclude:
+                    filtered_result.append(file_path)
+            result = filtered_result
+
+        # Apply inclusions if specified using pre-compiled patterns
+        if self._compiled_include_patterns:
+            filtered_result = []
+            for file_path in result:
+                should_include = False
+
+                for pattern_type, pattern in self._compiled_include_patterns:
+                    if pattern_type == 'glob':
+                        # Use fnmatch for glob patterns
+                        import fnmatch
+                        if fnmatch.fnmatch(file_path, pattern):
+                            should_include = True
+                            break
+                    elif pattern_type == 'regex':
+                        if pattern.search(file_path) is not None:
+                            should_include = True
+                            break
+                    else:  # string pattern
+                        if pattern in file_path:
+                            should_include = True
+                            break
+
+                if should_include:
+                    filtered_result.append(file_path)
+            result = filtered_result
 
         return result

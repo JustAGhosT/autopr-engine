@@ -9,22 +9,31 @@
  * Usage: node scripts/find-theme-hook-usage.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
 
 // Configuration
-const SEARCH_DIRS = ['app', 'components', 'src', 'contexts', 'hooks'];
-const THEME_HOOKS = ['useTheme', 'useCurrentTheme', 'useAvailableThemeVariants', 'useThemeAwareImage'];
-const THEME_COMPONENTS = ['ThemeAwareImage', 'ThemeAwareBackground', 'ThemeToggle'];
-const THEME_PROVIDERS = ['ThemeProvider', '<ThemeProvider', 'ThemeProvider>'];
+const SEARCH_DIRS = ["app", "components", "src", "contexts", "hooks"];
+const THEME_HOOKS = [
+  "useTheme",
+  "useCurrentTheme",
+  "useAvailableThemeVariants",
+  "useThemeAwareImage",
+];
+const THEME_COMPONENTS = [
+  "ThemeAwareImage",
+  "ThemeAwareBackground",
+  "ThemeToggle",
+];
+const THEME_PROVIDERS = ["ThemeProvider", "<ThemeProvider", "ThemeProvider>"];
 
 // Results storage
 const results = {
   hookUsage: [],
   themeComponents: [],
   themeProviders: [],
-  potentialIssues: []
+  potentialIssues: [],
 };
 
 /**
@@ -37,20 +46,20 @@ const results = {
 function findFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
       // Skip node_modules and .next directories
-      if (file !== 'node_modules' && file !== '.next') {
+      if (file !== "node_modules" && file !== ".next") {
         findFiles(filePath, fileList);
       }
     } else if (
-      file.endsWith('.tsx') ||
-      file.endsWith('.ts') ||
-      file.endsWith('.jsx') ||
-      file.endsWith('.js')
+      file.endsWith(".tsx") ||
+      file.endsWith(".ts") ||
+      file.endsWith(".jsx") ||
+      file.endsWith(".js")
     ) {
       fileList.push(filePath);
     }
@@ -72,19 +81,19 @@ function findFiles(dir, fileList = []) {
  */
 function searchInFile(filePath, patterns) {
   try {
-    const content = fs.readFileSync(filePath, 'utf8');
+    const content = fs.readFileSync(filePath, "utf8");
     const matches = [];
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       // Simple string search
       if (content.includes(pattern)) {
-        const lines = content.split('\n');
+        const lines = content.split("\n");
         lines.forEach((line, index) => {
           if (line.includes(pattern)) {
             matches.push({
               pattern,
               line: index + 1,
-              context: line.trim()
+              context: line.trim(),
             });
           }
         });
@@ -109,7 +118,7 @@ function analyzeFile(filePath) {
   if (hookMatches.length > 0) {
     results.hookUsage.push({
       file: filePath,
-      matches: hookMatches
+      matches: hookMatches,
     });
   }
 
@@ -118,7 +127,7 @@ function analyzeFile(filePath) {
   if (componentMatches.length > 0) {
     results.themeComponents.push({
       file: filePath,
-      matches: componentMatches
+      matches: componentMatches,
     });
   }
 
@@ -127,33 +136,36 @@ function analyzeFile(filePath) {
   if (providerMatches.length > 0) {
     results.themeProviders.push({
       file: filePath,
-      matches: providerMatches
+      matches: providerMatches,
     });
   }
 
   // Identify potential issues (hook usage without provider in same file)
-  if ((hookMatches.length > 0 || componentMatches.length > 0) && providerMatches.length === 0) {
+  if (
+    (hookMatches.length > 0 || componentMatches.length > 0) &&
+    providerMatches.length === 0
+  ) {
     // Check if this is a page component
     const isPageComponent =
-      filePath.includes('/page.') ||
-      filePath.includes('/pages/') ||
-      filePath.includes('/app/');
+      filePath.includes("/page.") ||
+      filePath.includes("/pages/") ||
+      filePath.includes("/app/");
 
     results.potentialIssues.push({
       file: filePath,
       isPageComponent,
       hookUsage: hookMatches.length > 0,
-      componentUsage: componentMatches.length > 0
+      componentUsage: componentMatches.length > 0,
     });
   }
 }
 
 // Main execution
-console.log('Searching for theme hook and component usage...');
+console.log("Searching for theme hook and component usage...");
 
 // Find all files to analyze
 let allFiles = [];
-SEARCH_DIRS.forEach(dir => {
+SEARCH_DIRS.forEach((dir) => {
   if (fs.existsSync(dir)) {
     allFiles = allFiles.concat(findFiles(dir));
   }
@@ -162,24 +174,32 @@ SEARCH_DIRS.forEach(dir => {
 console.log(`Found ${allFiles.length} files to analyze`);
 
 // Analyze each file
-allFiles.forEach(file => {
+allFiles.forEach((file) => {
   analyzeFile(file);
 });
 
 // Generate report
-console.log('\n--- THEME USAGE ANALYSIS REPORT ---\n');
+console.log("\n--- THEME USAGE ANALYSIS REPORT ---\n");
 
-console.log(`Found ${results.hookUsage.length} files using theme hooks directly`);
-console.log(`Found ${results.themeComponents.length} files using theme-aware components`);
+console.log(
+  `Found ${results.hookUsage.length} files using theme hooks directly`,
+);
+console.log(
+  `Found ${results.themeComponents.length} files using theme-aware components`,
+);
 console.log(`Found ${results.themeProviders.length} files with ThemeProvider`);
-console.log(`Identified ${results.potentialIssues.length} files with potential theme provider issues`);
+console.log(
+  `Identified ${results.potentialIssues.length} files with potential theme provider issues`,
+);
 
-console.log('\n--- POTENTIAL ISSUES ---\n');
-results.potentialIssues.forEach(issue => {
-  console.log(`${issue.file} ${issue.isPageComponent ? '(PAGE COMPONENT)' : ''}`);
+console.log("\n--- POTENTIAL ISSUES ---\n");
+results.potentialIssues.forEach((issue) => {
+  console.log(
+    `${issue.file} ${issue.isPageComponent ? "(PAGE COMPONENT)" : ""}`,
+  );
   console.log(`  - Hook Usage: ${issue.hookUsage}`);
   console.log(`  - Component Usage: ${issue.componentUsage}`);
-  console.log('');
+  console.log("");
 });
 
 // Write results to file
@@ -189,15 +209,17 @@ const reportData = {
     hookUsage: results.hookUsage.length,
     themeComponents: results.themeComponents.length,
     themeProviders: results.themeProviders.length,
-    potentialIssues: results.potentialIssues.length
+    potentialIssues: results.potentialIssues.length,
   },
-  details: results
+  details: results,
 };
 
 fs.writeFileSync(
-  'theme-usage-report.json',
-  JSON.stringify(reportData, null, 2)
+  "theme-usage-report.json",
+  JSON.stringify(reportData, null, 2),
 );
 
-console.log('Full report written to theme-usage-report.json');
-console.log('\nTo fix these issues, create bridge components that wrap the original components with ThemeProvider.');
+console.log("Full report written to theme-usage-report.json");
+console.log(
+  "\nTo fix these issues, create bridge components that wrap the original components with ThemeProvider.",
+);

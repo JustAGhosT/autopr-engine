@@ -20,7 +20,12 @@
     "files": [".replit", "replit.nix", "pyproject.toml", ".replit.json"],
     "dependencies": ["@replit/database", "replit-py"],
     "folder_patterns": [".replit_modules", "replit_modules"],
-    "commit_patterns": ["replit", "exported from replit", "repl.it", "from replit"],
+    "commit_patterns": [
+      "replit",
+      "exported from replit",
+      "repl.it",
+      "from replit"
+    ],
     "content_patterns": ["replit.com", "repl.co"],
     "package_scripts": ["repl-run", "replit-dev", "repl-dev"],
     "confidence_weights": {
@@ -35,10 +40,15 @@
     "primary_language": "python",
     "framework": "flask",
     "deployment_targets": ["replit"],
-    "common_files": [".replit", "replit.nix", "pyproject.toml", ".replit.json", "main.py"]
+    "common_files": [
+      ".replit",
+      "replit.nix",
+      "pyproject.toml",
+      ".replit.json",
+      "main.py"
+    ]
   },
   "metadata": {},
   "is_beta": false,
   "is_deprecated": false
 }
-

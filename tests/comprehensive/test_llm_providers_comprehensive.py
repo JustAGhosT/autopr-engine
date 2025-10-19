@@ -3,19 +3,21 @@
 Comprehensive tests for LLM providers module.
 """
 
-import json
-import os
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.llm_providers import (AnthropicProvider, LLMProvider,
-                                              LocalProvider, OpenAIProvider,
-                                              ProviderConfig, ProviderManager)
+    from autopr.actions.llm_providers import (
+        AnthropicProvider,
+        LLMProvider,
+        LocalProvider,
+        OpenAIProvider,
+        ProviderConfig,
+        ProviderManager,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -34,7 +36,7 @@ class TestProviderConfig:
             timeout=30,
             retry_attempts=3
         )
-        
+
         assert config.provider_name == "openai"
         assert config.api_key == "test_key"
         assert config.model_name == "gpt-4"
@@ -46,7 +48,7 @@ class TestProviderConfig:
     def test_provider_config_defaults(self):
         """Test ProviderConfig with default values."""
         config = ProviderConfig(provider_name="test", api_key="key")
-        
+
         assert config.provider_name == "test"
         assert config.api_key == "key"
         assert config.model_name == "gpt-3.5-turbo"
@@ -63,7 +65,7 @@ class TestProviderConfig:
             model_name="claude-3",
             max_tokens=2000
         )
-        
+
         result = config.to_dict()
         assert result["provider_name"] == "anthropic"
         assert result["api_key"] == "claude_key"
@@ -81,7 +83,7 @@ class TestProviderConfig:
             "timeout": 45,
             "retry_attempts": 4
         }
-        
+
         config = ProviderConfig.from_dict(data)
         assert config.provider_name == "local"
         assert config.api_key == "local_key"
@@ -95,7 +97,7 @@ class TestProviderConfig:
         """Test ProviderConfig validation."""
         valid_config = ProviderConfig(provider_name="test", api_key="key", max_tokens=1000)
         assert valid_config.is_valid() is True
-        
+
         invalid_config = ProviderConfig(provider_name="", api_key="", max_tokens=0)
         assert invalid_config.is_valid() is False
 
@@ -117,7 +119,7 @@ class TestLLMProvider:
     def test_llm_provider_generate_text(self, llm_provider):
         """Test LLMProvider generate_text method."""
         prompt = "Test prompt"
-        
+
         # This should raise NotImplementedError for base class
         with pytest.raises(NotImplementedError):
             llm_provider.generate_text(prompt)
@@ -125,7 +127,7 @@ class TestLLMProvider:
     def test_llm_provider_generate_completion(self, llm_provider):
         """Test LLMProvider generate_completion method."""
         prompt = "Complete this sentence:"
-        
+
         # This should raise NotImplementedError for base class
         with pytest.raises(NotImplementedError):
             llm_provider.generate_completion(prompt)
@@ -138,7 +140,7 @@ class TestLLMProvider:
     def test_llm_provider_get_provider_info(self, llm_provider):
         """Test LLMProvider get_provider_info method."""
         info = llm_provider.get_provider_info()
-        
+
         assert "provider_name" in info
         assert "model_name" in info
         assert "max_tokens" in info
@@ -169,10 +171,10 @@ class TestOpenAIProvider:
         mock_response = Mock()
         mock_response.choices = [Mock(text="Generated text response")]
         mock_openai.ChatCompletion.create.return_value = mock_response
-        
+
         prompt = "Test prompt"
         result = openai_provider.generate_text(prompt)
-        
+
         assert result == "Generated text response"
         mock_openai.ChatCompletion.create.assert_called_once()
 
@@ -182,10 +184,10 @@ class TestOpenAIProvider:
         mock_response = Mock()
         mock_response.choices = [Mock(text="Completion text")]
         mock_openai.Completion.create.return_value = mock_response
-        
+
         prompt = "Complete this:"
         result = openai_provider.generate_completion(prompt)
-        
+
         assert result == "Completion text"
         mock_openai.Completion.create.assert_called_once()
 
@@ -197,7 +199,7 @@ class TestOpenAIProvider:
     def test_openai_provider_get_available_models(self, openai_provider):
         """Test OpenAIProvider get_available_models method."""
         models = openai_provider.get_available_models()
-        
+
         assert isinstance(models, list)
         assert "gpt-4" in models
         assert "gpt-3.5-turbo" in models
@@ -227,10 +229,10 @@ class TestAnthropicProvider:
         mock_response = Mock()
         mock_response.content = [Mock(text="Claude generated text")]
         mock_anthropic.Anthropic.return_value.messages.create.return_value = mock_response
-        
+
         prompt = "Test prompt"
         result = anthropic_provider.generate_text(prompt)
-        
+
         assert result == "Claude generated text"
         mock_anthropic.Anthropic.return_value.messages.create.assert_called_once()
 
@@ -240,10 +242,10 @@ class TestAnthropicProvider:
         mock_response = Mock()
         mock_response.completion = "Claude completion"
         mock_anthropic.Anthropic.return_value.completions.create.return_value = mock_response
-        
+
         prompt = "Complete this:"
         result = anthropic_provider.generate_completion(prompt)
-        
+
         assert result == "Claude completion"
         mock_anthropic.Anthropic.return_value.completions.create.assert_called_once()
 
@@ -255,7 +257,7 @@ class TestAnthropicProvider:
     def test_anthropic_provider_get_available_models(self, anthropic_provider):
         """Test AnthropicProvider get_available_models method."""
         models = anthropic_provider.get_available_models()
-        
+
         assert isinstance(models, list)
         assert "claude-3" in models
         assert "claude-2" in models
@@ -286,10 +288,10 @@ class TestLocalProvider:
         mock_response.json.return_value = {"response": "Local generated text"}
         mock_response.status_code = 200
         mock_requests.post.return_value = mock_response
-        
+
         prompt = "Test prompt"
         result = local_provider.generate_text(prompt)
-        
+
         assert result == "Local generated text"
         mock_requests.post.assert_called_once()
 
@@ -300,10 +302,10 @@ class TestLocalProvider:
         mock_response.json.return_value = {"completion": "Local completion"}
         mock_response.status_code = 200
         mock_requests.post.return_value = mock_response
-        
+
         prompt = "Complete this:"
         result = local_provider.generate_completion(prompt)
-        
+
         assert result == "Local completion"
         mock_requests.post.assert_called_once()
 
@@ -315,7 +317,7 @@ class TestLocalProvider:
     def test_local_provider_get_available_models(self, local_provider):
         """Test LocalProvider get_available_models method."""
         models = local_provider.get_available_models()
-        
+
         assert isinstance(models, list)
         assert "llama-2" in models
         assert "gpt4all" in models
@@ -339,7 +341,7 @@ class TestProviderManager:
         config = ProviderConfig(provider_name="test", api_key="test_key")
         provider = Mock(spec=LLMProvider)
         provider.config = config
-        
+
         provider_manager.register_provider("test_provider", provider)
         assert "test_provider" in provider_manager.providers
         assert provider_manager.providers["test_provider"] == provider
@@ -349,10 +351,10 @@ class TestProviderManager:
         config = ProviderConfig(provider_name="test", api_key="test_key")
         provider = Mock(spec=LLMProvider)
         provider.config = config
-        
+
         provider_manager.register_provider("test_provider", provider)
         retrieved_provider = provider_manager.get_provider("test_provider")
-        
+
         assert retrieved_provider == provider
 
     def test_get_provider_not_found(self, provider_manager):
@@ -368,7 +370,7 @@ class TestProviderManager:
             provider = Mock(spec=LLMProvider)
             provider.config = config
             provider_manager.register_provider(f"provider_{i}", provider)
-        
+
         providers = provider_manager.list_providers()
         assert len(providers) == 3
         assert "provider_0" in providers
@@ -380,10 +382,10 @@ class TestProviderManager:
         config = ProviderConfig(provider_name="test", api_key="test_key")
         provider = Mock(spec=LLMProvider)
         provider.config = config
-        
+
         provider_manager.register_provider("test_provider", provider)
         provider_manager.set_default_provider("test_provider")
-        
+
         assert provider_manager.default_provider == "test_provider"
 
     def test_get_default_provider(self, provider_manager):
@@ -391,10 +393,10 @@ class TestProviderManager:
         config = ProviderConfig(provider_name="test", api_key="test_key")
         provider = Mock(spec=LLMProvider)
         provider.config = config
-        
+
         provider_manager.register_provider("test_provider", provider)
         provider_manager.set_default_provider("test_provider")
-        
+
         default_provider = provider_manager.get_default_provider()
         assert default_provider == provider
 
@@ -404,10 +406,10 @@ class TestProviderManager:
         provider = Mock(spec=LLMProvider)
         provider.config = config
         provider.generate_text.return_value = "Generated text"
-        
+
         provider_manager.register_provider("test_provider", provider)
         provider_manager.set_default_provider("test_provider")
-        
+
         result = provider_manager.generate_text("Test prompt")
         assert result == "Generated text"
         provider.generate_text.assert_called_once_with("Test prompt")
@@ -418,9 +420,9 @@ class TestProviderManager:
         provider = Mock(spec=LLMProvider)
         provider.config = config
         provider.generate_text.return_value = "Generated text"
-        
+
         provider_manager.register_provider("test_provider", provider)
-        
+
         result = provider_manager.generate_text("Test prompt", provider_name="test_provider")
         assert result == "Generated text"
         provider.generate_text.assert_called_once_with("Test prompt")
@@ -430,10 +432,10 @@ class TestProviderManager:
         config = ProviderConfig(provider_name="test", api_key="test_key")
         provider = Mock(spec=LLMProvider)
         provider.config = config
-        
+
         provider_manager.register_provider("test_provider", provider)
         assert "test_provider" in provider_manager.providers
-        
+
         provider_manager.remove_provider("test_provider")
         assert "test_provider" not in provider_manager.providers
 
@@ -445,9 +447,9 @@ class TestProviderManager:
             provider = Mock(spec=LLMProvider)
             provider.config = config
             provider_manager.register_provider(f"provider_{i}", provider)
-        
+
         stats = provider_manager.get_provider_statistics()
-        
+
         assert "total_providers" in stats
         assert "default_provider" in stats
         assert "provider_names" in stats

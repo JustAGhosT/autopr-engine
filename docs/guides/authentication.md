@@ -147,7 +147,10 @@ redirects:
 The `VersionAwareRegisterForm` component adapts its styling and behavior based on the version:
 
 ```tsx
-<VersionAwareRegisterForm version="corporate" redirectTo="/corporate/dashboard" />
+<VersionAwareRegisterForm
+  version="corporate"
+  redirectTo="/corporate/dashboard"
+/>
 ```
 
 ## Configuration Options

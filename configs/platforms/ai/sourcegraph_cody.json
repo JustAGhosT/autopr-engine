@@ -57,7 +57,11 @@
     "dependencies": ["@sourcegraph/cody"],
     "folder_patterns": ["cody", "sourcegraph"],
     "commit_patterns": ["cody", "sourcegraph", "add cody"],
-    "content_patterns": ["sourcegraph.com/cody", "cody.sourcegraph.com", "cody.json"],
+    "content_patterns": [
+      "sourcegraph.com/cody",
+      "cody.sourcegraph.com",
+      "cody.json"
+    ],
     "confidence_weights": {
       "files": 0.65,
       "dependencies": 0.25,
@@ -82,4 +86,3 @@
     "configuration_files": ["cody.json", ".cody/config.json"]
   }
 }
-

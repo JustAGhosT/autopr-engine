@@ -44,6 +44,7 @@ chmod +x scripts/setup-github-environments.sh
 ## 🔧 What the Scripts Create
 
 ### Staging Environment
+
 - **Name**: `staging`
 - **Protection**: Manual workflow dispatch required
 - **Branch Policy**: Protected branches only
@@ -53,6 +54,7 @@ chmod +x scripts/setup-github-environments.sh
   - `LOG_LEVEL=debug`
 
 ### Production Environment
+
 - **Name**: `production`
 - **Protection**: Requires approval + 5-minute wait timer
 - **Branch Policy**: Protected branches only
@@ -64,19 +66,21 @@ chmod +x scripts/setup-github-environments.sh
 ## 📋 Script Parameters
 
 ### PowerShell Script
+
 | Parameter     | Description                                 | Required |
 | ------------- | ------------------------------------------- | -------- |
-| `-Repository` | GitHub repository in format "owner/repo"    | ✅ Yes    |
-| `-Token`      | GitHub personal access token                | ✅ Yes    |
-| `-DryRun`     | Show what would be created without creating | ❌ No     |
+| `-Repository` | GitHub repository in format "owner/repo"    | ✅ Yes   |
+| `-Token`      | GitHub personal access token                | ✅ Yes   |
+| `-DryRun`     | Show what would be created without creating | ❌ No    |
 
 ### Bash Script
+
 | Parameter   | Short | Description                                 | Required |
 | ----------- | ----- | ------------------------------------------- | -------- |
-| `--repo`    | `-r`  | GitHub repository in format "owner/repo"    | ✅ Yes    |
-| `--token`   | `-t`  | GitHub personal access token                | ✅ Yes    |
-| `--dry-run` | `-d`  | Show what would be created without creating | ❌ No     |
-| `--help`    | `-h`  | Show help message                           | ❌ No     |
+| `--repo`    | `-r`  | GitHub repository in format "owner/repo"    | ✅ Yes   |
+| `--token`   | `-t`  | GitHub personal access token                | ✅ Yes   |
+| `--dry-run` | `-d`  | Show what would be created without creating | ❌ No    |
+| `--help`    | `-h`  | Show help message                           | ❌ No    |
 
 ## 🔐 Creating a GitHub Token
 

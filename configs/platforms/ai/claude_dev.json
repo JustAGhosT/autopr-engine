@@ -37,7 +37,11 @@
     "dependencies": ["@anthropic-ai/sdk", "anthropic"],
     "folder_patterns": ["claude-", "-claude"],
     "commit_patterns": ["claude", "anthropic", "claude dev"],
-    "content_patterns": ["anthropic.com/api", "ANTHROPIC_API_KEY", "claude-dev"],
+    "content_patterns": [
+      "anthropic.com/api",
+      "ANTHROPIC_API_KEY",
+      "claude-dev"
+    ],
     "confidence_weights": {
       "files": 0.4,
       "dependencies": 0.3,
@@ -62,4 +66,3 @@
     "configuration_files": ["claude.json", ".claude/config.json"]
   }
 }
-

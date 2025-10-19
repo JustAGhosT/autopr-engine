@@ -66,7 +66,7 @@ class AutoPRConfig:
 
     # Additional settings
     custom_settings: dict[str, Any] = field(default_factory=dict)
-    
+
     # Test mode flag (bypasses validation)
     test_mode: bool = False
 

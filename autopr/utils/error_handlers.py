@@ -42,13 +42,13 @@ def handle_operation_error(
         error_msg = f"{context_name}: {operation_name} failed: {exception}"
     else:
         error_msg = f"{operation_name} failed: {exception}"
-    
+
     if log_level == "exception":
         logger.exception(error_msg)
     elif log_level == "error":
         logger.error(error_msg)
     elif log_level == "warning":
         logger.warning(error_msg)
-    
+
     if reraise:
         raise error_class(error_msg) from exception

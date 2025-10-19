@@ -17,6 +17,7 @@ from autopr.actions.platform_detection.detector import (
 from autopr.actions.platform_detection.schema import PlatformType
 from autopr.agents.agents import BaseAgent
 
+
 # PlatformAnalysis is now imported from platform_detection.detector as PlatformDetectorOutputs
 
 
@@ -113,85 +114,133 @@ class PlatformAnalysisAgent(BaseAgent):
             PlatformAnalysisOutputs containing the analysis results
         """
         try:
-            # Convert repo_path to Path object
-            repo_path = Path(inputs.repo_path)
-
-            # If no specific file paths provided, analyze the entire repository
-            if not inputs.file_paths:
-                file_paths = None
-            else:
-                file_paths = [repo_path / path for path in inputs.file_paths]
-
             # Perform the platform analysis
-            analysis = await self.detector.analyze(
-                repo_path=str(repo_path),
-                file_paths=[str(p) for p in file_paths] if file_paths else None,
-                context=inputs.context or {},
-            )
+            analysis = await self._perform_analysis(inputs)
 
-            # Extract the primary platform safely
-            primary_platform = self._get_primary_platform(analysis)
-
-            # Safely get the primary platform's confidence score
-            primary_confidence = analysis.confidence_scores.get(primary_platform, 0.0)
-
-            # Prepare the platforms list with name-confidence pairs
-            platforms_list = [
-                (platform_name, confidence)
-                for platform_name, confidence in analysis.confidence_scores.items()
-            ]
-
-            # Aggregate config files from platform-specific configs
-            config_files: list[str] = []
-            for cfg in analysis.platform_specific_configs.values():
-                files = cfg.get("config_files", [])
-                if isinstance(files, list):
-                    config_files.extend(str(f) for f in files)
-            # De-duplicate while preserving order
-            seen: set[str] = set()
-            unique_config_files: list[str] = []
-            for f in config_files:
-                if f not in seen:
-                    unique_config_files.append(f)
-                    seen.add(f)
-
-            # Prepare the output with defensive programming
-            return PlatformAnalysisOutputs(
-                platforms=platforms_list,
-                primary_platform=(primary_platform, primary_confidence),
-                tools=[],
-                frameworks=[],
-                languages=[],
-                config_files=unique_config_files,
-                analysis=analysis,
-            )
+            # Process and format the results
+            return self._process_analysis_results(analysis, inputs)
 
         except Exception:
-            # Log the error and return a default response
-            # Prefer logging in real code; keeping minimal message only if verbose is set
-            _ = self.verbose
+            # Return a default response for errors
+            return self._create_error_response()
 
-            # Create a default analysis with error information
-            error_analysis = PlatformDetectorOutputs(
-                primary_platform=PlatformType.UNKNOWN.value,
-                secondary_platforms=[],
-                confidence_scores={PlatformType.UNKNOWN.value: 1.0},
-                workflow_type="unknown",
-                platform_specific_configs={},
-                recommended_enhancements=[],
-                migration_opportunities=[],
-                hybrid_workflow_analysis=None,
-            )
+    async def _perform_analysis(self, inputs: PlatformAnalysisInputs) -> PlatformDetectorOutputs:
+        """Perform the actual platform analysis.
 
-            return PlatformAnalysisOutputs(
-                platforms=[("unknown", 1.0)],
-                primary_platform=("unknown", 1.0),
-                tools=[],
-                frameworks=[],
-                languages=[],
-                config_files=[],
-                analysis=error_analysis,
-            )
+        Args:
+            inputs: The input data for the agent
+
+        Returns:
+            PlatformDetectorOutputs containing the raw analysis results
+        """
+        # Convert repo_path to Path object
+        repo_path = Path(inputs.repo_path)
+
+        # If no specific file paths provided, analyze the entire repository
+        if not inputs.file_paths:
+            file_paths = None
+        else:
+            file_paths = [repo_path / path for path in inputs.file_paths]
+
+        # Perform the platform analysis
+        analysis = await self.detector.analyze(
+            repo_path=str(repo_path),
+            file_paths=[str(p) for p in file_paths] if file_paths else None,
+            context=inputs.context or {},
+        )
+
+        return analysis
+
+    def _process_analysis_results(
+        self, analysis: PlatformDetectorOutputs, inputs: PlatformAnalysisInputs
+    ) -> PlatformAnalysisOutputs:
+        """Process and format the analysis results.
+
+        Args:
+            analysis: The raw analysis results
+            inputs: The original input data
+
+        Returns:
+            PlatformAnalysisOutputs containing the processed results
+        """
+        # Extract the primary platform safely
+        primary_platform = self._get_primary_platform(analysis)
+
+        # Safely get the primary platform's confidence score
+        primary_confidence = analysis.confidence_scores.get(primary_platform, 0.0)
+
+        # Prepare the platforms list with name-confidence pairs
+        platforms_list = [
+            (platform_name, confidence)
+            for platform_name, confidence in analysis.confidence_scores.items()
+        ]
+
+        # Aggregate config files from platform-specific configs
+        config_files = self._aggregate_config_files(analysis)
+
+        # Prepare the output with defensive programming
+        return PlatformAnalysisOutputs(
+            platforms=platforms_list,
+            primary_platform=(primary_platform, primary_confidence),
+            tools=[],
+            frameworks=[],
+            languages=[],
+            config_files=config_files,
+            analysis=analysis,
+        )
+
+    def _aggregate_config_files(self, analysis: PlatformDetectorOutputs) -> list[str]:
+        """Aggregate config files from platform-specific configs.
+
+        Args:
+            analysis: The analysis results
+
+        Returns:
+            List of unique config file paths
+        """
+        config_files: list[str] = []
+        for cfg in analysis.platform_specific_configs.values():
+            files = cfg.get("config_files", [])
+            if isinstance(files, list):
+                config_files.extend(str(f) for f in files)
+
+        # De-duplicate while preserving order
+        seen: set[str] = set()
+        unique_config_files: list[str] = []
+        for f in config_files:
+            if f not in seen:
+                unique_config_files.append(f)
+                seen.add(f)
+
+        return unique_config_files
+
+    def _create_error_response(self) -> PlatformAnalysisOutputs:
+        """Create a default response when analysis fails.
+
+        Returns:
+            PlatformAnalysisOutputs with error information
+        """
+        # Create a default analysis with error information
+        error_analysis = PlatformDetectorOutputs(
+            primary_platform=PlatformType.UNKNOWN.value,
+            secondary_platforms=[],
+            confidence_scores={PlatformType.UNKNOWN.value: 1.0},
+            workflow_type="unknown",
+            platform_specific_configs={},
+            recommended_enhancements=[],
+            migration_opportunities=[],
+            hybrid_workflow_analysis=None,
+        )
+
+        return PlatformAnalysisOutputs(
+            platforms=[("unknown", 1.0)],
+            primary_platform=("unknown", 1.0),
+            tools=[],
+            frameworks=[],
+            languages=[],
+            config_files=[],
+            analysis=error_analysis,
+        )
 
     def _get_primary_platform(self, analysis: PlatformDetectorOutputs) -> str:
         """Get the primary platform from the analysis results.
@@ -230,22 +279,43 @@ class PlatformAnalysisAgent(BaseAgent):
         except Exception:
             platform_id_str = str(platform_id)
 
-        # Reset singleton instance to ensure test patches of PlatformConfigManager take effect
-        try:  # pragma: no cover - test harness dependent
-            PlatformConfigManager._instance = None
-        except Exception:
-            pass
-        # Use dynamically resolved manager so test patches apply in all orders
-        try:  # pragma: no cover - relies on test patching behavior
-            import sys as _sys
+    def _create_config_manager(self) -> PlatformConfigManager:
+        """Create and return a platform config manager instance.
 
-            current_mod = _sys.modules.get(__name__)
-            ManagerCls = getattr(
-                current_mod, "PlatformConfigManager", PlatformConfigManager
+        This method handles the complexity of singleton management for testing.
+        """
+        try:
+            # Reset singleton instance to ensure test patches take effect
+            PlatformConfigManager._instance = None
+        except AttributeError:
+            # _instance may not exist in all cases
+            pass
+
+        return PlatformConfigManager()
+
+    def _get_platform_info(
+        self, platform_id: str | PlatformType
+    ) -> dict[str, Any] | None:
+        """Get information about a specific platform by ID.
+
+        Args:
+            platform_id: The platform ID to get information for
+
+        Returns:
+            Dictionary with details about the platform, or None if not found
+        """
+        # Normalize input to a string platform ID
+        try:
+            platform_id_str = (
+                platform_id.value
+                if isinstance(platform_id, PlatformType)
+                else str(platform_id)
             )
         except Exception:
-            ManagerCls = PlatformConfigManager
-        config_manager = ManagerCls()
+            platform_id_str = str(platform_id)
+
+        # Create config manager
+        config_manager = self._create_config_manager()
         platform_config = config_manager.get_platform(platform_id_str)
         if not platform_config:
             return None

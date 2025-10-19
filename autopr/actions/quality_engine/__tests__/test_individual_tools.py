@@ -7,14 +7,11 @@ from unittest.mock import patch
 import pytest
 
 from autopr.actions.quality_engine.tools.bandit_tool import BanditTool
-from autopr.actions.quality_engine.tools.dependency_scanner_tool import \
-    DependencyScannerTool
+from autopr.actions.quality_engine.tools.dependency_scanner_tool import DependencyScannerTool
 from autopr.actions.quality_engine.tools.eslint_tool import ESLintTool
-from autopr.actions.quality_engine.tools.interrogate_tool import \
-    InterrogateTool
+from autopr.actions.quality_engine.tools.interrogate_tool import InterrogateTool
 from autopr.actions.quality_engine.tools.mypy_tool import MyPyTool
-from autopr.actions.quality_engine.tools.performance_analyzer_tool import \
-    PerformanceAnalyzerTool
+from autopr.actions.quality_engine.tools.performance_analyzer_tool import PerformanceAnalyzerTool
 from autopr.actions.quality_engine.tools.pytest_tool import PyTestTool
 from autopr.actions.quality_engine.tools.radon_tool import RadonTool
 from autopr.actions.quality_engine.tools.ruff_tool import RuffTool
@@ -107,9 +104,9 @@ class TestMyPyTool:
         """Test MyPy output parsing with Windows drive-letter paths."""
         # Test Windows-style path with drive letter
         windows_output = "C:\\path\\to\\file.py:12:3: error: Incompatible return value type (got \"int\", expected \"str\")  [return-value]\n"
-        
+
         issues = self.tool._parse_output(windows_output)
-        
+
         assert len(issues) == 1
         issue = issues[0]
         assert issue["filename"] == "C:\\path\\to\\file.py"
@@ -123,9 +120,9 @@ class TestMyPyTool:
         """Test MyPy output parsing with Unix-style paths (regression test)."""
         # Test Unix-style path
         unix_output = "/home/user/project/file.py:5:12: error: Incompatible types  [assignment]\n"
-        
+
         issues = self.tool._parse_output(unix_output)
-        
+
         assert len(issues) == 1
         issue = issues[0]
         assert issue["filename"] == "/home/user/project/file.py"
@@ -139,9 +136,9 @@ class TestMyPyTool:
         """Test MyPy output parsing with relative paths."""
         # Test relative path
         relative_output = "src/module.py:8:1: warning: Missing return type annotation  [no-untyped-def]\n"
-        
+
         issues = self.tool._parse_output(relative_output)
-        
+
         assert len(issues) == 1
         issue = issues[0]
         assert issue["filename"] == "src/module.py"

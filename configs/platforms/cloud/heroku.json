@@ -2,9 +2,20 @@
   "name": "Heroku",
   "category": "cloud_hosting",
   "description": "Platform as a service (PaaS) for deploying and managing applications",
-  "files": ["Procfile", "app.json", "heroku.yml", "composer.json", "requirements.txt"],
+  "files": [
+    "Procfile",
+    "app.json",
+    "heroku.yml",
+    "composer.json",
+    "requirements.txt"
+  ],
   "dependencies": ["heroku", "@heroku-cli/schema"],
-  "commit_patterns": ["heroku", "deployed to heroku", "heroku deploy", "heroku config"],
+  "commit_patterns": [
+    "heroku",
+    "deployed to heroku",
+    "heroku deploy",
+    "heroku config"
+  ],
   "content_patterns": ["herokuapp.com", "web: ", "heroku/", "heroku config"],
   "folder_patterns": [".heroku/"],
   "confidence_weights": {

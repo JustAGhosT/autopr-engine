@@ -3,24 +3,25 @@
 Comprehensive tests for performance tracker module.
 """
 
+from datetime import datetime, timedelta
 import json
 import os
 import tempfile
 import time
-from datetime import datetime, timedelta
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.performance_tracker import (PerformanceAnalyzer,
-                                                    PerformanceConfig,
-                                                    PerformanceMetrics,
-                                                    PerformanceMonitor,
-                                                    PerformanceReporter,
-                                                    PerformanceTracker)
+    from autopr.actions.performance_tracker import (
+        PerformanceAnalyzer,
+        PerformanceConfig,
+        PerformanceMetrics,
+        PerformanceMonitor,
+        PerformanceReporter,
+        PerformanceTracker,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -40,7 +41,7 @@ class TestPerformanceMetrics:
             success=True,
             error_message=None
         )
-        
+
         assert metrics.operation_name == "test_operation"
         assert metrics.duration == 1.0
         assert metrics.memory_usage == 1024
@@ -56,7 +57,7 @@ class TestPerformanceMetrics:
             start_time=start_time,
             end_time=start_time + timedelta(seconds=0.5)
         )
-        
+
         assert metrics.operation_name == "test_operation"
         assert metrics.duration == 0.5
         assert metrics.memory_usage == 0
@@ -74,7 +75,7 @@ class TestPerformanceMetrics:
             success=False,
             error_message="Test error occurred"
         )
-        
+
         assert metrics.success is False
         assert metrics.error_message == "Test error occurred"
 
@@ -82,7 +83,7 @@ class TestPerformanceMetrics:
         """Test PerformanceMetrics to_dict method."""
         start_time = datetime.now()
         end_time = start_time + timedelta(seconds=1.5)
-        
+
         metrics = PerformanceMetrics(
             operation_name="test_operation",
             start_time=start_time,
@@ -92,7 +93,7 @@ class TestPerformanceMetrics:
             cpu_usage=75.0,
             success=True
         )
-        
+
         result = metrics.to_dict()
         assert result["operation_name"] == "test_operation"
         assert result["duration"] == 1.5
@@ -104,7 +105,7 @@ class TestPerformanceMetrics:
         """Test PerformanceMetrics from_dict method."""
         start_time = datetime.now()
         end_time = start_time + timedelta(seconds=2.0)
-        
+
         data = {
             "operation_name": "test_operation",
             "start_time": start_time.isoformat(),
@@ -115,7 +116,7 @@ class TestPerformanceMetrics:
             "success": True,
             "error_message": None
         }
-        
+
         metrics = PerformanceMetrics.from_dict(data)
         assert metrics.operation_name == "test_operation"
         assert metrics.duration == 2.0
@@ -128,13 +129,13 @@ class TestPerformanceMetrics:
         start_time = datetime.now()
         time.sleep(0.1)  # Small delay
         end_time = datetime.now()
-        
+
         metrics = PerformanceMetrics(
             operation_name="test_operation",
             start_time=start_time,
             end_time=end_time
         )
-        
+
         assert metrics.duration > 0
         assert metrics.duration < 1.0  # Should be small
 
@@ -155,7 +156,7 @@ class TestPerformanceConfig:
             save_to_file=True,
             file_path="performance.log"
         )
-        
+
         assert config.enabled is True
         assert config.track_memory is True
         assert config.track_cpu is True
@@ -169,7 +170,7 @@ class TestPerformanceConfig:
     def test_performance_config_defaults(self):
         """Test PerformanceConfig with default values."""
         config = PerformanceConfig()
-        
+
         assert config.enabled is True
         assert config.track_memory is True
         assert config.track_cpu is True
@@ -189,7 +190,7 @@ class TestPerformanceConfig:
             sampling_interval=0.2,
             max_history_size=500
         )
-        
+
         result = config.to_dict()
         assert result["enabled"] is True
         assert result["track_memory"] is True
@@ -210,7 +211,7 @@ class TestPerformanceConfig:
             "save_to_file": True,
             "file_path": "custom_performance.log"
         }
-        
+
         config = PerformanceConfig.from_dict(data)
         assert config.enabled is False
         assert config.track_memory is True
@@ -249,7 +250,7 @@ class TestPerformanceMonitor:
         performance_monitor.start_monitoring()
         time.sleep(0.1)  # Small delay
         performance_monitor.stop_monitoring()
-        
+
         assert performance_monitor.is_monitoring is False
         assert len(performance_monitor.metrics_history) > 0
 
@@ -257,7 +258,7 @@ class TestPerformanceMonitor:
         """Test recording a performance metric."""
         start_time = datetime.now()
         end_time = start_time + timedelta(seconds=1)
-        
+
         metric = PerformanceMetrics(
             operation_name="test_operation",
             start_time=start_time,
@@ -267,7 +268,7 @@ class TestPerformanceMonitor:
             cpu_usage=50.0,
             success=True
         )
-        
+
         performance_monitor.record_metric(metric)
         assert len(performance_monitor.metrics_history) == 1
         assert performance_monitor.metrics_history[0] == metric
@@ -275,7 +276,7 @@ class TestPerformanceMonitor:
     def test_get_current_metrics(self, performance_monitor):
         """Test getting current system metrics."""
         metrics = performance_monitor.get_current_metrics()
-        
+
         assert "memory_usage" in metrics
         assert "cpu_usage" in metrics
         assert "timestamp" in metrics
@@ -288,7 +289,7 @@ class TestPerformanceMonitor:
         for i in range(5):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -299,9 +300,9 @@ class TestPerformanceMonitor:
                 success=True
             )
             performance_monitor.record_metric(metric)
-        
+
         summary = performance_monitor.get_metrics_summary()
-        
+
         assert "total_operations" in summary
         assert "average_duration" in summary
         assert "total_memory_usage" in summary
@@ -314,7 +315,7 @@ class TestPerformanceMonitor:
         for i in range(3):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -323,9 +324,9 @@ class TestPerformanceMonitor:
                 success=True
             )
             performance_monitor.record_metric(metric)
-        
+
         assert len(performance_monitor.metrics_history) == 3
-        
+
         performance_monitor.clear_history()
         assert len(performance_monitor.metrics_history) == 0
 
@@ -350,7 +351,7 @@ class TestPerformanceAnalyzer:
         for i in range(10):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -361,9 +362,9 @@ class TestPerformanceAnalyzer:
                 success=i < 8  # 8 successful, 2 failed
             )
             metrics.append(metric)
-        
+
         analysis = performance_analyzer.analyze_metrics(metrics)
-        
+
         assert "total_operations" in analysis
         assert "success_rate" in analysis
         assert "average_duration" in analysis
@@ -371,7 +372,7 @@ class TestPerformanceAnalyzer:
         assert "min_duration" in analysis
         assert "total_memory_usage" in analysis
         assert "average_cpu_usage" in analysis
-        
+
         assert analysis["total_operations"] == 10
         assert analysis["success_rate"] == 0.8
         assert analysis["max_duration"] == 10.0
@@ -381,7 +382,7 @@ class TestPerformanceAnalyzer:
         """Test detecting performance issues."""
         # Create metrics with potential issues
         metrics = []
-        
+
         # Slow operation
         start_time = datetime.now()
         end_time = start_time + timedelta(seconds=10)
@@ -395,7 +396,7 @@ class TestPerformanceAnalyzer:
             success=True
         )
         metrics.append(slow_metric)
-        
+
         # High memory usage
         start_time = datetime.now()
         end_time = start_time + timedelta(seconds=1)
@@ -409,7 +410,7 @@ class TestPerformanceAnalyzer:
             success=True
         )
         metrics.append(high_memory_metric)
-        
+
         # Failed operation
         start_time = datetime.now()
         end_time = start_time + timedelta(seconds=1)
@@ -424,9 +425,9 @@ class TestPerformanceAnalyzer:
             error_message="Test error"
         )
         metrics.append(failed_metric)
-        
+
         issues = performance_analyzer.detect_performance_issues(metrics)
-        
+
         assert len(issues) > 0
         assert any("slow" in issue.lower() for issue in issues)
         assert any("memory" in issue.lower() for issue in issues)
@@ -439,7 +440,7 @@ class TestPerformanceAnalyzer:
         for i in range(5):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=5)  # All slow
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"slow_operation_{i}",
                 start_time=start_time,
@@ -450,9 +451,9 @@ class TestPerformanceAnalyzer:
                 success=True
             )
             metrics.append(metric)
-        
+
         recommendations = performance_analyzer.generate_recommendations(metrics)
-        
+
         assert len(recommendations) > 0
         assert any("optimize" in rec.lower() for rec in recommendations)
         assert any("performance" in rec.lower() for rec in recommendations)
@@ -464,7 +465,7 @@ class TestPerformanceAnalyzer:
         for i in range(5):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=0.1)  # Fast operations
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"fast_operation_{i}",
                 start_time=start_time,
@@ -475,7 +476,7 @@ class TestPerformanceAnalyzer:
                 success=True
             )
             good_metrics.append(metric)
-        
+
         score = performance_analyzer.calculate_performance_score(good_metrics)
         assert score >= 0.0
         assert score <= 1.0
@@ -488,7 +489,7 @@ class TestPerformanceAnalyzer:
         for i in range(3):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"baseline_operation_{i}",
                 start_time=start_time,
@@ -499,13 +500,13 @@ class TestPerformanceAnalyzer:
                 success=True
             )
             baseline_metrics.append(metric)
-        
+
         # Create improved metrics
         improved_metrics = []
         for i in range(3):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=0.5)  # Faster
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"improved_operation_{i}",
                 start_time=start_time,
@@ -516,11 +517,11 @@ class TestPerformanceAnalyzer:
                 success=True
             )
             improved_metrics.append(metric)
-        
+
         comparison = performance_analyzer.compare_performance(
             baseline_metrics, improved_metrics
         )
-        
+
         assert "duration_improvement" in comparison
         assert "memory_improvement" in comparison
         assert "cpu_improvement" in comparison
@@ -544,7 +545,7 @@ class TestPerformanceReporter:
         """Test adding a custom report format."""
         def custom_format(metrics):
             return f"Custom report with {len(metrics)} metrics"
-        
+
         performance_reporter.add_report_format("custom", custom_format)
         assert "custom" in performance_reporter.report_formats
 
@@ -555,7 +556,7 @@ class TestPerformanceReporter:
         for i in range(3):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -566,9 +567,9 @@ class TestPerformanceReporter:
                 success=True
             )
             metrics.append(metric)
-        
+
         report = performance_reporter.generate_report(metrics, "json")
-        
+
         # Parse JSON to verify structure
         report_data = json.loads(report)
         assert "summary" in report_data
@@ -582,7 +583,7 @@ class TestPerformanceReporter:
         for i in range(2):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -593,9 +594,9 @@ class TestPerformanceReporter:
                 success=True
             )
             metrics.append(metric)
-        
+
         report = performance_reporter.generate_report(metrics, "text")
-        
+
         assert isinstance(report, str)
         assert "Performance Report" in report
         assert "operation_0" in report
@@ -608,7 +609,7 @@ class TestPerformanceReporter:
         for i in range(2):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -619,9 +620,9 @@ class TestPerformanceReporter:
                 success=True
             )
             metrics.append(metric)
-        
+
         report = performance_reporter.generate_report(metrics, "html")
-        
+
         assert isinstance(report, str)
         assert "<html>" in report
         assert "<head>" in report
@@ -635,7 +636,7 @@ class TestPerformanceReporter:
         for i in range(2):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -646,24 +647,24 @@ class TestPerformanceReporter:
                 success=True
             )
             metrics.append(metric)
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_file = f.name
-        
+
         try:
             result = performance_reporter.save_report_to_file(
                 metrics, temp_file, "json"
             )
             assert result is True
             assert os.path.exists(temp_file)
-            
+
             # Verify file content
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 content = f.read()
                 report_data = json.loads(content)
                 assert "summary" in report_data
                 assert "metrics" in report_data
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -675,7 +676,7 @@ class TestPerformanceReporter:
         for i in range(5):
             start_time = datetime.now()
             end_time = start_time + timedelta(seconds=i + 1)
-            
+
             metric = PerformanceMetrics(
                 operation_name=f"operation_{i}",
                 start_time=start_time,
@@ -686,9 +687,9 @@ class TestPerformanceReporter:
                 success=i < 4  # 4 successful, 1 failed
             )
             metrics.append(metric)
-        
+
         summary = performance_reporter.generate_summary_report(metrics)
-        
+
         assert "total_operations" in summary
         assert "successful_operations" in summary
         assert "failed_operations" in summary
@@ -696,7 +697,7 @@ class TestPerformanceReporter:
         assert "average_duration" in summary
         assert "total_memory_usage" in summary
         assert "average_cpu_usage" in summary
-        
+
         assert summary["total_operations"] == 5
         assert summary["successful_operations"] == 4
         assert summary["failed_operations"] == 1
@@ -729,9 +730,9 @@ class TestPerformanceTracker:
         """Test stopping performance tracking."""
         performance_tracker.start_tracking("test_operation")
         time.sleep(0.1)  # Small delay
-        
+
         metric = performance_tracker.stop_tracking()
-        
+
         assert performance_tracker.monitor.is_monitoring is False
         assert metric.operation_name == "test_operation"
         assert metric.duration > 0
@@ -743,12 +744,12 @@ class TestPerformanceTracker:
         def test_function():
             time.sleep(0.1)
             return "success"
-        
+
         result = test_function()
-        
+
         assert result == "success"
         assert len(performance_tracker.monitor.metrics_history) == 1
-        
+
         metric = performance_tracker.monitor.metrics_history[0]
         assert metric.operation_name == "test_function"
         assert metric.duration > 0
@@ -758,9 +759,9 @@ class TestPerformanceTracker:
         """Test tracking operation with context manager."""
         with performance_tracker.track_operation("context_test"):
             time.sleep(0.1)
-        
+
         assert len(performance_tracker.monitor.metrics_history) == 1
-        
+
         metric = performance_tracker.monitor.metrics_history[0]
         assert metric.operation_name == "context_test"
         assert metric.duration > 0
@@ -771,12 +772,12 @@ class TestPerformanceTracker:
         @performance_tracker.track_operation
         def failing_function():
             raise ValueError("Test error")
-        
+
         with pytest.raises(ValueError):
             failing_function()
-        
+
         assert len(performance_tracker.monitor.metrics_history) == 1
-        
+
         metric = performance_tracker.monitor.metrics_history[0]
         assert metric.operation_name == "failing_function"
         assert metric.success is False
@@ -788,9 +789,9 @@ class TestPerformanceTracker:
         for i in range(3):
             with performance_tracker.track_operation(f"operation_{i}"):
                 time.sleep(0.1)
-        
+
         summary = performance_tracker.get_performance_summary()
-        
+
         assert "total_operations" in summary
         assert "average_duration" in summary
         assert "success_rate" in summary
@@ -803,9 +804,9 @@ class TestPerformanceTracker:
         for i in range(2):
             with performance_tracker.track_operation(f"operation_{i}"):
                 time.sleep(0.1)
-        
+
         report = performance_tracker.generate_performance_report("json")
-        
+
         # Parse JSON to verify structure
         report_data = json.loads(report)
         assert "summary" in report_data
@@ -818,22 +819,22 @@ class TestPerformanceTracker:
         for i in range(2):
             with performance_tracker.track_operation(f"operation_{i}"):
                 time.sleep(0.1)
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
             temp_file = f.name
-        
+
         try:
             result = performance_tracker.save_performance_report(temp_file, "json")
             assert result is True
             assert os.path.exists(temp_file)
-            
+
             # Verify file content
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 content = f.read()
                 report_data = json.loads(content)
                 assert "summary" in report_data
                 assert "metrics" in report_data
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -843,12 +844,12 @@ class TestPerformanceTracker:
         # Track operations with potential issues
         with performance_tracker.track_operation("slow_operation"):
             time.sleep(0.5)  # Slow operation
-        
+
         with performance_tracker.track_operation("fast_operation"):
             time.sleep(0.01)  # Fast operation
-        
+
         issues = performance_tracker.detect_performance_issues()
-        
+
         assert len(issues) > 0
         assert any("slow" in issue.lower() for issue in issues)
 
@@ -858,9 +859,9 @@ class TestPerformanceTracker:
         for i in range(3):
             with performance_tracker.track_operation(f"operation_{i}"):
                 time.sleep(0.2)  # Moderate operations
-        
+
         recommendations = performance_tracker.get_recommendations()
-        
+
         assert len(recommendations) > 0
         assert any("performance" in rec.lower() for rec in recommendations)
 
@@ -870,8 +871,8 @@ class TestPerformanceTracker:
         for i in range(3):
             with performance_tracker.track_operation(f"operation_{i}"):
                 time.sleep(0.1)
-        
+
         assert len(performance_tracker.monitor.metrics_history) == 3
-        
+
         performance_tracker.clear_performance_data()
         assert len(performance_tracker.monitor.metrics_history) == 0

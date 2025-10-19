@@ -9,14 +9,15 @@ import os
 from typing import Any, cast
 
 from autopr.actions.registry import ActionRegistry
+
 # from autopr.agents.agents import AgentManager  # Not implemented yet
 from autopr.ai.core.base import LLMProvider
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.engine import AutoPREngine
-from autopr.exceptions import (AutoPRException, ConfigurationError,
-                               IntegrationError)
+from autopr.exceptions import AutoPRException, ConfigurationError, IntegrationError
 from autopr.integrations.base import Integration
+
 # from autopr.integrations.bitbucket.bitbucket_integration import \
 #     BitbucketIntegration  # Not implemented yet
 # from autopr.integrations.github.github_integration import GitHubIntegration  # Not implemented yet
@@ -25,11 +26,12 @@ from autopr.integrations.base import Integration
 # from autopr.integrations.registry import IntegrationRegistry  # Not implemented yet
 # from autopr.integrations.slack.slack_integration import SlackIntegration  # Not implemented yet
 from autopr.quality.metrics_collector import MetricsCollector
+
 # from autopr.reporting.report_generator import ReportGenerator  # Not implemented yet
-from autopr.security.authorization.enterprise_manager import \
-    EnterpriseAuthorizationManager
+from autopr.security.authorization.enterprise_manager import EnterpriseAuthorizationManager
 from autopr.workflows.base import Workflow
 from autopr.workflows.engine import WorkflowEngine
+
 
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 

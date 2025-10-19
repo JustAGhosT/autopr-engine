@@ -6,15 +6,14 @@ This test demonstrates how the file splitter integrates with the complete
 AI fixer workflow including issue processing, AI fix application, and validation.
 """
 
-import tempfile
 from pathlib import Path
+import tempfile
 
 import pytest
 
 # Import the main components
 from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
-                                                           SplitConfig)
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.llm import ActionLLMProviderManager
 

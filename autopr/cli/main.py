@@ -4,28 +4,23 @@ AutoPR CLI - Command Line Interface
 Main entry point for AutoPR command line operations.
 """
 
-import argparse
 import asyncio
 import logging
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+import sys
 
 import click
 
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
-                                                           SplitConfig)
-from autopr.actions.ai_linting_fixer.performance_optimizer import \
-    PerformanceOptimizer
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from autopr.actions.ai_linting_fixer.performance_optimizer import PerformanceOptimizer
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
-from autopr.actions.registry import ActionRegistry
+
 # from autopr.agents.agents import AgentManager  # Not implemented yet
 from autopr.ai.core.providers.manager import LLMProviderManager
-from autopr.config import AutoPRConfig
-from autopr.engine import AutoPREngine
-from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.quality.metrics_collector import MetricsCollector
+
+
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 # Configure logging

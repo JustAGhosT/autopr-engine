@@ -6,8 +6,8 @@ refactorings, and improvements work together correctly.
 """
 
 import asyncio
-import tempfile
 from pathlib import Path
+import tempfile
 
 import pytest
 
@@ -136,9 +136,10 @@ class TestCodeReviewIntegration:
     @pytest.mark.asyncio
     async def test_metrics_collection_without_locks(self):
         """Test that metrics can be collected rapidly without database locks."""
-        from autopr.quality.metrics_collector import MetricsCollector
         import sqlite3
         import time
+
+        from autopr.quality.metrics_collector import MetricsCollector
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".db") as tmp:
             db_path = tmp.name
@@ -218,8 +219,8 @@ class TestCodeReviewIntegration:
 
     def test_shared_error_handler_usage(self):
         """Test that shared error handler is used consistently."""
-        from autopr.utils.error_handlers import handle_operation_error
         from autopr.exceptions import AutoPRException
+        from autopr.utils.error_handlers import handle_operation_error
 
         # Test that error handler can be called
         with pytest.raises(AutoPRException) as exc_info:

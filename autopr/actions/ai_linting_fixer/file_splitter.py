@@ -7,18 +7,14 @@ Main orchestrator for file splitting operations.
 import logging
 import time
 
-from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
-    FileComplexityAnalyzer
-from autopr.actions.ai_linting_fixer.engines.ai_split_decision_engine import \
-    AISplitDecisionEngine
-from autopr.actions.ai_linting_fixer.performance_optimizer import \
-    ParallelProcessor
-from autopr.actions.ai_linting_fixer.split_models.split_models import (
-    SplitConfig, SplitResult)
-from autopr.actions.ai_linting_fixer.splitters.component_splitter import \
-    ComponentSplitter
+from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import FileComplexityAnalyzer
+from autopr.actions.ai_linting_fixer.engines.ai_split_decision_engine import AISplitDecisionEngine
+from autopr.actions.ai_linting_fixer.performance_optimizer import ParallelProcessor
+from autopr.actions.ai_linting_fixer.split_models.split_models import SplitConfig, SplitResult
+from autopr.actions.ai_linting_fixer.splitters.component_splitter import ComponentSplitter
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
+
 
 logger = logging.getLogger(__name__)
 

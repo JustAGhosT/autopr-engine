@@ -2,10 +2,20 @@
   "name": "Emergent",
   "category": "automation",
   "description": "Automation project platform",
-  "files": ["emergent.json", ".emergent/", "emergent.config.js", "emergent.config.ts"],
+  "files": [
+    "emergent.json",
+    ".emergent/",
+    "emergent.config.js",
+    "emergent.config.ts"
+  ],
   "dependencies": ["@emergent/cli", "@emergent/core", "emergent"],
   "commit_patterns": ["emergent", "automation", "workflow", "pipeline"],
-  "content_patterns": ["emergent.json", "emergent.config", "@emergent/", "emergent.sh"],
+  "content_patterns": [
+    "emergent.json",
+    "emergent.config",
+    "@emergent/",
+    "emergent.sh"
+  ],
   "folder_patterns": [".emergent/", "workflows/", "automation/"],
   "package_scripts": {
     "start": "emergent start",

@@ -8,8 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from autopr.ai.implementation_roadmap.task_definitions import (Task,
-                                                               TaskRegistry)
+from autopr.ai.implementation_roadmap.task_definitions import Task, TaskRegistry
 
 
 @dataclass

@@ -5,25 +5,99 @@ This module contains the main workflow orchestration logic that was
 previously in the main function, now properly separated and focused.
 """
 
+from collections.abc import Callable
+import functools
 import logging
 import os
+import random
+import time
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.core import AILintingFixer
 from autopr.actions.ai_linting_fixer.detection import IssueDetector
-from autopr.actions.ai_linting_fixer.display import (DisplayConfig, OutputMode,
-                                                     get_display)
-from autopr.actions.ai_linting_fixer.models import (AILintingFixerInputs,
-                                                    AILintingFixerOutputs,
-                                                    LintingIssue,
-                                                    create_empty_outputs)
-from autopr.actions.llm.manager import \
-    ActionLLMProviderManager as LLMProviderManager
+from autopr.actions.ai_linting_fixer.display import DisplayConfig, OutputMode, get_display
+from autopr.actions.ai_linting_fixer.models import (
+    AILintingFixerInputs,
+    AILintingFixerOutputs,
+    LintingIssue,
+    create_empty_outputs,
+)
+from autopr.actions.llm.manager import ActionLLMProviderManager as LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 
 # Constants
 DEFAULT_SUCCESS_RATE_THRESHOLD = 0.5
+
+# Retry configuration
+MAX_RETRIES = 3
+INITIAL_RETRY_DELAY = 1.0  # seconds
+MAX_RETRY_DELAY = 60.0  # seconds
+BACKOFF_MULTIPLIER = 2.0
+
+
+def retry_with_exponential_backoff(
+    max_retries: int = MAX_RETRIES,
+    initial_delay: float = INITIAL_RETRY_DELAY,
+    max_delay: float = MAX_RETRY_DELAY,
+    backoff_multiplier: float = BACKOFF_MULTIPLIER,
+    retryable_exceptions: tuple = (Exception,),
+) -> Callable:
+    """Decorator to retry function calls with exponential backoff.
+
+    Args:
+        max_retries: Maximum number of retry attempts
+        initial_delay: Initial delay before first retry in seconds
+        max_delay: Maximum delay between retries in seconds
+        backoff_multiplier: Multiplier for exponential backoff
+        retryable_exceptions: Tuple of exception types to retry on
+
+    Returns:
+        Decorated function with retry logic
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            delay = initial_delay
+
+            for attempt in range(max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except retryable_exceptions as e:
+                    last_exception = e
+
+                    if attempt == max_retries:
+                        logger.warning(
+                            "Max retries exceeded for %s: %s",
+                            func.__name__,
+                            str(e)
+                        )
+                        break
+
+                    # Add jitter to prevent thundering herd
+                    jitter = random.uniform(0.5, 1.5) * delay
+                    actual_delay = min(jitter, max_delay)
+
+                    logger.info(
+                        "Retrying %s in %.2f seconds (attempt %d/%d): %s",
+                        func.__name__,
+                        actual_delay,
+                        attempt + 1,
+                        max_retries + 1,
+                        str(e)
+                    )
+
+                    time.sleep(actual_delay)
+                    delay *= backoff_multiplier
+
+            # If we get here, all retries failed
+            if last_exception:
+                raise last_exception
+
+        return wrapper
+    return decorator
 
 
 class WorkflowOrchestrator:
@@ -42,6 +116,12 @@ class WorkflowOrchestrator:
         self.display = get_display(display_config)
         self.issue_detector = IssueDetector()
 
+    @retry_with_exponential_backoff(
+        max_retries=3,
+        initial_delay=1.0,
+        max_delay=10.0,
+        retryable_exceptions=(Exception,),  # Retry on any exception for LLM operations
+    )
     def create_llm_manager(self, inputs: AILintingFixerInputs) -> LLMProviderManager | None:
         """Create and configure the LLM manager."""
         # Get Azure OpenAI configuration
@@ -140,6 +220,12 @@ class WorkflowOrchestrator:
         self.display.operation.show_queueing_results(queued_count, len(issues))
         return queued_count
 
+    @retry_with_exponential_backoff(
+        max_retries=2,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=(Exception,),  # Retry on any exception for LLM processing
+    )
     async def process_issues(
         self,
         fixer: AILintingFixer,
@@ -207,7 +293,13 @@ class WorkflowOrchestrator:
         suggestions = []
         if final_results.issues_failed > 0:
             suggestions.append("Review failed fixes and consider manual intervention")
-        success_rate = final_results.issues_fixed / max(final_results.total_issues_found, 1)
+
+        # Calculate success rate properly handling the case when no issues are found
+        if final_results.total_issues_found == 0:
+            success_rate = 1.0  # 100% success when no issues found
+        else:
+            success_rate = final_results.issues_fixed / final_results.total_issues_found
+
         if success_rate < 0.8:
             suggestions.append("Consider adjusting fix parameters or reviewing code patterns")
         self.display.results.show_suggestions(suggestions)

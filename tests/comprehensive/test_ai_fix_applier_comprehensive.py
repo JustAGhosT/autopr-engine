@@ -3,23 +3,24 @@
 Comprehensive tests for AI fix applier module.
 """
 
-import json
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.ai_linting_fixer.ai_fix_applier import (AIFixApplier,
-                                                                FixAnalyzer,
-                                                                FixApplier,
-                                                                FixConfig,
-                                                                FixGenerator,
-                                                                FixReporter,
-                                                                FixValidator)
+    from autopr.actions.ai_linting_fixer.ai_fix_applier import (
+        AIFixApplier,
+        FixAnalyzer,
+        FixApplier,
+        FixConfig,
+        FixGenerator,
+        FixReporter,
+        FixValidator,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -37,7 +38,7 @@ class TestFixConfig:
             auto_apply=False,
             validate_fixes=True
         )
-        
+
         assert config.model_name == "gpt-4"
         assert config.max_tokens == 1000
         assert config.temperature == 0.1
@@ -48,7 +49,7 @@ class TestFixConfig:
     def test_fix_config_defaults(self):
         """Test FixConfig with default values."""
         config = FixConfig()
-        
+
         assert config.model_name == "gpt-3.5-turbo"
         assert config.max_tokens == 500
         assert config.temperature == 0.0
@@ -59,7 +60,7 @@ class TestFixConfig:
     def test_fix_config_to_dict(self):
         """Test FixConfig to_dict method."""
         config = FixConfig(model_name="claude-3", max_tokens=2000)
-        
+
         result = config.to_dict()
         assert result["model_name"] == "claude-3"
         assert result["max_tokens"] == 2000
@@ -72,7 +73,7 @@ class TestFixConfig:
             "temperature": 0.15,
             "auto_apply": True
         }
-        
+
         config = FixConfig.from_dict(data)
         assert config.model_name == "llama-2"
         assert config.max_tokens == 1500
@@ -83,7 +84,7 @@ class TestFixConfig:
         """Test FixConfig validation."""
         valid_config = FixConfig(model_name="gpt-4", max_tokens=1000)
         assert valid_config.is_valid() is True
-        
+
         invalid_config = FixConfig(model_name="", max_tokens=0)
         assert invalid_config.is_valid() is False
 
@@ -109,14 +110,14 @@ class TestFixGenerator:
             "message": "Missing colon after function definition",
             "line": 5
         }
-        
+
         code_content = "def test_function()\n    return True"
-        
+
         with patch.object(fix_generator.llm_client, 'generate') as mock_generate:
             mock_generate.return_value = "def test_function():\n    return True"
-            
+
             result = fix_generator.generate_fix_for_issue(issue, code_content)
-            
+
             assert result is not None
             assert "def test_function():" in result
 
@@ -126,14 +127,14 @@ class TestFixGenerator:
             {"type": "syntax_error", "message": "Missing colon", "line": 1},
             {"type": "style_issue", "message": "Line too long", "line": 2}
         ]
-        
+
         code_content = "def test_function()\n    return True"
-        
+
         with patch.object(fix_generator.llm_client, 'generate') as mock_generate:
             mock_generate.return_value = "def test_function():\n    return True"
-            
+
             results = fix_generator.generate_fixes_for_file(issues, code_content)
-            
+
             assert len(results) == 2
             assert all(result is not None for result in results)
 
@@ -156,7 +157,7 @@ class TestFixValidator:
         valid_fix = "def test_function():\n    return True"
         result = fix_validator.validate_fix_syntax(valid_fix, "python")
         assert result.is_valid is True
-        
+
         invalid_fix = "def test_function()\n    return True"
         result = fix_validator.validate_fix_syntax(invalid_fix, "python")
         assert result.is_valid is False
@@ -165,7 +166,7 @@ class TestFixValidator:
         """Test validating fix semantics."""
         original_code = "x = 5\ny = 10\nresult = x + y"
         fix_code = "x = 5\ny = 10\nresult = x + y"
-        
+
         result = fix_validator.validate_fix_semantics(original_code, fix_code)
         assert result.is_valid is True
 
@@ -174,7 +175,7 @@ class TestFixValidator:
         issue = {"type": "syntax_error", "message": "Missing colon", "line": 1}
         original_code = "def test_function()\n    return True"
         fix_code = "def test_function():\n    return True"
-        
+
         result = fix_validator.validate_fix_completeness(issue, original_code, fix_code)
         assert result.is_valid is True
 
@@ -197,19 +198,19 @@ class TestFixApplier:
         """Test applying a fix to a file."""
         original_content = "def test_function()\n    return True"
         fix_content = "def test_function():\n    return True"
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
             f.write(original_content)
             temp_file = f.name
-        
+
         try:
             result = fix_applier.apply_fix_to_file(temp_file, fix_content)
             assert result is True
-            
-            with open(temp_file, 'r') as f:
+
+            with open(temp_file) as f:
                 applied_content = f.read()
             assert applied_content == fix_content
-            
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -218,19 +219,19 @@ class TestFixApplier:
         """Test applying a fix with backup."""
         original_content = "def test_function()\n    return True"
         fix_content = "def test_function():\n    return True"
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
             f.write(original_content)
             temp_file = f.name
-        
+
         try:
             result = fix_applier.apply_fix_with_backup(temp_file, fix_content)
             assert result is True
-            
-            backup_files = [f for f in os.listdir(os.path.dirname(temp_file)) 
+
+            backup_files = [f for f in os.listdir(os.path.dirname(temp_file))
                           if f.startswith(os.path.basename(temp_file) + ".backup")]
             assert len(backup_files) > 0
-            
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -253,9 +254,9 @@ class TestFixAnalyzer:
         """Test analyzing fix quality."""
         original_code = "def test_function()\n    return True"
         fix_code = "def test_function():\n    return True"
-        
+
         result = fix_analyzer.analyze_fix_quality(original_code, fix_code)
-        
+
         assert "quality_score" in result
         assert "improvements" in result
         assert result["quality_score"] > 0
@@ -264,9 +265,9 @@ class TestFixAnalyzer:
         """Test analyzing fix impact."""
         original_code = "def test_function()\n    return True"
         fix_code = "def test_function():\n    return True"
-        
+
         result = fix_analyzer.analyze_fix_impact(original_code, fix_code)
-        
+
         assert "impact_score" in result
         assert "changes" in result
         assert "risks" in result
@@ -294,9 +295,9 @@ class TestFixReporter:
             "issues_fixed": ["syntax_error"],
             "quality_score": 0.9
         }
-        
+
         report = fix_reporter.generate_fix_report(fix_data)
-        
+
         assert "file" in report
         assert "issues_fixed" in report
         assert "quality_score" in report
@@ -307,9 +308,9 @@ class TestFixReporter:
             {"file": "file1.py", "issues_fixed": ["syntax_error"], "quality_score": 0.9},
             {"file": "file2.py", "issues_fixed": ["style_issue"], "quality_score": 0.8}
         ]
-        
+
         summary = fix_reporter.generate_fix_summary(fixes)
-        
+
         assert "total_fixes" in summary
         assert "average_quality_score" in summary
         assert summary["total_fixes"] == 2
@@ -337,20 +338,20 @@ class TestAIFixApplier:
         """Test applying AI fix to a file."""
         file_content = "def test_function()\n    return True"
         issues = [{"type": "syntax_error", "message": "Missing colon", "line": 1}]
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
             f.write(file_content)
             temp_file = f.name
-        
+
         try:
             with patch.object(ai_fix_applier.generator, 'generate_fix_for_issue') as mock_generate:
                 mock_generate.return_value = "def test_function():\n    return True"
-                
+
                 result = ai_fix_applier.apply_fix_to_file(temp_file, issues)
-                
+
                 assert result.success is True
                 assert result.fixes_applied == 1
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -359,20 +360,20 @@ class TestAIFixApplier:
         """Test validating and applying a fix."""
         original_code = "def test_function()\n    return True"
         fix_code = "def test_function():\n    return True"
-        
+
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.py') as f:
             f.write(original_code)
             temp_file = f.name
-        
+
         try:
             with patch.object(ai_fix_applier.validator, 'validate_fix_comprehensive') as mock_validate:
                 mock_validate.return_value = Mock(is_valid=True, checks={})
-                
+
                 result = ai_fix_applier.validate_and_apply_fix(temp_file, fix_code)
-                
+
                 assert result.success is True
                 assert result.validated is True
-                
+
         finally:
             if os.path.exists(temp_file):
                 os.unlink(temp_file)
@@ -380,7 +381,7 @@ class TestAIFixApplier:
     def test_get_fix_statistics(self, ai_fix_applier):
         """Test getting fix statistics."""
         stats = ai_fix_applier.get_fix_statistics()
-        
+
         assert "total_fixes_applied" in stats
         assert "successful_fixes" in stats
         assert "failed_fixes" in stats
@@ -389,7 +390,7 @@ class TestAIFixApplier:
     def test_generate_fix_report(self, ai_fix_applier):
         """Test generating a comprehensive fix report."""
         report = ai_fix_applier.generate_fix_report()
-        
+
         assert "summary" in report
         assert "details" in report
         assert "statistics" in report

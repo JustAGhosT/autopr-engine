@@ -4,23 +4,19 @@ Test Performance Optimized File Splitter
 Tests for performance optimized file splitting functionality.
 """
 
+from pathlib import Path
 import tempfile
 import time
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
-    FileComplexityAnalyzer
-from autopr.actions.ai_linting_fixer.engines.ai_split_decision_engine import \
-    AISplitDecisionEngine
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
-                                                           SplitConfig)
-from autopr.actions.ai_linting_fixer.models import LintingIssue
+from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import FileComplexityAnalyzer
+from autopr.actions.ai_linting_fixer.engines.ai_split_decision_engine import AISplitDecisionEngine
+from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 from autopr.actions.ai_linting_fixer.performance_optimizer import (
-    IntelligentCache, ParallelProcessor)
+    IntelligentCache,
+    ParallelProcessor,
+)
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.quality.metrics_collector import MetricsCollector
 
@@ -28,11 +24,11 @@ from autopr.quality.metrics_collector import MetricsCollector
 # Create a compatibility class for the tests
 class PerformanceOptimizer:
     """Compatibility wrapper for old PerformanceOptimizer interface."""
-    
+
     def __init__(self):
         self.cache = IntelligentCache()
         self.parallel_processor = ParallelProcessor()
-        
+
     def cleanup(self):
         """Cleanup resources."""
         # Clean up cache and parallel processor resources

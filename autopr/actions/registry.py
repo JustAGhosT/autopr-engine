@@ -5,7 +5,6 @@ Registry for managing and discovering actions.
 """
 
 from collections.abc import Callable
-from functools import lru_cache
 import logging
 from typing import Any, Protocol, TypeVar
 
@@ -111,7 +110,7 @@ class ActionRegistry[ActionT: Action[Any, Any]]:
         if action_name not in self._actions:
             logger.error(f"Action '{action_name}' not found in registry")
             raise KeyError(f"Action '{action_name}' is not registered")
-        
+
         try:
             action_cls = self._actions[action_name]
             instance = action_cls(action_name, f"Instance of {action_name}")

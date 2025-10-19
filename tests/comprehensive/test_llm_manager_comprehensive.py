@@ -3,19 +3,21 @@
 Comprehensive tests for LLM manager module.
 """
 
-import json
-import os
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
+
 # Import the modules we're testing
 try:
-    from autopr.actions.llm_manager import (LLMCache, LLMConfig, LLMManager,
-                                            LLMProvider, LLMRequest,
-                                            LLMResponse)
+    from autopr.actions.llm_manager import (
+        LLMCache,
+        LLMConfig,
+        LLMManager,
+        LLMProvider,
+        LLMRequest,
+        LLMResponse,
+    )
 except ImportError as e:
     pytest.skip(f"Could not import required modules: {e}", allow_module_level=True)
 
@@ -33,7 +35,7 @@ class TestLLMConfig:
             temperature=0.7,
             timeout=30
         )
-        
+
         assert config.provider == "openai"
         assert config.model == "gpt-4"
         assert config.api_key == "test_key"
@@ -44,7 +46,7 @@ class TestLLMConfig:
     def test_llm_config_defaults(self):
         """Test LLMConfig with default values."""
         config = LLMConfig(provider="test", api_key="key")
-        
+
         assert config.provider == "test"
         assert config.api_key == "key"
         assert config.model == "gpt-3.5-turbo"
@@ -60,7 +62,7 @@ class TestLLMConfig:
             api_key="claude_key",
             max_tokens=2000
         )
-        
+
         result = config.to_dict()
         assert result["provider"] == "anthropic"
         assert result["model"] == "claude-3"
@@ -77,7 +79,7 @@ class TestLLMConfig:
             "temperature": 0.5,
             "timeout": 45
         }
-        
+
         config = LLMConfig.from_dict(data)
         assert config.provider == "local"
         assert config.model == "llama-2"
@@ -98,7 +100,7 @@ class TestLLMRequest:
             max_tokens=1000,
             temperature=0.7
         )
-        
+
         assert request.prompt == "Test prompt"
         assert request.model == "gpt-4"
         assert request.max_tokens == 1000
@@ -107,7 +109,7 @@ class TestLLMRequest:
     def test_llm_request_defaults(self):
         """Test LLMRequest with default values."""
         request = LLMRequest(prompt="Test")
-        
+
         assert request.prompt == "Test"
         assert request.model == "gpt-3.5-turbo"
         assert request.max_tokens == 500
@@ -121,7 +123,7 @@ class TestLLMRequest:
             max_tokens=2000,
             temperature=0.8
         )
-        
+
         result = request.to_dict()
         assert result["prompt"] == "Generate text"
         assert result["model"] == "claude-3"
@@ -136,7 +138,7 @@ class TestLLMRequest:
             "max_tokens": 1500,
             "temperature": 0.6
         }
-        
+
         request = LLMRequest.from_dict(data)
         assert request.prompt == "Complete this"
         assert request.model == "llama-2"
@@ -155,7 +157,7 @@ class TestLLMResponse:
             usage={"tokens": 100},
             finish_reason="stop"
         )
-        
+
         assert response.text == "Generated response"
         assert response.model == "gpt-4"
         assert response.usage == {"tokens": 100}
@@ -164,7 +166,7 @@ class TestLLMResponse:
     def test_llm_response_defaults(self):
         """Test LLMResponse with default values."""
         response = LLMResponse(text="Test response")
-        
+
         assert response.text == "Test response"
         assert response.model == "unknown"
         assert response.usage == {}
@@ -178,7 +180,7 @@ class TestLLMResponse:
             usage={"tokens": 200},
             finish_reason="length"
         )
-        
+
         result = response.to_dict()
         assert result["text"] == "Claude response"
         assert result["model"] == "claude-3"
@@ -193,7 +195,7 @@ class TestLLMResponse:
             "usage": {"tokens": 150},
             "finish_reason": "stop"
         }
-        
+
         response = LLMResponse.from_dict(data)
         assert response.text == "Local response"
         assert response.model == "llama-2"
@@ -218,7 +220,7 @@ class TestLLMProvider:
     def test_llm_provider_generate(self, llm_provider):
         """Test LLMProvider generate method."""
         request = LLMRequest(prompt="Test prompt")
-        
+
         # This should raise NotImplementedError for base class
         with pytest.raises(NotImplementedError):
             llm_provider.generate(request)
@@ -228,7 +230,7 @@ class TestLLMProvider:
         request = LLMRequest(prompt="Valid prompt")
         result = llm_provider.validate_request(request)
         assert result.is_valid is True
-        
+
         invalid_request = LLMRequest(prompt="")
         result = llm_provider.validate_request(invalid_request)
         assert result.is_valid is False
@@ -251,10 +253,10 @@ class TestLLMCache:
         """Test LLMCache get method."""
         request = LLMRequest(prompt="Test prompt")
         response = LLMResponse(text="Cached response")
-        
+
         # Add to cache
         llm_cache.set(request, response)
-        
+
         # Get from cache
         cached_response = llm_cache.get(request)
         assert cached_response is not None
@@ -263,7 +265,7 @@ class TestLLMCache:
     def test_llm_cache_get_miss(self, llm_cache):
         """Test LLMCache get method with cache miss."""
         request = LLMRequest(prompt="Not cached")
-        
+
         cached_response = llm_cache.get(request)
         assert cached_response is None
 
@@ -271,7 +273,7 @@ class TestLLMCache:
         """Test LLMCache set method."""
         request = LLMRequest(prompt="Test prompt")
         response = LLMResponse(text="Test response")
-        
+
         llm_cache.set(request, response)
         assert len(llm_cache.cache) == 1
 
@@ -279,10 +281,10 @@ class TestLLMCache:
         """Test LLMCache clear method."""
         request = LLMRequest(prompt="Test prompt")
         response = LLMResponse(text="Test response")
-        
+
         llm_cache.set(request, response)
         assert len(llm_cache.cache) == 1
-        
+
         llm_cache.clear()
         assert len(llm_cache.cache) == 0
 
@@ -293,7 +295,7 @@ class TestLLMCache:
             request = LLMRequest(prompt=f"Prompt {i}")
             response = LLMResponse(text=f"Response {i}")
             llm_cache.set(request, response)
-        
+
         # Should not exceed max_size
         assert len(llm_cache.cache) <= llm_cache.max_size
 
@@ -316,13 +318,13 @@ class TestLLMManager:
     def test_llm_manager_generate_text(self, llm_manager):
         """Test LLMManager generate_text method."""
         prompt = "Test prompt"
-        
+
         with patch.object(llm_manager.provider, 'generate') as mock_generate:
             mock_response = LLMResponse(text="Generated text")
             mock_generate.return_value = mock_response
-            
+
             result = llm_manager.generate_text(prompt)
-            
+
             assert result == "Generated text"
             mock_generate.assert_called_once()
 
@@ -331,10 +333,10 @@ class TestLLMManager:
         prompt = "Cached prompt"
         request = LLMRequest(prompt=prompt)
         response = LLMResponse(text="Cached response")
-        
+
         # Add to cache first
         llm_manager.cache.set(request, response)
-        
+
         # Generate should use cache
         result = llm_manager.generate_text(prompt)
         assert result == "Cached response"
@@ -342,13 +344,13 @@ class TestLLMManager:
     def test_llm_manager_generate_without_cache(self, llm_manager):
         """Test LLMManager generate without cache."""
         prompt = "Uncached prompt"
-        
+
         with patch.object(llm_manager.provider, 'generate') as mock_generate:
             mock_response = LLMResponse(text="Fresh response")
             mock_generate.return_value = mock_response
-            
+
             result = llm_manager.generate_text(prompt, use_cache=False)
-            
+
             assert result == "Fresh response"
             mock_generate.assert_called_once()
 
@@ -364,9 +366,9 @@ class TestLLMManager:
             request = LLMRequest(prompt=f"Prompt {i}")
             response = LLMResponse(text=f"Response {i}")
             llm_manager.cache.set(request, response)
-        
+
         stats = llm_manager.get_cache_stats()
-        
+
         assert "cache_size" in stats
         assert "cache_hits" in stats
         assert "cache_misses" in stats
@@ -378,8 +380,8 @@ class TestLLMManager:
         request = LLMRequest(prompt="Test prompt")
         response = LLMResponse(text="Test response")
         llm_manager.cache.set(request, response)
-        
+
         assert len(llm_manager.cache.cache) == 1
-        
+
         llm_manager.clear_cache()
         assert len(llm_manager.cache.cache) == 0

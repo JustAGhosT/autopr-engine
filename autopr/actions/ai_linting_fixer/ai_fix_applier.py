@@ -8,15 +8,14 @@ import logging
 from typing import Any
 
 from autopr.actions.ai_linting_fixer.backup_manager import BackupManager
-from autopr.actions.ai_linting_fixer.file_persistence import \
-    FilePersistenceManager
+from autopr.actions.ai_linting_fixer.file_persistence import FilePersistenceManager
 from autopr.actions.ai_linting_fixer.fix_strategy import StrategySelector
 from autopr.actions.ai_linting_fixer.llm_client import LLMClient
-from autopr.actions.ai_linting_fixer.models import (LintingIssue)
+from autopr.actions.ai_linting_fixer.models import LintingIssue
 from autopr.actions.ai_linting_fixer.response_parser import ResponseParser
-from autopr.actions.ai_linting_fixer.validation_manager import (
-    ValidationConfig, ValidationManager)
+from autopr.actions.ai_linting_fixer.validation_manager import ValidationConfig, ValidationManager
 from autopr.ai.core.providers.manager import LLMProviderManager
+
 
 logger = logging.getLogger(__name__)
 
