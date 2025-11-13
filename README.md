@@ -2,10 +2,10 @@
 
 ## AI-Powered GitHub PR Automation and Issue Management
 
-[![PyPI version](<https://badge.fury.io/py/autopr-engine.svg)](https://badge.fury.io/py/autopr-engine)>
-[![Python 3.8+](<https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)>
-[![License: MIT](<https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)>
-[![GitHub Marketplace](<https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/autopr-engine)>
+[![PyPI version](https://badge.fury.io/py/autopr-engine.svg)](https://badge.fury.io/py/autopr-engine)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/autopr-engine)
 
 [![CI](https://github.com/JustAGhosT/autopr-engine/workflows/CI/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3ACI)
 [![Quality](https://github.com/JustAGhosT/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
@@ -15,7 +15,7 @@ AutoPR Engine is a comprehensive AI-powered automation platform that transforms 
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
 
 > **📢 Repository Structure Update**: The repository has been reorganized for better maintainability
-> and developer experience. See [Implementation Summary](docs/plans/IMPLEMENTATION_SUMMARY.md) for
+> and developer experience. See [Reorganization Summary](REORGANIZATION_SUMMARY.md) for
 > details on the improvements.
 
 ---
@@ -29,18 +29,22 @@ autopr-engine/
 ├── docs/                      # 📚 All documentation
 │   ├── getting-started/       # Setup and quick start guides
 │   ├── development/           # Development guides and tools
+│   ├── architecture/          # System architecture documents
 │   ├── plans/                 # Project planning documents
 │   └── README.md              # Documentation index
 ├── configs/                   # ⚙️ Configuration files
-│   ├── environments/          # Environment-specific configs
 │   ├── platforms/             # Platform configurations
-│   └── workflows/             # Workflow configurations
+│   ├── workflows/             # Workflow configurations
+│   ├── phases/                # Phase configurations
+│   └── tasks/                 # Task configurations
 ├── templates/                 # 🎨 Template system
 │   ├── platforms/             # Platform-specific templates
 │   ├── use-cases/             # Use case templates
-│   └── deployment/            # Deployment templates
+│   ├── deployment/            # Deployment templates
+│   └── integrations/          # Integration templates
 ├── tools/                     # 🔧 Development tools
-├── build-artifacts/           # 📦 Build outputs
+│   ├── development/           # Development workflow tools
+│   └── quality/               # Code quality tools
 └── autopr/                    # 🚀 Main source code
 ```
 
@@ -279,24 +283,39 @@ python -m autopr.server --reload
 ```text
 autopr-engine/
 ├── autopr/                 # Core engine package
-│   ├── actions/            # 50+ automation actions
-│   ├── workflows/          # Pre-built workflow definitions
-│   ├── integrations/       # External service integrations
+│   ├── actions/            # Automation actions
+│   ├── agents/             # Agent system
 │   ├── ai/                 # AI and LLM components
-│   ├── memory/             # Learning and memory systems
+│   ├── cli/                # Command-line interface
+│   ├── clients/            # External service clients
+│   ├── config/             # Configuration management
+│   ├── integrations/       # External service integrations
 │   ├── quality/            # Quality gates and validation
-│   └── server/             # Web server and API
+│   ├── security/           # Security framework
+│   ├── workflows/          # Pre-built workflow definitions
+│   └── engine.py           # Core engine
 ├── tests/                  # Comprehensive test suite
 ├── docs/                   # Documentation
-├── docker/                 # Container definitions
+│   ├── architecture/       # System architecture
+│   ├── development/        # Development guides
+│   ├── getting-started/    # Setup guides
+│   └── plans/              # Project planning
+├── configs/                # Configuration files
+│   ├── platforms/          # Platform configurations
+│   └── workflows/          # Workflow configurations
+├── templates/              # Template system
+│   ├── platforms/          # Platform-specific templates
+│   ├── deployment/         # Deployment templates
+│   └── use-cases/          # Use case templates
+├── tools/                  # Development tools
+│   ├── development/        # Development workflow tools
+│   └── quality/            # Code quality tools
 ├── scripts/                # Utility scripts
 ├── examples/               # Usage examples
-├── requirements.txt        # Production dependencies
-├── requirements-dev.txt    # Development dependencies
-├── setup.py               # Package configuration
-├── pyproject.toml         # Modern Python packaging
-├── Dockerfile             # Container build
-├── docker-compose.yml     # Local development
+├── setup.py                # Package configuration
+├── pyproject.toml          # Modern Python packaging
+├── Dockerfile              # Container build
+├── docker-compose.yml      # Local development
 └── README.md              # This file
 ```
 
@@ -391,23 +410,23 @@ ai_providers:
 
 ### **Communication Platforms**
 
-- **[Slack](docs/integrations/slack.md)** - Channel automation with Axolo
-- **[Microsoft Teams](docs/integrations/teams.md)** - Enterprise communication
-- **[Discord](docs/integrations/discord.md)** - Community-focused teams
-- **[Notion](docs/integrations/notion.md)** - Documentation automation
+- **Slack** - Channel automation with Axolo
+- **Microsoft Teams** - Enterprise communication
+- **Discord** - Community-focused teams
+- **Notion** - Documentation automation
 
 ### **Project Management**
 
-- **[Linear](docs/integrations/linear.md)** - Modern issue tracking
-- **[GitHub Issues](docs/integrations/github.md)** - Native GitHub integration
-- **[Jira](docs/integrations/jira.md)** - Enterprise project management
+- **Linear** - Modern issue tracking
+- **GitHub Issues** - Native GitHub integration
+- **Jira** - Enterprise project management
 
 ### **AI & Development Tools**
 
-- **[CodeRabbit](docs/integrations/coderabbit.md)** - AI code review
-- **[GitHub Copilot](docs/integrations/copilot.md)** - AI coding assistant
-- **[AutoGen](docs/integrations/autogen.md)** - Multi-agent collaboration
-- **[Platform Detection](docs/features/platform-detection.md)** - 25+ platforms
+- **CodeRabbit** - AI code review
+- **GitHub Copilot** - AI coding assistant
+- **AutoGen** - Multi-agent collaboration
+- **Platform Detection** - Supports 25+ development platforms including Replit, Bolt, Lovable, and more
 
 ---
 
@@ -490,7 +509,7 @@ information.
 
 ### **Code Standards**
 
-- Follow [PEP 8](<https://peps.python.org/pep-0008/)> style guidelines
+- Follow [PEP 8](https://peps.python.org/pep-0008/) style guidelines
 - Add type hints for all functions
 - Write comprehensive tests for new features
 - Update documentation for user-facing changes
