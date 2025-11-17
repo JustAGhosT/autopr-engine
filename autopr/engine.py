@@ -67,18 +67,22 @@ class AutoPREngine:
     - AI/LLM provider coordination
     """
 
-    def __init__(self, config: AutoPRConfig | None = None):
+    def __init__(self, config: AutoPRConfig | None = None, log_handler: logging.Handler | None = None):
         """
         Initialize the AutoPR Engine.
 
         Args:
             config: Configuration object. If None, loads default config.
+            log_handler: Optional logging handler to add to the root logger.
         """
         self.config = config or AutoPRConfig()
         self.workflow_engine = WorkflowEngine(self.config)
         self.action_registry: ActionRegistry = ActionRegistry()
         self.integration_registry = IntegrationRegistry()
         self.llm_manager = LLMProviderManager(self.config)
+
+        if log_handler:
+            logging.getLogger().addHandler(log_handler)
 
         logger.info("AutoPR Engine initialized successfully")
 
