@@ -12,6 +12,7 @@ from typing import Any
 
 from autopr.config import AutoPRConfig
 from autopr.exceptions import WorkflowError
+from autopr.utils.error_handlers import handle_workflow_error
 from autopr.workflows.base import Workflow
 
 
@@ -19,37 +20,6 @@ logger = logging.getLogger(__name__)
 
 # Configuration constants
 MAX_WORKFLOW_HISTORY = 1000  # Maximum number of workflow executions to keep in history
-
-
-def handle_workflow_error(
-    workflow_name: str,
-    operation: str,
-    exception: Exception,
-    *,
-    log_level: str = "exception",
-) -> None:
-    """
-    Standardized error handling helper for workflow operations.
-    
-    Args:
-        workflow_name: Name of the workflow
-        operation: Operation that failed (e.g., 'execution', 'validation')
-        exception: The exception that was raised
-        log_level: Logging level to use ('exception', 'error', 'warning')
-        
-    Raises:
-        WorkflowError: Workflow error with formatted message
-    """
-    error_msg = f"Workflow {operation} failed: {exception}"
-    
-    if log_level == "exception":
-        logger.exception(error_msg)
-    elif log_level == "error":
-        logger.error(error_msg)
-    elif log_level == "warning":
-        logger.warning(error_msg)
-    
-    raise WorkflowError(error_msg, workflow_name) from exception
 
 
 class WorkflowEngine:
