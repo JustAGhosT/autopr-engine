@@ -72,7 +72,7 @@ class WorkflowEngine:
         self.workflow_history: list[dict[str, Any]] = []
         self._is_running = False
         
-        # Metrics tracking
+        # Metrics tracking with thread-safety
         self.metrics = {
             "total_executions": 0,
             "successful_executions": 0,
@@ -81,6 +81,7 @@ class WorkflowEngine:
             "total_execution_time": 0.0,
             "average_execution_time": 0.0,
         }
+        self._metrics_lock = asyncio.Lock()
 
         logger.info("Workflow engine initialized")
 
@@ -185,7 +186,7 @@ class WorkflowEngine:
 
                 # Update metrics
                 execution_time = time.time() - start_time
-                self._update_metrics("success", execution_time)
+                await self._update_metrics("success", execution_time)
 
                 # Record successful execution
                 self._record_execution(execution_id, workflow_name, "completed", result)
@@ -203,7 +204,7 @@ class WorkflowEngine:
                     logger.exception("Workflow execution timed out: %s", execution_id)
                     
                     # Update metrics
-                    self._update_metrics("timeout", execution_time)
+                    await self._update_metrics("timeout", execution_time)
                     
                     self._record_execution(
                         execution_id, workflow_name, "timeout", {"error": error_msg}
@@ -222,7 +223,7 @@ class WorkflowEngine:
                     logger.exception("Workflow execution failed: %s - %s", execution_id, e)
                     
                     # Update metrics
-                    self._update_metrics("failed", execution_time)
+                    await self._update_metrics("failed", execution_time)
                     
                     self._record_execution(
                         execution_id, workflow_name, "failed", {"error": str(e)}
@@ -338,29 +339,30 @@ class WorkflowEngine:
         if len(self.workflow_history) > MAX_WORKFLOW_HISTORY:
             self.workflow_history = self.workflow_history[-MAX_WORKFLOW_HISTORY:]
 
-    def _update_metrics(self, status: str, execution_time: float) -> None:
+    async def _update_metrics(self, status: str, execution_time: float) -> None:
         """
-        Update workflow execution metrics.
+        Update workflow execution metrics with thread-safety.
         
         Args:
             status: Execution status (success, failed, timeout)
             execution_time: Time taken for execution in seconds
         """
-        self.metrics["total_executions"] += 1
-        self.metrics["total_execution_time"] += execution_time
-        
-        if status == "success":
-            self.metrics["successful_executions"] += 1
-        elif status == "failed":
-            self.metrics["failed_executions"] += 1
-        elif status == "timeout":
-            self.metrics["timeout_executions"] += 1
-        
-        # Update average execution time
-        if self.metrics["total_executions"] > 0:
-            self.metrics["average_execution_time"] = (
-                self.metrics["total_execution_time"] / self.metrics["total_executions"]
-            )
+        async with self._metrics_lock:
+            self.metrics["total_executions"] += 1
+            self.metrics["total_execution_time"] += execution_time
+            
+            if status == "success":
+                self.metrics["successful_executions"] += 1
+            elif status == "failed":
+                self.metrics["failed_executions"] += 1
+            elif status == "timeout":
+                self.metrics["timeout_executions"] += 1
+            
+            # Update average execution time
+            if self.metrics["total_executions"] > 0:
+                self.metrics["average_execution_time"] = (
+                    self.metrics["total_execution_time"] / self.metrics["total_executions"]
+                )
 
     def get_status(self) -> dict[str, Any]:
         """Get workflow engine status."""
