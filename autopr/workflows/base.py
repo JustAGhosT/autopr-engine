@@ -242,28 +242,131 @@ class YAMLWorkflow(Workflow):
         }
 
     async def _execute_condition_step(
-        self, step: dict[str, Any], _context: dict[str, Any]
+        self, step: dict[str, Any], context: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute a conditional step."""
         condition = step.get("condition")
 
-        # TODO: Implement condition evaluation
+        # Implement condition evaluation
+        result = False
+        error_msg = None
+        
+        try:
+            if not condition:
+                result = False
+                error_msg = "No condition specified"
+            elif isinstance(condition, bool):
+                result = condition
+            elif isinstance(condition, str):
+                # Simple condition evaluation using context variables
+                # Support basic comparisons: var == value, var != value, var in list, etc.
+                result = self._evaluate_string_condition(condition, context)
+            elif isinstance(condition, dict):
+                # Support complex conditions with operators
+                result = self._evaluate_dict_condition(condition, context)
+            else:
+                result = bool(condition)
+        except Exception as e:
+            logger.warning(f"Error evaluating condition: {e}")
+            error_msg = str(e)
+            result = False
+
         return {
             "condition": condition,
-            "result": True,
-            "message": "Condition evaluated (placeholder)",
+            "result": result,
+            "message": f"Condition evaluated to {result}" + (f" (error: {error_msg})" if error_msg else ""),
         }
+    
+    def _evaluate_string_condition(self, condition: str, context: dict[str, Any]) -> bool:
+        """Evaluate a string-based condition."""
+        # Simple variable substitution and evaluation
+        for key, value in context.items():
+            condition = condition.replace(f"{{{key}}}", repr(value))
+        
+        # Safe evaluation of basic boolean expressions
+        try:
+            # Only allow specific safe operations
+            allowed_names = {"True": True, "False": False, "None": None}
+            return bool(eval(condition, {"__builtins__": {}}, allowed_names))
+        except Exception:
+            return False
+    
+    def _evaluate_dict_condition(self, condition: dict[str, Any], context: dict[str, Any]) -> bool:
+        """Evaluate a dictionary-based condition with operators."""
+        operator = condition.get("op", "eq")
+        left = condition.get("left")
+        right = condition.get("right")
+        
+        # Resolve variables from context
+        if isinstance(left, str) and left.startswith("$"):
+            left = context.get(left[1:], None)
+        if isinstance(right, str) and right.startswith("$"):
+            right = context.get(right[1:], None)
+        
+        # Evaluate based on operator
+        if operator == "eq":
+            return left == right
+        elif operator == "ne":
+            return left != right
+        elif operator == "gt":
+            return left > right
+        elif operator == "lt":
+            return left < right
+        elif operator == "gte":
+            return left >= right
+        elif operator == "lte":
+            return left <= right
+        elif operator == "in":
+            return left in right
+        elif operator == "not_in":
+            return left not in right
+        elif operator == "contains":
+            return right in left
+        else:
+            return False
 
     async def _execute_parallel_step(
-        self, step: dict[str, Any], _context: dict[str, Any]
+        self, step: dict[str, Any], context: dict[str, Any]
     ) -> dict[str, Any]:
         """Execute parallel steps."""
         parallel_steps = step.get("steps", [])
 
-        # TODO: Implement parallel execution
+        # Implement parallel execution using asyncio.gather
+        results = []
+        errors = []
+        
+        try:
+            # Create tasks for all parallel steps
+            tasks = [self._execute_step(s, context) for s in parallel_steps]
+            
+            # Execute all tasks concurrently
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Separate successful results from errors
+            successful_results = []
+            for i, result in enumerate(results):
+                if isinstance(result, Exception):
+                    errors.append({
+                        "step_index": i,
+                        "error": str(result),
+                    })
+                else:
+                    successful_results.append(result)
+            
+            results = successful_results
+            
+        except Exception as e:
+            logger.exception(f"Error executing parallel steps: {e}")
+            errors.append({"error": str(e)})
+
         return {
             "parallel_steps": len(parallel_steps),
-            "message": "Parallel steps executed (placeholder)",
+            "completed": len(results),
+            "errors": len(errors),
+            "results": results,
+            "error_details": errors if errors else None,
+            "message": f"Executed {len(results)}/{len(parallel_steps)} parallel steps" 
+                      + (f" with {len(errors)} errors" if errors else ""),
         }
 
     async def _execute_delay_step(
