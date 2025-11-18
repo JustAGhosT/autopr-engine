@@ -12,6 +12,12 @@ interface PlatformData {
   avgConfidence: number;
   lastDetected: string;
   trend: 'up' | 'down' | 'stable';
+  integration_type: 'api' | 'chromium' | 'console';
+  integration_instructions: string;
+  ui_config: {
+    icon: string;
+    theme_color: string;
+  };
 }
 
 const SkeletonCard = () => (
@@ -35,28 +41,41 @@ const PlatformAnalytics: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'count' | 'confidence'>('count');
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformData | null>(null);
 
   // Mock data for demonstration
   const mockPlatforms: PlatformData[] = [
-    { id: 'base44', name: 'Base44', category: 'ai_development', detectionCount: 45, avgConfidence: 0.92, lastDetected: '2024-11-18T12:20:00', trend: 'up' },
-    { id: 'windsurf', name: 'Windsurf', category: 'ai_development', detectionCount: 38, avgConfidence: 0.88, lastDetected: '2024-11-18T11:45:00', trend: 'up' },
-    { id: 'github_copilot', name: 'GitHub Copilot', category: 'ai_development', detectionCount: 156, avgConfidence: 0.95, lastDetected: '2024-11-18T12:15:00', trend: 'stable' },
-    { id: 'cursor', name: 'Cursor', category: 'ai_development', detectionCount: 123, avgConfidence: 0.91, lastDetected: '2024-11-18T12:10:00', trend: 'up' },
-    { id: 'continue', name: 'Continue', category: 'ai_development', detectionCount: 67, avgConfidence: 0.87, lastDetected: '2024-11-18T11:30:00', trend: 'stable' },
-    { id: 'aider', name: 'Aider', category: 'ai_development', detectionCount: 34, avgConfidence: 0.84, lastDetected: '2024-11-18T10:50:00', trend: 'up' },
-    { id: 'amazon_q', name: 'Amazon Q', category: 'ai_development', detectionCount: 52, avgConfidence: 0.89, lastDetected: '2024-11-18T12:05:00', trend: 'stable' },
-    { id: 'replit', name: 'Replit', category: 'rapid_prototyping', detectionCount: 89, avgConfidence: 0.93, lastDetected: '2024-11-18T11:55:00', trend: 'down' },
-    { id: 'vercel', name: 'Vercel', category: 'cloud_hosting', detectionCount: 201, avgConfidence: 0.96, lastDetected: '2024-11-18T12:18:00', trend: 'up' },
-    { id: 'netlify', name: 'Netlify', category: 'cloud_hosting', detectionCount: 145, avgConfidence: 0.94, lastDetected: '2024-11-18T12:12:00', trend: 'stable' },
+    { id: 'base44', name: 'Base44', category: 'ai_development', detectionCount: 45, avgConfidence: 0.92, lastDetected: '2024-11-18T12:20:00', trend: 'up', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'windsurf', name: 'Windsurf', category: 'ai_development', detectionCount: 38, avgConfidence: 0.88, lastDetected: '2024-11-18T11:45:00', trend: 'up', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'github_copilot', name: 'GitHub Copilot', category: 'ai_development', detectionCount: 156, avgConfidence: 0.95, lastDetected: '2024-11-18T12:15:00', trend: 'stable', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'cursor', name: 'Cursor', category: 'ai_development', detectionCount: 123, avgConfidence: 0.91, lastDetected: '2024-11-18T12:10:00', trend: 'up', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'continue', name: 'Continue', category: 'ai_development', detectionCount: 67, avgConfidence: 0.87, lastDetected: '2024-11-18T11:30:00', trend: 'stable', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'aider', name: 'Aider', category: 'ai_development', detectionCount: 34, avgConfidence: 0.84, lastDetected: '2024-11-18T10:50:00', trend: 'up', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'amazon_q', name: 'Amazon Q', category: 'ai_development', detectionCount: 52, avgConfidence: 0.89, lastDetected: '2024-11-18T12:05:00', trend: 'stable', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'replit', name: 'Replit', category: 'rapid_prototyping', detectionCount: 89, avgConfidence: 0.93, lastDetected: '2024-11-18T11:55:00', trend: 'down', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'vercel', name: 'Vercel', category: 'cloud_hosting', detectionCount: 201, avgConfidence: 0.96, lastDetected: '2024-11-18T12:18:00', trend: 'up', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
+    { id: 'netlify', name: 'Netlify', category: 'cloud_hosting', detectionCount: 145, avgConfidence: 0.94, lastDetected: '2024-11-18T12:12:00', trend: 'stable', integration_type: 'api', integration_instructions: '', ui_config: { icon: '', theme_color: '' } },
   ];
 
   useEffect(() => {
-    // Simulate API call
     const loadData = async () => {
       setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPlatforms(mockPlatforms);
-      setIsLoading(false);
+      try {
+        const data = await import('../../../configs/platforms/ai_platforms.json');
+        const platforms = data.platforms.map((p: any) => ({
+          ...p,
+          detectionCount: Math.floor(Math.random() * 200),
+          avgConfidence: Math.random() * (0.98 - 0.8) + 0.8,
+          lastDetected: new Date().toISOString(),
+          trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)],
+        }));
+        setPlatforms(platforms);
+      } catch (error) {
+        console.error('Error loading platform data:', error);
+        setPlatforms(mockPlatforms);
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadData();
   }, []);
@@ -97,6 +116,19 @@ const PlatformAnalytics: React.FC = () => {
 
   return (
     <div className="dark:text-white">
+      {selectedPlatform && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="dark:bg-gray-800 w-1/2">
+            <CardHeader>
+              <CardTitle>{selectedPlatform.name} Integration</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>{selectedPlatform.integration_instructions}</p>
+            </CardContent>
+            <Button onClick={() => setSelectedPlatform(null)}>Close</Button>
+          </Card>
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Platform Analytics</h1>
@@ -257,6 +289,9 @@ const PlatformAnalytics: React.FC = () => {
                       Last: {new Date(platform.lastDetected).toLocaleString()}
                     </span>
                   </div>
+                  <Button onClick={() => setSelectedPlatform(platform)}>
+                    View Integration
+                  </Button>
                 </div>
               </CardContent>
             </Card>

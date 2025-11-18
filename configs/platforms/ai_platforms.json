@@ -181,6 +181,69 @@
       "config_file": "ai/supermaven.json",
       "is_active": true,
       "priority": 9
+    },
+    {
+      "id": "riff_new",
+      "name": "Riff.new",
+      "category": "ai_development",
+      "description": "AI-powered music and audio creation platform.",
+      "config_file": "ai/riff_new.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "same_new",
+      "name": "Same.new",
+      "category": "ai_development",
+      "description": "AI-powered platform for building and sharing interactive tutorials.",
+      "config_file": "ai/same_new.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "bolt_new",
+      "name": "Bolt.new",
+      "category": "ai_development",
+      "description": "AI-powered platform for creating and sharing interactive presentations.",
+      "config_file": "ai/bolt_new.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "warp",
+      "name": "Warp",
+      "category": "ai_development",
+      "description": "The terminal for the 21st century.",
+      "config_file": "ai/warp.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "claude_code",
+      "name": "Claude Code",
+      "category": "ai_development",
+      "description": "Anthropic's AI assistant for coding.",
+      "config_file": "ai/claude_code.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "cto_net",
+      "name": "CTO.net",
+      "category": "ai_development",
+      "description": "AI-powered platform for CTOs and engineering leaders.",
+      "config_file": "ai/cto_net.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "factory_ai",
+      "name": "Factory.ai",
+      "category": "ai_development",
+      "description": "AI-powered platform for building and deploying AI models.",
+      "config_file": "ai/factory_ai.json",
+      "is_active": true,
+      "priority": 9
     }
   ],
   "metadata": {
