@@ -1,0 +1,64 @@
+{
+  "id": "google_ai_studio",
+  "name": "Google AI Studio",
+  "description": "Google's AI development platform with Gemini integration for code generation and assistance",
+  "category": "ai_development",
+  "display_name": "Google AI Studio",
+  "version": "1.0.0",
+  "status": "active",
+  "is_active": true,
+  "is_beta": false,
+  "is_deprecated": false,
+  "type": "ai",
+  "source": "official",
+  "priority": 61,
+  "min_autopr_version": "0.1.0",
+  "vendor": "Google",
+  "website": "https://ai.google.dev/",
+  "pricing_model": "freemium",
+  "supported_languages": [
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "go",
+    "c++",
+    "kotlin",
+    "swift"
+  ],
+  "tags": ["ai_platform", "gemini", "code_generation", "google"],
+  "documentation_url": "https://ai.google.dev/docs",
+  "setup_guide": "https://ai.google.dev/docs/setup",
+  "troubleshooting_guide": "https://ai.google.dev/docs/troubleshooting",
+  "maintainer": "Google",
+
+  "detection": {
+    "files": [".google-ai", ".google-ai-studio", "google-ai.config.json"],
+    "dependencies": ["@google/generative-ai", "google-ai-sdk"],
+    "folder_patterns": ["google-ai-", "-google-ai"],
+    "commit_patterns": ["google ai", "Google AI Studio", "gemini"],
+    "content_patterns": ["ai.google.dev", "google ai studio"],
+    "confidence_weights": {
+      "files": 0.5,
+      "dependencies": 0.3,
+      "folder_patterns": 0.1,
+      "commit_patterns": 0.05,
+      "content_patterns": 0.05
+    }
+  },
+
+  "project_config": {
+    "primary_language": "typescript",
+    "framework": "google_ai_studio",
+    "deployment_targets": ["local", "cloud"],
+    "common_files": [".google-ai/config.json"],
+    "features": [
+      "gemini_integration",
+      "code_generation",
+      "multi_modal_ai",
+      "code_explanation",
+      "test_generation"
+    ],
+    "configuration_files": [".google-ai/config.json", "google-ai.config.json"]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "id": "amazon_q",
+  "name": "Amazon Q Developer",
+  "description": "AWS's AI-powered assistant for software development with deep AWS integration",
+  "category": "ai_development",
+  "display_name": "Amazon Q Developer",
+  "version": "1.0.0",
+  "status": "active",
+  "is_active": true,
+  "is_beta": false,
+  "is_deprecated": false,
+  "type": "ai",
+  "source": "official",
+  "priority": 62,
+  "min_autopr_version": "0.1.0",
+  "vendor": "Amazon Web Services",
+  "website": "https://aws.amazon.com/q/developer/",
+  "pricing_model": "subscription",
+  "supported_languages": [
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "go",
+    "c++",
+    "c#",
+    "ruby",
+    "php",
+    "rust"
+  ],
+  "tags": ["code_completion", "ai_assistant", "aws", "cloud_native"],
+  "documentation_url": "https://docs.aws.amazon.com/amazonq/",
+  "setup_guide": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/getting-started.html",
+  "troubleshooting_guide": "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/troubleshooting.html",
+  "maintainer": "Amazon Web Services",
+
+  "detection": {
+    "files": [".amazonq", ".aws/amazonq", ".vscode/amazonq.json"],
+    "dependencies": ["@aws/amazonq", "amazon-q-developer"],
+    "folder_patterns": ["amazonq-", "-amazonq"],
+    "commit_patterns": ["amazon q", "Amazon Q", "amazonq"],
+    "content_patterns": ["amazon q", "aws.amazon.com/q"],
+    "confidence_weights": {
+      "files": 0.5,
+      "dependencies": 0.3,
+      "folder_patterns": 0.1,
+      "commit_patterns": 0.05,
+      "content_patterns": 0.05
+    }
+  },
+
+  "project_config": {
+    "primary_language": "typescript",
+    "framework": "amazon_q",
+    "deployment_targets": ["local", "aws"],
+    "common_files": [".amazonq/config.json", ".aws/amazonq/settings.json"],
+    "features": [
+      "ai_code_completion",
+      "aws_integration",
+      "security_scanning",
+      "code_review",
+      "documentation_generation"
+    ],
+    "configuration_files": [".amazonq/config.json", ".aws/amazonq/settings.json"]
+  }
+}
