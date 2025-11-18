@@ -24,6 +24,33 @@ from autopr.workflows.engine import WorkflowEngine
 logger = logging.getLogger(__name__)
 
 
+def handle_operation_error(
+    operation_name: str,
+    exception: Exception,
+    error_class: type[AutoPRException] = AutoPRException,
+    *,
+    reraise: bool = True,
+) -> None:
+    """
+    Standardized error handling helper for engine operations.
+    
+    Args:
+        operation_name: Name of the operation that failed
+        exception: The exception that was raised
+        error_class: Exception class to raise (default: AutoPRException)
+        log_level: Logging level to use ('exception', 'error', 'warning')
+        reraise: Whether to reraise the exception after logging
+        
+    Raises:
+        error_class: The specified exception class with formatted message
+    """
+    error_msg = f"{operation_name} failed: {exception}"
+    logger.exception(error_msg)
+    
+    if reraise:
+        raise error_class(error_msg) from exception
+
+
 class AutoPREngine:
     """
     Main AutoPR Engine class that coordinates all automation activities.

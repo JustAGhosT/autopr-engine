@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
-@click.version_option(version="1.0.0", prog_name="autopr")
+@click.version_option(version="1.0.1", prog_name="autopr")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose logging")
 @click.option("--quiet", "-q", is_flag=True, help="Suppress output")
 def cli(verbose: bool, quiet: bool):
@@ -53,21 +53,21 @@ def cli(verbose: bool, quiet: bool):
     "-m",
     type=click.Choice(["ultra-fast", "fast", "smart", "comprehensive", "ai-enhanced"]),
     default="fast",
-    help="Quality analysis mode",
+    help="Select the quality analysis mode. Each mode offers a different balance between speed and thoroughness.",
 )
-@click.option("--files", "-f", multiple=True, help="Files to analyze")
-@click.option("--directory", "-d", help="Directory to analyze recursively")
-@click.option("--auto-fix", is_flag=True, help="Automatically fix issues")
+@click.option("--files", "-f", multiple=True, help="Specify one or more files to analyze.")
+@click.option("--directory", "-d", help="Specify a directory to analyze recursively.")
+@click.option("--auto-fix", is_flag=True, help="Enable automatic fixing of detected issues.")
 @click.option(
-    "--dry-run", is_flag=True, help="Show what would be fixed without making changes"
+    "--dry-run", is_flag=True, help="Show potential fixes without applying them."
 )
-@click.option("--output", "-o", help="Output file for results")
+@click.option("--output", "-o", help="Specify a file to save the analysis results.")
 @click.option(
     "--format",
     "output_format",
     type=click.Choice(["json", "html", "text"]),
     default="text",
-    help="Output format",
+    help="Choose the output format for the analysis results.",
 )
 def check(
     mode: str,
@@ -78,7 +78,7 @@ def check(
     output: str,
     output_format: str,
 ):
-    """Run quality checks on code files"""
+    """Analyzes your codebase to identify and report quality issues."""
     asyncio.run(
         _run_quality_check(
             mode, files, directory, auto_fix, dry_run, output, output_format
@@ -108,8 +108,8 @@ def split(
 @click.option("--install", is_flag=True, help="Install git hooks")
 @click.option("--uninstall", is_flag=True, help="Remove git hooks")
 def hooks(config: str, install: bool, uninstall: bool):
-    """Manage git hooks for AutoPR"""
-    _manage_git_hooks(config, install, uninstall)
+    """Manage git hooks for AutoPR (Coming Soon)"""
+    click.echo("The git hooks management feature is under development and will be available in a future release.")
 
 
 @cli.command()
@@ -117,16 +117,16 @@ def hooks(config: str, install: bool, uninstall: bool):
 @click.option("--host", default="localhost", help="Host for the dashboard")
 @click.option("--open-browser", is_flag=True, help="Open browser automatically")
 def dashboard(port: int, host: str, open_browser: bool):
-    """Start the AutoPR dashboard"""
-    _start_dashboard(port, host, open_browser)
+    """Start the AutoPR dashboard (Coming Soon)"""
+    click.echo("The dashboard feature is under development and will be available in a future release.")
 
 
 @cli.command()
 @click.option("--file", "-f", help="Configuration file to validate")
 @click.option("--fix", is_flag=True, help="Automatically fix configuration issues")
 def config(file: str, fix: bool):
-    """Validate and manage AutoPR configuration"""
-    _validate_config(file, fix)
+    """Validate and manage AutoPR configuration (Coming Soon)"""
+    click.echo("The config validation feature is under development and will be available in a future release.")
 
 
 async def _run_quality_check(
@@ -162,8 +162,14 @@ async def _run_quality_check(
         )
 
         # Run quality check
-        click.echo(f"Running {mode} quality check on {len(target_files)} files...")
-        result = await engine.execute(inputs, {})
+        with click.progressbar(
+            length=len(target_files),
+            label=f"Running {mode} quality check",
+            show_percent=True,
+            show_pos=True,
+        ) as bar:
+            result = await engine.execute(inputs, {})
+            bar.update(len(target_files))
 
         # Display results
         _display_quality_results(result, output_format, output)
@@ -193,8 +199,14 @@ async def _run_file_split(
         config = SplitConfig(max_lines=max_lines, max_functions=max_functions)
 
         # Run split
-        click.echo(f"Splitting file: {file_path}")
-        result = await splitter.split_file(file_path, content, config)
+        with click.progressbar(
+            length=1,
+            label=f"Splitting file: {file_path}",
+            show_percent=False,
+            show_pos=False,
+        ) as bar:
+            result = await splitter.split_file(file_path, content, config)
+            bar.update(1)
 
         if result.success:
             click.echo(
