@@ -1,0 +1,1015 @@
+{
+  "$defs": {
+    "AILintingConfig": {
+      "description": "AI Linting Fixer specific configuration.",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "env": "AI_LINTING_ENABLED",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "default_provider": {
+          "default": "openai",
+          "env": "AI_LINTING_DEFAULT_PROVIDER",
+          "title": "Default Provider",
+          "type": "string"
+        },
+        "default_model": {
+          "default": "gpt-4",
+          "env": "AI_LINTING_DEFAULT_MODEL",
+          "title": "Default Model",
+          "type": "string"
+        },
+        "max_workers": {
+          "default": 4,
+          "env": "AI_LINTING_MAX_WORKERS",
+          "title": "Max Workers",
+          "type": "integer"
+        },
+        "max_fixes_per_run": {
+          "default": 10,
+          "env": "AI_LINTING_MAX_FIXES",
+          "title": "Max Fixes Per Run",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "default": 300,
+          "env": "AI_LINTING_TIMEOUT",
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "default_fix_types": {
+          "env": "AI_LINTING_DEFAULT_FIX_TYPES",
+          "items": {
+            "type": "string"
+          },
+          "title": "Default Fix Types",
+          "type": "array"
+        },
+        "confidence_threshold": {
+          "default": 0.7,
+          "env": "AI_LINTING_CONFIDENCE_THRESHOLD",
+          "title": "Confidence Threshold",
+          "type": "number"
+        },
+        "syntax_validation": {
+          "default": true,
+          "env": "AI_LINTING_SYNTAX_VALIDATION",
+          "title": "Syntax Validation",
+          "type": "boolean"
+        },
+        "create_backups": {
+          "default": true,
+          "env": "AI_LINTING_CREATE_BACKUPS",
+          "title": "Create Backups",
+          "type": "boolean"
+        },
+        "error_handler": {
+          "$ref": "#/$defs/ErrorHandlerConfig"
+        },
+        "enable_metrics": {
+          "default": true,
+          "env": "AI_LINTING_ENABLE_METRICS",
+          "title": "Enable Metrics",
+          "type": "boolean"
+        },
+        "enable_database_logging": {
+          "default": true,
+          "env": "AI_LINTING_DATABASE_LOGGING",
+          "title": "Enable Database Logging",
+          "type": "boolean"
+        },
+        "enable_orchestration": {
+          "default": false,
+          "env": "AI_LINTING_ENABLE_ORCHESTRATION",
+          "title": "Enable Orchestration",
+          "type": "boolean"
+        }
+      },
+      "title": "AILintingConfig",
+      "type": "object"
+    },
+    "DatabaseConfig": {
+      "description": "Database configuration.",
+      "properties": {
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "DATABASE_URL",
+          "title": "Url"
+        },
+        "pool_size": {
+          "default": 10,
+          "env": "DATABASE_POOL_SIZE",
+          "title": "Pool Size",
+          "type": "integer"
+        },
+        "max_overflow": {
+          "default": 20,
+          "env": "DATABASE_MAX_OVERFLOW",
+          "title": "Max Overflow",
+          "type": "integer"
+        },
+        "pool_timeout": {
+          "default": 30,
+          "env": "DATABASE_POOL_TIMEOUT",
+          "title": "Pool Timeout",
+          "type": "integer"
+        },
+        "pool_recycle": {
+          "default": 3600,
+          "env": "DATABASE_POOL_RECYCLE",
+          "title": "Pool Recycle",
+          "type": "integer"
+        },
+        "echo": {
+          "default": false,
+          "env": "DATABASE_ECHO",
+          "title": "Echo",
+          "type": "boolean"
+        }
+      },
+      "title": "DatabaseConfig",
+      "type": "object"
+    },
+    "Environment": {
+      "description": "Environment types.",
+      "enum": [
+        "development",
+        "testing",
+        "staging",
+        "production"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "ErrorHandlerConfig": {
+      "description": "Error handling configuration for AI linting fixer and other components.",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "env": "ERROR_HANDLER_ENABLED",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "log_errors": {
+          "default": true,
+          "env": "ERROR_HANDLER_LOG_ERRORS",
+          "title": "Log Errors",
+          "type": "boolean"
+        },
+        "display_errors": {
+          "default": true,
+          "env": "ERROR_HANDLER_DISPLAY_ERRORS",
+          "title": "Display Errors",
+          "type": "boolean"
+        },
+        "export_errors": {
+          "default": false,
+          "env": "ERROR_HANDLER_EXPORT_ERRORS",
+          "title": "Export Errors",
+          "type": "boolean"
+        },
+        "auto_categorize": {
+          "default": true,
+          "env": "ERROR_HANDLER_AUTO_CATEGORIZE",
+          "title": "Auto Categorize",
+          "type": "boolean"
+        },
+        "severity_threshold": {
+          "default": "LOW",
+          "env": "ERROR_HANDLER_SEVERITY_THRESHOLD",
+          "title": "Severity Threshold",
+          "type": "string"
+        },
+        "enable_recovery": {
+          "default": true,
+          "env": "ERROR_HANDLER_ENABLE_RECOVERY",
+          "title": "Enable Recovery",
+          "type": "boolean"
+        },
+        "max_retry_attempts": {
+          "default": 3,
+          "env": "ERROR_HANDLER_MAX_RETRIES",
+          "title": "Max Retry Attempts",
+          "type": "integer"
+        },
+        "retry_delay_seconds": {
+          "default": 1.0,
+          "env": "ERROR_HANDLER_RETRY_DELAY",
+          "title": "Retry Delay Seconds",
+          "type": "number"
+        },
+        "exponential_backoff": {
+          "default": true,
+          "env": "ERROR_HANDLER_EXPONENTIAL_BACKOFF",
+          "title": "Exponential Backoff",
+          "type": "boolean"
+        },
+        "use_colors": {
+          "default": true,
+          "env": "ERROR_HANDLER_USE_COLORS",
+          "title": "Use Colors",
+          "type": "boolean"
+        },
+        "use_emojis": {
+          "default": true,
+          "env": "ERROR_HANDLER_USE_EMOJIS",
+          "title": "Use Emojis",
+          "type": "boolean"
+        },
+        "verbose_mode": {
+          "default": false,
+          "env": "ERROR_HANDLER_VERBOSE",
+          "title": "Verbose Mode",
+          "type": "boolean"
+        },
+        "export_format": {
+          "default": "json",
+          "env": "ERROR_HANDLER_EXPORT_FORMAT",
+          "title": "Export Format",
+          "type": "string"
+        },
+        "export_directory": {
+          "default": "./logs",
+          "env": "ERROR_HANDLER_EXPORT_DIR",
+          "title": "Export Directory",
+          "type": "string"
+        },
+        "auto_export": {
+          "default": false,
+          "env": "ERROR_HANDLER_AUTO_EXPORT",
+          "title": "Auto Export",
+          "type": "boolean"
+        },
+        "enable_callbacks": {
+          "default": true,
+          "env": "ERROR_HANDLER_ENABLE_CALLBACKS",
+          "title": "Enable Callbacks",
+          "type": "boolean"
+        },
+        "external_notifications": {
+          "default": false,
+          "env": "ERROR_HANDLER_EXTERNAL_NOTIFICATIONS",
+          "title": "External Notifications",
+          "type": "boolean"
+        },
+        "integrate_with_logging": {
+          "default": true,
+          "env": "ERROR_HANDLER_INTEGRATE_LOGGING",
+          "title": "Integrate With Logging",
+          "type": "boolean"
+        },
+        "integrate_with_metrics": {
+          "default": true,
+          "env": "ERROR_HANDLER_INTEGRATE_METRICS",
+          "title": "Integrate With Metrics",
+          "type": "boolean"
+        },
+        "integrate_with_workflows": {
+          "default": true,
+          "env": "ERROR_HANDLER_INTEGRATE_WORKFLOWS",
+          "title": "Integrate With Workflows",
+          "type": "boolean"
+        }
+      },
+      "title": "ErrorHandlerConfig",
+      "type": "object"
+    },
+    "GitHubConfig": {
+      "description": "GitHub integration configuration.",
+      "properties": {
+        "token": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "GITHUB_TOKEN",
+          "title": "Token"
+        },
+        "app_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "GITHUB_APP_ID",
+          "title": "App Id"
+        },
+        "private_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "GITHUB_PRIVATE_KEY",
+          "title": "Private Key"
+        },
+        "timeout": {
+          "default": 30,
+          "title": "Timeout",
+          "type": "integer"
+        },
+        "base_url": {
+          "default": "https://api.github.com",
+          "title": "Base Url",
+          "type": "string"
+        }
+      },
+      "title": "GitHubConfig",
+      "type": "object"
+    },
+    "LLMConfig": {
+      "description": "LLM provider configuration.",
+      "properties": {
+        "default_provider": {
+          "$ref": "#/$defs/LLMProvider",
+          "default": "openai",
+          "env": "DEFAULT_LLM_PROVIDER"
+        },
+        "fallback_order": {
+          "items": {
+            "$ref": "#/$defs/LLMProvider"
+          },
+          "title": "Fallback Order",
+          "type": "array"
+        },
+        "openai_api_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "OPENAI_API_KEY",
+          "title": "Openai Api Key"
+        },
+        "openai_base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "OPENAI_BASE_URL",
+          "title": "Openai Base Url"
+        },
+        "openai_default_model": {
+          "default": "gpt-4",
+          "env": "OPENAI_DEFAULT_MODEL",
+          "title": "Openai Default Model",
+          "type": "string"
+        },
+        "anthropic_api_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "ANTHROPIC_API_KEY",
+          "title": "Anthropic Api Key"
+        },
+        "anthropic_base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "ANTHROPIC_BASE_URL",
+          "title": "Anthropic Base Url"
+        },
+        "anthropic_default_model": {
+          "default": "claude-3-sonnet-20240229",
+          "env": "ANTHROPIC_DEFAULT_MODEL",
+          "title": "Anthropic Default Model",
+          "type": "string"
+        },
+        "mistral_api_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "MISTRAL_API_KEY",
+          "title": "Mistral Api Key"
+        },
+        "mistral_base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "MISTRAL_BASE_URL",
+          "title": "Mistral Base Url"
+        },
+        "mistral_default_model": {
+          "default": "mistral-large-latest",
+          "env": "MISTRAL_DEFAULT_MODEL",
+          "title": "Mistral Default Model",
+          "type": "string"
+        },
+        "groq_api_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "GROQ_API_KEY",
+          "title": "Groq Api Key"
+        },
+        "groq_base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "GROQ_BASE_URL",
+          "title": "Groq Base Url"
+        },
+        "groq_default_model": {
+          "default": "mixtral-8x7b-32768",
+          "env": "GROQ_DEFAULT_MODEL",
+          "title": "Groq Default Model",
+          "type": "string"
+        },
+        "perplexity_api_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "PERPLEXITY_API_KEY",
+          "title": "Perplexity Api Key"
+        },
+        "perplexity_base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "PERPLEXITY_BASE_URL",
+          "title": "Perplexity Base Url"
+        },
+        "perplexity_default_model": {
+          "default": "llama-3.1-sonar-large-128k-online",
+          "env": "PERPLEXITY_DEFAULT_MODEL",
+          "title": "Perplexity Default Model",
+          "type": "string"
+        },
+        "together_api_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "TOGETHER_API_KEY",
+          "title": "Together Api Key"
+        },
+        "together_base_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "TOGETHER_BASE_URL",
+          "title": "Together Base Url"
+        },
+        "together_default_model": {
+          "default": "meta-llama/Llama-2-70b-chat-hf",
+          "env": "TOGETHER_DEFAULT_MODEL",
+          "title": "Together Default Model",
+          "type": "string"
+        },
+        "max_tokens": {
+          "default": 4000,
+          "env": "LLM_MAX_TOKENS",
+          "title": "Max Tokens",
+          "type": "integer"
+        },
+        "temperature": {
+          "default": 0.7,
+          "env": "LLM_TEMPERATURE",
+          "title": "Temperature",
+          "type": "number"
+        },
+        "timeout": {
+          "default": 60,
+          "env": "LLM_TIMEOUT",
+          "title": "Timeout",
+          "type": "integer"
+        },
+        "max_retries": {
+          "default": 3,
+          "env": "LLM_MAX_RETRIES",
+          "title": "Max Retries",
+          "type": "integer"
+        }
+      },
+      "title": "LLMConfig",
+      "type": "object"
+    },
+    "LLMProvider": {
+      "description": "Supported LLM providers.",
+      "enum": [
+        "openai",
+        "anthropic",
+        "mistral",
+        "groq",
+        "perplexity",
+        "together"
+      ],
+      "title": "LLMProvider",
+      "type": "string"
+    },
+    "LogLevel": {
+      "description": "Logging levels.",
+      "enum": [
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "CRITICAL"
+      ],
+      "title": "LogLevel",
+      "type": "string"
+    },
+    "MonitoringConfig": {
+      "description": "Monitoring and observability configuration.",
+      "properties": {
+        "enable_metrics": {
+          "default": true,
+          "env": "ENABLE_METRICS",
+          "title": "Enable Metrics",
+          "type": "boolean"
+        },
+        "metrics_port": {
+          "default": 8000,
+          "env": "METRICS_PORT",
+          "title": "Metrics Port",
+          "type": "integer"
+        },
+        "enable_tracing": {
+          "default": false,
+          "env": "ENABLE_TRACING",
+          "title": "Enable Tracing",
+          "type": "boolean"
+        },
+        "jaeger_endpoint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "JAEGER_ENDPOINT",
+          "title": "Jaeger Endpoint"
+        },
+        "sentry_dsn": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "SENTRY_DSN",
+          "title": "Sentry Dsn"
+        },
+        "log_level": {
+          "$ref": "#/$defs/LogLevel",
+          "default": "INFO",
+          "env": "LOG_LEVEL"
+        },
+        "structured_logging": {
+          "default": true,
+          "env": "STRUCTURED_LOGGING",
+          "title": "Structured Logging",
+          "type": "boolean"
+        }
+      },
+      "title": "MonitoringConfig",
+      "type": "object"
+    },
+    "RedisConfig": {
+      "description": "Redis configuration.",
+      "properties": {
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "REDIS_URL",
+          "title": "Url"
+        },
+        "host": {
+          "default": "localhost",
+          "env": "REDIS_HOST",
+          "title": "Host",
+          "type": "string"
+        },
+        "port": {
+          "default": 6379,
+          "env": "REDIS_PORT",
+          "title": "Port",
+          "type": "integer"
+        },
+        "db": {
+          "default": 0,
+          "env": "REDIS_DB",
+          "title": "Db",
+          "type": "integer"
+        },
+        "password": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "REDIS_PASSWORD",
+          "title": "Password"
+        },
+        "ssl": {
+          "default": false,
+          "env": "REDIS_SSL",
+          "title": "Ssl",
+          "type": "boolean"
+        },
+        "timeout": {
+          "default": 5,
+          "env": "REDIS_TIMEOUT",
+          "title": "Timeout",
+          "type": "integer"
+        },
+        "max_connections": {
+          "default": 50,
+          "env": "REDIS_MAX_CONNECTIONS",
+          "title": "Max Connections",
+          "type": "integer"
+        }
+      },
+      "title": "RedisConfig",
+      "type": "object"
+    },
+    "ReportBuilderConfig": {
+      "description": "Configuration for report builder summary and platform defaults.",
+      "properties": {
+        "thorough_min_volume": {
+          "default": 800,
+          "env": "REPORT_BUILDER_THOROUGH_MIN_VOLUME",
+          "title": "Thorough Min Volume",
+          "type": "integer"
+        },
+        "standard_min_volume": {
+          "default": 400,
+          "env": "REPORT_BUILDER_STANDARD_MIN_VOLUME",
+          "title": "Standard Min Volume",
+          "type": "integer"
+        },
+        "summary_message_thorough": {
+          "default": "Thorough analysis completed",
+          "env": "REPORT_BUILDER_SUMMARY_THOROUGH",
+          "title": "Summary Message Thorough",
+          "type": "string"
+        },
+        "summary_message_standard": {
+          "default": "Standard analysis completed",
+          "env": "REPORT_BUILDER_SUMMARY_STANDARD",
+          "title": "Summary Message Standard",
+          "type": "string"
+        },
+        "summary_message_quick": {
+          "default": "Quick analysis completed",
+          "env": "REPORT_BUILDER_SUMMARY_QUICK",
+          "title": "Summary Message Quick",
+          "type": "string"
+        },
+        "unknown_platform_label": {
+          "default": "unknown",
+          "env": "REPORT_BUILDER_UNKNOWN_LABEL",
+          "title": "Unknown Platform Label",
+          "type": "string"
+        },
+        "python_file_extensions": {
+          "env": "REPORT_BUILDER_PY_EXTS",
+          "items": {
+            "type": "string"
+          },
+          "title": "Python File Extensions",
+          "type": "array"
+        },
+        "javascript_markers": {
+          "env": "REPORT_BUILDER_JS_MARKERS",
+          "items": {
+            "type": "string"
+          },
+          "title": "Javascript Markers",
+          "type": "array"
+        },
+        "python_platform_name": {
+          "default": "Python",
+          "env": "REPORT_BUILDER_PY_NAME",
+          "title": "Python Platform Name",
+          "type": "string"
+        },
+        "javascript_platform_name": {
+          "default": "JavaScript",
+          "env": "REPORT_BUILDER_JS_NAME",
+          "title": "Javascript Platform Name",
+          "type": "string"
+        }
+      },
+      "title": "ReportBuilderConfig",
+      "type": "object"
+    },
+    "SecurityConfig": {
+      "description": "Security configuration.",
+      "properties": {
+        "secret_key": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "SECRET_KEY",
+          "title": "Secret Key"
+        },
+        "jwt_secret": {
+          "anyOf": [
+            {
+              "format": "password",
+              "type": "string",
+              "writeOnly": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "env": "JWT_SECRET",
+          "title": "Jwt Secret"
+        },
+        "jwt_expiry": {
+          "default": 3600,
+          "env": "JWT_EXPIRY",
+          "title": "Jwt Expiry",
+          "type": "integer"
+        },
+        "rate_limit_per_minute": {
+          "default": 60,
+          "env": "RATE_LIMIT_PER_MINUTE",
+          "title": "Rate Limit Per Minute",
+          "type": "integer"
+        },
+        "enable_cors": {
+          "default": true,
+          "env": "ENABLE_CORS",
+          "title": "Enable Cors",
+          "type": "boolean"
+        },
+        "allowed_origins": {
+          "env": "ALLOWED_ORIGINS",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Origins",
+          "type": "array"
+        },
+        "enable_csrf_protection": {
+          "default": true,
+          "env": "ENABLE_CSRF_PROTECTION",
+          "title": "Enable Csrf Protection",
+          "type": "boolean"
+        }
+      },
+      "title": "SecurityConfig",
+      "type": "object"
+    },
+    "VolumeDefaults": {
+      "description": "Default volume levels for different run contexts.",
+      "properties": {
+        "pr": {
+          "default": 500,
+          "env": "AUTOPR_VOLUME_PR",
+          "title": "Pr",
+          "type": "integer"
+        },
+        "dev": {
+          "default": 500,
+          "env": "AUTOPR_VOLUME_DEV",
+          "title": "Dev",
+          "type": "integer"
+        },
+        "checkin": {
+          "default": 500,
+          "env": "AUTOPR_VOLUME_CHECKIN",
+          "title": "Checkin",
+          "type": "integer"
+        }
+      },
+      "title": "VolumeDefaults",
+      "type": "object"
+    },
+    "WorkflowConfig": {
+      "description": "Workflow execution configuration.",
+      "properties": {
+        "max_concurrent": {
+          "default": 10,
+          "env": "MAX_CONCURRENT_WORKFLOWS",
+          "title": "Max Concurrent",
+          "type": "integer"
+        },
+        "timeout": {
+          "default": 300,
+          "env": "WORKFLOW_TIMEOUT",
+          "title": "Timeout",
+          "type": "integer"
+        },
+        "retry_attempts": {
+          "default": 3,
+          "env": "WORKFLOW_RETRY_ATTEMPTS",
+          "title": "Retry Attempts",
+          "type": "integer"
+        },
+        "retry_delay": {
+          "default": 5,
+          "env": "WORKFLOW_RETRY_DELAY",
+          "title": "Retry Delay",
+          "type": "integer"
+        },
+        "enable_parallel_execution": {
+          "default": true,
+          "env": "ENABLE_PARALLEL_EXECUTION",
+          "title": "Enable Parallel Execution",
+          "type": "boolean"
+        }
+      },
+      "title": "WorkflowConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Main settings class for AutoPR Engine.\n\nThis class combines all configuration sections and provides\nenvironment-specific loading, validation, and management.",
+  "properties": {
+    "environment": {
+      "$ref": "#/$defs/Environment",
+      "default": "development",
+      "env": "AUTOPR_ENVIRONMENT"
+    },
+    "debug": {
+      "default": false,
+      "env": "DEBUG",
+      "title": "Debug",
+      "type": "boolean"
+    },
+    "version": {
+      "default": "1.0.0",
+      "env": "AUTOPR_VERSION",
+      "title": "Version",
+      "type": "string"
+    },
+    "github": {
+      "$ref": "#/$defs/GitHubConfig"
+    },
+    "llm": {
+      "$ref": "#/$defs/LLMConfig"
+    },
+    "database": {
+      "$ref": "#/$defs/DatabaseConfig"
+    },
+    "redis": {
+      "$ref": "#/$defs/RedisConfig"
+    },
+    "workflow": {
+      "$ref": "#/$defs/WorkflowConfig"
+    },
+    "monitoring": {
+      "$ref": "#/$defs/MonitoringConfig"
+    },
+    "security": {
+      "$ref": "#/$defs/SecurityConfig"
+    },
+    "ai_linting": {
+      "$ref": "#/$defs/AILintingConfig"
+    },
+    "volume_defaults": {
+      "$ref": "#/$defs/VolumeDefaults"
+    },
+    "report_builder": {
+      "$ref": "#/$defs/ReportBuilderConfig"
+    },
+    "custom": {
+      "additionalProperties": true,
+      "title": "Custom",
+      "type": "object"
+    }
+  },
+  "title": "AutoPRSettings",
+  "type": "object"
+}
