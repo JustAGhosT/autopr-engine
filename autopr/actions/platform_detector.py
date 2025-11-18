@@ -175,36 +175,86 @@ class PlatformDetector:
     ) -> PlatformDetectorOutputs:
         """Detect which platform was used for the project"""
 
-        # Scan workspace for files and content
-        file_structure: dict[str, Any] = self._scan_workspace(inputs.workspace_path)
-        package_json: dict[str, Any] | None = self._parse_package_json(
-            inputs.package_json_content, inputs.workspace_path
-        )
-
-        scores: dict[str, float] = {}
-        detailed_analysis: dict[str, dict[str, list[str]]] = {}
-
-        for platform, signatures in self.platform_signatures.items():
-            score, analysis = self._calculate_platform_score(
-                inputs, signatures, file_structure, package_json
+        try:
+            # Scan workspace for files and content with error handling
+            file_structure: dict[str, Any] = self._scan_workspace(inputs.workspace_path)
+            package_json: dict[str, Any] | None = self._parse_package_json(
+                inputs.package_json_content, inputs.workspace_path
             )
-            scores[platform] = score
-            detailed_analysis[platform] = analysis
 
-        # Find highest scoring platform
-        best_platform = max(scores, key=lambda k: scores[k])
-        confidence = scores[best_platform]
+            scores: dict[str, float] = {}
+            detailed_analysis: dict[str, dict[str, list[str]]] = {}
 
-        if confidence < 0.3:
+            # Calculate scores for each platform with error handling
+            for platform, signatures in self.platform_signatures.items():
+                try:
+                    score, analysis = self._calculate_platform_score(
+                        inputs, signatures, file_structure, package_json
+                    )
+                    scores[platform] = score
+                    detailed_analysis[platform] = analysis
+                except Exception as e:
+                    # Log error but continue with other platforms
+                    import logging
+                    logging.warning(f"Error calculating score for platform {platform}: {e}")
+                    scores[platform] = 0.0
+                    detailed_analysis[platform] = {}
+
+            # Find highest scoring platform with validation
+            if not scores:
+                best_platform = "unknown"
+                confidence = 0.0
+            else:
+                best_platform = max(scores, key=lambda k: scores[k])
+                confidence = scores[best_platform]
+                
+                # Normalize confidence score to 0-1 range
+                confidence = min(max(confidence, 0.0), 1.0)
+
+            # Set to unknown if confidence is too low
+            if confidence < 0.3:
+                best_platform = "unknown"
+
+            # Generate platform-specific recommendations with error handling
+            try:
+                config = self._get_platform_config(best_platform, file_structure, package_json)
+            except Exception as e:
+                import logging
+                logging.warning(f"Error getting platform config: {e}")
+                config = {}
+                
+            try:
+                workflow = self._get_recommended_workflow(best_platform, confidence)
+            except Exception as e:
+                import logging
+                logging.warning(f"Error getting recommended workflow: {e}")
+                workflow = "default"
+                
+            try:
+                migrations = self._get_migration_suggestions(best_platform, scores)
+            except Exception as e:
+                import logging
+                logging.warning(f"Error getting migration suggestions: {e}")
+                migrations = []
+                
+            try:
+                enhancements = self._get_enhancement_opportunities(
+                    best_platform, detailed_analysis.get(best_platform, {})
+                )
+            except Exception as e:
+                import logging
+                logging.warning(f"Error getting enhancement opportunities: {e}")
+                enhancements = []
+        except Exception as e:
+            # Catch-all error handler for entire detection process
+            import logging
+            logging.exception(f"Critical error in platform detection: {e}")
             best_platform = "unknown"
-
-        # Generate platform-specific recommendations
-        config = self._get_platform_config(best_platform, file_structure, package_json)
-        workflow = self._get_recommended_workflow(best_platform, confidence)
-        migrations = self._get_migration_suggestions(best_platform, scores)
-        enhancements = self._get_enhancement_opportunities(
-            best_platform, detailed_analysis.get(best_platform, {})
-        )
+            confidence = 0.0
+            config = {}
+            workflow = "default"
+            migrations = []
+            enhancements = []
 
         return PlatformDetectorOutputs(
             detected_platform=best_platform,
@@ -296,24 +346,35 @@ class PlatformDetector:
             "advanced_matches": [],
         }
 
-        # Check for signature files (high weight)
+        # Check for signature files (high weight, but cap multiple matches)
+        file_match_count = 0
         for file_name in signatures.get("files", []):
             if any(file_name in f for f in file_structure.get("files", [])):
-                score += 0.4
+                file_match_count += 1
                 analysis["file_matches"].append(file_name)
+        # Score based on match count: first match = 0.3, additional matches = 0.1 each, max 0.6
+        if file_match_count > 0:
+            score += min(0.3 + (file_match_count - 1) * 0.1, 0.6)
 
-        # Check folder patterns
+        # Check folder patterns (lower weight)
+        folder_match_count = 0
         for folder_pattern in signatures.get("folder_patterns", []):
             if any(folder_pattern in f for f in file_structure.get("folders", [])):
-                score += 0.2
+                folder_match_count += 1
                 analysis["file_matches"].append(f"folder: {folder_pattern}")
+        if folder_match_count > 0:
+            score += min(folder_match_count * 0.05, 0.15)
 
-        # Check commit messages (medium weight)
+        # Check commit messages (medium weight, but cap to avoid over-counting)
+        commit_match_count = 0
         for commit in inputs.commit_messages:
             for pattern in signatures.get("commit_patterns", []):
                 if pattern.lower() in commit.lower():
-                    score += 0.15
+                    commit_match_count += 1
                     analysis["commit_matches"].append(pattern)
+                    break  # Only count once per commit
+        if commit_match_count > 0:
+            score += min(commit_match_count * 0.05, 0.2)
 
         # Check package.json (medium weight)
         if package_json:
@@ -323,40 +384,55 @@ class PlatformDetector:
                 **package_json.get("devDependencies", {}),
             }
 
+            dep_match_count = 0
             for dep in signatures.get("dependencies", []):
                 if dep in all_deps:
-                    score += 0.25
+                    dep_match_count += 1
                     analysis["dependency_matches"].append(dep)
+            if dep_match_count > 0:
+                score += min(0.15 + (dep_match_count - 1) * 0.05, 0.3)
 
             # Check scripts
             scripts = package_json.get("scripts", {})
+            script_match_count = 0
             for script in signatures.get("package_scripts", []):
                 if script in scripts or any(script in s for s in scripts.values()):
-                    score += 0.15
+                    script_match_count += 1
                     analysis["script_matches"].append(script)
+            if script_match_count > 0:
+                score += min(script_match_count * 0.05, 0.15)
 
-        # Check file contents (medium weight)
+        # Check file contents (low weight to avoid false positives)
+        content_match_count = 0
         for file_path, content in file_structure.get("file_contents", {}).items():
             for pattern in signatures.get("content_patterns", []):
                 if pattern.lower() in content.lower():
-                    score += 0.1
+                    content_match_count += 1
                     analysis["content_matches"].append(f"{pattern} in {file_path}")
+                    break  # Only count once per file
+        if content_match_count > 0:
+            score += min(content_match_count * 0.03, 0.1)
 
         # Advanced pattern detection
-        platform = next(
-            p for p, s in self.platform_signatures.items() if s == signatures
-        )
-        if platform in self.advanced_patterns:
-            advanced_score = self._check_advanced_patterns(
-                platform, file_structure, package_json
+        try:
+            platform = next(
+                p for p, s in self.platform_signatures.items() if s == signatures
             )
-            score += advanced_score
-            if advanced_score > 0:
-                analysis["advanced_matches"].append(
-                    f"Advanced patterns: +{advanced_score:.2f}"
+            if platform in self.advanced_patterns:
+                advanced_score = self._check_advanced_patterns(
+                    platform, file_structure, package_json
                 )
+                score += advanced_score
+                if advanced_score > 0:
+                    analysis["advanced_matches"].append(
+                        f"Advanced patterns: +{advanced_score:.2f}"
+                    )
+        except StopIteration:
+            # Platform not found in signatures, skip advanced patterns
+            pass
 
-        return min(score, 1.0), analysis
+        # Ensure score is between 0 and 1
+        return min(max(score, 0.0), 1.0), analysis
 
     def _check_advanced_patterns(
         self,
