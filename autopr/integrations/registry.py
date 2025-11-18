@@ -41,7 +41,7 @@ class IntegrationRegistry:
         self._integrations[integration_name] = integration_class
         logger.info("Registered integration: %s", integration_name)
 
-    def unregister_integration(self, integration_name: str) -> None:
+    async def unregister_integration(self, integration_name: str) -> None:
         """
         Unregister an integration.
 
@@ -52,12 +52,11 @@ class IntegrationRegistry:
             del self._integrations[integration_name]
 
         if integration_name in self._instances:
-            # Clean up instance
-            _ = self._instances[integration_name]
+            # Clean up instance with proper async cleanup
+            instance = self._instances[integration_name]
             try:
-                # Note: This is synchronous, but cleanup might be async
-                # In a real implementation, you'd want to handle this properly
-                pass
+                await instance.cleanup()
+                logger.debug("Successfully cleaned up integration '%s'", integration_name)
             except Exception:
                 logger.exception("Error cleaning up integration '%s'", integration_name)
 

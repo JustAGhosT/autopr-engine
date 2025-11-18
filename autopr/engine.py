@@ -14,8 +14,10 @@ from autopr.actions.registry import ActionRegistry
 from autopr.ai.core.providers.manager import LLMProviderManager
 from autopr.config import AutoPRConfig
 from autopr.exceptions import AutoPRException, ConfigurationError
+from autopr.health import HealthChecker
 from autopr.integrations.registry import IntegrationRegistry
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.utils.error_handlers import handle_operation_error
 from autopr.workflows.engine import WorkflowEngine
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
@@ -60,18 +62,23 @@ class AutoPREngine:
     - AI/LLM provider coordination
     """
 
-    def __init__(self, config: AutoPRConfig | None = None):
+    def __init__(self, config: AutoPRConfig | None = None, log_handler: logging.Handler | None = None):
         """
         Initialize the AutoPR Engine.
 
         Args:
             config: Configuration object. If None, loads default config.
+            log_handler: Optional logging handler to add to the root logger.
         """
         self.config = config or AutoPRConfig()
         self.workflow_engine = WorkflowEngine(self.config)
         self.action_registry: ActionRegistry = ActionRegistry()
         self.integration_registry = IntegrationRegistry()
         self.llm_manager = LLMProviderManager(self.config)
+        self.health_checker = HealthChecker(self)
+
+        if log_handler:
+            logging.getLogger().addHandler(log_handler)
 
         logger.info("AutoPR Engine initialized successfully")
 
@@ -148,3 +155,20 @@ class AutoPREngine:
             "config": self.config.to_dict(),
         }
 
+    def get_version(self) -> str:
+        """Get the AutoPR Engine version."""
+        from autopr import __version__
+
+        return __version__
+    
+    async def health_check(self) -> dict[str, Any]:
+        """
+        Perform comprehensive health check on all components.
+        
+        Returns:
+            Health check results including overall status and component details
+        """
+        try:
+            return await self.health_checker.check_all()
+        except Exception as e:
+            handle_operation_error("Health check", e, AutoPRException)

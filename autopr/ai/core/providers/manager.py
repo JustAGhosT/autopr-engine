@@ -12,6 +12,7 @@ from typing import Any
 from autopr.ai.core.base import (CompletionRequest, LLMMessage, LLMProvider,
                                  LLMResponse)
 from autopr.config import AutoPRConfig
+from autopr.utils.resilience import CircuitBreaker, CircuitBreakerOpenError
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class LLMProviderManager:
         self.config = config
         self.providers: dict[str, LLMProvider] = {}
         self.default_provider: str | None = None
+        self.circuit_breakers: dict[str, CircuitBreaker] = {}
         self._initialize_providers()
 
     def _initialize_providers(self) -> None:
@@ -84,7 +86,17 @@ class LLMProviderManager:
             provider: Provider instance to register
         """
         self.providers[name] = provider
-        logger.info("Registered provider: %s", name)
+        
+        # Create circuit breaker for this provider
+        self.circuit_breakers[name] = CircuitBreaker(
+            name=f"llm_provider_{name}",
+            failure_threshold=5,
+            success_threshold=2,
+            timeout=60.0,
+            half_open_timeout=30.0,
+        )
+        
+        logger.info("Registered provider: %s with circuit breaker protection", name)
 
         # Set as default if this is the first provider
         if self.default_provider is None:
@@ -133,19 +145,54 @@ class LLMProviderManager:
             raise ValueError(msg)
 
         provider_instance = self.providers[target_provider]
+        circuit_breaker = self.circuit_breakers[target_provider]
+
+        # Check if circuit breaker allows the request
+        if not circuit_breaker.is_available():
+            # Try to find an alternative provider
+            alternative_provider = self._find_alternative_provider(target_provider)
+            if alternative_provider:
+                logger.warning(
+                    "Provider '%s' circuit breaker is OPEN, using alternative provider '%s'",
+                    target_provider, alternative_provider
+                )
+                target_provider = alternative_provider
+                provider_instance = self.providers[target_provider]
+                circuit_breaker = self.circuit_breakers[target_provider]
+            else:
+                # No alternative available, let the circuit breaker handle it
+                logger.error(
+                    "Provider '%s' circuit breaker is OPEN and no alternative providers available",
+                    target_provider
+                )
 
         # Initialize provider if not already initialized
         if not getattr(provider_instance, "_is_initialized", False):
             await provider_instance.initialize(provider_instance.config)
 
-        # Call the provider's generate_completion method
-        return await provider_instance.generate_completion(
-            messages=request.messages,
-            model=request.model,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
-            **kwargs,
-        )
+        # Call the provider's generate_completion method with circuit breaker protection
+        async def _call_provider():
+            return await provider_instance.generate_completion(
+                messages=request.messages,
+                model=request.model,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+                **kwargs,
+            )
+        
+        try:
+            return await circuit_breaker.call(_call_provider)
+        except CircuitBreakerOpenError:
+            # Circuit breaker is open, try to find alternative
+            alternative_provider = self._find_alternative_provider(target_provider)
+            if alternative_provider:
+                logger.warning(
+                    "Falling back to alternative provider '%s' due to circuit breaker",
+                    alternative_provider
+                )
+                # Recursive call with alternative provider
+                return await self.complete_async(request, provider=alternative_provider, **kwargs)
+            raise
 
     async def complete(
         self,
@@ -183,3 +230,43 @@ class LLMProviderManager:
         else:
             error_msg = f"Provider '{provider_name}' not found"
             raise ValueError(error_msg)
+    
+    def _find_alternative_provider(self, excluded_provider: str) -> str | None:
+        """
+        Find an alternative provider that is available (circuit breaker not open).
+        
+        Args:
+            excluded_provider: Provider to exclude from search
+            
+        Returns:
+            Name of alternative provider, or None if none available
+        """
+        for provider_name, circuit_breaker in self.circuit_breakers.items():
+            if provider_name != excluded_provider and circuit_breaker.is_available():
+                return provider_name
+        return None
+    
+    def get_circuit_breaker_status(self) -> dict[str, Any]:
+        """
+        Get status of all circuit breakers.
+        
+        Returns:
+            Dictionary mapping provider names to their circuit breaker stats
+        """
+        return {
+            name: breaker.get_stats()
+            for name, breaker in self.circuit_breakers.items()
+        }
+    
+    async def reset_circuit_breaker(self, provider_name: str) -> None:
+        """
+        Reset circuit breaker for a specific provider.
+        
+        Args:
+            provider_name: Name of the provider
+        """
+        if provider_name in self.circuit_breakers:
+            await self.circuit_breakers[provider_name].reset()
+            logger.info("Reset circuit breaker for provider '%s'", provider_name)
+        else:
+            logger.warning("Provider '%s' not found, cannot reset circuit breaker", provider_name)

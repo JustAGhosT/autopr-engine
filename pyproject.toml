@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.13.0"
+python = "^3.12.0"
 pydantic = "^2.9.0"
 pydantic-settings = "^2.0.0"
 aiohttp = "^3.10.0"
@@ -106,15 +106,6 @@ autopr-migration = "autopr.migration:main"
 "mistral" = "autopr.ai.providers.mistral:MistralProvider"
 "groq" = "autopr.ai.providers.groq:GroqProvider"
 
-
-httpx = "^0.27.0"
-websockets = "^13.1.0"
-python-dateutil = "^2.8.0"
-pytz = "^2024.1"
-python-dotenv = "^1.0.1"
-tomli = "^2.0.1"
-loguru = "^0.7.2"
-
 [tool.poetry.group.dev.dependencies]
 pytest = "8.2.0"
 pytest-asyncio = ">=0.24.0"
@@ -160,6 +151,11 @@ pybreaker = "^1.0.0"
 tenacity = "^8.2.0"
 limits = "^3.6.0"
 
+[tool.poetry.group.sidecar.dependencies]
+fastapi = "^0.103.0"
+uvicorn = {extras = ["standard"], version = "^0.23.0"}
+websockets = "^13.1.0"
+
 
 
 
@@ -188,47 +184,6 @@ filterwarnings = [
     "error",
     # Default to ignoring other warnings - volume settings will adjust this
     "ignore"
-]
-
-# Volume-based warning control
-# These settings map volume levels to warning filters
-[tool.pytest.volume_warnings]
-# Silent (0): Only critical issues
-"0" = [
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::ImportWarning",
-    "ignore::BytesWarning",
-    "ignore::ResourceWarning"
-]
-# Quiet (1-199): Show important warnings
-"100" = [
-    "default::DeprecationWarning",
-    "default::ResourceWarning",
-    "ignore::UserWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::ImportWarning",
-    "ignore::BytesWarning"
-]
-# Moderate (200-399): Show most warnings
-"300" = [
-    "default::Warning"  # Show all warnings by default
-]
-# Balanced (400-599): Show all warnings and fail on critical ones
-"500" = [
-    "error::DeprecationWarning",
-    "error::ResourceWarning",
-    "default::Warning"
-]
-# Thorough (600-799): Fail on most warnings
-"700" = [
-    "error::Warning"  # Fail on all warnings
-]
-# Maximum (800-1000): Strictest settings
-"1000" = [
-    "error::Warning",
-    "error::_pytest.warning_types.PytestWarning"
 ]
 
 [tool.coverage.run]
