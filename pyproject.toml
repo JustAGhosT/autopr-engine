@@ -190,47 +190,6 @@ filterwarnings = [
     "ignore"
 ]
 
-# Volume-based warning control
-# These settings map volume levels to warning filters
-[tool.pytest.volume_warnings]
-# Silent (0): Only critical issues
-"0" = [
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::ImportWarning",
-    "ignore::BytesWarning",
-    "ignore::ResourceWarning"
-]
-# Quiet (1-199): Show important warnings
-"100" = [
-    "default::DeprecationWarning",
-    "default::ResourceWarning",
-    "ignore::UserWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::ImportWarning",
-    "ignore::BytesWarning"
-]
-# Moderate (200-399): Show most warnings
-"300" = [
-    "default::Warning"  # Show all warnings by default
-]
-# Balanced (400-599): Show all warnings and fail on critical ones
-"500" = [
-    "error::DeprecationWarning",
-    "error::ResourceWarning",
-    "default::Warning"
-]
-# Thorough (600-799): Fail on most warnings
-"700" = [
-    "error::Warning"  # Fail on all warnings
-]
-# Maximum (800-1000): Strictest settings
-"1000" = [
-    "error::Warning",
-    "error::_pytest.warning_types.PytestWarning"
-]
-
 [tool.coverage.run]
 source = ["autopr"]
 omit = ["*/tests/*", "*/migrations/*", "*/venv/*", "*/__pycache__/*"]
