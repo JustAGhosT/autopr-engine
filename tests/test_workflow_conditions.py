@@ -3,7 +3,7 @@ Tests for workflow condition evaluation improvements.
 """
 import unittest
 import asyncio
-from autopr.workflows.base import SequentialWorkflow
+from autopr.workflows.base import YAMLWorkflow
 
 
 class TestWorkflowConditions(unittest.TestCase):
@@ -11,9 +11,14 @@ class TestWorkflowConditions(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.workflow = SequentialWorkflow(
+        yaml_config = {
+            "description": "Test workflow for conditions",
+            "version": "1.0.0",
+            "steps": []
+        }
+        self.workflow = YAMLWorkflow(
             name="test_workflow",
-            description="Test workflow for conditions"
+            yaml_config=yaml_config
         )
 
     def test_boolean_condition_true(self):
@@ -217,9 +222,14 @@ class TestParallelExecution(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.workflow = SequentialWorkflow(
+        yaml_config = {
+            "description": "Test workflow for parallel execution",
+            "version": "1.0.0",
+            "steps": []
+        }
+        self.workflow = YAMLWorkflow(
             name="test_workflow",
-            description="Test workflow for parallel execution"
+            yaml_config=yaml_config
         )
 
     def test_parallel_steps_execute(self):
