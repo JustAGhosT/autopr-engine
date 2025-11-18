@@ -123,8 +123,7 @@ class TestNewPlatforms(unittest.TestCase):
     def test_all_new_platforms_have_required_fields(self):
         """Test that all new platforms have required fields."""
         new_platforms = [
-            "base44", "windsurf", "continue", "aider", "amazon_q",
-            "google_ai_studio", "huggingface_code", "codegpt", "phind", "supermaven"
+            "riff_new", "same_new", "bolt_new", "warp", "claude_code", "cto_net", "factory_ai"
         ]
         
         for platform_id in new_platforms:
@@ -148,7 +147,8 @@ class TestNewPlatforms(unittest.TestCase):
                     detection.get("files") or 
                     detection.get("dependencies") or
                     detection.get("folder_patterns") or
-                    detection.get("commit_patterns")
+                    detection.get("commit_patterns") or
+                    detection.get("content_patterns")
                 )
                 self.assertTrue(has_pattern, 
                               f"Platform {platform_id} has no detection patterns")
@@ -157,7 +157,8 @@ class TestNewPlatforms(unittest.TestCase):
         """Test that new platforms have reasonable priority values."""
         new_platforms = [
             "base44", "windsurf", "continue", "aider", "amazon_q",
-            "google_ai_studio", "huggingface_code", "codegpt", "phind", "supermaven"
+            "google_ai_studio", "huggingface_code", "codegpt", "phind", "supermaven",
+            "riff_new", "same_new", "bolt_new", "warp", "claude_code", "cto_net", "factory_ai"
         ]
         
         for platform_id in new_platforms:
@@ -186,6 +187,25 @@ class TestNewPlatforms(unittest.TestCase):
             with self.subTest(platform=platform_id):
                 self.assertIn(platform_id, detector.platform_signatures,
                             f"Platform {platform_id} not in detector signatures")
+
+    def test_new_platforms_have_integration_fields(self):
+        """Test that the new platforms have the required integration fields."""
+        new_platforms = [
+            "riff_new", "same_new", "bolt_new", "warp", "claude_code", "cto_net", "factory_ai"
+        ]
+
+        for platform_id in new_platforms:
+            with self.subTest(platform=platform_id):
+                self.assertIn(platform_id, self.ai_platforms,
+                            f"Platform {platform_id} not found")
+
+                platform = self.ai_platforms[platform_id]
+
+                self.assertIn("integration_type", platform)
+                self.assertIn("integration_instructions", platform)
+                self.assertIn("ui_config", platform)
+
+                self.assertIn(platform["integration_type"], ["api", "chromium", "console"])
 
 
 if __name__ == "__main__":

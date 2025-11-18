@@ -61,6 +61,21 @@ class PlatformSource(StrEnum):
     REPLIT = "https://replit.com"
 
 
+class IntegrationType(StrEnum):
+    """Type of integration for the platform."""
+
+    API = "api"
+    CHROMIUM = "chromium"
+    CONSOLE = "console"
+
+
+class UIConfig(TypedDict, total=False):
+    """UI-specific configuration for the platform."""
+
+    icon: str
+    theme_color: str
+
+
 class PlatformStatus(StrEnum):
     """Status of the platform support."""
 
@@ -159,6 +174,9 @@ class PlatformConfig:
     supported_languages: list[str] = field(default_factory=list)
     supported_frameworks: list[str] = field(default_factory=list)
     integrations: list[str] = field(default_factory=list)
+    integration_type: IntegrationType = IntegrationType.API
+    integration_instructions: str = ""
+    ui_config: UIConfig = field(default_factory=dict)
 
     # Documentation
     documentation_url: str = ""
@@ -280,6 +298,11 @@ class PlatformConfig:
             supported_languages=data.get("supported_languages", []),
             supported_frameworks=data.get("supported_frameworks", []),
             integrations=data.get("integrations", []),
+            integration_type=IntegrationType(
+                data.get("integration_type", "api")
+            ),
+            integration_instructions=data.get("integration_instructions", ""),
+            ui_config=data.get("ui_config", {}),
             # Documentation
             documentation_url=data.get("documentation_url", ""),
             setup_guide=data.get("setup_guide", ""),
@@ -293,7 +316,17 @@ class PlatformConfig:
             dependencies=data.get("dependencies", {}),
             compatibility=data.get("compatibility", {}),
             # Nested configurations
-            detection=data.get("detection", {}),
+            detection=data.get(
+                "detection",
+                {
+                    "files": [],
+                    "dependencies": [],
+                    "folder_patterns": [],
+                    "commit_patterns": [],
+                    "content_patterns": [],
+                    "package_scripts": [],
+                },
+            ),
             project_config=data.get("project_config", {}),
             metadata=data.get("metadata", {}),
         )
@@ -322,12 +355,15 @@ class PlatformConfig:
             "description": self.description,
             "is_active": self.is_active,
             "priority": self.priority,
+            "integration_type": self.integration_type.value,
+            "integration_instructions": self.integration_instructions,
+            "ui_config": self.ui_config,
         }
 
         # Add nested sections if they're not empty
         if self.detection:
             result["detection"] = self.detection
-        if self.project_config:
+        if self.project_config is not None:
             result["project_config"] = self.project_config
         if self.metadata:
             result["metadata"] = self.metadata

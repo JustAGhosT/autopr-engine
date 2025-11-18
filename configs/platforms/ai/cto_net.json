@@ -1,0 +1,27 @@
+{
+  "id": "cto_net",
+  "name": "CTO.net",
+  "category": "ai_development",
+  "description": "AI-powered platform for CTOs and engineering leaders.",
+  "priority": 8,
+  "display_name": "CTO.net",
+  "version": "1.0.0",
+  "status": "active",
+  "is_active": true,
+  "type": "ai",
+  "tags": ["ai", "cto", "engineering-leadership"],
+  "integration_type": "chromium",
+  "integration_instructions": "1. Open CTO.net in the embedded browser.\n2. Log in to your account.\n3. Access the platform's features.",
+  "ui_config": {
+    "icon": "https://cto.net/favicon.ico"
+  },
+  "detection": {
+    "files": [],
+    "dependencies": [],
+    "folder_patterns": [],
+    "commit_patterns": [],
+    "content_patterns": ["cto.net"]
+  },
+  "project_config": {},
+  "metadata": {}
+}
