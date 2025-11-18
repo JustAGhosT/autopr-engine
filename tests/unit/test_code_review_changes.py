@@ -277,7 +277,8 @@ def test_workflow_metrics_initialization():
     assert "average_execution_time" in engine.metrics
 
 
-def test_update_metrics():
+@pytest.mark.asyncio
+async def test_update_metrics():
     """Test _update_metrics method."""
     from autopr.workflows.engine import WorkflowEngine
     from autopr.config import AutoPRConfig
@@ -286,7 +287,7 @@ def test_update_metrics():
     engine = WorkflowEngine(config)
     
     # Test updating metrics for success
-    engine._update_metrics("success", 1.5)
+    await engine._update_metrics("success", 1.5)
     assert engine.metrics["total_executions"] == 1
     assert engine.metrics["successful_executions"] == 1
     assert engine.metrics["failed_executions"] == 0
@@ -294,7 +295,7 @@ def test_update_metrics():
     assert engine.metrics["average_execution_time"] == 1.5
     
     # Test updating metrics for failure
-    engine._update_metrics("failed", 2.0)
+    await engine._update_metrics("failed", 2.0)
     assert engine.metrics["total_executions"] == 2
     assert engine.metrics["successful_executions"] == 1
     assert engine.metrics["failed_executions"] == 1
@@ -302,7 +303,8 @@ def test_update_metrics():
     assert engine.metrics["average_execution_time"] == 1.75
 
 
-def test_get_metrics():
+@pytest.mark.asyncio
+async def test_get_metrics():
     """Test get_metrics method."""
     from autopr.workflows.engine import WorkflowEngine
     from autopr.config import AutoPRConfig
@@ -311,9 +313,9 @@ def test_get_metrics():
     engine = WorkflowEngine(config)
     
     # Add some test data
-    engine._update_metrics("success", 1.0)
-    engine._update_metrics("success", 2.0)
-    engine._update_metrics("failed", 1.5)
+    await engine._update_metrics("success", 1.0)
+    await engine._update_metrics("success", 2.0)
+    await engine._update_metrics("failed", 1.5)
     
     metrics = engine.get_metrics()
     
