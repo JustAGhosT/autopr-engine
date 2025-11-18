@@ -18,24 +18,26 @@ RUN apt-get update && apt-get install -y \
 # Create and set working directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt requirements-dev.txt ./
+# Install poetry
+RUN pip install poetry
 
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install -r requirements.txt
+# Copy poetry files
+COPY poetry.lock pyproject.toml README.md ./
+
+# Install dependencies
+RUN poetry install --only main --no-interaction --no-ansi --no-root
 
 # Copy source code
 COPY . .
 
-# Build the package
-RUN pip install -e .
+# Install the project
+RUN poetry install --no-interaction --no-ansi
 
 # Run tests (optional, can be disabled for faster builds)
 ARG RUN_TESTS=true
 RUN if [ "$RUN_TESTS" = "true" ]; then \
-    pip install -r requirements-dev.txt && \
-    pytest tests/ -v --tb=short; \
+    poetry install --with dev --no-interaction --no-ansi && \
+    poetry run pytest tests/ -v --tb=short; \
     fi
 
 # Stage 2: Production environment
@@ -70,13 +72,6 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app /app
 
-# Copy additional configuration files
-COPY docker/entrypoint.sh /entrypoint.sh
-COPY docker/healthcheck.py /healthcheck.py
-
-# Make scripts executable
-RUN chmod +x /entrypoint.sh /healthcheck.py
-
 # Switch to non-root user
 USER autopr
 
@@ -85,7 +80,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python /healthcheck.py
+    CMD poetry run python -c "import requests; requests.get('http://localhost:8080/health')"
 
 # Default environment variables
 ENV AUTOPR_HOST=0.0.0.0 \
@@ -98,7 +93,7 @@ ENV AUTOPR_HOST=0.0.0.0 \
 VOLUME ["/app/data", "/app/logs", "/app/config"]
 
 # Entry point
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["poetry", "run"]
 
 # Default command
 CMD ["autopr-server"]

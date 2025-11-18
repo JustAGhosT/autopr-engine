@@ -27,7 +27,6 @@ def handle_operation_error(
     exception: Exception,
     error_class: type[AutoPRException] = AutoPRException,
     *,
-    log_level: str = "exception",
     reraise: bool = True,
 ) -> None:
     """
@@ -44,13 +43,7 @@ def handle_operation_error(
         error_class: The specified exception class with formatted message
     """
     error_msg = f"{operation_name} failed: {exception}"
-    
-    if log_level == "exception":
-        logger.exception(error_msg)
-    elif log_level == "error":
-        logger.error(error_msg)
-    elif log_level == "warning":
-        logger.warning(error_msg)
+    logger.exception(error_msg)
     
     if reraise:
         raise error_class(error_msg) from exception
@@ -155,8 +148,3 @@ class AutoPREngine:
             "config": self.config.to_dict(),
         }
 
-    def get_version(self) -> str:
-        """Get the AutoPR Engine version."""
-        from autopr import __version__
-
-        return __version__
