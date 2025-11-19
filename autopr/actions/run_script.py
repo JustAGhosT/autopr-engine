@@ -46,6 +46,17 @@ class RunScript(Action[Inputs, Outputs]):
             stderr=stderr.decode("utf-8"),
         )
 
+    async def execute(
+        self, inputs: Inputs, context: dict[str, object] | None = None
+    ) -> Outputs:
+        """Execute the action using the unified execute(...) contract.
+
+        The context parameter is currently unused but kept for compatibility
+        with the base Action interface.
+        """
+        _ = context
+        return await self.run(inputs)
+
 
 # This allows you to test the action manually by running `python -m autopr.actions.run_script`
 if __name__ == "__main__":
