@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoPR Dashboard</title>
+    <meta name="description" content="AutoPR Dashboard for AI-powered code quality monitoring and automation">
+    <title>AutoPR Dashboard - Code Quality Monitoring</title>
     <style>
         * {
             margin: 0;
@@ -134,6 +135,23 @@
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* TODO: WCAG - Focus indicators for accessibility */
+        .btn:focus,
+        button:focus,
+        input:focus,
+        select:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .btn:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
         }
 
         .btn-secondary {
@@ -282,8 +300,8 @@
         }
 
         .form-group input:focus, .form-group select:focus {
-            outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .modal-buttons {
@@ -292,7 +310,38 @@
             justify-content: flex-end;
         }
 
-        @media (max-width: 768px) {
+            /* Skip to main content link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 0 0 8px 0;
+            font-weight: 600;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Screen reader only text */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+            @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
@@ -312,147 +361,162 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <!-- TODO: WCAG - Skip navigation for keyboard users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div class="container" role="main" id="main-content">
+        <header class="header" role="banner">
             <h1>
-                <span class="logo">🤖</span>
+                <span class="logo" aria-hidden="true">🤖</span>
                 AutoPR Dashboard
             </h1>
             <p>AI-Powered Code Quality and Automation</p>
-        </div>
+        </header>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Checks</h3>
-                <div class="value" id="total-checks">0</div>
-                <div class="label">Quality checks performed</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Issues</h3>
-                <div class="value" id="total-issues">0</div>
-                <div class="label">Issues found</div>
-            </div>
-            <div class="stat-card">
-                <h3>Success Rate</h3>
-                <div class="value" id="success-rate">0%</div>
-                <div class="label">Successful checks</div>
-            </div>
-            <div class="stat-card">
-                <h3>Avg Processing Time</h3>
-                <div class="value" id="avg-time">0s</div>
-                <div class="label">Average check duration</div>
-            </div>
-        </div>
+        <!-- TODO: WCAG - Stats cards with proper ARIA labels -->
+        <section class="stats-grid" aria-label="Dashboard Statistics">
+            <article class="stat-card">
+                <h3 id="total-checks-label">Total Checks</h3>
+                <div class="value" id="total-checks" aria-labelledby="total-checks-label" role="status" aria-live="polite">0</div>
+                <div class="label" aria-hidden="true">Quality checks performed</div>
+            </article>
+            <article class="stat-card">
+                <h3 id="total-issues-label">Total Issues</h3>
+                <div class="value" id="total-issues" aria-labelledby="total-issues-label" role="status" aria-live="polite">0</div>
+                <div class="label" aria-hidden="true">Issues found</div>
+            </article>
+            <article class="stat-card">
+                <h3 id="success-rate-label">Success Rate</h3>
+                <div class="value" id="success-rate" aria-labelledby="success-rate-label" role="status" aria-live="polite">0%</div>
+                <div class="label" aria-hidden="true">Successful checks</div>
+            </article>
+            <article class="stat-card">
+                <h3 id="avg-time-label">Avg Processing Time</h3>
+                <div class="value" id="avg-time" aria-labelledby="avg-time-label" role="status" aria-live="polite">0s</div>
+                <div class="label" aria-hidden="true">Average check duration</div>
+            </article>
+        </section>
 
-        <div class="actions-section">
+        <!-- TODO: WCAG - Semantic HTML and ARIA labels for actions -->
+        <section class="actions-section" aria-label="Quick Actions">
             <h2>Quick Actions</h2>
-            <div class="action-buttons">
-                <button class="btn btn-success" onclick="runQualityCheck()">
-                    🔍 Run Quality Check
+            <nav class="action-buttons" aria-label="Dashboard Actions">
+                <button class="btn btn-success" onclick="runQualityCheck()" aria-label="Run Quality Check">
+                    <span aria-hidden="true">🔍</span> Run Quality Check
                 </button>
-                <button class="btn" onclick="showFileSplitModal()">
-                    ✂️ Split Large File
+                <button class="btn" onclick="showFileSplitModal()" aria-label="Split Large File">
+                    <span aria-hidden="true">✂️</span> Split Large File
                 </button>
-                <button class="btn btn-secondary" onclick="showConfigModal()">
-                    ⚙️ Configuration
+                <button class="btn btn-secondary" onclick="showConfigModal()" aria-label="Open Configuration">
+                    <span aria-hidden="true">⚙️</span> Configuration
                 </button>
-                <button class="btn btn-warning" onclick="refreshData()">
-                    🔄 Refresh Data
+                <button class="btn btn-warning" onclick="refreshData()" aria-label="Refresh Dashboard Data">
+                    <span aria-hidden="true">🔄</span> Refresh Data
                 </button>
-            </div>
-        </div>
+            </nav>
+        </section>
 
-        <div class="history-section">
+        <!-- TODO: WCAG - Semantic section with proper ARIA -->
+        <section class="history-section" aria-label="Recent Activity">
             <h2>Recent Activity</h2>
-            <div id="history-list">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    Loading activity history...
+            <div id="history-list" role="feed" aria-busy="false" aria-live="polite">
+                <div class="loading" role="status" aria-label="Loading activity history">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <span>Loading activity history...</span>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
 
-    <!-- Quality Check Modal -->
-    <div id="quality-modal" class="modal">
-        <div class="modal-content">
-            <h3>Run Quality Check</h3>
+    <!-- TODO: WCAG - Accessible modal dialogs -->
+    <div id="quality-modal" class="modal" role="dialog" aria-labelledby="quality-modal-title" aria-modal="true" aria-hidden="true">
+        <div class="modal-content" role="document">
+            <h3 id="quality-modal-title">Run Quality Check</h3>
             <div class="form-group">
                 <label for="quality-mode">Quality Mode:</label>
-                <select id="quality-mode">
+                <select id="quality-mode" aria-required="true" aria-describedby="quality-mode-hint">
                     <option value="ultra-fast">Ultra Fast</option>
                     <option value="fast" selected>Fast</option>
                     <option value="smart">Smart</option>
                     <option value="comprehensive">Comprehensive</option>
                     <option value="ai-enhanced">AI Enhanced</option>
                 </select>
+                <span id="quality-mode-hint" class="sr-only">Select the quality check mode</span>
             </div>
             <div class="form-group">
                 <label for="files-input">Files (comma-separated):</label>
-                <input type="text" id="files-input" placeholder="file1.py, file2.py">
+                <input type="text" id="files-input" placeholder="file1.py, file2.py" aria-describedby="files-hint">
+                <span id="files-hint" class="sr-only">Enter file paths separated by commas</span>
             </div>
             <div class="form-group">
                 <label for="directory-input">Directory:</label>
-                <input type="text" id="directory-input" placeholder="/path/to/directory">
+                <input type="text" id="directory-input" placeholder="/path/to/directory" aria-describedby="directory-hint">
+                <span id="directory-hint" class="sr-only">Enter directory path to scan</span>
             </div>
             <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeModal('quality-modal')">Cancel</button>
-                <button class="btn btn-success" onclick="executeQualityCheck()">Run Check</button>
+                <button class="btn btn-secondary" onclick="closeModal('quality-modal')" aria-label="Cancel quality check">Cancel</button>
+                <button class="btn btn-success" onclick="executeQualityCheck()" aria-label="Execute quality check">Run Check</button>
             </div>
         </div>
     </div>
 
     <!-- File Split Modal -->
-    <div id="split-modal" class="modal">
-        <div class="modal-content">
-            <h3>Split Large File</h3>
+    <div id="split-modal" class="modal" role="dialog" aria-labelledby="split-modal-title" aria-modal="true" aria-hidden="true">
+        <div class="modal-content" role="document">
+            <h3 id="split-modal-title">Split Large File</h3>
             <div class="form-group">
                 <label for="file-path">File Path:</label>
-                <input type="text" id="file-path" placeholder="/path/to/file.py">
+                <input type="text" id="file-path" placeholder="/path/to/file.py" aria-required="true" aria-describedby="file-path-hint">
+                <span id="file-path-hint" class="sr-only">Enter the path to the file you want to split</span>
             </div>
             <div class="form-group">
                 <label for="max-lines">Max Lines per Component:</label>
-                <input type="number" id="max-lines" value="100" min="10" max="1000">
+                <input type="number" id="max-lines" value="100" min="10" max="1000" aria-describedby="max-lines-hint">
+                <span id="max-lines-hint" class="sr-only">Enter maximum lines per component, between 10 and 1000</span>
             </div>
             <div class="form-group">
                 <label for="output-dir">Output Directory:</label>
-                <input type="text" id="output-dir" placeholder="/path/to/output">
+                <input type="text" id="output-dir" placeholder="/path/to/output" aria-describedby="output-dir-hint">
+                <span id="output-dir-hint" class="sr-only">Enter the directory where split files will be saved</span>
             </div>
             <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeModal('split-modal')">Cancel</button>
-                <button class="btn btn-success" onclick="executeFileSplit()">Split File</button>
+                <button class="btn btn-secondary" onclick="closeModal('split-modal')" aria-label="Cancel file split">Cancel</button>
+                <button class="btn btn-success" onclick="executeFileSplit()" aria-label="Execute file split">Split File</button>
             </div>
         </div>
     </div>
 
     <!-- Config Modal -->
-    <div id="config-modal" class="modal">
-        <div class="modal-content">
-            <h3>Configuration</h3>
+    <div id="config-modal" class="modal" role="dialog" aria-labelledby="config-modal-title" aria-modal="true" aria-hidden="true">
+        <div class="modal-content" role="document">
+            <h3 id="config-modal-title">Configuration</h3>
             <div class="form-group">
                 <label for="default-mode">Default Quality Mode:</label>
-                <select id="default-mode">
+                <select id="default-mode" aria-describedby="default-mode-hint">
                     <option value="ultra-fast">Ultra Fast</option>
                     <option value="fast" selected>Fast</option>
                     <option value="smart">Smart</option>
                     <option value="comprehensive">Comprehensive</option>
                     <option value="ai-enhanced">AI Enhanced</option>
                 </select>
+                <span id="default-mode-hint" class="sr-only">Select the default quality check mode</span>
             </div>
             <div class="form-group">
                 <label for="auto-fix">Auto-Fix Issues:</label>
-                <select id="auto-fix">
+                <select id="auto-fix" aria-describedby="auto-fix-hint">
                     <option value="false">Disabled</option>
                     <option value="true">Enabled</option>
                 </select>
+                <span id="auto-fix-hint" class="sr-only">Enable or disable automatic issue fixing</span>
             </div>
             <div class="form-group">
                 <label for="max-file-size">Max File Size (lines):</label>
-                <input type="number" id="max-file-size" value="10000" min="1000" max="50000">
+                <input type="number" id="max-file-size" value="10000" min="1000" max="50000" aria-describedby="max-file-size-hint">
+                <span id="max-file-size-hint" class="sr-only">Enter maximum file size in lines, between 1000 and 50000</span>
             </div>
             <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeModal('config-modal')">Cancel</button>
-                <button class="btn btn-success" onclick="saveConfig()">Save Configuration</button>
+                <button class="btn btn-secondary" onclick="closeModal('config-modal')" aria-label="Cancel configuration">Cancel</button>
+                <button class="btn btn-success" onclick="saveConfig()" aria-label="Save configuration settings">Save Configuration</button>
             </div>
         </div>
     </div>
@@ -522,20 +586,49 @@
             }
         }
 
+        // TODO: WCAG - Modal management with keyboard support
         function runQualityCheck() {
-            document.getElementById('quality-modal').style.display = 'block';
+            showModal('quality-modal');
         }
 
         function showFileSplitModal() {
-            document.getElementById('split-modal').style.display = 'block';
+            showModal('split-modal');
         }
 
         function showConfigModal() {
-            document.getElementById('config-modal').style.display = 'block';
+            showModal('config-modal');
+        }
+
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'block';
+            modal.setAttribute('aria-hidden', 'false');
+            
+            // Focus first focusable element in modal
+            setTimeout(() => {
+                const firstFocusable = modal.querySelector('button, input, select, textarea');
+                if (firstFocusable) {
+                    firstFocusable.focus();
+                }
+            }, 100);
+            
+            // Store last focused element to restore later
+            modal.dataset.lastFocused = document.activeElement;
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            
+            // Restore focus to last focused element
+            const lastFocused = document.querySelector('[data-last-focused]');
+            if (lastFocused && modal.dataset.lastFocused) {
+                const element = document.activeElement;
+                if (element) {
+                    element.blur();
+                }
+            }
         }
 
         async function executeQualityCheck() {
@@ -624,15 +717,49 @@
             loadHistory();
         }
 
+        // TODO: WCAG - Keyboard navigation support
         // Close modals when clicking outside
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
                 if (event.target === modal) {
                     modal.style.display = 'none';
+                    modal.setAttribute('aria-hidden', 'true');
                 }
             });
         }
+
+        // Keyboard navigation - ESC to close modals
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const openModals = document.querySelectorAll('.modal[aria-hidden="false"]');
+                openModals.forEach(modal => {
+                    modal.style.display = 'none';
+                    modal.setAttribute('aria-hidden', 'true');
+                });
+            }
+        });
+
+        // Trap focus within modal when open
+        document.addEventListener('keydown', function(event) {
+            const openModal = document.querySelector('.modal[aria-hidden="false"]');
+            if (!openModal || event.key !== 'Tab') return;
+
+            const focusableElements = openModal.querySelectorAll(
+                'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])'
+            );
+            
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (event.shiftKey && document.activeElement === firstElement) {
+                event.preventDefault();
+                lastElement.focus();
+            } else if (!event.shiftKey && document.activeElement === lastElement) {
+                event.preventDefault();
+                firstElement.focus();
+            }
+        });
     </script>
 </body>
 </html>

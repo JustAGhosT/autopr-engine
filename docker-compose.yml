@@ -32,8 +32,9 @@ services:
       GROQ_API_KEY: ${GROQ_API_KEY:-}
 
       # Database connections
-      DATABASE_URL: postgresql://autopr:autopr_password@postgres:5432/autopr
-      REDIS_URL: redis://redis:6379/0
+      # TODO: SECURITY - Use secrets management in production (Vault, AWS Secrets Manager)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-autopr}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-autopr}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS}@redis:6379/0
 
       # Integrations
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
@@ -66,9 +67,12 @@ services:
     container_name: autopr-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: autopr
-      POSTGRES_USER: autopr
-      POSTGRES_PASSWORD: autopr_password
+      POSTGRES_DB: ${POSTGRES_DB:-autopr}
+      POSTGRES_USER: ${POSTGRES_USER:-autopr}
+      # TODO: SECURITY - Generate strong random password on first setup
+      # CRITICAL: Change this default password immediately in production!
+      # Use: openssl rand -base64 32
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -88,9 +92,10 @@ services:
     image: redis:7-alpine
     container_name: autopr-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass autopr_redis_password
+    # TODO: SECURITY - Use strong passwords in production
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
     environment:
-      REDIS_PASSWORD: autopr_redis_password
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
     volumes:
       - redis_data:/data
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
@@ -128,8 +133,8 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      DATABASE_URL: postgresql://autopr:autopr_password@postgres:5432/autopr
-      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-autopr}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-autopr}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS}@redis:6379/0
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
       LINEAR_API_KEY: ${LINEAR_API_KEY:-}
     volumes:

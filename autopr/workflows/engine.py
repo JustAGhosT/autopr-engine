@@ -294,7 +294,13 @@ class WorkflowEngine:
     def _record_execution(
         self, execution_id: str, workflow_name: str, status: str, result: dict[str, Any]
     ) -> None:
-        """Record workflow execution in history."""
+        """
+        Record workflow execution in history.
+        
+        TODO: CONCURRENCY - Consider making this async for consistency
+        TODO: PERFORMANCE - History limit already enforced (Good!)
+        """
+        # Note: This is called from async context, providing some thread safety
         self.workflow_history.append(
             {
                 "execution_id": execution_id,
@@ -312,6 +318,8 @@ class WorkflowEngine:
     async def _update_metrics(self, status: str, execution_time: float) -> None:
         """
         Update workflow execution metrics with thread-safety.
+        
+        TODO: CONCURRENCY - Ensure ALL metrics updates use the lock (BUG-3)
         
         Args:
             status: Execution status (success, failed, timeout)
