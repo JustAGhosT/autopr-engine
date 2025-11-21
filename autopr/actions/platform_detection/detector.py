@@ -334,8 +334,12 @@ class PlatformDetector:
                 hybrid_workflow_analysis=hybrid_workflow,
             )
 
-        except Exception:
+        except Exception as e:
             # Defensive catch-all: never raise from detection, always return a safe result
+            logger.exception(
+                "Platform detection failed with exception, returning unknown result: %s",
+                str(e)
+            )
             return PlatformDetectorOutputs(
                 primary_platform="unknown",
                 secondary_platforms=[],

@@ -22,10 +22,11 @@ from sqlalchemy.pool import NullPool, QueuePool
 
 from autopr.database.models import Base
 
-# TODO: Move to environment configuration or settings file
+# DATABASE_URL must be explicitly set via environment variable
+# No default credentials to avoid security risks
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://autopr_user:autopr_password@localhost:5432/autopr",
+    "sqlite:///:memory:",  # Safe in-memory default for development/testing only
 )
 
 # TODO: Configure connection pooling based on environment
@@ -66,42 +67,43 @@ def _create_engine():
             **POOL_CONFIG,
         )
 
-# Create engine (skip if AUTOPR_SKIP_DB_INIT is set)
-if os.getenv("AUTOPR_SKIP_DB_INIT"):
-    engine = None  # type: ignore
-else:
-    try:
-        engine = _create_engine()
-    except Exception as e:
-        # If database connection fails during import, set engine to None
-        # This allows models to be imported without requiring database connection
-        import warnings
-        warnings.warn(f"Failed to create database engine: {e}. Database operations will not work.")
-        engine = None  # type: ignore
-
-
-# TODO: Add event listeners for connection monitoring
-@event.listens_for(Engine, "connect")
+# Event listener functions (registered per-instance below)
 def set_sqlite_pragma(dbapi_conn, connection_record):
     """Set SQLite pragmas if using SQLite (for development)."""
-    if "sqlite" in DATABASE_URL:
+    if engine and "sqlite" in str(engine.url):
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
 
-@event.listens_for(Engine, "checkin")
 def receive_checkin(dbapi_conn, connection_record):
     """Log connection check-in events (optional, for debugging)."""
     # TODO: Add logging or metrics collection
     pass
 
 
-@event.listens_for(Engine, "checkout")
 def receive_checkout(dbapi_conn, connection_record, connection_proxy):
     """Log connection checkout events (optional, for debugging)."""
     # TODO: Add logging or metrics collection
     pass
+
+
+# Create engine (skip if AUTOPR_SKIP_DB_INIT is set)
+if os.getenv("AUTOPR_SKIP_DB_INIT"):
+    engine = None  # type: ignore
+else:
+    try:
+        engine = _create_engine()
+        # Register instance-specific event listeners
+        event.listen(engine, "connect", set_sqlite_pragma)
+        event.listen(engine, "checkin", receive_checkin)
+        event.listen(engine, "checkout", receive_checkout)
+    except Exception as e:
+        # If database connection fails during import, set engine to None
+        # This allows models to be imported without requiring database connection
+        import warnings
+        warnings.warn(f"Failed to create database engine: {e}. Database operations will not work.")
+        engine = None  # type: ignore
 
 
 # Create session factory
