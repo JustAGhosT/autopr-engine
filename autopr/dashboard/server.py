@@ -1,4 +1,3 @@
-"""
 """AutoPR Dashboard Server
 
 Flask-based web server for AutoPR monitoring and configuration.
@@ -183,8 +182,8 @@ class AutoPRDashboard:
                         }), 400
                     files = valid_files
 
-                # Normalize mode: lowercase and replace hyphens with underscores
-                normalized_mode = mode.lower().replace("-", "_").strip()
+                # Normalize mode to lowercase, preserving hyphens for enum compatibility
+                normalized_mode = mode.lower().strip()
 
                 # Map normalized mode to QualityMode enum
                 try:
