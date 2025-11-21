@@ -135,8 +135,17 @@ def get_db() -> Generator:
     Yields:
         SQLAlchemy database session
 
+    Raises:
+        RuntimeError: If database engine is not initialized
+
     TODO: Add session-level error handling and logging
     """
+    if engine is None:
+        raise RuntimeError(
+            "Database engine is not initialized. "
+            "Ensure DATABASE_URL is set and AUTOPR_SKIP_DB_INIT is not set when running DB operations. "
+            "Check that psycopg2-binary is installed: poetry add psycopg2-binary"
+        )
     db = SessionLocal()
     try:
         yield db
@@ -157,9 +166,18 @@ def init_db() -> None:
         # Initialize database (development only)
         init_db()
 
+    Raises:
+        RuntimeError: If database engine is not initialized
+
     TODO: Remove in production - use Alembic migrations instead
     TODO: Add database version checking
     """
+    if engine is None:
+        raise RuntimeError(
+            "Cannot initialize database: engine is None. "
+            "Set DATABASE_URL environment variable to a valid PostgreSQL connection string. "
+            "Example: postgresql://user:password@localhost:5432/dbname"
+        )
     # Import models to register them with Base.metadata
     from autopr.database import models  # noqa: F401
 
@@ -179,8 +197,15 @@ def drop_db() -> None:
         # Drop all tables (testing only!)
         drop_db()
 
+    Raises:
+        RuntimeError: If database engine is not initialized or in production
+
     TODO: Add environment check to prevent accidental production drops
     """
+    if engine is None:
+        raise RuntimeError(
+            "Cannot drop database: engine is None. DATABASE_URL must be set."
+        )
     if os.getenv("ENVIRONMENT") == "production":
         raise RuntimeError("Cannot drop database in production environment!")
 
@@ -195,12 +220,20 @@ def get_connection_info() -> dict:
     Get database connection information (for health checks).
 
     Returns:
-        Dictionary with connection pool statistics
+        Dictionary with connection pool statistics or error status
 
     TODO: Add more detailed connection metrics
     """
+    if engine is None:
+        return {
+            "status": "unavailable",
+            "error": "Database engine not initialized (AUTOPR_SKIP_DB_INIT may be set)",
+            "database_url": None,
+        }
+    
     pool = engine.pool
     return {
+        "status": "available",
         "database_url": DATABASE_URL.replace(
             DATABASE_URL.split("@")[0].split("//")[1], "***"
         ),  # Mask credentials

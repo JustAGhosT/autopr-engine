@@ -26,6 +26,11 @@ except ImportError as e:
     import warnings
     warnings.warn(f"Could not import AI Learning System: {e}")
     AILearningSystem = None  # type: ignore
+    CodeIssue = None  # type: ignore
+    IssueSeverity = None  # type: ignore
+    ReviewFeedback = None  # type: ignore
+    ReviewFeedbackType = None  # type: ignore
+    ReviewSession = None  # type: ignore
 
 try:
     from autopr.features.realtime_dashboard import RealtimeDashboard
@@ -48,6 +53,12 @@ except ImportError as e:
     import warnings
     warnings.warn(f"Could not import Workflow Builder: {e}")
     WorkflowBuilder = None  # type: ignore
+    Workflow = None  # type: ignore
+    WorkflowNode = None  # type: ignore
+    WorkflowEdge = None  # type: ignore
+    NodeType = None  # type: ignore
+    TriggerType = None  # type: ignore
+    ActionType = None  # type: ignore
 
 __all__ = [
     # Real-time Dashboard
