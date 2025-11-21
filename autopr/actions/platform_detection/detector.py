@@ -194,6 +194,20 @@ class PlatformDetector:
                 normalized_scores
             )
 
+            # Enforce detection threshold of 0.5 per platform detection guidelines
+            detection_threshold = 0.5
+            primary_score = normalized_scores.get(primary_platform, 0.0)
+
+            # Only treat platforms as "detected" if they meet the 0.5 threshold
+            if primary_platform != "unknown" and primary_score < detection_threshold:
+                primary_platform = "unknown"
+
+            secondary_platforms = [
+                p
+                for p in secondary_platforms
+                if normalized_scores.get(p, 0.0) >= detection_threshold
+            ]
+
             workflow_type = self.scoring_engine.determine_workflow_type(
                 normalized_scores
             )
