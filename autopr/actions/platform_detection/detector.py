@@ -226,6 +226,47 @@ class PlatformDetector:
                     normalized_scores, scoring_configs
                 )
             )
+            
+            # Validate hybrid/multi-platform classifications
+            reclassification_reasons = []
+            
+            if workflow_type in ("hybrid_workflow", "multi_platform"):
+                # 1. Check for migration path analysis (mandatory for hybrid/multi-platform)
+                if not migration_opportunities:
+                    reclassification_reasons.append(
+                        f"No migration opportunities identified for {workflow_type} classification"
+                    )
+                
+                # 2. Check platform compatibility
+                is_compatible, incompatibility_reasons = (
+                    self.scoring_engine.check_platform_compatibility(
+                        primary_platform, secondary_platforms
+                    )
+                )
+                
+                if not is_compatible:
+                    reclassification_reasons.extend(
+                        [f"Platform incompatibility: {reason}" for reason in incompatibility_reasons]
+                    )
+                
+                # Reclassify if validation fails
+                if reclassification_reasons:
+                    import warnings
+                    warning_msg = (
+                        f"Reclassifying {workflow_type} to single_platform. "
+                        f"Reasons: {'; '.join(reclassification_reasons)}"
+                    )
+                    warnings.warn(warning_msg, UserWarning)
+                    
+                    workflow_type = "single_platform"
+                    # Keep only primary platform
+                    secondary_platforms = []
+                    
+                    # Add analysis note to recommended enhancements
+                    recommended_enhancements.insert(
+                        0,
+                        f"Note: Detected as {workflow_type} but reclassified due to: {reclassification_reasons[0]}"
+                    )
 
             # 5) Platform-specific configs – for now we expose raw detection rules
             platform_specific_configs: dict[str, dict[str, Any]] = {}

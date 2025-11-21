@@ -59,12 +59,17 @@ class PlatformScoringEngine:
         return primary_platform, secondary_platforms
 
     def determine_workflow_type(self, scores: dict[str, float]) -> str:
-        """Determine the type of workflow based on platform scores."""
+        """Determine the type of workflow based on platform scores.
+        
+        Thresholds:
+        - High confidence: > 0.8
+        - Medium confidence: > 0.5 and <= 0.8
+        """
         high_confidence_platforms = [
-            platform for platform, score in scores.items() if score >= 0.7
+            platform for platform, score in scores.items() if score > 0.8
         ]
         medium_confidence_platforms = [
-            platform for platform, score in scores.items() if 0.3 <= score < 0.7
+            platform for platform, score in scores.items() if 0.5 < score <= 0.8
         ]
 
         if (
@@ -179,6 +184,73 @@ class PlatformScoringEngine:
             )
 
         return recommendations
+    
+    def check_platform_compatibility(
+        self, primary_platform: str, secondary_platforms: list[str]
+    ) -> tuple[bool, list[str]]:
+        """Check if platforms are compatible for hybrid/multi-platform workflows.
+        
+        Args:
+            primary_platform: Primary detected platform
+            secondary_platforms: List of secondary platforms
+            
+        Returns:
+            Tuple of (is_compatible, incompatibility_reasons)
+        """
+        # Define platform compatibility matrix
+        # Compatible groups: platforms that work well together
+        compatibility_groups = {
+            "rapid_prototyping": {"replit", "lovable", "bolt", "cursor", "v0"},
+            "ai_assisted": {"github_copilot", "codeium", "tabnine", "cursor"},
+            "cloud_deployment": {"vercel", "netlify", "railway", "heroku"},
+            "traditional_hosting": {"aws", "gcp", "azure", "digitalocean"},
+            "issue_tracking": {"linear", "github", "jira"},
+            "collaboration": {"slack", "discord", "teams", "axolo"},
+        }
+        
+        # Known incompatibilities (mutually exclusive platforms)
+        incompatible_pairs = [
+            ("vercel", "netlify"),  # Competing deployment platforms
+            ("heroku", "railway"),  # Competing PaaS platforms
+            ("github_copilot", "codeium"),  # Competing AI assistants
+            ("linear", "jira"),  # Competing issue trackers
+        ]
+        
+        incompatibility_reasons = []
+        all_platforms = [primary_platform] + secondary_platforms
+        
+        # Check for known incompatible pairs
+        for platform_a, platform_b in incompatible_pairs:
+            if platform_a in all_platforms and platform_b in all_platforms:
+                incompatibility_reasons.append(
+                    f"{platform_a} and {platform_b} are competing platforms and should not be used together"
+                )
+        
+        # Check if platforms belong to compatible groups
+        primary_groups = []
+        for group_name, group_platforms in compatibility_groups.items():
+            if primary_platform in group_platforms:
+                primary_groups.append(group_name)
+        
+        for secondary in secondary_platforms:
+            secondary_groups = []
+            for group_name, group_platforms in compatibility_groups.items():
+                if secondary in group_platforms:
+                    secondary_groups.append(group_name)
+            
+            # Platforms should share at least one compatibility group or be complementary
+            if secondary_groups and primary_groups:
+                shares_group = any(g in primary_groups for g in secondary_groups)
+                # Allow complementary platforms (different groups)
+                is_complementary = not shares_group
+                
+                # If they don't share a group and aren't complementary categories, warn
+                if not shares_group and not is_complementary:
+                    # This is actually fine - different groups are complementary
+                    pass
+        
+        is_compatible = len(incompatibility_reasons) == 0
+        return is_compatible, incompatibility_reasons
 
     def identify_migration_opportunities(
         self, scores: dict[str, float], platform_configs: dict[str, dict[str, Any]]
