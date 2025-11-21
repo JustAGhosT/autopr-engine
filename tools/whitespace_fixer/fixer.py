@@ -458,11 +458,11 @@ Examples:
                 total_issues += len(issues)
 
                 if args.verbose or args.dry_run:
-                    for _issue in issues:
-                        pass
+                    for issue in issues:
+                        print(f"{path}: {issue}")
             elif issues:  # Errors
-                for _issue in issues:
-                    pass
+                for issue in issues:
+                    print(f"{path}: {issue}")
 
         elif path.is_dir():
             # Process directory
@@ -472,18 +472,24 @@ Examples:
             total_issues += results["total_issues"]
 
             if args.verbose or args.dry_run:
-                for issues in results["files_with_issues"].values():
-                    for _issue in issues:
-                        pass
+                for rel_path, issues in results["files_with_issues"].items():
+                    for issue in issues:
+                        print(f"{path / rel_path}: {issue}")
 
             if results["errors"]:
-                for _error in results["errors"]:
-                    pass
+                for error in results["errors"]:
+                    print(f"{path}: {error}")
 
     # Print summary
+    print(
+        f"Processed {total_files_processed} file(s); "
+        f"modified {total_files_modified} file(s); "
+        f"fixed {total_issues} issue(s)"
+    )
 
-    if args.dry_run and total_files_modified > 0:
-        pass
+    # Exit code: non-zero if there are modifications or errors (including dry-run)
+    if total_files_modified > 0 or total_issues > 0:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

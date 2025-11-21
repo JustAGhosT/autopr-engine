@@ -1,11 +1,12 @@
-"""
-AutoPR Dashboard Server
+"""AutoPR Dashboard Server
 
 Flask-based web server for AutoPR monitoring and configuration.
 """
 
+import asyncio
 from datetime import datetime, timedelta
 import json
+import os
 from pathlib import Path
 import threading
 import time
@@ -30,6 +31,10 @@ class AutoPRDashboard:
         # Initialize Flask app
         self.app = Flask(__name__)
         CORS(self.app)
+        
+        # TODO: SECURITY - Configure allowed directories in production from config
+        # This prevents path traversal attacks
+        self.allowed_directories = self._get_allowed_directories()
 
         # Initialize components
         self.metrics_collector = MetricsCollector()
@@ -57,6 +62,76 @@ class AutoPRDashboard:
 
         # Background tasks
         self._start_background_tasks()
+    
+    def _get_allowed_directories(self) -> list[Path]:
+        """
+        Get list of allowed directories for file operations.
+        
+        TODO: PRODUCTION - Load from configuration or environment variables
+        
+        Returns:
+            List of absolute paths that are safe to access
+        """
+        # Default to current working directory and user's home directory
+        cwd = Path.cwd().resolve()
+        home = Path.home().resolve()
+        
+        # TODO: Add configuration for additional allowed directories
+        return [cwd, home]
+    
+    def _validate_path(self, path_str: str) -> tuple[bool, str | None]:
+        """
+        Validate and sanitize file path to prevent directory traversal attacks.
+        
+        Args:
+            path_str: Path string to validate
+            
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        try:
+            # Resolve path to absolute canonical form
+            path = Path(path_str).expanduser().resolve(strict=False)
+            
+            # Check if path is within allowed directories
+            is_allowed = any(
+                path.is_relative_to(allowed_dir) 
+                for allowed_dir in self.allowed_directories
+            )
+            
+            if not is_allowed:
+                return False, f"Access denied: Path outside allowed directories"
+            
+            # Additional checks
+            if not path.exists():
+                return False, f"Path does not exist: {path}"
+            
+            return True, None
+            
+        except (ValueError, OSError, RuntimeError) as e:
+            return False, f"Invalid path: {e}"
+    
+    def _sanitize_file_list(self, files: list[str]) -> tuple[list[str], list[str]]:
+        """
+        Validate and sanitize a list of file paths.
+        
+        Args:
+            files: List of file paths to validate
+            
+        Returns:
+            Tuple of (valid_files, error_messages)
+        """
+        valid_files = []
+        errors = []
+        
+        for file_path in files:
+            is_valid, error = self._validate_path(file_path)
+            if is_valid:
+                valid_files.append(str(Path(file_path).resolve()))
+            else:
+                errors.append(f"{file_path}: {error}")
+        
+        return valid_files, errors
 
     def _setup_routes(self):
         """Setup Flask routes."""
@@ -96,9 +171,19 @@ class AutoPRDashboard:
 
                 if not files and not directory:
                     return jsonify({"error": "No files or directory specified"}), 400
+                
+                # TODO: SECURITY - Validate file paths before processing
+                if files:
+                    valid_files, file_errors = self._sanitize_file_list(files)
+                    if file_errors:
+                        return jsonify({
+                            "error": "Invalid file paths detected",
+                            "details": file_errors
+                        }), 400
+                    files = valid_files
 
-                # Normalize mode: lowercase and replace hyphens with underscores
-                normalized_mode = mode.lower().replace("-", "_").strip()
+                # Normalize mode to lowercase, preserving hyphens for enum compatibility
+                normalized_mode = mode.lower().strip()
 
                 # Map normalized mode to QualityMode enum
                 try:
@@ -113,16 +198,14 @@ class AutoPRDashboard:
                 if not files and directory:
                     import glob
 
+                    # TODO: SECURITY - Validate directory path
+                    is_valid, error_msg = self._validate_path(directory)
+                    if not is_valid:
+                        return jsonify({"error": error_msg}), 403
+                    
                     # Validate and resolve directory
                     try:
                         resolved_dir = Path(directory).expanduser().resolve()
-                        if not resolved_dir.exists():
-                            return (
-                                jsonify(
-                                    {"error": f"Directory does not exist: {directory}"}
-                                ),
-                                400,
-                            )
                         if not resolved_dir.is_dir():
                             return (
                                 jsonify(
@@ -177,9 +260,9 @@ class AutoPRDashboard:
                     enable_ai_agents=enable_ai_agents,
                 )
 
-                # Note: This would need to be async in a real implementation
-                # For now, we'll simulate the result
-                result = self._simulate_quality_check(inputs)
+                # TODO: PERFORMANCE - Flask doesn't natively support async routes
+                # In production, consider migrating to FastAPI or use asyncio.run()
+                result = asyncio.run(self._simulate_quality_check(inputs))
 
                 # Update dashboard data with normalized mode
                 self._update_dashboard_data(result, normalized_mode)
@@ -195,7 +278,9 @@ class AutoPRDashboard:
         def api_config():
             """API endpoint for configuration management."""
             if request.method == "GET":
-                return jsonify(self._get_config())
+                # TODO: PERFORMANCE - Use async/await properly
+                config = asyncio.run(self._get_config())
+                return jsonify(config)
             else:
                 # Handle malformed JSON as client error
                 try:
@@ -207,7 +292,8 @@ class AutoPRDashboard:
 
                 # Handle internal errors
                 try:
-                    self._save_config(config)
+                    # TODO: PERFORMANCE - Use async/await properly
+                    asyncio.run(self._save_config(config))
                     return jsonify({"success": True})
                 except Exception:
                     # Log the full exception for debugging
@@ -290,10 +376,18 @@ class AutoPRDashboard:
             for mode, stats in self.dashboard_data["quality_stats"].items()
         }
 
-    def _simulate_quality_check(self, inputs: QualityInputs) -> dict[str, Any]:
-        """Simulate a quality check result."""
+    async def _simulate_quality_check(self, inputs: QualityInputs) -> dict[str, Any]:
+        """
+        Simulate a quality check result.
+        
+        TODO: PRODUCTION - Replace with actual async quality engine call:
+        result = await self.quality_engine.run_async(inputs)
+        """
         # In a real implementation, this would call the actual quality engine
         import random
+        
+        # Simulate async processing delay
+        await asyncio.sleep(0.1)
 
         processing_time = random.uniform(1.0, 5.0)
         total_issues = random.randint(0, 20)
@@ -368,11 +462,16 @@ class AutoPRDashboard:
                 "recent_activity"
             ][-50:]
 
-    def _get_config(self) -> dict[str, Any]:
-        """Get current configuration."""
+    async def _get_config(self) -> dict[str, Any]:
+        """
+        Get current configuration.
+        
+        TODO: PERFORMANCE - Use aiofiles for async file I/O in production
+        """
         config_path = Path.home() / ".autopr" / "dashboard_config.json"
         if config_path.exists():
             try:
+                # TODO: Replace with async file I/O: async with aiofiles.open(...)
                 with open(config_path) as f:
                     return json.load(f)
             except Exception:
@@ -380,11 +479,16 @@ class AutoPRDashboard:
 
         return self._get_default_config()
 
-    def _save_config(self, config: dict[str, Any]):
-        """Save configuration."""
+    async def _save_config(self, config: dict[str, Any]):
+        """
+        Save configuration.
+        
+        TODO: PERFORMANCE - Use aiofiles for async file I/O in production
+        """
         config_path = Path.home() / ".autopr" / "dashboard_config.json"
         config_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # TODO: Replace with async file I/O: async with aiofiles.open(...)
         with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
 

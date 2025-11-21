@@ -180,6 +180,8 @@ def print_report(reports: dict[Path, Any], args: argparse.Namespace) -> int:
     file_count = 0
 
     if args.format == "json":
+        import json
+
         output = []
         for path, report in reports.items():
             if report["issues"]:
@@ -203,7 +205,7 @@ def print_report(reports: dict[Path, Any], args: argparse.Namespace) -> int:
                 )
 
         if output or args.verbose > 0:
-            pass
+            print(json.dumps(output, indent=2))
     else:
         # Text output
         for path, report in sorted(reports.items()):
@@ -211,12 +213,12 @@ def print_report(reports: dict[Path, Any], args: argparse.Namespace) -> int:
                 file_count += 1
                 issue_count += len(report["issues"])
 
-                for _issue in sorted(report["issues"], key=lambda x: x.line):
-                    pass
+                for issue in sorted(report["issues"], key=lambda x: x.line):
+                    print(format_issue(issue, path, args.verbose))
 
         # Print summary
         if issue_count > 0 or args.verbose > 0:
-            pass
+            print(f"Found {issue_count} issue(s) in {file_count} file(s)")
 
     return 1 if issue_count > 0 else 0
 
