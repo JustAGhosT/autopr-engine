@@ -141,7 +141,11 @@ class AILearningSystem:
             metrics={
                 "total_issues": len(issues),
                 "by_severity": self._count_by_severity(issues),
-                "avg_confidence": np.mean([i.confidence for i in issues]) if issues else 0.0
+                "avg_confidence": (
+                    float(np.mean([i.confidence for i in issues]))
+                    if issues
+                    else 0.0
+                )
             }
         )
         
