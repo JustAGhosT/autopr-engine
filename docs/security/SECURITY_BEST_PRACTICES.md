@@ -528,4 +528,4 @@ gh api /user/events | jq '.[] | select(.created_at > "2025-01-01")'
 **Last Updated**: 2025-01-20  
 **Next Review**: 2025-04-20  
 
-**Contact**: security@autopr.dev
+**Contact**: `security@autopr.dev`
