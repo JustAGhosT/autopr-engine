@@ -14,6 +14,7 @@ TODO: Production considerations:
 
 import os
 from typing import Generator
+from urllib.parse import urlparse, urlunparse
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
@@ -217,6 +218,42 @@ def drop_db() -> None:
     Base.metadata.drop_all(bind=engine)
 
 
+def _mask_database_url(url: str) -> str:
+    """Safely mask credentials in database URL.
+    
+    Args:
+        url: Database URL that may contain credentials
+        
+    Returns:
+        URL with credentials masked, or original URL if parsing fails
+    """
+    try:
+        parsed = urlparse(url)
+        
+        # If no username, no masking needed
+        if not parsed.username:
+            return url
+        
+        # Build masked netloc: replace userinfo with ***
+        if parsed.password:
+            masked_userinfo = "***:***"
+        else:
+            masked_userinfo = "***"
+        
+        # Reconstruct netloc with masked credentials
+        if parsed.port:
+            masked_netloc = f"{masked_userinfo}@{parsed.hostname}:{parsed.port}"
+        else:
+            masked_netloc = f"{masked_userinfo}@{parsed.hostname}"
+        
+        # Rebuild URL with masked netloc
+        masked_parsed = parsed._replace(netloc=masked_netloc)
+        return urlunparse(masked_parsed)
+    except Exception:
+        # If URL parsing fails, return a safe placeholder
+        return "<invalid-url>"
+
+
 def get_connection_info() -> dict:
     """
     Get database connection information (for health checks).
@@ -236,9 +273,7 @@ def get_connection_info() -> dict:
     pool = engine.pool
     return {
         "status": "available",
-        "database_url": DATABASE_URL.replace(
-            DATABASE_URL.split("@")[0].split("//")[1], "***"
-        ),  # Mask credentials
+        "database_url": _mask_database_url(DATABASE_URL),
         "pool_size": pool.size() if hasattr(pool, "size") else None,
         "checked_in_connections": (
             pool.checkedin() if hasattr(pool, "checkedin") else None

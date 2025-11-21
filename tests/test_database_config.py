@@ -304,6 +304,9 @@ class TestHealthChecks:
         assert info["status"] == "available"
         assert "***" in info["database_url"]
         assert "secretpass" not in info["database_url"]
+        assert "user" not in info["database_url"]
+        assert "localhost" in info["database_url"]
+        assert "5432" in info["database_url"]
     
     def test_get_connection_info_returns_pool_statistics(self, clean_env, reload_config):
         """get_connection_info should return pool statistics when available."""
@@ -318,6 +321,78 @@ class TestHealthChecks:
         assert "checked_in_connections" in info
         assert "checked_out_connections" in info
         assert "overflow" in info
+
+
+class TestURLMasking:
+    """Test URL credential masking function."""
+    
+    def test_mask_url_with_username_and_password(self, clean_env, reload_config):
+        """Should mask both username and password."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        masked = config._mask_database_url("postgresql://user:pass@localhost:5432/db")
+        assert masked == "postgresql://***:***@localhost:5432/db"
+        assert "user" not in masked
+        assert "pass" not in masked
+    
+    def test_mask_url_with_username_only(self, clean_env, reload_config):
+        """Should mask username when no password present."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        masked = config._mask_database_url("postgresql://user@localhost:5432/db")
+        assert masked == "postgresql://***@localhost:5432/db"
+        assert "user" not in masked
+    
+    def test_mask_url_without_credentials(self, clean_env, reload_config):
+        """Should leave URL unchanged when no credentials present."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        url = "postgresql://localhost:5432/db"
+        masked = config._mask_database_url(url)
+        assert masked == url
+    
+    def test_mask_url_without_port(self, clean_env, reload_config):
+        """Should handle URLs without explicit port."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        masked = config._mask_database_url("postgresql://user:pass@localhost/db")
+        assert masked == "postgresql://***:***@localhost/db"
+        assert "user" not in masked
+        assert "pass" not in masked
+    
+    def test_mask_url_with_path_and_query(self, clean_env, reload_config):
+        """Should preserve path and query string."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        masked = config._mask_database_url("postgresql://user:pass@localhost:5432/db?sslmode=require")
+        assert "***:***" in masked
+        assert "sslmode=require" in masked
+        assert "user" not in masked
+        assert "pass" not in masked
+    
+    def test_mask_url_handles_invalid_url(self, clean_env, reload_config):
+        """Should handle malformed URLs without raising exceptions."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        # Malformed URL should not raise exception
+        # urlparse treats it as a path, so it returns unchanged (no credentials)
+        masked = config._mask_database_url("not-a-valid-url")
+        assert masked == "not-a-valid-url"
+    
+    def test_mask_url_sqlite_memory(self, clean_env, reload_config):
+        """Should handle SQLite in-memory URLs."""
+        clean_env.setenv("DATABASE_URL", "sqlite:///:memory:")
+        config = reload_config()
+        
+        url = "sqlite:///:memory:"
+        masked = config._mask_database_url(url)
+        assert masked == url  # No credentials to mask
 
 
 class TestEventListeners:
