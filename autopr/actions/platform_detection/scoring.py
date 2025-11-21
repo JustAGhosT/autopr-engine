@@ -240,15 +240,13 @@ class PlatformScoringEngine:
                     secondary_groups.append(group_name)
             
             # Platforms should share at least one compatibility group or be complementary
+            # Allow complementary platforms from different groups
+            # (e.g., rapid_prototyping + cloud_deployment is valid)
+            # No additional validation needed - platforms from different
+            # compatibility groups are considered complementary by default
             if secondary_groups and primary_groups:
                 shares_group = any(g in primary_groups for g in secondary_groups)
-                # Allow complementary platforms (different groups)
-                is_complementary = not shares_group
-                
-                # If they don't share a group and aren't complementary categories, warn
-                if not shares_group and not is_complementary:
-                    # This is actually fine - different groups are complementary
-                    pass
+                # Note: platforms from different groups are complementary and allowed
         
         is_compatible = len(incompatibility_reasons) == 0
         return is_compatible, incompatibility_reasons
