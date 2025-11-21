@@ -36,7 +36,8 @@ class PlatformScoringEngine:
             if score > 0:
                 scores[platform] = score
 
-        return self._normalize_scores(scores)
+        # Scores are already normalized in _calculate_single_platform_score
+        return scores
 
     def rank_platforms(
         self, scores: dict[str, float], threshold: float = 0.1
@@ -63,13 +64,13 @@ class PlatformScoringEngine:
         
         Thresholds:
         - High confidence: > 0.8
-        - Medium confidence: > 0.5 and <= 0.8
+        - Medium confidence: >= 0.5 and <= 0.8
         """
         high_confidence_platforms = [
             platform for platform, score in scores.items() if score > 0.8
         ]
         medium_confidence_platforms = [
-            platform for platform, score in scores.items() if 0.5 < score <= 0.8
+            platform for platform, score in scores.items() if 0.5 <= score <= 0.8
         ]
 
         if (
