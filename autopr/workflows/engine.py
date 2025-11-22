@@ -126,8 +126,9 @@ class WorkflowEngine:
             msg = f"Workflow '{workflow_name}' not found"
             raise WorkflowError(msg, workflow_name)
 
-        # TODO: SECURITY - Validate and sanitize workflow context to prevent injection attacks
-        # Validation implemented: validates workflow names and sanitizes parameters
+        # Validate and sanitize workflow context to prevent injection attacks
+        # TODO: PRODUCTION - Add workflow-specific validation rules
+        # TODO: PRODUCTION - Implement validation result caching for performance
         try:
             # Validate workflow context
             validated_context = validate_workflow_context(context)

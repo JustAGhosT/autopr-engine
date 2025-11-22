@@ -30,9 +30,14 @@ class WorkflowContextValidator(BaseModel):
     @field_validator("workflow_name")
     @classmethod
     def validate_workflow_name(cls, v: str) -> str:
-        """Validate workflow name to prevent injection attacks."""
-        # Only allow alphanumeric, hyphens, underscores, and dots
-        if not v.replace("-", "").replace("_", "").replace(".", "").replace(" ", "").isalnum():
+        """
+        Validate workflow name to prevent injection attacks.
+        
+        Only allows alphanumeric characters, hyphens, underscores, dots, and spaces.
+        """
+        import re
+        # Allow alphanumeric, hyphens, underscores, dots, and spaces
+        if not re.match(r'^[a-zA-Z0-9\s._-]+$', v):
             msg = "Workflow name contains invalid characters. Only alphanumeric, hyphens, underscores, dots, and spaces are allowed."
             raise ValueError(msg)
         return v
@@ -105,9 +110,23 @@ def sanitize_workflow_parameters(params: dict[str, Any]) -> dict[str, Any]:
         - Validates string lengths
         - Checks for suspicious patterns
         - Prevents excessively deep nesting
+        
+    Production TODO:
+        - Make suspicious_patterns configurable via settings
+        - Add custom pattern lists per workflow type
+        - Implement pattern matching performance optimization
     """
     MAX_STRING_LENGTH = 10000
     MAX_NESTING_DEPTH = 10
+    
+    # TODO: Make configurable via settings
+    # Extended list of suspicious patterns for XSS and injection attacks
+    SUSPICIOUS_PATTERNS = [
+        "<script", "javascript:", "onerror=", "eval(",
+        "vbscript:", "data:", "<iframe", "expression(",
+        "onload=", "onclick=", "onmouseover=",
+        "document.cookie", "window.location", "document.write"
+    ]
     
     def sanitize_value(value: Any, depth: int = 0) -> Any:
         """Recursively sanitize values."""
@@ -121,10 +140,9 @@ def sanitize_workflow_parameters(params: dict[str, Any]) -> dict[str, Any]:
                 msg = f"String parameter exceeds maximum length of {MAX_STRING_LENGTH}"
                 raise ValueError(msg)
             
-            # Check for suspicious patterns (basic check)
-            suspicious_patterns = ["<script", "javascript:", "onerror=", "eval("]
+            # Check for suspicious patterns (case-insensitive)
             lower_value = value.lower()
-            for pattern in suspicious_patterns:
+            for pattern in SUSPICIOUS_PATTERNS:
                 if pattern in lower_value:
                     msg = f"Parameter contains suspicious pattern: {pattern}"
                     raise ValueError(msg)
