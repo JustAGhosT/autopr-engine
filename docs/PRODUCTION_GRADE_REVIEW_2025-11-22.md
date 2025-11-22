@@ -1713,3 +1713,806 @@ Sizes:
 
 ---
 
+
+#### **PERF-7: No Request Rate Limiting**
+
+**ID:** PERF-7  
+**Category:** Performance - API Security  
+**Title:** Missing Rate Limiting on API Endpoints  
+**Severity:** HIGH  
+**Effort:** M (2 weeks)
+
+**Location:**
+- API endpoints throughout `autopr/`
+- No rate limiting middleware
+
+**Description:**
+API endpoints lack rate limiting:
+- No protection against abuse
+- No per-user request limits
+- No burst protection
+- Can overwhelm system with requests
+
+**Impact:**
+- **Technical:**
+  - DoS vulnerability
+  - Resource exhaustion
+  - Service degradation
+  
+- **Business:**
+  - Service outages from abuse
+  - Higher infrastructure costs
+  - Poor experience for legitimate users
+
+**Recommendation:**
+1. **Implement Rate Limiting Middleware:**
+   ```python
+   from slowapi import Limiter, _rate_limit_exceeded_handler
+   from slowapi.util import get_remote_address
+   from slowapi.errors import RateLimitExceeded
+   
+   limiter = Limiter(key_func=get_remote_address)
+   app.state.limiter = limiter
+   app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+   
+   @app.get("/api/v1/workflows")
+   @limiter.limit("100/minute")  # 100 requests per minute
+   async def list_workflows(request: Request):
+       pass
+   ```
+
+2. **Tiered Rate Limits:**
+   ```python
+   # Anonymous users: 10/minute
+   # Authenticated users: 100/minute
+   # Premium users: 1000/minute
+   ```
+
+3. **Rate Limit by Endpoint Type:**
+   - Read endpoints: Higher limits
+   - Write endpoints: Lower limits
+   - Expensive operations (LLM calls): Much lower limits
+
+4. **Redis Backend for Distributed Systems:**
+   ```python
+   from slowapi.util import get_remote_address
+   from slowapi.middleware import SlowAPIMiddleware
+   
+   limiter = Limiter(
+       key_func=get_remote_address,
+       storage_uri="redis://localhost:6379"
+   )
+   ```
+
+5. **Testing:**
+   - Test rate limit enforcement
+   - Verify correct HTTP 429 responses
+   - Test reset windows
+   - Load testing
+
+**Priority:** High - security and stability
+
+---
+
+#### **PERF-8: Lack of Async Context Management**
+
+**ID:** PERF-8  
+**Category:** Performance - Architecture  
+**Title:** Improper Resource Management in Async Code  
+**Severity:** MEDIUM  
+**Effort:** H (3 weeks)
+
+**Location:**
+- Throughout async code in `autopr/`
+- Database sessions
+- HTTP clients
+- File handles
+
+**Description:**
+Async resources not properly managed:
+- Missing context managers
+- Connections not closed properly
+- Resource leaks
+- Blocking cleanup operations
+
+**Example Issues:**
+```python
+# Bad: Resource leak
+async def fetch_data():
+    session = aiohttp.ClientSession()
+    response = await session.get(url)
+    data = await response.json()
+    # session never closed!
+    return data
+
+# Good: Proper context management
+async def fetch_data():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.json()
+```
+
+**Impact:**
+- **Technical:**
+  - Resource leaks
+  - Connection exhaustion
+  - Memory leaks
+  - Performance degradation over time
+  
+- **Business:**
+  - Stability issues
+  - Requires periodic restarts
+  - Higher operational burden
+
+**Recommendation:**
+1. **Audit All Async Resource Usage:**
+   - Database connections
+   - HTTP clients
+   - File operations
+   - External service connections
+
+2. **Use Context Managers:**
+   ```python
+   # Database sessions
+   async with async_session_maker() as session:
+       result = await session.execute(query)
+   
+   # HTTP clients
+   async with aiohttp.ClientSession() as session:
+       async with session.get(url) as response:
+           data = await response.json()
+   
+   # Files
+   async with aiofiles.open(path) as f:
+       content = await f.read()
+   ```
+
+3. **Implement Proper Cleanup:**
+   ```python
+   class WorkflowEngine:
+       async def __aenter__(self):
+           await self.initialize()
+           return self
+       
+       async def __aexit__(self, exc_type, exc_val, exc_tb):
+           await self.cleanup()
+   ```
+
+4. **Testing:**
+   - Test resource cleanup
+   - Monitor resource usage over time
+   - Test error scenarios (cleanup still happens)
+
+**Priority:** Medium - affects long-term stability
+
+---
+
+#### **PERF-9: Missing Database Indexes on Foreign Keys**
+
+**ID:** PERF-9  
+**Category:** Performance - Database  
+**Title:** Foreign Key Columns Lack Indexes  
+**Severity:** HIGH  
+**Effort:** M (2 weeks)
+
+**Location:**
+- `autopr/database/models/` (all models)
+- Database schema
+
+**Description:**
+Foreign key columns don't have indexes:
+```python
+class WorkflowExecution(Base):
+    __tablename__ = "workflow_executions"
+    
+    id = Column(Integer, primary_key=True)
+    workflow_id = Column(Integer, ForeignKey("workflows.id"))  # No index!
+    user_id = Column(Integer, ForeignKey("users.id"))  # No index!
+```
+
+This causes:
+- Full table scans on JOIN queries
+- Slow queries when filtering by relationships
+- Poor query performance as data grows
+
+**Impact:**
+- **Technical:**
+  - Extremely slow JOIN queries
+  - Database CPU at 100%
+  - Query timeouts
+  
+- **Business:**
+  - Poor user experience
+  - Timeout errors
+  - Reduced scalability
+
+**Recommendation:**
+1. **Add Indexes to All Foreign Keys:**
+   ```python
+   class WorkflowExecution(Base):
+       __tablename__ = "workflow_executions"
+       
+       id = Column(Integer, primary_key=True)
+       workflow_id = Column(Integer, ForeignKey("workflows.id"), index=True)
+       user_id = Column(Integer, ForeignKey("users.id"), index=True)
+   ```
+
+2. **Create Migration:**
+   ```bash
+   alembic revision -m "add_foreign_key_indexes"
+   ```
+   
+   ```python
+   # In migration file
+   def upgrade():
+       op.create_index('idx_workflow_executions_workflow_id', 
+                       'workflow_executions', ['workflow_id'])
+       op.create_index('idx_workflow_executions_user_id', 
+                       'workflow_executions', ['user_id'])
+   ```
+
+3. **Audit All Models:**
+   - Check every ForeignKey column
+   - Add index where missing
+   - Consider composite indexes for common query patterns
+
+4. **Testing:**
+   - EXPLAIN ANALYZE before/after
+   - Measure query performance improvement
+   - Load test with realistic data volume
+
+**Priority:** High - critical for query performance
+
+---
+
+### Category 4: REFACTORING OPPORTUNITIES
+
+---
+
+#### **REF-1: Consolidate Dual Logging Systems**
+
+**ID:** REF-1  
+**Category:** Refactoring  
+**Title:** Consolidate structlog and loguru into Single Logging System  
+**Severity:** MEDIUM  
+**Effort:** M (2 weeks)  
+**Benefit:** Improved maintainability, reduced complexity
+
+**Location:**
+- Same as BUG-1
+- Throughout `autopr/` codebase
+
+**Description:**
+See BUG-1 for details. This is both a bug fix and a refactoring opportunity.
+
+**Refactoring Approach:**
+1. **Choose Standard:** structlog (better structured logging)
+2. **Migration Script:**
+   ```python
+   # Convert loguru patterns to structlog
+   # loguru: logger.info("Message {var}", var=value)
+   # structlog: logger.info("Message", var=value)
+   ```
+3. **Update Tests:** Ensure logging assertions work with new system
+4. **Documentation:** Update logging guidelines
+
+**Benefit:**
+- Single logging standard
+- Consistent log format
+- Easier debugging
+- Reduced dependencies
+
+**Priority:** Medium - architectural improvement
+
+---
+
+#### **REF-2: Extract Validation Logic to Reusable Validators**
+
+**ID:** REF-2  
+**Category:** Refactoring  
+**Title:** Centralize Validation Logic in Shared Validator Classes  
+**Severity:** LOW  
+**Effort:** M (2 weeks)  
+**Benefit:** Reduced duplication, easier testing
+
+**Location:**
+- Throughout `autopr/` (validation scattered)
+- `autopr/workflows/validation.py` (partial consolidation)
+
+**Description:**
+Validation logic is duplicated across modules:
+- Similar validation patterns repeated
+- Inconsistent error messages
+- Difficult to maintain and test
+- No single source of truth
+
+**Recommendation:**
+1. **Create Validator Classes:**
+   ```python
+   # autopr/validation/validators.py
+   from pydantic import BaseModel, validator
+   
+   class WorkflowValidator(BaseModel):
+       name: str
+       config: dict
+       
+       @validator('name')
+       def validate_name(cls, v):
+           if len(v) < 3:
+               raise ValueError("Name too short")
+           return v
+   
+   class PRValidator(BaseModel):
+       pr_number: int
+       repository: str
+       
+       @validator('pr_number')
+       def validate_pr_number(cls, v):
+           if v <= 0:
+               raise ValueError("Invalid PR number")
+           return v
+   ```
+
+2. **Consolidate Common Validators:**
+   - URL validation
+   - File path validation
+   - API key format validation
+   - Identifier validation
+
+3. **Reusable Error Messages:**
+   ```python
+   VALIDATION_ERRORS = {
+       "name_too_short": "Name must be at least 3 characters",
+       "invalid_url": "Invalid URL format",
+       "path_traversal": "Path traversal attempt detected",
+   }
+   ```
+
+4. **Testing:**
+   - Centralized validator tests
+   - Test all edge cases once
+   - Easier to maintain
+
+**Benefit:**
+- Reduced code duplication
+- Consistent validation
+- Easier testing
+- Single source of truth
+
+**Priority:** Low - quality of life improvement
+
+---
+
+#### **REF-3: Standardize Error Handling Patterns**
+
+**ID:** REF-3  
+**Category:** Refactoring  
+**Title:** Inconsistent Error Handling Across Modules  
+**Severity:** MEDIUM  
+**Effort:** M (2-3 weeks)  
+**Benefit:** Improved reliability, easier debugging
+
+**Location:**
+- Throughout `autopr/`
+- Multiple error handling patterns
+
+**Description:**
+Error handling is inconsistent:
+```python
+# Pattern 1: Bare try/except
+try:
+    result = operation()
+except Exception:
+    pass  # Silent failure
+
+# Pattern 2: Logging but no action
+try:
+    result = operation()
+except Exception as e:
+    logger.error(f"Error: {e}")
+    
+# Pattern 3: Custom exceptions
+try:
+    result = operation()
+except Exception as e:
+    raise CustomError(f"Operation failed: {e}")
+```
+
+**Impact:**
+- Difficult to debug
+- Inconsistent error messages
+- Silent failures
+- Poor error recovery
+
+**Recommendation:**
+1. **Standardize on Custom Exceptions:**
+   ```python
+   # autopr/exceptions.py (expand existing)
+   class AutoPRException(Exception):
+       """Base exception for all AutoPR errors."""
+       def __init__(self, message: str, **context):
+           super().__init__(message)
+           self.context = context
+   
+   class WorkflowError(AutoPRException):
+       """Workflow-related errors."""
+   
+   class IntegrationError(AutoPRException):
+       """Integration-related errors."""
+   ```
+
+2. **Implement Error Handler Decorator:**
+   ```python
+   def handle_errors(error_class=AutoPRException):
+       def decorator(func):
+           @wraps(func)
+           async def wrapper(*args, **kwargs):
+               try:
+                   return await func(*args, **kwargs)
+               except Exception as e:
+                   logger.exception("Error in %s", func.__name__)
+                   raise error_class(f"{func.__name__} failed") from e
+           return wrapper
+       return decorator
+   
+   # Usage
+   @handle_errors(WorkflowError)
+   async def execute_workflow(workflow_id: int):
+       pass
+   ```
+
+3. **Consistent Error Logging:**
+   ```python
+   def log_error(error: Exception, context: dict):
+       logger.error(
+           "Error occurred",
+           error_type=type(error).__name__,
+           error_message=str(error),
+           **context
+       )
+   ```
+
+4. **Document Error Handling Patterns:**
+   - When to catch vs. propagate
+   - How to add context
+   - Error message format
+   - Logging standards
+
+**Benefit:**
+- Consistent error handling
+- Easier debugging
+- Better error messages
+- Predictable behavior
+
+**Priority:** Medium - improves code quality
+
+---
+
+#### **REF-4: Decompose Large Workflow Engine Class**
+
+**ID:** REF-4  
+**Category:** Refactoring  
+**Title:** WorkflowEngine Class Too Large (Violates SRP)  
+**Severity:** MEDIUM  
+**Effort:** H (3-4 weeks)  
+**Benefit:** Improved testability, maintainability
+
+**Location:**
+- `autopr/workflows/engine.py` (WorkflowEngine class)
+
+**Description:**
+WorkflowEngine class has too many responsibilities:
+- Workflow execution
+- Metrics collection
+- State management
+- Error handling
+- Resource management
+- Logging
+- Lifecycle management
+
+This violates Single Responsibility Principle (SRP).
+
+**Impact:**
+- Difficult to test
+- Hard to understand
+- Tight coupling
+- Difficult to extend
+
+**Recommendation:**
+1. **Extract Smaller Classes:**
+   ```python
+   # autopr/workflows/execution.py
+   class WorkflowExecutor:
+       """Handles workflow execution logic."""
+       async def execute(self, workflow: Workflow) -> WorkflowResult:
+           pass
+   
+   # autopr/workflows/state.py
+   class WorkflowStateManager:
+       """Manages workflow state."""
+       async def get_state(self, workflow_id: int) -> WorkflowState:
+           pass
+       
+       async def update_state(self, workflow_id: int, state: WorkflowState):
+           pass
+   
+   # autopr/workflows/metrics.py
+   class WorkflowMetrics:
+       """Collects workflow metrics."""
+       def record_execution(self, workflow_id: int, duration: float):
+           pass
+   
+   # Refactored WorkflowEngine
+   class WorkflowEngine:
+       def __init__(self):
+           self.executor = WorkflowExecutor()
+           self.state_manager = WorkflowStateManager()
+           self.metrics = WorkflowMetrics()
+       
+       async def run(self, workflow: Workflow):
+           state = await self.state_manager.get_state(workflow.id)
+           result = await self.executor.execute(workflow)
+           self.metrics.record_execution(workflow.id, result.duration)
+           return result
+   ```
+
+2. **Benefits:**
+   - Each class has single responsibility
+   - Easier to test in isolation
+   - Easier to understand
+   - Easier to extend
+
+3. **Testing:**
+   - Test each class independently
+   - Mock dependencies
+   - Integration tests for full flow
+
+**Benefit:**
+- Better separation of concerns
+- Improved testability
+- Easier maintenance
+- Clearer code structure
+
+**Priority:** Medium - architectural improvement
+
+---
+
+#### **REF-5: Create Abstraction for LLM Provider Interface**
+
+**ID:** REF-5  
+**Category:** Refactoring  
+**Title:** Inconsistent LLM Provider Implementation Patterns  
+**Severity:** LOW  
+**Effort:** M (2 weeks)  
+**Benefit:** Easier to add new providers
+
+**Location:**
+- `autopr/ai/core/providers/` (multiple providers)
+
+**Description:**
+LLM provider implementations are inconsistent:
+- Different method signatures
+- Varying error handling
+- Inconsistent retry logic
+- Different configuration patterns
+
+**Recommendation:**
+1. **Define Provider Interface:**
+   ```python
+   # autopr/ai/core/providers/base.py
+   from abc import ABC, abstractmethod
+   from typing import Optional, List
+   
+   class LLMProvider(ABC):
+       """Base class for all LLM providers."""
+       
+       @abstractmethod
+       async def generate(
+           self, 
+           prompt: str,
+           *,
+           temperature: float = 0.7,
+           max_tokens: int = 1000,
+           stop: Optional[List[str]] = None
+       ) -> str:
+           """Generate text from prompt."""
+       
+       @abstractmethod
+       async def embed(self, text: str) -> List[float]:
+           """Generate embeddings for text."""
+       
+       @abstractmethod
+       def estimate_tokens(self, text: str) -> int:
+           """Estimate token count."""
+   ```
+
+2. **Implement Providers Consistently:**
+   ```python
+   class OpenAIProvider(LLMProvider):
+       async def generate(self, prompt: str, **kwargs) -> str:
+           # Consistent implementation
+           pass
+   
+   class AnthropicProvider(LLMProvider):
+       async def generate(self, prompt: str, **kwargs) -> str:
+           # Consistent implementation
+           pass
+   ```
+
+3. **Add Provider Factory:**
+   ```python
+   class LLMProviderFactory:
+       @staticmethod
+       def create(provider_name: str) -> LLMProvider:
+           providers = {
+               "openai": OpenAIProvider,
+               "anthropic": AnthropicProvider,
+               "mistral": MistralProvider,
+           }
+           return providers[provider_name]()
+   ```
+
+**Benefit:**
+- Consistent interface
+- Easy to add new providers
+- Easier to test
+- Better fallback handling
+
+**Priority:** Low - code quality improvement
+
+---
+
+#### **REF-6: Extract Configuration Management to Dedicated Module**
+
+**ID:** REF-6  
+**Category:** Refactoring  
+**Title:** Configuration Logic Scattered Across Codebase  
+**Severity:** LOW  
+**Effort:** M (2 weeks)  
+**Benefit:** Centralized configuration management
+
+**Location:**
+- Throughout `autopr/` (config access scattered)
+- `autopr/config/` (partial consolidation)
+
+**Description:**
+Configuration access is inconsistent:
+- Direct environment variable access
+- Mixed use of config objects
+- No validation in some places
+- Difficult to change configuration structure
+
+**Recommendation:**
+1. **Centralized Config Class:**
+   ```python
+   # autopr/config/settings.py
+   from pydantic_settings import BaseSettings
+   
+   class Settings(BaseSettings):
+       # GitHub
+       github_token: str
+       github_api_url: str = "https://api.github.com"
+       
+       # LLM Providers
+       openai_api_key: Optional[str] = None
+       anthropic_api_key: Optional[str] = None
+       
+       # Database
+       database_url: str
+       database_pool_size: int = 20
+       
+       # Redis
+       redis_url: str = "redis://localhost:6379"
+       
+       # Logging
+       log_level: str = "INFO"
+       
+       class Config:
+           env_file = ".env"
+           case_sensitive = False
+   
+   # Global settings instance
+   settings = Settings()
+   ```
+
+2. **Single Import Point:**
+   ```python
+   # Instead of:
+   import os
+   token = os.getenv("GITHUB_TOKEN")
+   
+   # Use:
+   from autopr.config import settings
+   token = settings.github_token
+   ```
+
+3. **Configuration Validation:**
+   - Pydantic validates all fields
+   - Type conversion automatic
+   - Clear error messages for missing config
+
+**Benefit:**
+- Centralized configuration
+- Type safety
+- Validation
+- Easier testing (mock settings)
+
+**Priority:** Low - architectural improvement
+
+---
+
+#### **REF-7: Improve Test Organization and Coverage**
+
+**ID:** REF-7  
+**Category:** Refactoring  
+**Title:** Test Suite Organization Needs Improvement  
+**Severity:** MEDIUM  
+**Effort:** H (3-4 weeks)  
+**Benefit:** Better test coverage, easier maintenance
+
+**Location:**
+- `tests/` directory (245 test files)
+
+**Description:**
+Test suite has issues:
+- Inconsistent test structure
+- Some modules lack tests
+- Integration tests mixed with unit tests
+- Fixtures scattered
+- No clear testing guidelines
+
+**Recommendation:**
+1. **Reorganize Test Structure:**
+   ```
+   tests/
+   ├── unit/               # Unit tests
+   │   ├── workflows/
+   │   ├── integrations/
+   │   └── ai/
+   ├── integration/        # Integration tests
+   │   ├── api/
+   │   └── database/
+   ├── e2e/               # End-to-end tests
+   ├── fixtures/          # Shared fixtures
+   │   ├── conftest.py
+   │   └── factories.py
+   └── utils/             # Test utilities
+   ```
+
+2. **Increase Coverage:**
+   - Target: 80% overall coverage
+   - Critical modules: 90%+ coverage
+   - Edge cases and error paths
+
+3. **Improve Test Quality:**
+   ```python
+   # Good test structure
+   def test_workflow_execution_success():
+       # Arrange
+       workflow = create_workflow(name="test")
+       engine = WorkflowEngine()
+       
+       # Act
+       result = await engine.execute(workflow)
+       
+       # Assert
+       assert result.status == "success"
+       assert result.duration > 0
+   ```
+
+4. **Add Testing Guidelines:**
+   - Document testing standards
+   - When to use mocks vs. real objects
+   - Fixture naming conventions
+   - Test naming conventions
+
+**Benefit:**
+- Higher code quality
+- Easier refactoring
+- Catch bugs early
+- Better documentation (tests as examples)
+
+**Priority:** Medium - improves quality
+
+---
+
