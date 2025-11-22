@@ -179,7 +179,12 @@ Installed via `pyproject.toml`:
 
 ### Database Dependencies
 
-Install for database support:
+The database dependencies are included in the `database` group. If using Poetry:
+```bash
+poetry install --with database
+```
+
+Or if installing directly with pip (non-Poetry environments):
 ```bash
 pip install 'sqlalchemy[asyncio]>=2.0.0' alembic asyncpg psycopg2-binary
 ```

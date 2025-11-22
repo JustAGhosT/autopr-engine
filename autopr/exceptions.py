@@ -92,10 +92,11 @@ def sanitize_error_message(message: str) -> str:
         (r'sqlite:///[^\s]+', 'sqlite:///[REDACTED]'),
         
         # API keys and tokens
-        # JWT tokens (base64url encoded strings with dots)
+        # JWT tokens (complete with 3 parts: header.payload.signature)
         (r'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*', '[REDACTED]'),
-        # JWT tokens without full structure (just the header/payload/signature parts)
-        (r'eyJ[a-zA-Z0-9_-]+', '[REDACTED]'),
+        # JWT header/payload/signature parts when mentioned in error context
+        # Only match when preceded by token-related keywords to avoid false positives
+        (r'(bearer|token|jwt|authorization)[\s:=]+eyJ[a-zA-Z0-9_-]+', r'\1 [REDACTED]'),
         (r'(api[_-]?key|token|secret|password)["\']?\s*[:=]\s*["\']?[a-zA-Z0-9_\-\.]+', r'\1=[REDACTED]'),
         (r'ghp_[a-zA-Z0-9]+', 'ghp_[REDACTED]'),
         (r'sk-[a-zA-Z0-9]+', 'sk-[REDACTED]'),
