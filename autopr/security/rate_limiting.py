@@ -11,9 +11,13 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional
 from functools import wraps
 
-import structlog
-
-logger = structlog.get_logger(__name__)
+try:
+    import structlog
+    logger = structlog.get_logger(__name__)
+except Exception:
+    # Fallback to standard logging if structlog is not configured
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 class RateLimiter:

@@ -29,10 +29,10 @@ SENSITIVE_PATTERNS = [
     (r"mongodb://[^@\s]+@", "mongodb://****:****@"),
     
     # API keys and tokens
-    (r"(api[_-]?key|token|secret)['\"]?\s*[:=]\s*['\"]?[\w-]{20,}", r"\1=****"),
+    (r"(api[_-]?key|token|secret)['\"]?\s*[:=]\s*['\"]?[\w-]{10,}", r"\1=****"),
     (r"Bearer\s+[\w\-.]+", "Bearer ****"),
     (r"ghp_[\w]{36}", "ghp_****"),  # GitHub tokens
-    (r"sk-[\w]{48}", "sk-****"),     # OpenAI keys
+    (r"sk-[\w]{10,}", "sk-****"),     # OpenAI keys (any length 10+)
     
     # IP addresses (partial masking)
     (r"\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.)\d{1,3}\b", r"\1***"),
