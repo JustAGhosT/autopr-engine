@@ -19,7 +19,7 @@ SENSITIVE_PATTERNS = [
     # File paths
     (r"/home/[^/\s]+", "/home/****"),
     (r"/Users/[^/\s]+", "/Users/****"),
-    (r"C:\\Users\\[^\\]+", "C:\\Users\\****"),
+    (r"C:\\Users\\[^\\]+", r"C:\\Users\\****"),
     (r"/var/[^/\s]+", "/var/****"),
     (r"/tmp/[^/\s]+", "/tmp/****"),
     
@@ -30,7 +30,7 @@ SENSITIVE_PATTERNS = [
     
     # API keys and tokens
     (r"(api[_-]?key|token|secret)['\"]?\s*[:=]\s*['\"]?[\w-]{20,}", r"\1=****"),
-    (r"Bearer\s+[\w-\.]+", "Bearer ****"),
+    (r"Bearer\s+[\w\-.]+", "Bearer ****"),
     (r"ghp_[\w]{36}", "ghp_****"),  # GitHub tokens
     (r"sk-[\w]{48}", "sk-****"),     # OpenAI keys
     
