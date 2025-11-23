@@ -11,13 +11,23 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional
 from functools import wraps
 
-try:
-    import structlog
-    logger = structlog.get_logger(__name__)
-except Exception:
-    # Fallback to standard logging if structlog is not configured
-    import logging
-    logger = logging.getLogger(__name__)
+# Lazy logger initialization to handle both structlog and standard logging
+_logger = None
+
+def _get_logger():
+    """Get logger instance with fallback."""
+    global _logger
+    if _logger is None:
+        try:
+            import structlog
+            _logger = structlog.get_logger(__name__)
+            # Test that logger works
+            _logger.info  # Access method to ensure it's callable
+        except (ImportError, TypeError, AttributeError, Exception):
+            # Fallback to standard logging if structlog is not available or not configured
+            import logging
+            _logger = logging.getLogger(__name__)
+    return _logger
 
 
 class RateLimiter:
@@ -115,7 +125,7 @@ class RateLimiter:
             "retry_after": int(reset_time - now) if not allowed else 0,
         }
         
-        logger.info(
+        _get_logger().info(
             "Rate limit check",
             key=key,
             allowed=allowed,
@@ -130,7 +140,7 @@ class RateLimiter:
         """Reset rate limit for a key (admin function)."""
         if key in self._requests:
             del self._requests[key]
-            logger.info("Rate limit reset", key=key)
+            _get_logger().info("Rate limit reset", key=key)
 
 
 # Global rate limiter instance
@@ -192,7 +202,7 @@ def rate_limit(
             
             if not allowed:
                 # Rate limit exceeded
-                logger.warning(
+                _get_logger().warning(
                     "Rate limit exceeded",
                     key=key,
                     limit=limit,
@@ -233,7 +243,7 @@ def rate_limit(
             allowed, info = limiter.is_allowed(key, limit=limit, tier=tier)
             
             if not allowed:
-                logger.warning(
+                _get_logger().warning(
                     "Rate limit exceeded",
                     key=key,
                     limit=limit,
@@ -276,7 +286,7 @@ class RedisRateLimiter(RateLimiter):
         super().__init__(**kwargs)
         self.redis_url = redis_url
         # TODO: Initialize Redis connection
-        logger.warning("RedisRateLimiter not fully implemented, falling back to in-memory")
+        _get_logger().warning("RedisRateLimiter not fully implemented, falling back to in-memory")
 
 
 # Flask middleware for rate limiting
