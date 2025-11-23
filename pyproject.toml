@@ -12,6 +12,13 @@ license = "MIT"
 readme = "README.md"
 packages = [{include = "autopr"}]
 
+keywords = [
+    "github", "pull-request", "automation", "ai", "code-review",
+    "ci-cd", "workflow", "integration", "slack", "linear", "autogen",
+    "llm", "openai", "anthropic", "issue-management", "quality-gates",
+    "platform-detection", "multi-agent"
+]
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -49,30 +56,11 @@ python-dateutil = "^2.8.0"
 pytz = "^2024.1"
 python-dotenv = "^1.0.1"
 tomli = "^2.0.1"
-loguru = "^0.7.2"
 dependency-injector = "^4.0.0"
 psutil = "^6.0.0"
 numpy = "^2.3.0"
 psycopg2-binary = "^2.9.11"
 flask-socketio = "^5.5.1"
-
-[tool.poetry.extras]
-full = [
-    "dev",
-    "monitoring",
-    "memory",
-    "ai",
-    "database",
-    "server",
-    "resilience"
-]
-
-keywords = [
-    "github", "pull-request", "automation", "ai", "code-review",
-    "ci-cd", "workflow", "integration", "slack", "linear", "autogen",
-    "llm", "openai", "anthropic", "issue-management", "quality-gates",
-    "platform-detection", "multi-agent"
-]
 
 [tool.poetry.urls]
 Homepage = "https://github.com/veritasvault/autopr-engine"
