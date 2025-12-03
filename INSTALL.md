@@ -1,19 +1,24 @@
 # AutoPR Engine - Installation Guide
 
-Choose the installation method that works best for you:
+Choose the installation method that works best for you.
+
+**Requirements:** Python 3.12+ (3.13 also supported)
 
 ## Quick Installation Options
 
-| Method | Command | Best For |
-|--------|---------|----------|
-| **One-liner** | `curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh \| bash` | Fastest setup |
-| **pip** | `pip install autopr-engine` | Local development |
-| **Docker** | `docker-compose up -d` | Production deployment |
-| **GitHub Action** | Copy workflow file | CI/CD integration |
+| Method | Linux/macOS | Windows | Best For |
+|--------|-------------|---------|----------|
+| **One-liner** | `curl ... \| bash` | `irm ... \| iex` | Fastest setup |
+| **pip** | `pip install autopr-engine` | Same | Local development |
+| **Docker** | `docker compose up -d` | Same | Production deployment |
+| **GitHub Action** | Copy workflow file | Same | CI/CD integration |
 
 ---
 
 ## Option 1: One-Line Install (Recommended)
+
+> **Security Note:** Piping scripts to bash is convenient but review scripts before running.
+> You can inspect the script first: `curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | less`
 
 ```bash
 # Standard installation
@@ -26,11 +31,28 @@ curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/instal
 curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | bash -s -- --dev
 ```
 
+### Windows (PowerShell)
+
+```powershell
+# Standard installation
+irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 | iex
+
+# Full installation
+irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 -OutFile install.ps1; .\install.ps1 -Full
+
+# Development installation
+irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 -OutFile install.ps1; .\install.ps1 -Dev
+```
+
 ---
 
-## Option 2: pip Install
+## Option 2: pip Install (Recommended with Virtual Environment)
 
 ```bash
+# Create virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate  # Windows: .\venv\Scripts\Activate.ps1
+
 # Basic installation
 pip install autopr-engine
 

@@ -12,6 +12,16 @@ Ready-to-use GitHub Action workflow templates for adding AutoPR to your reposito
 
 ## Quick Setup
 
+### Option 0: One-Line Setup (Easiest)
+
+```bash
+# Linux/macOS
+./install.sh --action
+
+# Windows PowerShell
+.\install.ps1 -Action
+```
+
 ### Option 1: Download and Copy
 
 ```bash

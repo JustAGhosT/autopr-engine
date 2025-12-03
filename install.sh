@@ -30,25 +30,35 @@ echo ""
 echo "AI-Powered GitHub PR Automation and Issue Management"
 echo ""
 
+# Version
+VERSION="1.0.0"
+
 # Detect installation type
 INSTALL_TYPE="standard"
-if [ "$1" == "--full" ]; then
+if [ "$1" = "--full" ]; then
     INSTALL_TYPE="full"
-elif [ "$1" == "--dev" ]; then
+elif [ "$1" = "--dev" ]; then
     INSTALL_TYPE="dev"
-elif [ "$1" == "--minimal" ]; then
+elif [ "$1" = "--minimal" ]; then
     INSTALL_TYPE="minimal"
-elif [ "$1" == "--docker" ]; then
+elif [ "$1" = "--docker" ]; then
     INSTALL_TYPE="docker"
-elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+elif [ "$1" = "--action" ]; then
+    INSTALL_TYPE="action"
+elif [ "$1" = "--version" ] || [ "$1" = "-v" ]; then
+    echo "AutoPR Engine Installer v${VERSION}"
+    exit 0
+elif [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --minimal   Install core package only (pip install autopr-engine)"
+    echo "  --minimal   Install core package only (no extras)"
     echo "  --standard  Install with common features (default)"
     echo "  --full      Install with all features and integrations"
     echo "  --dev       Install for development (includes dev tools)"
     echo "  --docker    Set up Docker-based installation"
+    echo "  --action    Set up GitHub Action workflow in current repo"
+    echo "  --version   Show installer version"
     echo "  --help      Show this help message"
     echo ""
     exit 0
@@ -61,10 +71,13 @@ check_prerequisites() {
     # Check Python version
     if command -v python3 &> /dev/null; then
         PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-        PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
-        PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
+        PYTHON_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
+        PYTHON_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
 
-        if [ "$PYTHON_MAJOR" -ge 3 ] && [ "$PYTHON_MINOR" -ge 12 ]; then
+        # Check for Python 3.12+ (or Python 4+)
+        if [ "$PYTHON_MAJOR" -gt 3 ]; then
+            print_success "Python $PYTHON_VERSION detected"
+        elif [ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -ge 12 ]; then
             print_success "Python $PYTHON_VERSION detected"
         else
             print_error "Python 3.12+ required (found $PYTHON_VERSION)"
@@ -102,30 +115,58 @@ check_prerequisites() {
 install_pip() {
     print_status "Installing AutoPR Engine via pip..."
 
+    # Recommend virtual environment
+    if [ -z "$VIRTUAL_ENV" ] && [ "$INSTALL_TYPE" != "minimal" ]; then
+        print_warning "Consider using a virtual environment: python3 -m venv venv && source venv/bin/activate"
+    fi
+
     case $INSTALL_TYPE in
         "minimal")
-            print_status "Installing minimal package..."
-            pip3 install autopr-engine
+            print_status "Installing minimal package (core only, no extras)..."
+            pip3 install --no-deps autopr-engine || {
+                print_error "Installation failed"
+                exit 1
+            }
             ;;
         "standard")
-            print_status "Installing standard package..."
-            pip3 install "autopr-engine"
+            print_status "Installing standard package with common dependencies..."
+            pip3 install autopr-engine || {
+                print_error "Installation failed"
+                exit 1
+            }
             ;;
         "full")
             print_status "Installing full package with all features..."
-            pip3 install "autopr-engine[full]"
+            pip3 install "autopr-engine[full]" || {
+                print_error "Installation failed"
+                exit 1
+            }
             ;;
         "dev")
             print_status "Installing development package..."
             if [ -f "pyproject.toml" ]; then
                 # We're in the repo
-                pip3 install -e ".[dev]"
+                pip3 install -e ".[dev]" || {
+                    print_error "Installation failed"
+                    exit 1
+                }
             else
                 # Clone and install
                 print_status "Cloning repository..."
-                git clone https://github.com/JustAGhosT/autopr-engine.git
-                cd autopr-engine
-                pip3 install -e ".[dev]"
+                CLONE_DIR=$(mktemp -d)
+                if git clone https://github.com/JustAGhosT/autopr-engine.git "$CLONE_DIR/autopr-engine"; then
+                    cd "$CLONE_DIR/autopr-engine"
+                    pip3 install -e ".[dev]" || {
+                        print_error "Installation failed"
+                        rm -rf "$CLONE_DIR"
+                        exit 1
+                    }
+                    print_status "Repository cloned to: $CLONE_DIR/autopr-engine"
+                else
+                    print_error "Failed to clone repository"
+                    rm -rf "$CLONE_DIR"
+                    exit 1
+                fi
             fi
             ;;
     esac
@@ -140,12 +181,36 @@ install_docker() {
     # Create directory if not in repo
     if [ ! -f "docker-compose.yml" ]; then
         print_status "Creating autopr directory..."
-        mkdir -p autopr-engine && cd autopr-engine
+        mkdir -p autopr-engine && cd autopr-engine || {
+            print_error "Failed to create directory"
+            exit 1
+        }
 
-        # Download docker-compose.yml
+        # Download docker-compose.yml with retry
         print_status "Downloading Docker Compose configuration..."
-        curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/docker-compose.yml -o docker-compose.yml
-        curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/.env.example -o .env.example
+        for i in 1 2 3; do
+            if curl -sSL --fail https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/docker-compose.yml -o docker-compose.yml; then
+                break
+            fi
+            if [ "$i" -eq 3 ]; then
+                print_error "Failed to download docker-compose.yml after 3 attempts"
+                exit 1
+            fi
+            print_warning "Download failed, retrying... ($i/3)"
+            sleep 2
+        done
+
+        for i in 1 2 3; do
+            if curl -sSL --fail https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/.env.example -o .env.example; then
+                break
+            fi
+            if [ "$i" -eq 3 ]; then
+                print_error "Failed to download .env.example after 3 attempts"
+                exit 1
+            fi
+            print_warning "Download failed, retrying... ($i/3)"
+            sleep 2
+        done
     fi
 
     # Create .env file if it doesn't exist
@@ -159,7 +224,7 @@ install_docker() {
     echo ""
     print_status "To start AutoPR Engine:"
     echo "  1. Edit .env with your API keys"
-    echo "  2. Run: docker-compose up -d"
+    echo "  2. Run: docker compose up -d"
 }
 
 # Create environment file
@@ -250,16 +315,21 @@ EOF
 
 # Main installation flow
 main() {
-    check_prerequisites
-
-    if [ "$INSTALL_TYPE" == "docker" ]; then
-        install_docker
-    else
-        install_pip
-        setup_env
-    fi
-
-    show_next_steps
+    case $INSTALL_TYPE in
+        "action")
+            setup_github_action
+            ;;
+        "docker")
+            check_prerequisites
+            install_docker
+            ;;
+        *)
+            check_prerequisites
+            install_pip
+            setup_env
+            show_next_steps
+            ;;
+    esac
 }
 
 # Run main

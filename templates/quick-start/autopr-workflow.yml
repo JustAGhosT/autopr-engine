@@ -21,6 +21,11 @@ permissions:
   pull-requests: write
   issues: write
 
+# Prevent duplicate runs on the same PR
+concurrency:
+  group: autopr-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   analyze-pr:
     name: AI-Powered PR Analysis

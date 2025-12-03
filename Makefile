@@ -3,9 +3,10 @@
 # Usage: make [target]
 # Run 'make help' for available commands
 
-.PHONY: help install install-dev install-full clean test lint format \
-        docker docker-up docker-down docker-logs docker-build \
-        setup-action env check run server worker
+.PHONY: help install install-dev install-full clean clean-all test test-cov test-fast \
+        lint lint-fix format check run server worker \
+        docker-build docker-up docker-down docker-logs docker-shell docker-restart docker-clean \
+        setup-action setup-venv setup-poetry env deps-update docs quickstart
 
 # Default target
 .DEFAULT_GOAL := help
@@ -77,8 +78,15 @@ setup-poetry: ## Install using Poetry
 setup-action: ## Create GitHub Action workflow in current repo
 	@echo "$(BLUE)Setting up GitHub Action...$(NC)"
 	@mkdir -p .github/workflows
-	@cp templates/quick-start/autopr-workflow.yml .github/workflows/autopr.yml 2>/dev/null || \
-		curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/templates/quick-start/autopr-workflow.yml -o .github/workflows/autopr.yml
+	@if [ -f templates/quick-start/autopr-workflow.yml ]; then \
+		cp templates/quick-start/autopr-workflow.yml .github/workflows/autopr.yml; \
+		echo "$(GREEN)Copied from local templates$(NC)"; \
+	elif curl -sSL --fail https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/templates/quick-start/autopr-workflow.yml -o .github/workflows/autopr.yml; then \
+		echo "$(GREEN)Downloaded from GitHub$(NC)"; \
+	else \
+		echo "$(RED)Failed to set up GitHub Action$(NC)"; \
+		exit 1; \
+	fi
 	@echo "$(GREEN)Created .github/workflows/autopr.yml$(NC)"
 	@echo "$(YELLOW)Remember to add OPENAI_API_KEY to your repository secrets!$(NC)"
 
@@ -147,7 +155,7 @@ docker-logs: ## View Docker logs
 	$(DOCKER_COMPOSE) logs -f
 
 docker-shell: ## Open shell in running container
-	docker exec -it autopr-engine bash
+	$(DOCKER_COMPOSE) exec autopr-engine bash
 
 docker-restart: docker-down docker-up ## Restart Docker services
 

@@ -140,7 +140,7 @@ jobs:
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ steps.pr.outputs.number }},
+              issue_number: parseInt('${{ steps.pr.outputs.number }}', 10),
               body: body
             });
 
@@ -180,13 +180,15 @@ jobs:
 
       - name: Parse Command
         id: command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          COMMENT="${{ github.event.comment.body }}"
-          if [[ "$COMMENT" == *"/autopr analyze"* ]]; then
+          # Use environment variable to prevent command injection
+          if echo "$COMMENT_BODY" | grep -q "/autopr analyze"; then
             echo "action=analyze" >> $GITHUB_OUTPUT
-          elif [[ "$COMMENT" == *"/autopr suggest"* ]]; then
+          elif echo "$COMMENT_BODY" | grep -q "/autopr suggest"; then
             echo "action=suggest" >> $GITHUB_OUTPUT
-          elif [[ "$COMMENT" == *"/autopr help"* ]]; then
+          elif echo "$COMMENT_BODY" | grep -q "/autopr help"; then
             echo "action=help" >> $GITHUB_OUTPUT
           fi
 
