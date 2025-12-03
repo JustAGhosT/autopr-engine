@@ -34,7 +34,6 @@ from .scoring import PlatformScoringEngine
 
 logger = logging.getLogger(__name__)
 
-
 class PlatformDetectorOutputs(BaseModel):
     """Rich analysis output for platform detection.
 
