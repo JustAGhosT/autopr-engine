@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autopr-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autopr-engine
+  template:
+    metadata:
+      labels:
+        app: autopr-engine
+    spec:
+      containers:
+      - name: autopr-engine
+        image: autopracr.azurecr.io/autopr-engine:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: autopr-config
+        - secretRef:
+            name: autopr-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autopr-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autopr-worker
+  template:
+    metadata:
+      labels:
+        app: autopr-worker
+    spec:
+      containers:
+      - name: autopr-worker
+        image: autopracr.azurecr.io/autopr-engine:latest
+        command: ["autopr-worker"]
+        envFrom:
+        - configMapRef:
+            name: autopr-config
+        - secretRef:
+            name: autopr-secrets
