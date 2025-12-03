@@ -17,6 +17,14 @@ from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
                                                            SplitConfig)
 from autopr.actions.ai_linting_fixer.performance_optimizer import \
     PerformanceOptimizer
+from autopr.actions.ai_comment_analyzer import (
+    AICommentAnalyzer,
+    AICommentAnalysisInputs,
+)
+from autopr.actions.autogen_multi_agent import (
+    autogen_multi_agent_action,
+    AutoGenInputs,
+)
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
 from autopr.actions.registry import ActionRegistry
@@ -26,6 +34,8 @@ from autopr.config import AutoPRConfig
 from autopr.engine import AutoPREngine
 from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.database.config import get_db
+from autopr.database.models import IntegrationEvent
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 # Configure logging
@@ -45,6 +55,33 @@ def cli(verbose: bool, quiet: bool):
         logging.getLogger().setLevel(logging.DEBUG)
     if quiet:
         logging.getLogger().setLevel(logging.ERROR)
+
+
+@cli.command()
+@click.option("--event-type", required=True, help="The type of the event.")
+@click.option("--payload", required=True, help="The JSON payload for the event.")
+def create_event(event_type: str, payload: str):
+    """Creates a new IntegrationEvent in the database."""
+    asyncio.run(_create_event(event_type, payload))
+
+
+async def _create_event(event_type: str, payload_str: str):
+    """Create a new IntegrationEvent in the database"""
+    try:
+        import json
+        payload = json.loads(payload_str)
+        async with get_db() as db:
+            event = IntegrationEvent(
+                event_type=event_type,
+                payload=payload,
+                status="pending",
+            )
+            db.add(event)
+            await db.commit()
+        click.echo(f"Successfully created event {event.id}")
+    except Exception as e:
+        logger.exception(f"Failed to create event: {e}")
+        sys.exit(1)
 
 
 @cli.command()

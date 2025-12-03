@@ -1,0 +1,62 @@
+name: PR Comment Handler
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  handle-comment:
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if comment analysis is enabled
+        id: check_config
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq '.comment_analyzer.enabled' configs/config.yaml
+
+      - name: Checkout code
+        if: steps.check_config.outputs.result == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.check_config.outputs.result == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Poetry
+        if: steps.check_config.outputs.result == 'true'
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        if: steps.check_config.outputs.result == 'true'
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install Python dependencies
+        if: steps.check_config.outputs.result == 'true' && steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: |
+          poetry env use python
+          poetry install --no-interaction --no-root
+
+      - name: Create Integration Event
+        if: steps.check_config.outputs.result == 'true'
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg body "${{ github.event.comment.body }}" \
+            --arg path "${{ github.event.comment.path }}" \
+            --arg diff_url "${{ github.event.issue.pull_request.diff_url }}" \
+            '{body: $body, path: $path, diff_url: $diff_url}')
+
+          poetry run autopr create-event --event-type "pr_comment" --payload "$PAYLOAD"
