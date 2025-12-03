@@ -130,7 +130,6 @@ class RateLimiter:
             key=key,
             allowed=allowed,
             current_count=current_count,
-            limit=effective_limit,
             **info
         )
         
@@ -205,7 +204,6 @@ def rate_limit(
                 _get_logger().warning(
                     "Rate limit exceeded",
                     key=key,
-                    limit=limit,
                     **info
                 )
                 # For FastAPI/Flask, you'd raise an exception here
@@ -246,7 +244,6 @@ def rate_limit(
                 _get_logger().warning(
                     "Rate limit exceeded",
                     key=key,
-                    limit=limit,
                     **info
                 )
                 raise Exception(f"Rate limit exceeded. Retry after {info['retry_after']} seconds")
