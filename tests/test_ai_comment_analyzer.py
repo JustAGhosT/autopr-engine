@@ -7,8 +7,6 @@ Tests for:
 """
 
 import json
-import os
-import tempfile
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -126,52 +124,49 @@ class TestFallbackAnalysis:
 class TestAnalyzeCommentWithAI:
     """Tests for analyze_comment_with_ai function."""
 
-    def test_reads_file_content_when_file_exists(self):
+    def test_reads_file_content_when_file_exists(self, tmp_path):
         """Test that file content is read when file_path points to existing file."""
-        # Create a temporary file with content
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-            f.write("def example_function():\n    return 42\n")
-            temp_file_path = f.name
+        # Create a temporary file with content using pytest's tmp_path fixture
+        temp_file = tmp_path / "test_file.py"
+        temp_file.write_text("def example_function():\n    return 42\n")
+        temp_file_path = str(temp_file)
 
-        try:
-            inputs = AICommentAnalysisInputs(
-                comment_body="Fix the return value",
-                file_path=temp_file_path,
-            )
+        inputs = AICommentAnalysisInputs(
+            comment_body="Fix the return value",
+            file_path=temp_file_path,
+        )
+        
+        # Mock OpenAI to return a valid response and avoid actual API call
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = json.dumps({
+            "intent": "fix_request",
+            "confidence": 0.9,
+            "suggested_actions": ["modify_code"],
+            "auto_fixable": True,
+            "search_block": "return 42",
+            "replace_block": "return 0",
+            "response_template": "Fixed the return value",
+            "issue_priority": "medium",
+            "tags": ["fix"],
+        })
+        
+        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+            mock_client = MagicMock()
+            mock_openai.return_value = mock_client
+            mock_client.chat.completions.create.return_value = mock_response
             
-            # Mock OpenAI to return a valid response and avoid actual API call
-            mock_response = MagicMock()
-            mock_response.choices = [MagicMock()]
-            mock_response.choices[0].message.content = json.dumps({
-                "intent": "fix_request",
-                "confidence": 0.9,
-                "suggested_actions": ["modify_code"],
-                "auto_fixable": True,
-                "search_block": "return 42",
-                "replace_block": "return 0",
-                "response_template": "Fixed the return value",
-                "issue_priority": "medium",
-                "tags": ["fix"],
-            })
+            result = analyze_comment_with_ai(inputs)
             
-            with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
-                mock_client = MagicMock()
-                mock_openai.return_value = mock_client
-                mock_client.chat.completions.create.return_value = mock_response
-                
-                result = analyze_comment_with_ai(inputs)
-                
-                # Verify OpenAI was called
-                mock_client.chat.completions.create.assert_called_once()
-                
-                # Check that the user prompt included file content
-                call_args = mock_client.chat.completions.create.call_args
-                messages = call_args.kwargs['messages']
-                user_message = next(m for m in messages if m['role'] == 'user')
-                assert "def example_function()" in user_message['content']
-                assert "return 42" in user_message['content']
-        finally:
-            os.unlink(temp_file_path)
+            # Verify OpenAI was called
+            mock_client.chat.completions.create.assert_called_once()
+            
+            # Check that the user prompt included file content
+            call_args = mock_client.chat.completions.create.call_args
+            messages = call_args.kwargs['messages']
+            user_message = next(m for m in messages if m['role'] == 'user')
+            assert "def example_function()" in user_message['content']
+            assert "return 42" in user_message['content']
 
     def test_handles_nonexistent_file_path(self):
         """Test that nonexistent file path doesn't cause error."""
