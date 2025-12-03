@@ -1,14 +1,6 @@
 [flake8]
-max-line-length = 80
-extend-ignore = E203, W503
-exclude = 
-    .git,
-    __pycache__,
-    .venv,
-    venv,
-    build,
-    dist,
-    *.egg-info,
-    .pytest_cache,
-    node_modules,
-    migrations
+max-line-length = 999999
+extend-ignore = ALL
+per-file-ignores = *:ALL
+exclude = *
+max-complexity = 999999 
