@@ -1,0 +1,27 @@
+# AutoPR Engine - Minimal Setup
+# ==============================
+# The simplest way to add AutoPR to your repository
+# Copy to: .github/workflows/autopr.yml
+
+name: AutoPR
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install autopr-engine
+
+      - run: autopr analyze --repo ${{ github.repository }} --pr ${{ github.event.pull_request.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
