@@ -58,6 +58,33 @@ def cli(verbose: bool, quiet: bool):
 
 
 @cli.command()
+@click.option("--event-type", required=True, help="The type of the event.")
+@click.option("--payload", required=True, help="The JSON payload for the event.")
+def create_event(event_type: str, payload: str):
+    """Creates a new IntegrationEvent in the database."""
+    asyncio.run(_create_event(event_type, payload))
+
+
+async def _create_event(event_type: str, payload_str: str):
+    """Create a new IntegrationEvent in the database"""
+    try:
+        import json
+        payload = json.loads(payload_str)
+        async with get_db() as db:
+            event = IntegrationEvent(
+                event_type=event_type,
+                payload=payload,
+                status="pending",
+            )
+            db.add(event)
+            await db.commit()
+        click.echo(f"Successfully created event {event.id}")
+    except Exception as e:
+        logger.exception(f"Failed to create event: {e}")
+        sys.exit(1)
+
+
+@cli.command()
 @click.option(
     "--mode",
     "-m",
