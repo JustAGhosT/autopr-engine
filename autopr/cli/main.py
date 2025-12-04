@@ -139,6 +139,32 @@ def config(file: str, fix: bool):
     click.echo("The config validation feature is under development and will be available in a future release.")
 
 
+@cli.command()
+@click.option("--comment-body", required=True, help="The body of the PR comment.")
+@click.option("--file-path", help="The file path the comment is on.")
+@click.option("--pr-diff", help="The diff of the pull request.")
+def analyze_comment(comment_body: str, file_path: str, pr_diff: str):
+    """Analyzes a PR comment and returns the analysis as a JSON object."""
+    asyncio.run(_run_comment_analysis(comment_body, file_path, pr_diff))
+
+
+async def _run_comment_analysis(comment_body: str, file_path: str, pr_diff: str):
+    """Run comment analysis with the specified parameters"""
+    try:
+        analyzer = AICommentAnalyzer()
+        inputs = AICommentAnalysisInputs(
+            comment_body=comment_body,
+            file_path=file_path,
+            pr_diff=pr_diff,
+        )
+        result = await analyzer.execute(inputs, {})
+        import json
+        click.echo(json.dumps(result.dict()))
+    except Exception as e:
+        logger.exception(f"Comment analysis failed: {e}")
+        sys.exit(1)
+
+
 async def _run_quality_check(
     mode: str,
     files: tuple,

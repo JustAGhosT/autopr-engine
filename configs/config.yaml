@@ -1,6 +1,9 @@
 # AutoPR Configuration
 # Configuration for all tools and workflows
 
+comment_analyzer:
+  enabled: true
+
 quality_engine:
   default_mode: "smart"
   max_concurrent_fixes: 5
