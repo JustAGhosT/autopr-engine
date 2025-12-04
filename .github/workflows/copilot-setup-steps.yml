@@ -8,7 +8,7 @@ name: Copilot Setup Steps
 on: workflow_dispatch
 
 env:
-  PYTHON_VERSION: "3.13"
+  PYTHON_VERSION: "3.12"
 
 jobs:
   setup:
@@ -32,12 +32,12 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
-      # Install project dependencies
+      # Install project dependencies including dev dependencies
       - name: Install dependencies
         run: |
-          poetry install --no-interaction --with dev
+          poetry install --no-interaction --with=dev
 
-      # Install additional tools needed for development
-      - name: Install development tools
+      # Install ruff linter (not in pyproject.toml dev dependencies)
+      - name: Install linter
         run: |
-          poetry run pip install ruff mypy pytest pytest-asyncio pytest-cov
+          poetry run pip install ruff
