@@ -7,6 +7,12 @@ inputs:
   environment:
     description: 'Deployment environment'
     required: true
+  resource_group:
+    description: 'Azure Resource Group'
+    required: true
+  cluster_name:
+    description: 'AKS Cluster Name'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -35,7 +41,7 @@ runs:
 
     - name: Get Kubeconfig
       run: |
-        az aks get-credentials --resource-group autopr-rg --name autopr-aks --overwrite-existing
+        az aks get-credentials --resource-group ${{ inputs.resource_group }} --name ${{ inputs.cluster_name }} --overwrite-existing
       shell: bash
 
     - name: Create Kubernetes secret

@@ -5,6 +5,13 @@ terraform {
       version = "~> 3.0"
     }
   }
+
+  backend "azurerm" {
+    resource_group_name  = "autopr-rg"
+    storage_account_name = "autoprtfstate"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
 }
 
 provider "azurerm" {
@@ -72,4 +79,18 @@ resource "azurerm_redis_cache" "redis" {
   sku_name            = "Basic"
   enable_non_ssl_port = false
   minimum_tls_version = "1.2"
+}
+
+resource "azurerm_storage_account" "tfstate" {
+  name                     = "autoprtfstate"
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_storage_container" "tfstate" {
+  name                  = "tfstate"
+  storage_account_name  = azurerm_storage_account.tfstate.name
+  container_access_type = "private"
 }
