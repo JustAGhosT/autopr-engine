@@ -19,6 +19,8 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 import yaml  # type: ignore[import-untyped]
 
 
+# Flag to track Pydantic version
+_PYDANTIC_V2 = True
 try:
     # Pydantic 2.0+ (preferred)
     from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -26,6 +28,7 @@ except ImportError:
     # Pydantic 1.x fallback
     from pydantic.env_settings import BaseSettings  # type: ignore[no-redef]
     SettingsConfigDict = None  # type: ignore[misc,assignment]
+    _PYDANTIC_V2 = False
 
 
 class Environment(StrEnum):
@@ -331,14 +334,24 @@ class AutoPRSettings(BaseSettings):
     # Custom settings for extensions
     custom: dict[str, Any] = Field(default_factory=dict)
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        validate_assignment=True,
-        extra="allow",  # Allow additional fields for custom settings
-        env_prefix="",  # No prefix for top-level settings
-    ) if SettingsConfigDict else None  # type: ignore[assignment]
+    # Pydantic V2 configuration using SettingsConfigDict
+    if _PYDANTIC_V2 and SettingsConfigDict:
+        model_config = SettingsConfigDict(
+            env_file=".env",
+            env_file_encoding="utf-8",
+            case_sensitive=False,
+            validate_assignment=True,
+            extra="allow",  # Allow additional fields for custom settings
+            env_prefix="",  # No prefix for top-level settings
+        )
+    else:
+        # Pydantic V1 fallback using class Config
+        class Config:
+            env_file = ".env"
+            env_file_encoding = "utf-8"
+            case_sensitive = False
+            validate_assignment = True
+            extra = "allow"
 
     def __init__(self, **kwargs):
         """Initialize settings with environment-specific overrides."""
