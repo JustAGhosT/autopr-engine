@@ -86,15 +86,16 @@ async def webhook(
                     owner,
                     repo.get("name", ""),
                 )
-
-        return {"received": True}
-
     except Exception as e:
+        from autopr.exceptions import sanitize_error_message
+        
         logger.error(f"Webhook error: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Webhook processing failed: {str(e)}",
-        )
+            detail=f"Webhook processing failed: {sanitize_error_message(str(e))}",
+        ) from e
+    else:
+        return {"received": True}
 
 
 async def handle_installation(installation: dict) -> None:
