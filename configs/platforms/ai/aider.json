@@ -1,0 +1,66 @@
+{
+  "id": "aider",
+  "name": "Aider",
+  "description": "AI pair programming in your terminal - command-line AI coding assistant",
+  "category": "ai_development",
+  "display_name": "Aider",
+  "version": "1.0.0",
+  "status": "active",
+  "is_active": true,
+  "is_beta": false,
+  "is_deprecated": false,
+  "type": "ai",
+  "source": "official",
+  "priority": 56,
+  "min_autopr_version": "0.1.0",
+  "vendor": "Aider",
+  "website": "https://aider.chat",
+  "pricing_model": "open_source",
+  "supported_languages": [
+    "python",
+    "javascript",
+    "typescript",
+    "go",
+    "java",
+    "c++",
+    "rust",
+    "ruby",
+    "php",
+    "c#"
+  ],
+  "tags": ["terminal", "ai_assistant", "pair_programming", "cli"],
+  "documentation_url": "https://aider.chat/docs",
+  "setup_guide": "https://aider.chat/docs/install",
+  "troubleshooting_guide": "https://aider.chat/docs/troubleshooting",
+  "maintainer": "Aider",
+
+  "detection": {
+    "files": [".aider", ".aider.conf.yml", ".aider.input.history", ".aider.chat.history.md"],
+    "dependencies": ["aider-chat"],
+    "folder_patterns": [".aider", "aider-"],
+    "commit_patterns": ["aider", "Aider", "aider.chat", "aider:"],
+    "content_patterns": ["aider.chat", "aider config"],
+    "confidence_weights": {
+      "files": 0.6,
+      "dependencies": 0.2,
+      "folder_patterns": 0.1,
+      "commit_patterns": 0.05,
+      "content_patterns": 0.05
+    }
+  },
+
+  "project_config": {
+    "primary_language": "python",
+    "framework": "aider",
+    "deployment_targets": ["local"],
+    "common_files": [".aider", ".aider.conf.yml", ".aider.input.history"],
+    "features": [
+      "terminal_based",
+      "git_integration",
+      "multi_file_editing",
+      "context_aware",
+      "code_refactoring"
+    ],
+    "configuration_files": [".aider.conf.yml"]
+  }
+}

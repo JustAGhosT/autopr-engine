@@ -1,0 +1,26 @@
+{
+  "id": "claude_code",
+  "name": "Claude Code",
+  "category": "ai_development",
+  "description": "Anthropic's AI assistant for coding.",
+  "priority": 9,
+  "display_name": "Claude Code",
+  "version": "1.0.0",
+  "status": "active",
+  "is_active": true,
+  "type": "ai",
+  "tags": ["ai", "coding-assistant", "anthropic"],
+  "integration_type": "api",
+  "integration_instructions": "1. Get your API key from the Anthropic website.\n2. Enter your API key in the settings.",
+  "ui_config": {
+    "icon": "https://claude.ai/favicon.ico"
+  },
+  "detection": {
+    "files": [],
+    "dependencies": ["@anthropic-ai/sdk"],
+    "folder_patterns": [],
+    "commit_patterns": []
+  },
+  "project_config": {},
+  "metadata": {}
+}

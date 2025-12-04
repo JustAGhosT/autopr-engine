@@ -44,11 +44,7 @@ except ImportError:
     STRUCTLOG_AVAILABLE = False
     structlog_module = None
 
-__version__ = "0.1.0"
-__author__ = "AutoPR Team"
-__email__ = "team@autopr.dev"
-__license__ = "MIT"
-__url__ = "https://github.com/veritasvault/autopr-engine"
+__version__ = "1.0.1"
 
 # Public API exports
 __all__ = [
@@ -59,43 +55,6 @@ __all__ = [
     "LLMProvider",
     "LLMProviderManager",
 ]
-
-# Package metadata
-__package_info__ = {
-    "name": "autopr-engine",
-    "version": __version__,
-    "description": "AI-Powered GitHub PR Automation and Issue Management",
-    "author": __author__,
-    "author_email": __email__,
-    "license": __license__,
-    "url": __url__,
-    "keywords": [
-        "github",
-        "pull-request",
-        "automation",
-        "ai",
-        "code-review",
-        "ci-cd",
-        "workflow",
-        "integration",
-        "slack",
-        "linear",
-        "autogen",
-        "llm",
-        "openai",
-        "anthropic",
-        "issue-management",
-    ],
-    "classifiers": [
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Software Development",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    ],
-}
 
 # Setup logging defaults
 

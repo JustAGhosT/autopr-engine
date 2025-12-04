@@ -91,6 +91,159 @@
       "config_file": "ai/amazon_codeguru.json",
       "is_active": true,
       "priority": 7
+    },
+    {
+      "id": "base44",
+      "name": "Base44",
+      "category": "ai_development",
+      "description": "AI-powered development platform with advanced code generation",
+      "config_file": "ai/base44.json",
+      "is_active": true,
+      "priority": 10
+    },
+    {
+      "id": "windsurf",
+      "name": "Windsurf",
+      "category": "ai_development",
+      "description": "Next-generation AI-powered IDE with advanced code intelligence",
+      "config_file": "ai/windsurf.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "continue",
+      "name": "Continue",
+      "category": "ai_development",
+      "description": "Open-source AI code assistant for VS Code and JetBrains",
+      "config_file": "ai/continue.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "aider",
+      "name": "Aider",
+      "category": "ai_development",
+      "description": "AI pair programming in your terminal",
+      "config_file": "ai/aider.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "amazon_q",
+      "name": "Amazon Q Developer",
+      "category": "ai_development",
+      "description": "AWS's AI-powered assistant for software development",
+      "config_file": "ai/amazon_q.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "google_ai_studio",
+      "name": "Google AI Studio",
+      "category": "ai_development",
+      "description": "Google's AI development platform with Gemini integration",
+      "config_file": "ai/google_ai_studio.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "huggingface_code",
+      "name": "Hugging Face Code",
+      "category": "ai_development",
+      "description": "Open-source code assistance powered by Hugging Face models",
+      "config_file": "ai/huggingface_code.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "codegpt",
+      "name": "CodeGPT",
+      "category": "ai_development",
+      "description": "AI coding assistant plugin for VS Code with customizable models",
+      "config_file": "ai/codegpt.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "phind",
+      "name": "Phind",
+      "category": "ai_development",
+      "description": "AI-powered search engine specialized for developers",
+      "config_file": "ai/phind.json",
+      "is_active": true,
+      "priority": 7
+    },
+    {
+      "id": "supermaven",
+      "name": "Supermaven",
+      "category": "ai_development",
+      "description": "Ultra-fast AI code completion with large context window",
+      "config_file": "ai/supermaven.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "riff_new",
+      "name": "Riff.new",
+      "category": "ai_development",
+      "description": "AI-powered music and audio creation platform.",
+      "config_file": "ai/riff_new.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "same_new",
+      "name": "Same.new",
+      "category": "ai_development",
+      "description": "AI-powered platform for building and sharing interactive tutorials.",
+      "config_file": "ai/same_new.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "bolt_new",
+      "name": "Bolt.new",
+      "category": "ai_development",
+      "description": "AI-powered platform for creating and sharing interactive presentations.",
+      "config_file": "ai/bolt_new.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "warp",
+      "name": "Warp",
+      "category": "ai_development",
+      "description": "The terminal for the 21st century.",
+      "config_file": "ai/warp.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "claude_code",
+      "name": "Claude Code",
+      "category": "ai_development",
+      "description": "Anthropic's AI assistant for coding.",
+      "config_file": "ai/claude_code.json",
+      "is_active": true,
+      "priority": 9
+    },
+    {
+      "id": "cto_net",
+      "name": "CTO.net",
+      "category": "ai_development",
+      "description": "AI-powered platform for CTOs and engineering leaders.",
+      "config_file": "ai/cto_net.json",
+      "is_active": true,
+      "priority": 8
+    },
+    {
+      "id": "factory_ai",
+      "name": "Factory.ai",
+      "category": "ai_development",
+      "description": "AI-powered platform for building and deploying AI models.",
+      "config_file": "ai/factory_ai.json",
+      "is_active": true,
+      "priority": 9
     }
   ],
   "metadata": {

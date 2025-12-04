@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "autopr-engine"
-version = "1.0.0"
+version = "1.0.1"
 description = "AI-Powered GitHub PR Automation and Issue Management"
 authors = ["VeritasVault Team <dev@veritasvault.net>"]
 maintainers = ["VeritasVault Team <dev@veritasvault.net>"]
@@ -12,8 +12,15 @@ license = "MIT"
 readme = "README.md"
 packages = [{include = "autopr"}]
 
+keywords = [
+    "github", "pull-request", "automation", "ai", "code-review",
+    "ci-cd", "workflow", "integration", "slack", "linear", "autogen",
+    "llm", "openai", "anthropic", "issue-management", "quality-gates",
+    "platform-detection", "multi-agent"
+]
+
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
@@ -35,6 +42,7 @@ aiohttp = "^3.10.0"
 structlog = "^24.4.0"
 click = "^8.1.0"
 pyyaml = "^6.0.1"
+opentelemetry-sdk = ">=1.22.0"
 jinja2 = "^3.1.4"
 pygithub = "^2.4.0"
 GitPython = "^3.1.43"
@@ -48,28 +56,11 @@ python-dateutil = "^2.8.0"
 pytz = "^2024.1"
 python-dotenv = "^1.0.1"
 tomli = "^2.0.1"
-loguru = "^0.7.2"
 dependency-injector = "^4.0.0"
 psutil = "^6.0.0"
 numpy = "^2.3.0"
-
-[tool.poetry.extras]
-full = [
-    "dev",
-    "monitoring",
-    "memory",
-    "ai",
-    "database",
-    "server",
-    "resilience"
-]
-
-keywords = [
-    "github", "pull-request", "automation", "ai", "code-review",
-    "ci-cd", "workflow", "integration", "slack", "linear", "autogen",
-    "llm", "openai", "anthropic", "issue-management", "quality-gates",
-    "platform-detection", "multi-agent"
-]
+psycopg2-binary = "^2.9.11"
+flask-socketio = "^5.5.1"
 
 [tool.poetry.urls]
 Homepage = "https://github.com/veritasvault/autopr-engine"
@@ -106,37 +97,32 @@ autopr-migration = "autopr.migration:main"
 "groq" = "autopr.ai.providers.groq:GroqProvider"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.0"
-pytest-asyncio = "^0.24.0"
-pytest-cov = "^5.0.0"
-pytest-mock = "^3.14.0"
-black = "^24.8.0"
-isort = "^5.13.0"
-flake8 = "^7.0.0"
-mypy = "^1.11.0"
-pre-commit = "^3.0.0"
-sphinx = "^8.1.0"
-sphinx-rtd-theme = "^3.0.0"
-myst-parser = "^4.0.0"
-types-pyyaml = "^6.0.12.20250822"
-types-requests = "^2.32.4.20250809"
+pytest = "8.2.0"
+pytest-asyncio = ">=0.24.0"
+pytest-cov = ">=5.0.0"
+pytest-mock = ">=3.14.0"
+black = ">=24.8.0"
+isort = ">=5.13.0"
+flake8 = ">=7.0.0"
+mypy = ">=1.11.0"
+pre-commit = ">=3.0.0"
+sphinx = ">=8.1.0"
+sphinx-rtd-theme = ">=3.0.0"
+myst-parser = ">=4.0.0"
+types-pyyaml = ">=6.0.12"
+types-requests = ">=2.32.4"
 
 [tool.poetry.group.monitoring.dependencies]
-prometheus-client = "^0.17.0"
-sentry-sdk = {extras = ["fastapi"], version = "^1.32.0"}
-datadog = "^0.47.0"
+prometheus-client = ">=0.17.0"
+sentry-sdk = {extras = ["fastapi"], version = ">=1.32.0"}
+datadog = ">=0.47.0"
 
 [tool.poetry.group.memory.dependencies]
-# Temporarily commented out due to Python 3.13 compatibility issues
-# mem0ai = "^0.1.0"
-# chromadb = "^0.4.0"
-# qdrant-client = "^1.5.0"
+mem0ai = "^0.1.0"
+chromadb = "^0.4.0"
+qdrant-client = "^1.5.0"
 
 [tool.poetry.group.ai.dependencies]
-# Temporarily commented out due to Python 3.13 compatibility issues
-# langchain = "^0.3.0"
-# langchain-openai = "^0.1.0"
-# langchain-anthropic = "^0.1.0"
 
 [tool.poetry.group.database.dependencies]
 asyncpg = "^0.30.0"
@@ -179,7 +165,7 @@ autopr = [
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = ["-ra", "--tb=short", "--maxfail=10"]
+addopts = ["-ra", "--tb=short", "--maxfail=10", "-p", "no:langsmith"]
 testpaths = ["tests"]
 # Warning filters are now controlled by volume settings in autopr/utils/volume_utils.py
 # Default to 'ignore' but will be overridden by volume settings when tests run
@@ -188,47 +174,6 @@ filterwarnings = [
     "error",
     # Default to ignoring other warnings - volume settings will adjust this
     "ignore"
-]
-
-# Volume-based warning control
-# These settings map volume levels to warning filters
-[tool.pytest.volume_warnings]
-# Silent (0): Only critical issues
-"0" = [
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::ImportWarning",
-    "ignore::BytesWarning",
-    "ignore::ResourceWarning"
-]
-# Quiet (1-199): Show important warnings
-"100" = [
-    "default::DeprecationWarning",
-    "default::ResourceWarning",
-    "ignore::UserWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::ImportWarning",
-    "ignore::BytesWarning"
-]
-# Moderate (200-399): Show most warnings
-"300" = [
-    "default::Warning"  # Show all warnings by default
-]
-# Balanced (400-599): Show all warnings and fail on critical ones
-"500" = [
-    "error::DeprecationWarning",
-    "error::ResourceWarning",
-    "default::Warning"
-]
-# Thorough (600-799): Fail on most warnings
-"700" = [
-    "error::Warning"  # Fail on all warnings
-]
-# Maximum (800-1000): Strictest settings
-"1000" = [
-    "error::Warning",
-    "error::_pytest.warning_types.PytestWarning"
 ]
 
 [tool.coverage.run]

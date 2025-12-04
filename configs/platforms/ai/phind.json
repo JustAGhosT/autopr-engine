@@ -1,0 +1,63 @@
+{
+  "id": "phind",
+  "name": "Phind",
+  "description": "AI-powered search engine and code assistant specialized for developers",
+  "category": "ai_development",
+  "display_name": "Phind",
+  "version": "1.0.0",
+  "status": "active",
+  "is_active": true,
+  "is_beta": false,
+  "is_deprecated": false,
+  "type": "ai",
+  "source": "official",
+  "priority": 52,
+  "min_autopr_version": "0.1.0",
+  "vendor": "Phind",
+  "website": "https://www.phind.com/",
+  "pricing_model": "freemium",
+  "supported_languages": [
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "go",
+    "c++",
+    "rust"
+  ],
+  "tags": ["search_engine", "ai_assistant", "developer_focused", "code_search"],
+  "documentation_url": "https://www.phind.com/docs",
+  "setup_guide": "https://www.phind.com/docs/setup",
+  "troubleshooting_guide": "https://www.phind.com/docs/troubleshooting",
+  "maintainer": "Phind",
+
+  "detection": {
+    "files": [".phind", "phind.config.json"],
+    "dependencies": ["phind-sdk", "@phind/api"],
+    "folder_patterns": ["phind-", "-phind"],
+    "commit_patterns": ["phind", "Phind", "phind.com"],
+    "content_patterns": ["phind.com", "phind search"],
+    "confidence_weights": {
+      "files": 0.4,
+      "dependencies": 0.3,
+      "folder_patterns": 0.1,
+      "commit_patterns": 0.1,
+      "content_patterns": 0.1
+    }
+  },
+
+  "project_config": {
+    "primary_language": "typescript",
+    "framework": "phind",
+    "deployment_targets": ["web", "local"],
+    "common_files": [".phind/config.json"],
+    "features": [
+      "ai_search",
+      "code_examples",
+      "contextual_answers",
+      "multi_language_support",
+      "developer_focused"
+    ],
+    "configuration_files": [".phind/config.json", "phind.config.json"]
+  }
+}

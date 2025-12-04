@@ -14,6 +14,7 @@ from autopr.config import AutoPRConfig
 from autopr.exceptions import WorkflowError
 from autopr.utils.error_handlers import handle_workflow_error
 from autopr.workflows.base import Workflow
+from autopr.workflows.validation import validate_workflow_context, sanitize_workflow_parameters
 
 
 logger = logging.getLogger(__name__)
@@ -104,15 +105,18 @@ class WorkflowEngine:
         workflow_id: str | None = None,
     ) -> dict[str, Any]:
         """
-        Execute a workflow by name with retry logic.
+        Execute a workflow by name with retry logic and input validation.
 
         Args:
             workflow_name: Name of workflow to execute
-            context: Execution context data
+            context: Execution context data (will be validated)
             workflow_id: Optional workflow execution ID
 
         Returns:
             Workflow execution result
+            
+        Raises:
+            WorkflowError: If workflow execution fails or validation fails
         """
         if not self._is_running:
             msg = "Workflow engine is not running"
@@ -121,6 +125,19 @@ class WorkflowEngine:
         if workflow_name not in self.workflows:
             msg = f"Workflow '{workflow_name}' not found"
             raise WorkflowError(msg, workflow_name)
+
+        # Validate and sanitize workflow context to prevent injection attacks
+        # TODO: PRODUCTION - Add workflow-specific validation rules
+        # TODO: PRODUCTION - Implement validation result caching for performance
+        try:
+            # Validate workflow context
+            validated_context = validate_workflow_context(context)
+            
+            # Sanitize parameters for security
+            validated_context = sanitize_workflow_parameters(validated_context)
+        except ValueError as e:
+            msg = f"Workflow context validation failed: {e}"
+            raise WorkflowError(msg, workflow_name) from e
 
         workflow = self.workflows[workflow_name]
         execution_id = workflow_id or f"{workflow_name}_{datetime.now().isoformat()}"
@@ -145,7 +162,7 @@ class WorkflowEngine:
 
                 # Create execution task
                 task = asyncio.create_task(
-                    self._execute_workflow_task(workflow, context, execution_id)
+                    self._execute_workflow_task(workflow, validated_context, execution_id)
                 )
 
                 # Track running workflow
@@ -294,7 +311,13 @@ class WorkflowEngine:
     def _record_execution(
         self, execution_id: str, workflow_name: str, status: str, result: dict[str, Any]
     ) -> None:
-        """Record workflow execution in history."""
+        """
+        Record workflow execution in history.
+        
+        TODO: CONCURRENCY - Consider making this async for consistency
+        TODO: PERFORMANCE - History limit already enforced (Good!)
+        """
+        # Note: This is called from async context, providing some thread safety
         self.workflow_history.append(
             {
                 "execution_id": execution_id,
@@ -312,6 +335,8 @@ class WorkflowEngine:
     async def _update_metrics(self, status: str, execution_time: float) -> None:
         """
         Update workflow execution metrics with thread-safety.
+        
+        All metrics operations now properly use the async lock for thread-safe access.
         
         Args:
             status: Execution status (success, failed, timeout)
@@ -334,34 +359,45 @@ class WorkflowEngine:
                     self.metrics["total_execution_time"] / self.metrics["total_executions"]
                 )
 
-    def get_status(self) -> dict[str, Any]:
-        """Get workflow engine status."""
+    async def get_status(self) -> dict[str, Any]:
+        """
+        Get workflow engine status with thread-safe metrics access.
+        
+        Returns:
+            Dictionary containing current engine status
+        """
+        # Use lock to safely read metrics
+        async with self._metrics_lock:
+            metrics_snapshot = self.metrics.copy()
+        
         return {
             "running": self._is_running,
             "registered_workflows": len(self.workflows),
             "running_workflows": len(self.running_workflows),
             "total_executions": len(self.workflow_history),
             "workflows": list(self.workflows.keys()),
-            "metrics": self.metrics,
+            "metrics": metrics_snapshot,
         }
 
-    def get_metrics(self) -> dict[str, Any]:
+    async def get_metrics(self) -> dict[str, Any]:
         """
-        Get workflow execution metrics.
+        Get workflow execution metrics with thread-safe access.
         
         Returns:
-            Dictionary containing execution metrics
+            Dictionary containing execution metrics with calculated success rate
         """
-        success_rate = 0.0
-        if self.metrics["total_executions"] > 0:
-            success_rate = (
-                self.metrics["successful_executions"] / self.metrics["total_executions"]
-            ) * 100
-        
-        return {
-            **self.metrics,
-            "success_rate_percent": round(success_rate, 2),
-        }
+        # Use lock to safely read and calculate from metrics
+        async with self._metrics_lock:
+            success_rate = 0.0
+            if self.metrics["total_executions"] > 0:
+                success_rate = (
+                    self.metrics["successful_executions"] / self.metrics["total_executions"]
+                ) * 100
+            
+            return {
+                **self.metrics,
+                "success_rate_percent": round(success_rate, 2),
+            }
 
     def get_workflow_history(self, limit: int = 100) -> list[dict[str, Any]]:
         """Get workflow execution history."""

@@ -282,3 +282,4 @@ local_config.*
 local_settings.*
 .env.local
 .env.*.local
+.aider*

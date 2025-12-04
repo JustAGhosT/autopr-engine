@@ -257,7 +257,7 @@ def run_linter(args: argparse.Namespace) -> int:
             if path.suffix in {".yml", ".yaml"}:
                 linter.check_file(path)
             elif args.verbose > 0:
-                pass
+                print(f"Skipping non-YAML file: {path}")
         elif path.is_dir():
             linter.check_directory(path, exclude=args.exclude)
 
@@ -265,17 +265,20 @@ def run_linter(args: argparse.Namespace) -> int:
     if args.fix:
         if args.dry_run:
             fixed_count = linter.fix_files(dry_run=True)
-            if fixed_count == 0 and args.verbose > 0:
-                pass
+            if args.verbose > 0:
+                if fixed_count == 0:
+                    print("No fixable issues found (dry run)")
+                else:
+                    print(f"Would fix {fixed_count} file(s) (dry run)")
         else:
             fixed_count = linter.fix_files(dry_run=False)
-            if fixed_count > 0:
+            if fixed_count > 0 and args.verbose > 0:
+                print(f"Applied fixes to {fixed_count} file(s)")
                 # Re-run linter to show remaining issues
-                if args.verbose > 0:
-                    new_linter = YAMLLinter(config)
-                    for file_path in linter.reports:
-                        new_linter.check_file(file_path)
-                    linter.reports = new_linter.reports
+                new_linter = YAMLLinter(config)
+                for file_path in linter.reports:
+                    new_linter.check_file(file_path)
+                linter.reports = new_linter.reports
 
     # Generate output
     if args.format == "json":
@@ -284,6 +287,7 @@ def run_linter(args: argparse.Namespace) -> int:
         output = format_output_text(linter.reports, args)
 
     if output.strip():
+        print(output)
         pass
 
     # Determine exit code
