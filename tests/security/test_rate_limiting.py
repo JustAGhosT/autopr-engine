@@ -7,6 +7,15 @@ import pytest
 from autopr.security.rate_limiting import RateLimiter, rate_limit, get_rate_limiter
 
 
+@pytest.fixture(autouse=True)
+def reset_global_rate_limiter():
+    """Reset the global rate limiter before each test to ensure test isolation."""
+    import autopr.security.rate_limiting as rate_limiting_module
+    rate_limiting_module._rate_limiter = None
+    yield
+    rate_limiting_module._rate_limiter = None
+
+
 class TestRateLimiter:
     """Test RateLimiter class."""
     

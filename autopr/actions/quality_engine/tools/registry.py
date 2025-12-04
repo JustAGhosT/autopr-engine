@@ -140,10 +140,12 @@ def register_tool[TTool: Tool](tool_class: type[TTool]) -> type[TTool]:
     Returns:
         The registered tool class
 
-    Example:
+    Example::
+
         @register_tool
         class MyTool(Tool[MyConfig, LintIssue]):
             pass
+
     """
     registry.register(tool_class)
     return tool_class

@@ -1,0 +1,188 @@
+# Validate GitHub Action Templates and Install Scripts
+# Ensures templates are syntactically correct before merge
+
+name: Validate Templates
+
+on:
+  push:
+    paths:
+      - 'templates/**/*.yml'
+      - 'templates/**/*.yaml'
+      - 'install.sh'
+      - 'install.ps1'
+      - '.github/workflows/*.yml'
+  pull_request:
+    paths:
+      - 'templates/**/*.yml'
+      - 'templates/**/*.yaml'
+      - 'install.sh'
+      - 'install.ps1'
+      - '.github/workflows/*.yml'
+
+jobs:
+  validate-yaml:
+    name: Validate YAML Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Create yamllint config
+        run: |
+          cat > .yamllint.yml << 'EOF'
+          extends: default
+          rules:
+            line-length:
+              max: 120
+              allow-non-breakable-words: true
+              allow-non-breakable-inline-mappings: true
+            truthy:
+              allowed-values: ['true', 'false', 'on']
+            comments:
+              min-spaces-from-content: 1
+            indentation:
+              spaces: 2
+              indent-sequences: true
+          EOF
+
+      - name: Lint YAML templates
+        run: |
+          echo "Validating templates..."
+          yamllint templates/quick-start/*.yml templates/quick-start/*.yaml || true
+
+          echo "Validating workflows..."
+          yamllint .github/workflows/*.yml .github/workflows/*.yaml || true
+
+      - name: Validate GitHub Actions syntax
+        run: |
+          python3 << 'EOF'
+          import os
+          import sys
+          import yaml
+
+          templates_dir = 'templates/quick-start'
+          files = [f for f in os.listdir(templates_dir) if f.endswith('.yml') or f.endswith('.yaml')]
+
+          has_errors = False
+
+          for file in files:
+              file_path = os.path.join(templates_dir, file)
+              print(f"Validating {file_path}...")
+
+              file_has_errors = False
+              try:
+                  with open(file_path, 'r') as f:
+                      content = f.read()
+                  doc = yaml.safe_load(content)
+
+                  # Basic structure validation
+                  if not doc.get('name'):
+                      print(f"  Warning: {file} missing 'name' field")
+
+                  # Check for 'on' trigger - PyYAML may parse 'on' as boolean True (YAML 1.1)
+                  if not doc.get('on') and not doc.get(True):
+                      print(f"  Error: {file} missing 'on' trigger")
+                      has_errors = True
+                      file_has_errors = True
+
+                  if not doc.get('jobs'):
+                      print(f"  Error: {file} missing 'jobs' section")
+                      has_errors = True
+                      file_has_errors = True
+
+                  if not file_has_errors:
+                      print(f"  ✓ {file} is valid")
+              except Exception as e:
+                  print(f"  ✗ {file} has errors: {e}")
+                  has_errors = True
+
+          if has_errors:
+              print("Some templates have validation errors")
+              sys.exit(1)
+          EOF
+
+  validate-bash:
+    name: Validate Bash Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check bash syntax
+        run: bash -n install.sh
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck install.sh --severity=warning || true
+
+      - name: Test --help flag
+        run: ./install.sh --help
+
+      - name: Test --version flag
+        run: ./install.sh --version
+
+  validate-powershell:
+    name: Validate PowerShell Script
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $errors = $null
+          $null = [System.Management.Automation.Language.Parser]::ParseFile(
+            "$PWD/install.ps1",
+            [ref]$null,
+            [ref]$errors
+          )
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host "PowerShell syntax is valid"
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          $results = Invoke-ScriptAnalyzer -Path ./install.ps1 -Severity Warning
+          if ($results) {
+            $results | Format-Table -AutoSize
+            # Don't fail on warnings, just report
+          }
+          Write-Host "PSScriptAnalyzer completed"
+
+      - name: Test -Help flag
+        shell: pwsh
+        run: ./install.ps1 -Help
+
+      - name: Test -Version flag
+        shell: pwsh
+        run: ./install.ps1 -Version
+
+  test-bats:
+    name: Run Bats Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Run bats tests
+        run: bats tests/scripts/test_install.bats

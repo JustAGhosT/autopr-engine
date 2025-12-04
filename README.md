@@ -25,7 +25,7 @@ workflows through intelligent analysis, issue creation, and multi-agent collabor
 The AutoPR Engine repository is organized for optimal developer experience and maintainability:
 
 ```text
-autopr-engine/
+.
 ├── docs/                      # 📚 All documentation
 │   ├── getting-started/       # Setup and quick start guides
 │   ├── development/           # Development guides and tools
@@ -262,7 +262,7 @@ graph TB
 ```bash
 # Clone repository
 git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine
+cd autopr-engine  # or 'cd autopr' if repository is cloned as 'autopr'
 
 # Create virtual environment
 python -m venv venv
@@ -281,7 +281,7 @@ python -m autopr.server --reload
 ### **Project Structure**
 
 ```text
-autopr-engine/
+.
 ├── autopr/                 # Core engine package
 │   ├── actions/            # Automation actions
 │   ├── agents/             # Agent system

@@ -2,15 +2,14 @@
 Mistral AI provider implementation.
 """
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-
+# Handle optional mistralai dependency
+ChatMessage: Any = None
 try:
     from mistralai.models.chat_completion import ChatMessage
 except ImportError:
-    ChatMessage = None
-
-from mistralai.models.chat_completion import ChatMessage
+    pass
 
 from autopr.actions.llm.base import BaseLLMProvider
 from autopr.actions.llm.types import LLMResponse

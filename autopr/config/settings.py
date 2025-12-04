@@ -13,19 +13,22 @@ from enum import StrEnum
 import json
 import logging
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-from pydantic import BaseModel, SecretStr, field_validator
-from pydantic import Field as _Field
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 import yaml  # type: ignore[import-untyped]
 
 
+# Flag to track Pydantic version
+_PYDANTIC_V2 = True
 try:
     # Pydantic 2.0+ (preferred)
-    from pydantic_settings import BaseSettings
+    from pydantic_settings import BaseSettings, SettingsConfigDict
 except ImportError:
     # Pydantic 1.x fallback
     from pydantic.env_settings import BaseSettings  # type: ignore[no-redef]
+    SettingsConfigDict = None  # type: ignore[misc,assignment]
+    _PYDANTIC_V2 = False
 
 
 class Environment(StrEnum):
@@ -58,15 +61,12 @@ class LLMProvider(StrEnum):
     TOGETHER = "together"
 
 
-Field = cast("Any", _Field)
-
-
 class GitHubConfig(BaseModel):
     """GitHub integration configuration."""
 
-    token: SecretStr | None = Field(None, env="GITHUB_TOKEN")
-    app_id: int | None = Field(None, env="GITHUB_APP_ID")
-    private_key: SecretStr | None = Field(None, env="GITHUB_PRIVATE_KEY")
+    token: SecretStr | None = Field(default=None)
+    app_id: int | None = Field(default=None)
+    private_key: SecretStr | None = Field(default=None)
     timeout: int = 30
     base_url: str = "https://api.github.com"
 
@@ -96,9 +96,7 @@ class GitHubConfig(BaseModel):
 class LLMConfig(BaseModel):
     """LLM provider configuration."""
 
-    default_provider: LLMProvider = Field(
-        LLMProvider.OPENAI, env="DEFAULT_LLM_PROVIDER"
-    )
+    default_provider: LLMProvider = Field(default=LLMProvider.OPENAI)
     fallback_order: list[LLMProvider] = Field(
         default_factory=lambda: [
             LLMProvider.OPENAI,
@@ -108,43 +106,35 @@ class LLMConfig(BaseModel):
     )
 
     # Provider-specific configurations
-    openai_api_key: SecretStr | None = Field(None, env="OPENAI_API_KEY")
-    openai_base_url: str | None = Field(None, env="OPENAI_BASE_URL")
-    openai_default_model: str = Field("gpt-4", env="OPENAI_DEFAULT_MODEL")
+    openai_api_key: SecretStr | None = Field(default=None)
+    openai_base_url: str | None = Field(default=None)
+    openai_default_model: str = Field(default="gpt-4")
 
-    anthropic_api_key: SecretStr | None = Field(None, env="ANTHROPIC_API_KEY")
-    anthropic_base_url: str | None = Field(None, env="ANTHROPIC_BASE_URL")
-    anthropic_default_model: str = Field(
-        "claude-3-sonnet-20240229", env="ANTHROPIC_DEFAULT_MODEL"
-    )
+    anthropic_api_key: SecretStr | None = Field(default=None)
+    anthropic_base_url: str | None = Field(default=None)
+    anthropic_default_model: str = Field(default="claude-3-sonnet-20240229")
 
-    mistral_api_key: SecretStr | None = Field(None, env="MISTRAL_API_KEY")
-    mistral_base_url: str | None = Field(None, env="MISTRAL_BASE_URL")
-    mistral_default_model: str = Field(
-        "mistral-large-latest", env="MISTRAL_DEFAULT_MODEL"
-    )
+    mistral_api_key: SecretStr | None = Field(default=None)
+    mistral_base_url: str | None = Field(default=None)
+    mistral_default_model: str = Field(default="mistral-large-latest")
 
-    groq_api_key: SecretStr | None = Field(None, env="GROQ_API_KEY")
-    groq_base_url: str | None = Field(None, env="GROQ_BASE_URL")
-    groq_default_model: str = Field("mixtral-8x7b-32768", env="GROQ_DEFAULT_MODEL")
+    groq_api_key: SecretStr | None = Field(default=None)
+    groq_base_url: str | None = Field(default=None)
+    groq_default_model: str = Field(default="mixtral-8x7b-32768")
 
-    perplexity_api_key: SecretStr | None = Field(None, env="PERPLEXITY_API_KEY")
-    perplexity_base_url: str | None = Field(None, env="PERPLEXITY_BASE_URL")
-    perplexity_default_model: str = Field(
-        "llama-3.1-sonar-large-128k-online", env="PERPLEXITY_DEFAULT_MODEL"
-    )
+    perplexity_api_key: SecretStr | None = Field(default=None)
+    perplexity_base_url: str | None = Field(default=None)
+    perplexity_default_model: str = Field(default="llama-3.1-sonar-large-128k-online")
 
-    together_api_key: SecretStr | None = Field(None, env="TOGETHER_API_KEY")
-    together_base_url: str | None = Field(None, env="TOGETHER_BASE_URL")
-    together_default_model: str = Field(
-        "meta-llama/Llama-2-70b-chat-hf", env="TOGETHER_DEFAULT_MODEL"
-    )
+    together_api_key: SecretStr | None = Field(default=None)
+    together_base_url: str | None = Field(default=None)
+    together_default_model: str = Field(default="meta-llama/Llama-2-70b-chat-hf")
 
     # General LLM settings
-    max_tokens: int = Field(default=4000, env="LLM_MAX_TOKENS")
-    temperature: float = Field(default=0.7, env="LLM_TEMPERATURE")
-    timeout: int = Field(default=60, env="LLM_TIMEOUT")
-    max_retries: int = Field(default=3, env="LLM_MAX_RETRIES")
+    max_tokens: int = Field(default=4000)
+    temperature: float = Field(default=0.7)
+    timeout: int = Field(default=60)
+    max_retries: int = Field(default=3)
 
     @field_validator("temperature")
     @classmethod
@@ -158,195 +148,162 @@ class LLMConfig(BaseModel):
 class DatabaseConfig(BaseModel):
     """Database configuration."""
 
-    url: str | None = Field(default=None, env="DATABASE_URL")
-    pool_size: int = Field(default=10, env="DATABASE_POOL_SIZE")
-    max_overflow: int = Field(default=20, env="DATABASE_MAX_OVERFLOW")
-    pool_timeout: int = Field(default=30, env="DATABASE_POOL_TIMEOUT")
-    pool_recycle: int = Field(default=3600, env="DATABASE_POOL_RECYCLE")
-    echo: bool = Field(default=False, env="DATABASE_ECHO")
+    url: str | None = Field(default=None)
+    pool_size: int = Field(default=10)
+    max_overflow: int = Field(default=20)
+    pool_timeout: int = Field(default=30)
+    pool_recycle: int = Field(default=3600)
+    echo: bool = Field(default=False)
 
 
 class RedisConfig(BaseModel):
     """Redis configuration."""
 
-    url: str | None = Field(default=None, env="REDIS_URL")
-    host: str = Field(default="localhost", env="REDIS_HOST")
-    port: int = Field(default=6379, env="REDIS_PORT")
-    db: int = Field(default=0, env="REDIS_DB")
-    password: SecretStr | None = Field(default=None, env="REDIS_PASSWORD")
-    ssl: bool = Field(default=False, env="REDIS_SSL")
-    timeout: int = Field(default=5, env="REDIS_TIMEOUT")
-    max_connections: int = Field(default=50, env="REDIS_MAX_CONNECTIONS")
+    url: str | None = Field(default=None)
+    host: str = Field(default="localhost")
+    port: int = Field(default=6379)
+    db: int = Field(default=0)
+    password: SecretStr | None = Field(default=None)
+    ssl: bool = Field(default=False)
+    timeout: int = Field(default=5)
+    max_connections: int = Field(default=50)
 
 
 class WorkflowConfig(BaseModel):
     """Workflow execution configuration."""
 
-    max_concurrent: int = Field(default=10, env="MAX_CONCURRENT_WORKFLOWS")
-    timeout: int = Field(default=300, env="WORKFLOW_TIMEOUT")
-    retry_attempts: int = Field(default=3, env="WORKFLOW_RETRY_ATTEMPTS")
-    retry_delay: int = Field(default=5, env="WORKFLOW_RETRY_DELAY")
-    enable_parallel_execution: bool = Field(
-        default=True, env="ENABLE_PARALLEL_EXECUTION"
-    )
+    max_concurrent: int = Field(default=10)
+    timeout: int = Field(default=300)
+    retry_attempts: int = Field(default=3)
+    retry_delay: int = Field(default=5)
+    enable_parallel_execution: bool = Field(default=True)
 
 
 class MonitoringConfig(BaseModel):
     """Monitoring and observability configuration."""
 
-    enable_metrics: bool = Field(default=True, env="ENABLE_METRICS")
-    metrics_port: int = Field(default=8000, env="METRICS_PORT")
-    enable_tracing: bool = Field(default=False, env="ENABLE_TRACING")
-    jaeger_endpoint: str | None = Field(default=None, env="JAEGER_ENDPOINT")
-    sentry_dsn: SecretStr | None = Field(default=None, env="SENTRY_DSN")
-    log_level: LogLevel = Field(default=LogLevel.INFO, env="LOG_LEVEL")
-    structured_logging: bool = Field(default=True, env="STRUCTURED_LOGGING")
+    enable_metrics: bool = Field(default=True)
+    metrics_port: int = Field(default=8000)
+    enable_tracing: bool = Field(default=False)
+    jaeger_endpoint: str | None = Field(default=None)
+    sentry_dsn: SecretStr | None = Field(default=None)
+    log_level: LogLevel = Field(default=LogLevel.INFO)
+    structured_logging: bool = Field(default=True)
 
 
 class SecurityConfig(BaseModel):
     """Security configuration."""
 
-    secret_key: SecretStr | None = Field(default=None, env="SECRET_KEY")
-    jwt_secret: SecretStr | None = Field(default=None, env="JWT_SECRET")
-    jwt_expiry: int = Field(default=3600, env="JWT_EXPIRY")  # seconds
-    rate_limit_per_minute: int = Field(default=60, env="RATE_LIMIT_PER_MINUTE")
-    enable_cors: bool = Field(default=True, env="ENABLE_CORS")
-    allowed_origins: list[str] = Field(default_factory=list, env="ALLOWED_ORIGINS")
-    enable_csrf_protection: bool = Field(default=True, env="ENABLE_CSRF_PROTECTION")
+    secret_key: SecretStr | None = Field(default=None)
+    jwt_secret: SecretStr | None = Field(default=None)
+    jwt_expiry: int = Field(default=3600)  # seconds
+    rate_limit_per_minute: int = Field(default=60)
+    enable_cors: bool = Field(default=True)
+    allowed_origins: list[str] = Field(default_factory=list)
+    enable_csrf_protection: bool = Field(default=True)
 
 
 class VolumeDefaults(BaseModel):
     """Default volume levels for different run contexts."""
 
-    pr: int = Field(default=500, env="AUTOPR_VOLUME_PR")
-    dev: int = Field(default=500, env="AUTOPR_VOLUME_DEV")
-    checkin: int = Field(default=500, env="AUTOPR_VOLUME_CHECKIN")
+    pr: int = Field(default=500)
+    dev: int = Field(default=500)
+    checkin: int = Field(default=500)
 
 
 class ErrorHandlerConfig(BaseModel):
     """Error handling configuration for AI linting fixer and other components."""
 
     # Error handling settings
-    enabled: bool = Field(default=True, env="ERROR_HANDLER_ENABLED")
-    log_errors: bool = Field(default=True, env="ERROR_HANDLER_LOG_ERRORS")
-    display_errors: bool = Field(default=True, env="ERROR_HANDLER_DISPLAY_ERRORS")
-    export_errors: bool = Field(default=False, env="ERROR_HANDLER_EXPORT_ERRORS")
+    enabled: bool = Field(default=True)
+    log_errors: bool = Field(default=True)
+    display_errors: bool = Field(default=True)
+    export_errors: bool = Field(default=False)
 
     # Error categorization
-    auto_categorize: bool = Field(default=True, env="ERROR_HANDLER_AUTO_CATEGORIZE")
-    severity_threshold: str = Field(
-        default="LOW", env="ERROR_HANDLER_SEVERITY_THRESHOLD"
-    )
+    auto_categorize: bool = Field(default=True)
+    severity_threshold: str = Field(default="LOW")
 
     # Recovery settings
-    enable_recovery: bool = Field(default=True, env="ERROR_HANDLER_ENABLE_RECOVERY")
-    max_retry_attempts: int = Field(default=3, env="ERROR_HANDLER_MAX_RETRIES")
-    retry_delay_seconds: float = Field(default=1.0, env="ERROR_HANDLER_RETRY_DELAY")
-    exponential_backoff: bool = Field(
-        default=True, env="ERROR_HANDLER_EXPONENTIAL_BACKOFF"
-    )
+    enable_recovery: bool = Field(default=True)
+    max_retry_attempts: int = Field(default=3)
+    retry_delay_seconds: float = Field(default=1.0)
+    exponential_backoff: bool = Field(default=True)
 
     # Display settings
-    use_colors: bool = Field(default=True, env="ERROR_HANDLER_USE_COLORS")
-    use_emojis: bool = Field(default=True, env="ERROR_HANDLER_USE_EMOJIS")
-    verbose_mode: bool = Field(default=False, env="ERROR_HANDLER_VERBOSE")
+    use_colors: bool = Field(default=True)
+    use_emojis: bool = Field(default=True)
+    verbose_mode: bool = Field(default=False)
 
     # Export settings
-    export_format: str = Field(default="json", env="ERROR_HANDLER_EXPORT_FORMAT")
-    export_directory: str = Field(default="./logs", env="ERROR_HANDLER_EXPORT_DIR")
-    auto_export: bool = Field(default=False, env="ERROR_HANDLER_AUTO_EXPORT")
+    export_format: str = Field(default="json")
+    export_directory: str = Field(default="./logs")
+    auto_export: bool = Field(default=False)
 
     # Callback settings
-    enable_callbacks: bool = Field(default=True, env="ERROR_HANDLER_ENABLE_CALLBACKS")
-    external_notifications: bool = Field(
-        default=False, env="ERROR_HANDLER_EXTERNAL_NOTIFICATIONS"
-    )
+    enable_callbacks: bool = Field(default=True)
+    external_notifications: bool = Field(default=False)
 
     # Integration settings
-    integrate_with_logging: bool = Field(
-        default=True, env="ERROR_HANDLER_INTEGRATE_LOGGING"
-    )
-    integrate_with_metrics: bool = Field(
-        default=True, env="ERROR_HANDLER_INTEGRATE_METRICS"
-    )
-    integrate_with_workflows: bool = Field(
-        default=True, env="ERROR_HANDLER_INTEGRATE_WORKFLOWS"
-    )
+    integrate_with_logging: bool = Field(default=True)
+    integrate_with_metrics: bool = Field(default=True)
+    integrate_with_workflows: bool = Field(default=True)
 
 
 class ReportBuilderConfig(BaseModel):
     """Configuration for report builder summary and platform defaults."""
 
     # Volume thresholds for summary messages
-    thorough_min_volume: int = Field(
-        default=800, env="REPORT_BUILDER_THOROUGH_MIN_VOLUME"
-    )
-    standard_min_volume: int = Field(
-        default=400, env="REPORT_BUILDER_STANDARD_MIN_VOLUME"
-    )
+    thorough_min_volume: int = Field(default=800)
+    standard_min_volume: int = Field(default=400)
 
     # Summary messages by level
-    summary_message_thorough: str = Field(
-        default="Thorough analysis completed", env="REPORT_BUILDER_SUMMARY_THOROUGH"
-    )
-    summary_message_standard: str = Field(
-        default="Standard analysis completed", env="REPORT_BUILDER_SUMMARY_STANDARD"
-    )
-    summary_message_quick: str = Field(
-        default="Quick analysis completed", env="REPORT_BUILDER_SUMMARY_QUICK"
-    )
+    summary_message_thorough: str = Field(default="Thorough analysis completed")
+    summary_message_standard: str = Field(default="Standard analysis completed")
+    summary_message_quick: str = Field(default="Quick analysis completed")
 
     # Label to use when platform is not detected
-    unknown_platform_label: str = Field(
-        default="unknown", env="REPORT_BUILDER_UNKNOWN_LABEL"
-    )
+    unknown_platform_label: str = Field(default="unknown")
 
     # Simple repo-scanning rules to guess platform when unknown
-    python_file_extensions: list[str] = Field(
-        default_factory=lambda: [".py"], env="REPORT_BUILDER_PY_EXTS"
-    )
+    python_file_extensions: list[str] = Field(default_factory=lambda: [".py"])
     javascript_markers: list[str] = Field(
-        default_factory=lambda: ["package.json"], env="REPORT_BUILDER_JS_MARKERS"
+        default_factory=lambda: ["package.json"]
     )
-    python_platform_name: str = Field(default="Python", env="REPORT_BUILDER_PY_NAME")
-    javascript_platform_name: str = Field(
-        default="JavaScript", env="REPORT_BUILDER_JS_NAME"
-    )
+    python_platform_name: str = Field(default="Python")
+    javascript_platform_name: str = Field(default="JavaScript")
 
 
 class AILintingConfig(BaseModel):
     """AI Linting Fixer specific configuration."""
 
     # Core settings
-    enabled: bool = Field(default=True, env="AI_LINTING_ENABLED")
-    default_provider: str = Field(default="openai", env="AI_LINTING_DEFAULT_PROVIDER")
-    default_model: str = Field(default="gpt-4", env="AI_LINTING_DEFAULT_MODEL")
+    enabled: bool = Field(default=True)
+    default_provider: str = Field(default="openai")
+    default_model: str = Field(default="gpt-4")
 
     # Processing settings
-    max_workers: int = Field(default=4, env="AI_LINTING_MAX_WORKERS")
-    max_fixes_per_run: int = Field(default=10, env="AI_LINTING_MAX_FIXES")
-    timeout_seconds: int = Field(default=300, env="AI_LINTING_TIMEOUT")
+    max_workers: int = Field(default=4)
+    max_fixes_per_run: int = Field(default=10)
+    timeout_seconds: int = Field(default=300)
 
     # Fix types
     default_fix_types: list[str] = Field(
-        default_factory=lambda: ["E501", "F401", "F841", "E722", "B001"],
-        env="AI_LINTING_DEFAULT_FIX_TYPES",
+        default_factory=lambda: ["E501", "F401", "F841", "E722", "B001"]
     )
 
     # Quality settings
-    confidence_threshold: float = Field(
-        default=0.7, env="AI_LINTING_CONFIDENCE_THRESHOLD"
-    )
-    syntax_validation: bool = Field(default=True, env="AI_LINTING_SYNTAX_VALIDATION")
-    create_backups: bool = Field(default=True, env="AI_LINTING_CREATE_BACKUPS")
+    confidence_threshold: float = Field(default=0.7)
+    syntax_validation: bool = Field(default=True)
+    create_backups: bool = Field(default=True)
 
     # Error handling integration
     error_handler: ErrorHandlerConfig = Field(default_factory=ErrorHandlerConfig)
 
     # Performance settings
-    enable_metrics: bool = Field(True, env="AI_LINTING_ENABLE_METRICS")
-    enable_database_logging: bool = Field(True, env="AI_LINTING_DATABASE_LOGGING")
-    enable_orchestration: bool = Field(False, env="AI_LINTING_ENABLE_ORCHESTRATION")
+    enable_metrics: bool = Field(default=True)
+    enable_database_logging: bool = Field(default=True)
+    enable_orchestration: bool = Field(default=False)
 
 
 class AutoPRSettings(BaseSettings):
@@ -358,11 +315,9 @@ class AutoPRSettings(BaseSettings):
     """
 
     # Environment and basic settings
-    environment: Environment = Field(
-        default=Environment.DEVELOPMENT, env="AUTOPR_ENVIRONMENT"
-    )
-    debug: bool = Field(default=False, env="DEBUG")
-    version: str = Field(default="1.0.0", env="AUTOPR_VERSION")
+    environment: Environment = Field(default=Environment.DEVELOPMENT)
+    debug: bool = Field(default=False)
+    version: str = Field(default="1.0.0")
 
     # Configuration sections
     github: GitHubConfig = Field(default_factory=GitHubConfig)
@@ -379,12 +334,24 @@ class AutoPRSettings(BaseSettings):
     # Custom settings for extensions
     custom: dict[str, Any] = Field(default_factory=dict)
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        validate_assignment = True
-        extra = "allow"  # Allow additional fields for custom settings
+    # Pydantic V2 configuration using SettingsConfigDict
+    if _PYDANTIC_V2 and SettingsConfigDict:
+        model_config = SettingsConfigDict(
+            env_file=".env",
+            env_file_encoding="utf-8",
+            case_sensitive=False,
+            validate_assignment=True,
+            extra="allow",  # Allow additional fields for custom settings
+            env_prefix="",  # No prefix for top-level settings
+        )
+    else:
+        # Pydantic V1 fallback using class Config
+        class Config:
+            env_file = ".env"
+            env_file_encoding = "utf-8"
+            case_sensitive = False
+            validate_assignment = True
+            extra = "allow"
 
     def __init__(self, **kwargs):
         """Initialize settings with environment-specific overrides."""
