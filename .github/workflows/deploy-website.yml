@@ -16,76 +16,79 @@ env:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ENVIRONMENT: prod
+  REGION_ABBR: san
+  LOCATION: eastus2
 
 jobs:
   build_and_deploy:
     name: Build and Deploy Next.js Website
-        runs-on: ubuntu-latest
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  submodules: true
-                  lfs: false
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "npm"
-                  cache-dependency-path: website/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: website/package-lock.json
 
-            - name: Install dependencies
-              working-directory: website
-              run: npm ci
+      - name: Install dependencies
+        working-directory: website
+        run: npm ci
 
-            - name: Build Next.js app
-              working-directory: website
-              run: npm run build
-              env:
-                  NODE_ENV: production
+      - name: Build Next.js app
+        working-directory: website
+        run: npm run build
+        env:
+          NODE_ENV: production
 
-            - name: Deploy to Azure Static Web Apps
-              uses: Azure/static-web-apps-deploy@v1
-              with:
-                  azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-                  repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  action: "upload"
-                  app_location: "website"
-                  output_location: "out"
-                  skip_app_build: true
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "website"
+          output_location: "out"
+          skip_app_build: true
 
-    deploy_infrastructure:
-        name: Deploy Azure Infrastructure
-        runs-on: ubuntu-latest
-        if: github.event_name == 'workflow_dispatch'
-        environment: production
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+  deploy_infrastructure:
+    name: Deploy Azure Infrastructure
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Azure Login
-              uses: azure/login@v1
-              with:
-                  creds: |
-                      {
-                        "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
-                        "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
-                        "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
-                        "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
-                      }
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+            }
 
-            - name: Create Resource Group
-              run: |
-                  az group create \
-                    --name prod-rg-san-autopr \
-                    --location "eastus2" \
-                    --output none
+      - name: Create Resource Group
+        run: |
+          az group create \
+            --name "${{ env.ENVIRONMENT }}-rg-${{ env.REGION_ABBR }}-autopr" \
+            --location "${{ env.LOCATION }}" \
+            --output none
 
-            - name: Deploy Bicep Template
-              run: |
-                  az deployment group create \
-                    --resource-group prod-rg-san-autopr \
-                    --template-file infrastructure/bicep/website.bicep \
-                    --parameters @infrastructure/bicep/website-parameters.json
+      - name: Deploy Bicep Template
+        run: |
+          az deployment group create \
+            --resource-group "${{ env.ENVIRONMENT }}-rg-${{ env.REGION_ABBR }}-autopr" \
+            --template-file infrastructure/bicep/website.bicep \
+            --parameters @infrastructure/bicep/website-parameters.json
