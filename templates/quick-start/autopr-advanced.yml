@@ -1,0 +1,232 @@
+# AutoPR Engine - Advanced Setup
+# ================================
+# Full-featured AutoPR workflow with all integrations
+# Copy to: .github/workflows/autopr.yml
+
+name: AutoPR Analysis (Advanced)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze'
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # Job 1: Analyze PRs automatically
+  analyze-pr:
+    name: Analyze Pull Request
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch'
+    outputs:
+      analysis-result: ${{ steps.analyze.outputs.result }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install AutoPR Engine
+        run: pip install "autopr-engine[full]"
+
+      - name: Determine PR number
+        id: pr
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "number=${{ inputs.pr_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Comprehensive Analysis
+        id: analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          autopr analyze \
+            --repo "${{ github.repository }}" \
+            --pr "${{ steps.pr.outputs.number }}" \
+            --detailed \
+            --security-scan \
+            --output json > analysis.json
+
+          # Set output for other jobs
+          echo "result=$(cat analysis.json | jq -c .)" >> $GITHUB_OUTPUT
+
+      - name: Post Analysis Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const analysis = JSON.parse(fs.readFileSync('analysis.json', 'utf8'));
+
+            let body = `## AutoPR Analysis Report\n\n`;
+
+            // Risk Assessment
+            const riskLevel = analysis.risk_level || 'low';
+            const riskEmoji = { low: '🟢', medium: '🟡', high: '🔴' }[riskLevel] || '⚪';
+            body += `### Risk Level: ${riskEmoji} ${riskLevel.toUpperCase()}\n\n`;
+
+            // Summary
+            body += `**Summary:** ${analysis.summary || 'Analysis complete'}\n\n`;
+
+            // Changes Overview
+            if (analysis.changes) {
+              body += `### Changes Overview\n`;
+              body += `- Files changed: ${analysis.changes.files || 0}\n`;
+              body += `- Lines added: ${analysis.changes.additions || 0}\n`;
+              body += `- Lines removed: ${analysis.changes.deletions || 0}\n\n`;
+            }
+
+            // Security Issues
+            if (analysis.security_issues && analysis.security_issues.length > 0) {
+              body += `### 🔒 Security Issues\n\n`;
+              for (const issue of analysis.security_issues) {
+                body += `- **${issue.severity}**: ${issue.message}\n`;
+                if (issue.file) body += `  - File: \`${issue.file}\`\n`;
+              }
+              body += `\n`;
+            }
+
+            // Code Quality Issues
+            if (analysis.issues && analysis.issues.length > 0) {
+              body += `### 📋 Code Quality Issues\n\n`;
+              for (const issue of analysis.issues.slice(0, 10)) {
+                body += `- ${issue.message}\n`;
+              }
+              if (analysis.issues.length > 10) {
+                body += `- ... and ${analysis.issues.length - 10} more\n`;
+              }
+              body += `\n`;
+            }
+
+            // Suggestions
+            if (analysis.suggestions && analysis.suggestions.length > 0) {
+              body += `### 💡 Suggestions\n\n`;
+              for (const suggestion of analysis.suggestions.slice(0, 5)) {
+                body += `- ${suggestion}\n`;
+              }
+              body += `\n`;
+            }
+
+            body += `---\n`;
+            body += `*Powered by [AutoPR Engine](https://github.com/JustAGhosT/autopr-engine) | `;
+            body += `[View Full Report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt('${{ steps.pr.outputs.number }}', 10),
+              body: body
+            });
+
+      - name: Upload Analysis Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: autopr-analysis-${{ steps.pr.outputs.number }}
+          path: analysis.json
+          retention-days: 90
+
+      - name: Fail on High Risk
+        if: contains(steps.analyze.outputs.result, '"risk_level":"high"')
+        run: |
+          echo "::error::High risk issues detected in PR"
+          exit 1
+
+  # Job 2: Handle PR comments for re-analysis
+  handle-comment:
+    name: Handle PR Comment
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/autopr')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install AutoPR Engine
+        run: pip install autopr-engine
+
+      - name: Parse Command
+        id: command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          # Use environment variable to prevent command injection
+          if echo "$COMMENT_BODY" | grep -q "/autopr analyze"; then
+            echo "action=analyze" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT_BODY" | grep -q "/autopr suggest"; then
+            echo "action=suggest" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT_BODY" | grep -q "/autopr help"; then
+            echo "action=help" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Requested Action
+        if: steps.command.outputs.action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          PR_NUMBER=$(echo "${{ github.event.issue.pull_request.url }}" | grep -oE '[0-9]+$')
+          autopr ${{ steps.command.outputs.action }} \
+            --repo "${{ github.repository }}" \
+            --pr "$PR_NUMBER"
+
+  # Job 3: Create issues from analysis
+  create-issues:
+    name: Create Tracking Issues
+    runs-on: ubuntu-latest
+    needs: analyze-pr
+    if: |
+      needs.analyze-pr.result == 'success' &&
+      contains(needs.analyze-pr.outputs.analysis-result, '"create_issues":true')
+
+    steps:
+      - name: Create Issues from Analysis
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const analysis = ${{ needs.analyze-pr.outputs.analysis-result }};
+
+            if (analysis.issues_to_create) {
+              for (const issue of analysis.issues_to_create) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issue.title,
+                  body: issue.body,
+                  labels: issue.labels || ['autopr', 'automated']
+                });
+              }
+            }

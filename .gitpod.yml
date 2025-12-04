@@ -1,0 +1,75 @@
+# Gitpod configuration for AutoPR Engine
+# Open in Gitpod: https://gitpod.io/#https://github.com/JustAGhosT/autopr-engine
+
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: Setup Environment
+    init: |
+      # Install dependencies
+      pip install -e ".[dev]"
+      pre-commit install
+
+      # Create .env if not exists
+      if [ ! -f .env ]; then
+        cp .env.example .env
+        echo "Created .env file - please add your API keys"
+      fi
+    command: |
+      echo ""
+      echo "==================================="
+      echo "AutoPR Engine Development Environment"
+      echo "==================================="
+      echo ""
+      echo "Quick Start:"
+      echo "  1. Add your API keys to .env"
+      echo "  2. Run: make test"
+      echo "  3. Run: make server"
+      echo ""
+      echo "Useful commands:"
+      echo "  make help      - Show all available commands"
+      echo "  make test      - Run tests"
+      echo "  make lint      - Run linters"
+      echo "  make server    - Start the API server"
+      echo ""
+
+  - name: Docker Services
+    command: |
+      # Start PostgreSQL and Redis if needed
+      docker-compose up -d postgres redis 2>/dev/null || true
+
+ports:
+  - port: 8080
+    onOpen: notify
+    name: API Server
+    description: AutoPR Engine API
+  - port: 5432
+    onOpen: ignore
+    name: PostgreSQL
+  - port: 6379
+    onOpen: ignore
+    name: Redis
+
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - charliermarsh.ruff
+    - ms-python.black-formatter
+    - tamasfe.even-better-toml
+    - redhat.vscode-yaml
+    - GitHub.copilot
+    - GitHub.copilot-chat
+    - eamodio.gitlens
+    - usernamehw.errorlens
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: false
+    addCheck: true
+    addComment: false
+    addBadge: true
