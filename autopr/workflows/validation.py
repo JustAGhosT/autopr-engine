@@ -7,7 +7,7 @@ and ensure data integrity.
 
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class WorkflowContextValidator(BaseModel):
@@ -23,9 +23,7 @@ class WorkflowContextValidator(BaseModel):
     execution_id: str | None = Field(None, max_length=500)
     
     # Allow additional fields but validate their types
-    class Config:
-        extra = "allow"
-        str_strip_whitespace = True
+    model_config = ConfigDict(extra="allow", str_strip_whitespace=True)
     
     @field_validator("workflow_name")
     @classmethod
