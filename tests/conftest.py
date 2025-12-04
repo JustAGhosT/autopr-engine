@@ -122,9 +122,12 @@ def _ensure_event_loop():
         if sys.platform.startswith("win"):
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         
+        # In Python 3.10+, asyncio.get_event_loop() issues a DeprecationWarning
+        # when there is no running event loop. Create a new one explicitly instead.
         try:
-            _global_event_loop = asyncio.get_event_loop()
+            _global_event_loop = asyncio.get_running_loop()
         except RuntimeError:
+            # No running loop, create a new one
             _global_event_loop = asyncio.new_event_loop()
             asyncio.set_event_loop(_global_event_loop)
     

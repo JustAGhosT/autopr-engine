@@ -169,6 +169,9 @@ minversion = "7.0"
 addopts = ["-ra", "--tb=short", "--maxfail=10", "-p", "no:langsmith"]
 testpaths = ["tests"]
 norecursedirs = ["tests/completed", "tests/archive", "tests/generated"]
+# pytest-asyncio configuration
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
 # Warning filters are now controlled by volume settings in autopr/utils/volume_utils.py
 # Default to 'ignore' but will be overridden by volume settings when tests run
 filterwarnings = [
