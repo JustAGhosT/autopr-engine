@@ -62,49 +62,52 @@ jobs:
           yamllint .github/workflows/*.yml || true
 
       - name: Validate GitHub Actions syntax
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const yaml = require('js-yaml');
+        run: |
+          python3 << 'EOF'
+          import os
+          import sys
+          import yaml
 
-            const templatesDir = 'templates/quick-start';
-            const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yml'));
+          templates_dir = 'templates/quick-start'
+          files = [f for f in os.listdir(templates_dir) if f.endswith('.yml')]
 
-            let hasErrors = false;
+          has_errors = False
 
-            for (const file of files) {
-              const filePath = path.join(templatesDir, file);
-              console.log(`Validating ${filePath}...`);
+          for file in files:
+              file_path = os.path.join(templates_dir, file)
+              print(f"Validating {file_path}...")
 
-              try {
-                const content = fs.readFileSync(filePath, 'utf8');
-                const doc = yaml.load(content);
+              file_has_errors = False
+              try:
+                  with open(file_path, 'r') as f:
+                      content = f.read()
+                  doc = yaml.safe_load(content)
 
-                // Basic structure validation
-                if (!doc.name) {
-                  console.log(`  Warning: ${file} missing 'name' field`);
-                }
-                if (!doc.on) {
-                  console.log(`  Error: ${file} missing 'on' trigger`);
-                  hasErrors = true;
-                }
-                if (!doc.jobs) {
-                  console.log(`  Error: ${file} missing 'jobs' section`);
-                  hasErrors = true;
-                }
+                  # Basic structure validation
+                  if not doc.get('name'):
+                      print(f"  Warning: {file} missing 'name' field")
 
-                console.log(`  ✓ ${file} is valid`);
-              } catch (e) {
-                console.log(`  ✗ ${file} has errors: ${e.message}`);
-                hasErrors = true;
-              }
-            }
+                  # Check for 'on' trigger - PyYAML may parse 'on' as boolean True (YAML 1.1)
+                  if not doc.get('on') and not doc.get(True):
+                      print(f"  Error: {file} missing 'on' trigger")
+                      has_errors = True
+                      file_has_errors = True
 
-            if (hasErrors) {
-              core.setFailed('Some templates have validation errors');
-            }
+                  if not doc.get('jobs'):
+                      print(f"  Error: {file} missing 'jobs' section")
+                      has_errors = True
+                      file_has_errors = True
+
+                  if not file_has_errors:
+                      print(f"  ✓ {file} is valid")
+              except Exception as e:
+                  print(f"  ✗ {file} has errors: {e}")
+                  has_errors = True
+
+          if has_errors:
+              print("Some templates have validation errors")
+              sys.exit(1)
+          EOF
 
   validate-bash:
     name: Validate Bash Script
