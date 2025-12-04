@@ -1,6 +1,6 @@
 # Multi-stage build for AutoPR Engine
 # Stage 1: Build environment
-FROM python:3.13-slim as builder
+FROM python:3.13-slim AS builder
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -41,7 +41,7 @@ RUN if [ "$RUN_TESTS" = "true" ]; then \
     fi
 
 # Stage 2: Production environment
-FROM python:3.13-slim as production
+FROM python:3.13-slim AS production
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
