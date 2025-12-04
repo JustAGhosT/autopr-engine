@@ -165,17 +165,17 @@ install_pip() {
                 # Clone and install
                 print_status "Cloning repository..."
                 CLONE_DIR=$(mktemp -d)
-                if git clone https://github.com/JustAGhosT/autopr-engine.git "$CLONE_DIR/autopr-engine"; then
-                    cd "$CLONE_DIR/autopr-engine"
+                if git clone https://github.com/JustAGhosT/autopr-engine.git "${CLONE_DIR}/autopr-engine"; then
+                    cd "${CLONE_DIR}/autopr-engine"
                     pip3 install -e ".[dev]" || {
                         print_error "Installation failed"
-                        rm -rf "$CLONE_DIR"
+                        rm -rf "${CLONE_DIR}"
                         exit 1
                     }
                     print_status "Repository cloned to: ${CLONE_DIR}/autopr-engine"
                 else
                     print_error "Failed to clone repository"
-                    rm -rf "$CLONE_DIR"
+                    rm -rf "${CLONE_DIR}"
                     exit 1
                 fi
             fi
