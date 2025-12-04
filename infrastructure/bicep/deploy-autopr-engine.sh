@@ -51,6 +51,7 @@ fi
 # Deploy the infrastructure
 echo "Deploying infrastructure..."
 az deployment group create \
+  --name autopr-engine \
   --resource-group "$RESOURCE_GROUP" \
   --template-file infrastructure/bicep/autopr-engine.bicep \
   --parameters \

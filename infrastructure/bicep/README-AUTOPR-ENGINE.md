@@ -6,11 +6,12 @@ This directory contains the Azure Bicep infrastructure definitions for deploying
 
 The deployment includes:
 - **Azure Container Apps**: Serverless container hosting for the AutoPR Engine
-- **Azure Database for PostgreSQL (Single Server)**: Primary database
+- **Azure Container Apps Environment**: Managed environment for container apps
+- **Azure Database for PostgreSQL (Flexible Server)**: Primary database
 - **Azure Cache for Redis**: Caching and session storage
 - **Log Analytics Workspace**: Centralized logging and monitoring
 
-**Note:** Uses PostgreSQL Single Server (not Flexible Server) for broader region availability.
+**Note:** Uses PostgreSQL Flexible Server. The PostgreSQL server is created in a separate region (configurable via `postgresLocation` parameter) to support regions where Flexible Server is available.
 
 ## Naming Convention
 
@@ -93,13 +94,26 @@ The script will:
 
 The Container App is configured with the following environment variables:
 
+**Application Configuration:**
 - `AUTOPR_ENV`: Environment name
 - `HOST`: Server host (0.0.0.0)
 - `PORT`: Server port (8080)
-- `DATABASE_URL`: PostgreSQL connection string
-- `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
-- `REDIS_URL`: Redis connection string
-- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`
+
+**PostgreSQL Connection (passwords via secretRef):**
+- `POSTGRES_HOST`: PostgreSQL server FQDN
+- `POSTGRES_PORT`: PostgreSQL port (5432)
+- `POSTGRES_DB`: Database name (autopr)
+- `POSTGRES_USER`: Database user (autopr)
+- `POSTGRES_PASSWORD`: Database password (via secretRef, not plaintext)
+- `POSTGRES_SSLMODE`: SSL mode (require)
+
+**Redis Connection (passwords via secretRef):**
+- `REDIS_HOST`: Redis cache hostname
+- `REDIS_PORT`: Redis port (6380, SSL)
+- `REDIS_PASSWORD`: Redis password (via secretRef, not plaintext)
+- `REDIS_SSL`: SSL enabled (true)
+
+**Note:** Passwords are stored as Container App secrets and referenced via `secretRef`. The application should construct connection strings at runtime from these individual environment variables rather than using pre-built connection strings with embedded credentials.
 
 ### Additional Environment Variables
 
@@ -157,14 +171,14 @@ az containerapp update \
 
 ```bash
 # Get connection details
-az postgres server show \
-  --name prod-autopr-san-postgres \
+az postgres flexible-server show \
+  --name prod-autopr-san-postgres-<unique-suffix> \
   --resource-group prod-rg-san-autopr \
   --query "{fqdn:fullyQualifiedDomainName,adminUser:administratorLogin}" \
   --output json
 
 # Connect using psql
-psql -h <fqdn> -U autopr@prod-autopr-san-postgres -d autopr
+psql -h <fqdn> -U autopr -d autopr
 ```
 
 ### Connect to Redis
@@ -193,11 +207,12 @@ az redis show \
 ## Cost Estimation
 
 - **Container Apps**: ~$0.000012/vCPU-second + $0.0000015/GB-second
-- **PostgreSQL (Basic B_Gen5_1)**: ~$25/month
+- **Container Apps Environment**: Included (no additional cost)
+- **PostgreSQL Flexible Server (Standard_B1ms)**: ~$12/month
 - **Redis (Basic C1)**: ~$15/month
 - **Log Analytics**: ~$2.30/GB ingested
 
-Total estimated monthly cost: ~$40-60 for light usage, $100-200 for moderate usage.
+Total estimated monthly cost: ~$30-50 for light usage, $100-200 for moderate usage.
 
 ## Troubleshooting
 

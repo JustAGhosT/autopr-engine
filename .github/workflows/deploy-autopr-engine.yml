@@ -91,6 +91,7 @@ jobs:
       - name: Deploy Bicep Template
         run: |
           az deployment group create \
+            --name autopr-engine \
             --resource-group prod-rg-san-autopr \
             --template-file infrastructure/bicep/autopr-engine.bicep \
             --parameters \

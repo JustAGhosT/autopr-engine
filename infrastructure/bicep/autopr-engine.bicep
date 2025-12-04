@@ -26,8 +26,31 @@ var containerAppName = '${resourceNamePrefix}-app'
 var containerAppEnvName = '${resourceNamePrefix}-env'
 var postgresServerName = '${resourceNamePrefix}-postgres-${uniqueString(resourceGroup().id, postgresLocation)}'
 var redisCacheName = '${resourceNamePrefix}-redis'
-resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
+var logAnalyticsWorkspaceName = '${resourceNamePrefix}-logs'
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: logAnalyticsWorkspaceName
+  location: location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+  }
+}
+
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: containerAppEnvName
+  location: location
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalyticsWorkspace.properties.customerId
+        sharedKey: logAnalyticsWorkspace.listKeys().primarySharedKey
+      }
+    }
+  }
 }
 
 resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
@@ -68,8 +91,18 @@ resource postgresFirewallRule 'Microsoft.DBforPostgreSQL/flexibleServers/firewal
   }
 }
 
-resource redisCache 'Microsoft.Cache/redis@2023-08-01' existing = {
+resource redisCache 'Microsoft.Cache/redis@2023-08-01' = {
   name: redisCacheName
+  location: location
+  properties: {
+    sku: {
+      name: 'Basic'
+      family: 'C'
+      capacity: 1
+    }
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+  }
 }
 
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
@@ -114,12 +147,12 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: '8080'
             }
             {
-              name: 'DATABASE_URL'
-              value: 'postgresql://autopr:${postgresPassword}@${postgresServer.properties.fullyQualifiedDomainName}:5432/autopr?sslmode=require'
-            }
-            {
               name: 'POSTGRES_HOST'
               value: postgresServer.properties.fullyQualifiedDomainName
+            }
+            {
+              name: 'POSTGRES_PORT'
+              value: '5432'
             }
             {
               name: 'POSTGRES_DB'
@@ -134,8 +167,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
               secretRef: 'postgres-password'
             }
             {
-              name: 'REDIS_URL'
-              value: 'rediss://:${redisPassword}@${redisCache.properties.hostName}:6380?ssl=true'
+              name: 'POSTGRES_SSLMODE'
+              value: 'require'
             }
             {
               name: 'REDIS_HOST'
@@ -148,6 +181,10 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'REDIS_PASSWORD'
               secretRef: 'redis-password'
+            }
+            {
+              name: 'REDIS_SSL'
+              value: 'true'
             }
           ]
           resources: {

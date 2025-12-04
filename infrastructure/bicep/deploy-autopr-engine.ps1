@@ -61,6 +61,7 @@ Write-Host "Container Image: $ContainerImage"
 Write-Host ""
 
 az deployment group create `
+    --name autopr-engine `
     --resource-group $ResourceGroup `
     --template-file infrastructure/bicep/autopr-engine.bicep `
     --parameters `
