@@ -7,6 +7,7 @@ Tests for race condition fixes, input validation, and core functionality.
 import asyncio
 from datetime import datetime
 import pytest
+import pytest_asyncio
 
 from autopr.config import AutoPRConfig
 from autopr.exceptions import WorkflowError
@@ -43,7 +44,7 @@ def config():
     return AutoPRConfig()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def workflow_engine(config):
     """Create and start workflow engine."""
     engine = WorkflowEngine(config)
