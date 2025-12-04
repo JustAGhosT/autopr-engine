@@ -88,9 +88,8 @@ jobs:
                 if (!doc.name) {
                   console.log(`  Warning: ${file} missing 'name' field`);
                 }
-                // Check for 'on' trigger - handle both string key and boolean key (YAML 1.1 compatibility)
-                const hasOnTrigger = doc.on || doc[true] || doc['true'];
-                if (!hasOnTrigger) {
+                // JSON_SCHEMA prevents YAML 1.1 boolean interpretation, so 'on' is parsed as string key
+                if (!doc.on) {
                   console.log(`  Error: ${file} missing 'on' trigger`);
                   hasErrors = true;
                   fileHasErrors = true;
