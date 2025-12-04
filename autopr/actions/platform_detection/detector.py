@@ -19,6 +19,7 @@ and exposes:
 from __future__ import annotations
 
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List
@@ -30,6 +31,8 @@ from .file_analyzer import FileAnalyzer
 from .models import PlatformDetectorInputs
 from .patterns import PlatformPatterns
 from .scoring import PlatformScoringEngine
+
+logger = logging.getLogger(__name__)
 
 
 class PlatformDetectorOutputs(BaseModel):
@@ -194,6 +197,36 @@ class PlatformDetector:
                 normalized_scores
             )
 
+            # Enforce detection threshold of 0.5 per platform detection guidelines
+            detection_threshold = 0.5
+            primary_score = normalized_scores.get(primary_platform, 0.0)
+            
+            logger.info(
+                "Platform detection scores: %s", 
+                {k: f"{v:.2f}" for k, v in sorted(normalized_scores.items(), key=lambda x: x[1], reverse=True)}
+            )
+
+            # Only treat platforms as "detected" if they meet the 0.5 threshold
+            if primary_platform != "unknown" and primary_score < detection_threshold:
+                logger.info(
+                    "Primary platform %s (score: %.2f) below threshold %.2f, setting to unknown",
+                    primary_platform, primary_score, detection_threshold
+                )
+                primary_platform = "unknown"
+
+            filtered_secondary = [
+                p for p in secondary_platforms
+                if normalized_scores.get(p, 0.0) >= detection_threshold
+            ]
+            
+            if len(filtered_secondary) < len(secondary_platforms):
+                logger.info(
+                    "Filtered secondary platforms from %d to %d based on %.2f threshold",
+                    len(secondary_platforms), len(filtered_secondary), detection_threshold
+                )
+            
+            secondary_platforms = filtered_secondary
+
             workflow_type = self.scoring_engine.determine_workflow_type(
                 normalized_scores
             )
@@ -212,6 +245,72 @@ class PlatformDetector:
                     normalized_scores, scoring_configs
                 )
             )
+            
+            # Validate hybrid/multi-platform classifications
+            reclassification_reasons = []
+            
+            logger.info(
+                "Workflow classification: %s (primary: %s, secondary: %s)",
+                workflow_type, primary_platform, secondary_platforms
+            )
+            
+            if workflow_type in ("hybrid_workflow", "multi_platform"):
+                logger.debug(
+                    "Validating %s classification with %d migration opportunities",
+                    workflow_type, len(migration_opportunities)
+                )
+                
+                # 1. Check for migration path analysis (mandatory for hybrid/multi-platform)
+                if not migration_opportunities:
+                    reason = f"No migration opportunities identified for {workflow_type} classification"
+                    logger.warning("Migration validation failed: %s", reason)
+                    reclassification_reasons.append(reason)
+                
+                # 2. Check platform compatibility
+                is_compatible, incompatibility_reasons = (
+                    self.scoring_engine.check_platform_compatibility(
+                        primary_platform, secondary_platforms
+                    )
+                )
+                
+                if not is_compatible:
+                    logger.warning(
+                        "Platform compatibility check failed: %s", incompatibility_reasons
+                    )
+                    reclassification_reasons.extend(
+                        [f"Platform incompatibility: {reason}" for reason in incompatibility_reasons]
+                    )
+                else:
+                    logger.debug("Platform compatibility validated successfully")
+                
+                # Reclassify if validation fails
+                if reclassification_reasons:
+                    original_workflow_type = workflow_type
+                    warning_msg = (
+                        f"Reclassifying {workflow_type} to single_platform. "
+                        f"Reasons: {'; '.join(reclassification_reasons)}"
+                    )
+                    
+                    # Log with proper logging instead of warnings module
+                    logger.warning(
+                        "Platform detection reclassification: %s -> single_platform. "
+                        "Primary: %s, Secondary: %s. Reasons: %s",
+                        original_workflow_type,
+                        primary_platform,
+                        secondary_platforms,
+                        reclassification_reasons,
+                    )
+                    
+                    workflow_type = "single_platform"
+                    # Keep only primary platform
+                    secondary_platforms = []
+                    
+                    # Add analysis note to recommended enhancements
+                    recommended_enhancements.insert(
+                        0,
+                        f"Note: Originally detected as {original_workflow_type} but reclassified to single_platform. "
+                        f"Reason: {reclassification_reasons[0]}"
+                    )
 
             # 5) Platform-specific configs – for now we expose raw detection rules
             platform_specific_configs: dict[str, dict[str, Any]] = {}
@@ -235,8 +334,12 @@ class PlatformDetector:
                 hybrid_workflow_analysis=hybrid_workflow,
             )
 
-        except Exception:
+        except Exception as e:
             # Defensive catch-all: never raise from detection, always return a safe result
+            logger.exception(
+                "Platform detection failed with exception, returning unknown result: %s",
+                str(e)
+            )
             return PlatformDetectorOutputs(
                 primary_platform="unknown",
                 secondary_platforms=[],

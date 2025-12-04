@@ -17,13 +17,12 @@ TODO: PRODUCTION
 """
 
 import json
-from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, validator
 
 
 class NodeType(str, Enum):
@@ -67,11 +66,11 @@ class WorkflowNode(BaseModel):
     - Add timeout settings
     - Create node templates
     """
-    id: str = field(default_factory=lambda: str(uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid4()))
     type: NodeType
     label: str
-    config: Dict[str, Any] = field(default_factory=dict)
-    position: Dict[str, float] = field(default_factory=lambda: {"x": 0, "y": 0})
+    config: Dict[str, Any] = Field(default_factory=dict)
+    position: Dict[str, float] = Field(default_factory=lambda: {"x": 0, "y": 0})
     
     @validator('config')
     def validate_config(cls, v, values):
@@ -82,7 +81,7 @@ class WorkflowNode(BaseModel):
 
 class WorkflowEdge(BaseModel):
     """Represents a connection between workflow nodes."""
-    id: str = field(default_factory=lambda: str(uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid4()))
     source: str  # Source node ID
     target: str  # Target node ID
     label: Optional[str] = None
@@ -99,14 +98,14 @@ class Workflow(BaseModel):
     - Add workflow analytics/metrics
     - Create workflow changelog
     """
-    id: str = field(default_factory=lambda: str(uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid4()))
     name: str
     description: Optional[str] = None
-    nodes: List[WorkflowNode] = field(default_factory=list)
-    edges: List[WorkflowEdge] = field(default_factory=list)
+    nodes: List[WorkflowNode] = Field(default_factory=list)
+    edges: List[WorkflowEdge] = Field(default_factory=list)
     enabled: bool = True
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     version: int = 1
     
     def to_yaml(self) -> str:

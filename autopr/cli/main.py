@@ -17,6 +17,14 @@ from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
                                                            SplitConfig)
 from autopr.actions.ai_linting_fixer.performance_optimizer import \
     PerformanceOptimizer
+from autopr.actions.ai_comment_analyzer import (
+    AICommentAnalyzer,
+    AICommentAnalysisInputs,
+)
+from autopr.actions.autogen_multi_agent import (
+    autogen_multi_agent_action,
+    AutoGenInputs,
+)
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
 from autopr.actions.registry import ActionRegistry
@@ -26,6 +34,8 @@ from autopr.config import AutoPRConfig
 from autopr.engine import AutoPREngine
 from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.database.config import get_db
+from autopr.database.models import IntegrationEvent
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 # Configure logging
@@ -45,6 +55,33 @@ def cli(verbose: bool, quiet: bool):
         logging.getLogger().setLevel(logging.DEBUG)
     if quiet:
         logging.getLogger().setLevel(logging.ERROR)
+
+
+@cli.command()
+@click.option("--event-type", required=True, help="The type of the event.")
+@click.option("--payload", required=True, help="The JSON payload for the event.")
+def create_event(event_type: str, payload: str):
+    """Creates a new IntegrationEvent in the database."""
+    asyncio.run(_create_event(event_type, payload))
+
+
+async def _create_event(event_type: str, payload_str: str):
+    """Create a new IntegrationEvent in the database"""
+    try:
+        import json
+        payload = json.loads(payload_str)
+        async with get_db() as db:
+            event = IntegrationEvent(
+                event_type=event_type,
+                payload=payload,
+                status="pending",
+            )
+            db.add(event)
+            await db.commit()
+        click.echo(f"Successfully created event {event.id}")
+    except Exception as e:
+        logger.exception(f"Failed to create event: {e}")
+        sys.exit(1)
 
 
 @cli.command()
@@ -127,6 +164,32 @@ def dashboard(port: int, host: str, open_browser: bool):
 def config(file: str, fix: bool):
     """Validate and manage AutoPR configuration (Coming Soon)"""
     click.echo("The config validation feature is under development and will be available in a future release.")
+
+
+@cli.command()
+@click.option("--comment-body", required=True, help="The body of the PR comment.")
+@click.option("--file-path", help="The file path the comment is on.")
+@click.option("--pr-diff", help="The diff of the pull request.")
+def analyze_comment(comment_body: str, file_path: str, pr_diff: str):
+    """Analyzes a PR comment and returns the analysis as a JSON object."""
+    asyncio.run(_run_comment_analysis(comment_body, file_path, pr_diff))
+
+
+async def _run_comment_analysis(comment_body: str, file_path: str, pr_diff: str):
+    """Run comment analysis with the specified parameters"""
+    try:
+        analyzer = AICommentAnalyzer()
+        inputs = AICommentAnalysisInputs(
+            comment_body=comment_body,
+            file_path=file_path,
+            pr_diff=pr_diff,
+        )
+        result = await analyzer.execute(inputs, {})
+        import json
+        click.echo(json.dumps(result.dict()))
+    except Exception as e:
+        logger.exception(f"Comment analysis failed: {e}")
+        sys.exit(1)
 
 
 async def _run_quality_check(

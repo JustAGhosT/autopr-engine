@@ -102,6 +102,26 @@ pytest tests/integration/  # Integration tests
 pytest tests/performance/ -v
 ```
 
+## Code Coverage (Codecov)
+
+This project uses [Codecov](https://codecov.io) for coverage tracking. If you're setting up a fork or seeing warnings about installing the Codecov app:
+
+### Setting Up Codecov
+
+1. **Install the Codecov GitHub App:**
+   - Go to: https://github.com/apps/codecov
+   - Click "Install" or "Configure"
+   - Select your organization or personal account
+   - Grant access to your repository
+
+2. **Set the CODECOV_TOKEN Secret:**
+   - Go to your Codecov dashboard and copy the upload token
+   - Add it as a repository secret named `CODECOV_TOKEN`
+
+3. **Configuration:**
+   - The repository includes a `codecov.yml` file that configures coverage requirements and behavior
+   - See [Codecov documentation](https://docs.codecov.com/docs/codecovyml-reference) for customization options
+
 ## Questions?
 
 If you have questions or need help, please:

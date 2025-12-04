@@ -14,6 +14,7 @@ TODO: Production considerations:
 
 import os
 from typing import Generator
+from urllib.parse import urlparse, urlunparse
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
@@ -22,10 +23,11 @@ from sqlalchemy.pool import NullPool, QueuePool
 
 from autopr.database.models import Base
 
-# TODO: Move to environment configuration or settings file
+# DATABASE_URL must be explicitly set via environment variable
+# No default credentials to avoid security risks
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://autopr_user:autopr_password@localhost:5432/autopr",
+    "sqlite:///:memory:",  # Safe in-memory default for development/testing only
 )
 
 # TODO: Configure connection pooling based on environment
@@ -66,42 +68,43 @@ def _create_engine():
             **POOL_CONFIG,
         )
 
-# Create engine (skip if AUTOPR_SKIP_DB_INIT is set)
-if os.getenv("AUTOPR_SKIP_DB_INIT"):
-    engine = None  # type: ignore
-else:
-    try:
-        engine = _create_engine()
-    except Exception as e:
-        # If database connection fails during import, set engine to None
-        # This allows models to be imported without requiring database connection
-        import warnings
-        warnings.warn(f"Failed to create database engine: {e}. Database operations will not work.")
-        engine = None  # type: ignore
-
-
-# TODO: Add event listeners for connection monitoring
-@event.listens_for(Engine, "connect")
+# Event listener functions (registered per-instance below)
 def set_sqlite_pragma(dbapi_conn, connection_record):
     """Set SQLite pragmas if using SQLite (for development)."""
-    if "sqlite" in DATABASE_URL:
+    if engine and "sqlite" in str(engine.url):
         cursor = dbapi_conn.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
 
-@event.listens_for(Engine, "checkin")
 def receive_checkin(dbapi_conn, connection_record):
     """Log connection check-in events (optional, for debugging)."""
     # TODO: Add logging or metrics collection
     pass
 
 
-@event.listens_for(Engine, "checkout")
 def receive_checkout(dbapi_conn, connection_record, connection_proxy):
     """Log connection checkout events (optional, for debugging)."""
     # TODO: Add logging or metrics collection
     pass
+
+
+# Create engine (skip if AUTOPR_SKIP_DB_INIT is set)
+if os.getenv("AUTOPR_SKIP_DB_INIT"):
+    engine = None  # type: ignore
+else:
+    try:
+        engine = _create_engine()
+        # Register instance-specific event listeners
+        event.listen(engine, "connect", set_sqlite_pragma)
+        event.listen(engine, "checkin", receive_checkin)
+        event.listen(engine, "checkout", receive_checkout)
+    except Exception as e:
+        # If database connection fails during import, set engine to None
+        # This allows models to be imported without requiring database connection
+        import warnings
+        warnings.warn(f"Failed to create database engine: {e}. Database operations will not work.")
+        engine = None  # type: ignore
 
 
 # Create session factory
@@ -135,8 +138,17 @@ def get_db() -> Generator:
     Yields:
         SQLAlchemy database session
 
+    Raises:
+        RuntimeError: If database engine is not initialized
+
     TODO: Add session-level error handling and logging
     """
+    if engine is None:
+        raise RuntimeError(
+            "Database engine is not initialized. "
+            "Ensure DATABASE_URL is set and AUTOPR_SKIP_DB_INIT is not set when running DB operations. "
+            "Check that psycopg2-binary is installed: poetry add psycopg2-binary"
+        )
     db = SessionLocal()
     try:
         yield db
@@ -157,9 +169,18 @@ def init_db() -> None:
         # Initialize database (development only)
         init_db()
 
+    Raises:
+        RuntimeError: If database engine is not initialized
+
     TODO: Remove in production - use Alembic migrations instead
     TODO: Add database version checking
     """
+    if engine is None:
+        raise RuntimeError(
+            "Cannot initialize database: engine is None. "
+            "Set DATABASE_URL environment variable to a valid PostgreSQL connection string. "
+            "Example: postgresql://user:password@localhost:5432/dbname"
+        )
     # Import models to register them with Base.metadata
     from autopr.database import models  # noqa: F401
 
@@ -179,8 +200,15 @@ def drop_db() -> None:
         # Drop all tables (testing only!)
         drop_db()
 
+    Raises:
+        RuntimeError: If database engine is not initialized or in production
+
     TODO: Add environment check to prevent accidental production drops
     """
+    if engine is None:
+        raise RuntimeError(
+            "Cannot drop database: engine is None. DATABASE_URL must be set."
+        )
     if os.getenv("ENVIRONMENT") == "production":
         raise RuntimeError("Cannot drop database in production environment!")
 
@@ -190,20 +218,62 @@ def drop_db() -> None:
     Base.metadata.drop_all(bind=engine)
 
 
+def _mask_database_url(url: str) -> str:
+    """Safely mask credentials in database URL.
+    
+    Args:
+        url: Database URL that may contain credentials
+        
+    Returns:
+        URL with credentials masked, or original URL if parsing fails
+    """
+    try:
+        parsed = urlparse(url)
+        
+        # If no username, no masking needed
+        if not parsed.username:
+            return url
+        
+        # Build masked netloc: replace userinfo with ***
+        if parsed.password:
+            masked_userinfo = "***:***"
+        else:
+            masked_userinfo = "***"
+        
+        # Reconstruct netloc with masked credentials
+        if parsed.port:
+            masked_netloc = f"{masked_userinfo}@{parsed.hostname}:{parsed.port}"
+        else:
+            masked_netloc = f"{masked_userinfo}@{parsed.hostname}"
+        
+        # Rebuild URL with masked netloc
+        masked_parsed = parsed._replace(netloc=masked_netloc)
+        return urlunparse(masked_parsed)
+    except Exception:
+        # If URL parsing fails, return a safe placeholder
+        return "<invalid-url>"
+
+
 def get_connection_info() -> dict:
     """
     Get database connection information (for health checks).
 
     Returns:
-        Dictionary with connection pool statistics
+        Dictionary with connection pool statistics or error status
 
     TODO: Add more detailed connection metrics
     """
+    if engine is None:
+        return {
+            "status": "unavailable",
+            "error": "Database engine not initialized (AUTOPR_SKIP_DB_INIT may be set)",
+            "database_url": None,
+        }
+    
     pool = engine.pool
     return {
-        "database_url": DATABASE_URL.replace(
-            DATABASE_URL.split("@")[0].split("//")[1], "***"
-        ),  # Mask credentials
+        "status": "available",
+        "database_url": _mask_database_url(DATABASE_URL),
         "pool_size": pool.size() if hasattr(pool, "size") else None,
         "checked_in_connections": (
             pool.checkedin() if hasattr(pool, "checkedin") else None
