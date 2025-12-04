@@ -287,3 +287,6 @@ local_settings.*
 # Local data and backups
 backups/
 data/
+
+# Consolidated local directory (cache and IDE configs)
+.local/
