@@ -7,7 +7,7 @@ set -e
 ENVIRONMENT=${1:-prod}
 REGION_ABBR=${2:-san}
 LOCATION=${3:-"eastus2"}
-RESOURCE_GROUP="prod-rg-${REGION_ABBR}-autopr"
+RESOURCE_GROUP="${ENVIRONMENT}-rg-${REGION_ABBR}-autopr"
 
 echo "Deploying Static Web App infrastructure..."
 echo "Environment: $ENVIRONMENT"
@@ -34,5 +34,5 @@ az deployment group create \
     customDomain="autopr.io"
 
 echo "Deployment complete!"
-echo "Static Web App name: prod-stapp-${REGION_ABBR}-autopr"
+echo "Static Web App name: ${ENVIRONMENT}-stapp-${REGION_ABBR}-autopr"
 
