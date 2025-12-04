@@ -54,18 +54,11 @@ async def callback(
             github_app_private_key.replace("\\n", "\n"),
         )
 
-        # Get installation access token
+        # Get installation (already has account info)
         installation = integration.get_installation(int(installation_id))
-        access_token = integration.get_access_token(installation.id).token
 
-        # Get installation details
-        from github import Github
-
-        g = Github(access_token)
-        installation_obj = g.get_installation(int(installation_id))
-
-        # Get account login
-        account = installation_obj.account
+        # Get account login from installation object
+        account = installation.account
         account_login = account.login if account else ""
 
         # Redirect to setup page

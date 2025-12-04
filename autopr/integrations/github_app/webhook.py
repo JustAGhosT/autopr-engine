@@ -47,20 +47,25 @@ async def webhook(
     # Get request body
     body = await request.body()
 
-    # Verify webhook signature
-    if x_hub_signature_256:
-        expected_signature = hmac.new(
-            webhook_secret.encode(),
-            body,
-            hashlib.sha256,
-        ).hexdigest()
-        expected_header = f"sha256={expected_signature}"
+    # Verify webhook signature - reject if missing when secret is configured
+    if not x_hub_signature_256:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing webhook signature header",
+        )
 
-        if not hmac.compare_digest(x_hub_signature_256, expected_header):
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid webhook signature",
-            )
+    expected_signature = hmac.new(
+        webhook_secret.encode(),
+        body,
+        hashlib.sha256,
+    ).hexdigest()
+    expected_header = f"sha256={expected_signature}"
+
+    if not hmac.compare_digest(x_hub_signature_256, expected_header):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid webhook signature",
+        )
 
     try:
         payload = json.loads(body.decode())
