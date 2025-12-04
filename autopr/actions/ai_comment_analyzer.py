@@ -27,7 +27,8 @@ class AICommentAnalysisOutputs(BaseModel):
     confidence: float
     suggested_actions: list[str] = Field(default_factory=list)
     auto_fixable: bool
-    fix_code: str | None = None
+    search_block: str | None = None
+    replace_block: str | None = None
     response_template: str
     issue_priority: str  # "low", "medium", "high", "critical"
     tags: list[str] = Field(default_factory=list)
@@ -49,8 +50,17 @@ def analyze_comment_with_ai(
     4. Priority level
     5. Appropriate tags
 
+    If the comment is a fix request, provide a `search_block` and a `replace_block` for the fix.
+    The `search_block` should be a small, unique snippet of code to identify the location of the change.
+    The `replace_block` should be the code that replaces the `search_block`.
+
     Return JSON with analysis results.
     """
+
+    file_content = ""
+    if inputs.file_path and os.path.exists(inputs.file_path):
+        with open(inputs.file_path, 'r') as f:
+            file_content = f.read()
 
     user_prompt = f"""
     Analyze this PR comment:
@@ -58,15 +68,19 @@ def analyze_comment_with_ai(
     Comment: "{inputs.comment_body}"
     File: {inputs.file_path or "N/A"}
 
-    Context:
-    {inputs.file_content[:500] if inputs.file_content else "No file content available"}
+    File Content:
+    {file_content}
+
+    PR Diff:
+    {inputs.pr_diff}
 
     Determine:
     - Intent (fix_request, question, suggestion, praise, complex_issue)
     - Confidence (0.0-1.0)
     - Suggested actions
     - Whether it's auto-fixable
-    - Fix code if applicable
+    - search_block (if applicable)
+    - replace_block (if applicable)
     - Response template
     - Priority (low/medium/high/critical)
     - Relevant tags
