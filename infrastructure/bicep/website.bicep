@@ -1,8 +1,8 @@
 @description('Environment name (prod, dev, staging)')
 param environment string = 'prod'
 
-@description('Azure region abbreviation (eus, wus, san, etc.)')
-param regionAbbr string = 'eus'
+@description('Azure region abbreviation (e.g., san for South Africa North, eus for East US)')
+param regionAbbr string = 'san'
 
 @description('Azure region full name')
 param location string = 'eastus2'

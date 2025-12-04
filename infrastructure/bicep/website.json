@@ -18,14 +18,14 @@
     },
     "regionAbbr": {
       "type": "string",
-      "defaultValue": "eus",
+      "defaultValue": "san",
       "metadata": {
-        "description": "Azure region abbreviation (eus, wus, san, etc.)"
+        "description": "Azure region abbreviation (e.g., san for South Africa North, eus for East US)"
       }
     },
     "location": {
       "type": "string",
-      "defaultValue": "South Africa North",
+      "defaultValue": "eastus2",
       "metadata": {
         "description": "Azure region full name"
       }
