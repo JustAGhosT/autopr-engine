@@ -139,8 +139,8 @@ export default function Integration() {
                   </a>
                 </li>
                 <li>
-                  Click <strong>&quot;Install&quot;</strong> or{" "}
-                  <strong>&quot;Configure&quot;</strong>
+                  Click <strong>Install</strong> or{" "}
+                  <strong>Configure</strong>
                 </li>
                 <li>
                   Select the repositories you want AutoPR to monitor
