@@ -3,7 +3,7 @@
 # Use this at: https://github.com/settings/apps/new?manifest=1
 
 name: autopr-engine
-description: AI-Powered GitHub PR Automation - Intelligent code analysis, automated issue creation, and multi-agent collaboration for pull request workflows.
+description: AI-powered GitHub PR automation - Intelligent code analysis, automated issue creation, and multi-agent collaboration for pull request workflows.
 url: https://app.autopr.io
 hook_attributes:
   url: https://app.autopr.io/api/github-app/webhook
