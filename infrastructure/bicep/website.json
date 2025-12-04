@@ -1,0 +1,85 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "2200558722358862272"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "defaultValue": "prod",
+      "metadata": {
+        "description": "Environment name (prod, dev, staging)"
+      }
+    },
+    "regionAbbr": {
+      "type": "string",
+      "defaultValue": "eus",
+      "metadata": {
+        "description": "Azure region abbreviation (eus, wus, san, etc.)"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "South Africa North",
+      "metadata": {
+        "description": "Azure region full name"
+      }
+    },
+    "customDomain": {
+      "type": "string",
+      "defaultValue": "autopr.io",
+      "metadata": {
+        "description": "Custom domain name"
+      }
+    }
+  },
+  "variables": {
+    "resourceNamePrefix": "[format('{0}-stapp-{1}-autopr', parameters('environment'), parameters('regionAbbr'))]",
+    "staticWebAppName": "[variables('resourceNamePrefix')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/staticSites",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('staticWebAppName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {
+        "repositoryUrl": "https://github.com/JustAGhosT/autopr-engine",
+        "branch": "main",
+        "buildProperties": {
+          "appLocation": "website",
+          "apiLocation": "",
+          "appArtifactLocation": "out",
+          "outputLocation": "out"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "staticWebAppName": {
+      "type": "string",
+      "value": "[variables('staticWebAppName')]"
+    },
+    "staticWebAppUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/staticSites', variables('staticWebAppName')), '2022-03-01').defaultHostname]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[resourceGroup().name]"
+    },
+    "customDomain": {
+      "type": "string",
+      "value": "[parameters('customDomain')]"
+    }
+  }
+}
