@@ -58,7 +58,7 @@ elif [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "|_| |_|\__,_|\__\___/|_|   |_| \_\ |_____|_| |_|\__, |_|_| |_|\___|"
     echo "                                                |___/              "
     echo ""
-    echo "AI-Powered GitHub PR Automation and Issue Management"
+    echo "AutoPR - AI-Powered GitHub PR Automation and Issue Management"
     echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""
@@ -172,7 +172,7 @@ install_pip() {
                         rm -rf "$CLONE_DIR"
                         exit 1
                     }
-                    print_status "Repository cloned to: $CLONE_DIR/autopr-engine"
+                    print_status "Repository cloned to: ${CLONE_DIR}/autopr-engine"
                 else
                     print_error "Failed to clone repository"
                     rm -rf "$CLONE_DIR"
