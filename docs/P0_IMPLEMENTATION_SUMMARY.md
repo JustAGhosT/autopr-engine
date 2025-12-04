@@ -241,8 +241,8 @@ This document summarizes the completion of all Priority 0 (P0) critical items id
 1. `docker-compose.yml` (security fixes)
 2. `autopr/dashboard/server.py` (async + path validation)
 3. `autopr/workflows/engine.py` (concurrency TODO comments)
-
-(Note: alembic/env.py and alembic.ini are new Alembic scaffolding files, included in the 7-8 files created, not modifications)
+4. `alembic/env.py` (configured for AutoPR)
+5. `alembic.ini` (configured database URL)
 
 ### **Total Lines of Code/Documentation**: ~3,300 lines
 

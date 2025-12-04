@@ -61,45 +61,52 @@ jobs:
           echo "Validating workflows..."
           yamllint .github/workflows/*.yml || true
 
-      - name: Install PyYAML
-        run: pip install pyyaml
-
       - name: Validate GitHub Actions syntax
         run: |
           python3 << 'EOF'
-          import yaml
           import os
-          from pathlib import Path
+          import sys
+          import yaml
 
-          templates_dir = Path('templates/quick-start')
-          files = [f for f in templates_dir.iterdir() if f.suffix == '.yml']
+          templates_dir = 'templates/quick-start'
+          files = [f for f in os.listdir(templates_dir) if f.endswith('.yml')]
 
           has_errors = False
 
-          for file_path in files:
-              print(f'Validating {file_path}...')
+          for file in files:
+              file_path = os.path.join(templates_dir, file)
+              print(f"Validating {file_path}...")
 
+              file_has_errors = False
               try:
-                  with open(file_path, 'r', encoding='utf-8') as f:
-                      doc = yaml.safe_load(f)
+                  with open(file_path, 'r') as f:
+                      content = f.read()
+                  doc = yaml.safe_load(content)
 
                   # Basic structure validation
-                  if not doc or 'name' not in doc:
-                      print(f'  Warning: {file_path.name} missing \'name\' field')
-                  if not doc or 'on' not in doc:
-                      print(f'  Error: {file_path.name} missing \'on\' trigger')
-                      has_errors = True
-                  if not doc or 'jobs' not in doc:
-                      print(f'  Error: {file_path.name} missing \'jobs\' section')
-                      has_errors = True
+                  if not doc.get('name'):
+                      print(f"  Warning: {file} missing 'name' field")
 
-                  print(f'  ✓ {file_path.name} is valid')
+                  # Check for 'on' trigger - PyYAML may parse 'on' as boolean True (YAML 1.1)
+                  if not doc.get('on') and not doc.get(True):
+                      print(f"  Error: {file} missing 'on' trigger")
+                      has_errors = True
+                      file_has_errors = True
+
+                  if not doc.get('jobs'):
+                      print(f"  Error: {file} missing 'jobs' section")
+                      has_errors = True
+                      file_has_errors = True
+
+                  if not file_has_errors:
+                      print(f"  ✓ {file} is valid")
               except Exception as e:
-                  print(f'  ✗ {file_path.name} has errors: {e}')
+                  print(f"  ✗ {file} has errors: {e}")
                   has_errors = True
 
           if has_errors:
-              exit(1)
+              print("Some templates have validation errors")
+              sys.exit(1)
           EOF
 
   validate-bash:

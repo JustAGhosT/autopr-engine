@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Any
 
 import pydantic
+from pydantic import ConfigDict
 
 
 class Permission(Enum):
@@ -48,8 +49,7 @@ class AuthorizationContext(pydantic.BaseModel):
     user_role: str | None = None
     additional_context: dict[str, Any] | None = None
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class ResourcePermission(pydantic.BaseModel):
@@ -63,8 +63,7 @@ class ResourcePermission(pydantic.BaseModel):
         default_factory=lambda: datetime.utcnow().isoformat()
     )
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class PermissionPolicy(pydantic.BaseModel):
@@ -78,8 +77,7 @@ class PermissionPolicy(pydantic.BaseModel):
     )
     active: bool = True
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class AuthorizationReport(pydantic.BaseModel):
@@ -93,5 +91,4 @@ class AuthorizationReport(pydantic.BaseModel):
     security_analysis: dict[str, Any] = {}
     recommendations: list[str] = []
 
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)

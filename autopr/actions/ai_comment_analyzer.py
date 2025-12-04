@@ -69,7 +69,7 @@ def analyze_comment_with_ai(
     File: {inputs.file_path or "N/A"}
 
     File Content:
-    {file_content}
+    {file_content[:5000]}
 
     PR Diff:
     {inputs.pr_diff}
