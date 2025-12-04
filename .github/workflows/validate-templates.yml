@@ -1,0 +1,185 @@
+# Validate GitHub Action Templates and Install Scripts
+# Ensures templates are syntactically correct before merge
+
+name: Validate Templates
+
+on:
+  push:
+    paths:
+      - 'templates/**/*.yml'
+      - 'templates/**/*.yaml'
+      - 'install.sh'
+      - 'install.ps1'
+      - '.github/workflows/*.yml'
+  pull_request:
+    paths:
+      - 'templates/**/*.yml'
+      - 'templates/**/*.yaml'
+      - 'install.sh'
+      - 'install.ps1'
+      - '.github/workflows/*.yml'
+
+jobs:
+  validate-yaml:
+    name: Validate YAML Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Create yamllint config
+        run: |
+          cat > .yamllint.yml << 'EOF'
+          extends: default
+          rules:
+            line-length:
+              max: 120
+              allow-non-breakable-words: true
+              allow-non-breakable-inline-mappings: true
+            truthy:
+              allowed-values: ['true', 'false', 'on']
+            comments:
+              min-spaces-from-content: 1
+            indentation:
+              spaces: 2
+              indent-sequences: true
+          EOF
+
+      - name: Lint YAML templates
+        run: |
+          echo "Validating templates..."
+          yamllint templates/quick-start/*.yml || true
+
+          echo "Validating workflows..."
+          yamllint .github/workflows/*.yml || true
+
+      - name: Validate GitHub Actions syntax
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const yaml = require('js-yaml');
+
+            const templatesDir = 'templates/quick-start';
+            const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yml'));
+
+            let hasErrors = false;
+
+            for (const file of files) {
+              const filePath = path.join(templatesDir, file);
+              console.log(`Validating ${filePath}...`);
+
+              try {
+                const content = fs.readFileSync(filePath, 'utf8');
+                const doc = yaml.load(content);
+
+                // Basic structure validation
+                if (!doc.name) {
+                  console.log(`  Warning: ${file} missing 'name' field`);
+                }
+                if (!doc.on) {
+                  console.log(`  Error: ${file} missing 'on' trigger`);
+                  hasErrors = true;
+                }
+                if (!doc.jobs) {
+                  console.log(`  Error: ${file} missing 'jobs' section`);
+                  hasErrors = true;
+                }
+
+                console.log(`  ✓ ${file} is valid`);
+              } catch (e) {
+                console.log(`  ✗ ${file} has errors: ${e.message}`);
+                hasErrors = true;
+              }
+            }
+
+            if (hasErrors) {
+              core.setFailed('Some templates have validation errors');
+            }
+
+  validate-bash:
+    name: Validate Bash Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check bash syntax
+        run: bash -n install.sh
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck install.sh --severity=warning || true
+
+      - name: Test --help flag
+        run: ./install.sh --help
+
+      - name: Test --version flag
+        run: ./install.sh --version
+
+  validate-powershell:
+    name: Validate PowerShell Script
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $errors = $null
+          $null = [System.Management.Automation.Language.Parser]::ParseFile(
+            "$PWD/install.ps1",
+            [ref]$null,
+            [ref]$errors
+          )
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host "PowerShell syntax is valid"
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          $results = Invoke-ScriptAnalyzer -Path ./install.ps1 -Severity Warning
+          if ($results) {
+            $results | Format-Table -AutoSize
+            # Don't fail on warnings, just report
+          }
+          Write-Host "PSScriptAnalyzer completed"
+
+      - name: Test -Help flag
+        shell: pwsh
+        run: ./install.ps1 -Help
+
+      - name: Test -Version flag
+        shell: pwsh
+        run: ./install.ps1 -Version
+
+  test-bats:
+    name: Run Bats Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Run bats tests
+        run: bats tests/scripts/test_install.bats

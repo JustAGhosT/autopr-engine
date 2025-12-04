@@ -145,7 +145,7 @@
     }
   },
 
-  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "postCreateCommand": "bash .devcontainer/postcreate.sh",
   "postStartCommand": "bash .devcontainer/postStart.sh",
 
   "remoteUser": "vscode",
