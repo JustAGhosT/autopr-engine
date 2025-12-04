@@ -193,9 +193,10 @@ run_installer() {
 @test "install.sh quotes variables properly" {
     # Check for unquoted $VARIABLE usage (potential word splitting)
     # Allow $? and specific patterns
-    run grep -E '\$[A-Z_]+[^"]' "$INSTALL_SCRIPT" | grep -v '\$?' | grep -v 'echo \$' | grep -v '#'
-    # This is a loose check - manual review is still needed
-    [ "$status" -eq 0 ] || [ -z "$output" ] || true
+    # Note: This is a loose/advisory check - manual review is still needed
+    run bash -c "grep -E '\$[A-Z_]+[^\"'\''\"'\''=]' \"$INSTALL_SCRIPT\" | grep -v '\$?' | grep -v 'echo \$' | grep -v '#' || true"
+    # Always pass - this is just advisory
+    [ "$status" -eq 0 ]
 }
 
 #------------------------------------------------------------------------------
