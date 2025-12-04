@@ -67,6 +67,58 @@ autodoc_default_options = {
     "exclude-members": "__weakref__",
 }
 
+# Mock imports for modules that have optional dependencies or cause import issues
+# This prevents autodoc from failing when these packages are not installed
+autodoc_mock_imports = [
+    "mistralai",
+    "anthropic",
+    "openai",
+    "groq",
+    "crewai",
+    "autogen",
+    "mem0",
+    "redis",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg",
+    "psycopg2",
+    "structlog",
+    "loguru",
+    "sentry_sdk",
+    "prometheus_client",
+    "slack_sdk",
+    "linear",
+    "jira",
+    "pygithub",
+    "playwright",
+    "selenium",
+    "aiohttp",
+    "httpx",
+    "pydantic",
+    "pydantic_settings",
+]
+
+# Suppress warnings during documentation build
+# - autodoc.import_object: Suppress warnings when autodoc can't import modules
+# - ref.python: Suppress Python reference warnings
+# - ref.doc: Suppress unknown document warnings
+# - toc.not_readable: Suppress toctree reference warnings
+suppress_warnings = [
+    "autodoc.import_object",
+    "ref.python",
+    "ref.doc",
+    "toc.not_readable",
+]
+
+# Handle duplicate object descriptions by allowing them
+# This is common when the same class is re-exported from multiple modules
+autodoc_class_signature = "separated"
+
+# Ignore duplicate object description warnings (these occur when objects
+# are re-exported from __init__.py files and documented in multiple places)
+# Use :no-index: directive in RST files or set this to allow duplicates
+# Note: These warnings are informational, not errors
+
 # Napoleon configuration
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True

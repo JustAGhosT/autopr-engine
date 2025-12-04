@@ -2,6 +2,7 @@
 AutoPR LLM Package - Modular LLM provider system.
 
 This package provides a unified interface for multiple LLM providers including:
+
 - OpenAI GPT models
 - Anthropic Claude models
 - Mistral AI models
@@ -9,16 +10,19 @@ This package provides a unified interface for multiple LLM providers including:
 - Perplexity AI models
 - Together AI models
 
-Usage:
+Usage::
+
     from autopr.actions.llm import get_llm_provider_manager, complete_chat
 
     # Get a manager instance
     manager = get_llm_provider_manager()
 
     # Complete a chat
-    response = complete_chat([
-        {"role": "user", "content": "Hello!"}
-    ], provider="openai")
+    response = complete_chat(
+        [{"role": "user", "content": "Hello!"}],
+        provider="openai"
+    )
+
 """
 
 import os

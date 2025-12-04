@@ -39,7 +39,8 @@ class HandlerRegistry:
         """
         Register a handler for a specific result type.
 
-        Usage:
+        Usage::
+
             @registry.register_for_result(LintIssue)
             class MyLintHandler(Handler[LintIssue]):
                 ...
@@ -76,7 +77,8 @@ class HandlerRegistry:
         """
         Register a handler for a specific tool class.
 
-        Usage:
+        Usage::
+
             @registry.register_for_tool(MyPyTool)
             class MyPyHandler(Handler[LintIssue]):
                 ...

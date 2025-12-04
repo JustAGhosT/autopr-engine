@@ -49,6 +49,17 @@ elif [ "$1" = "--version" ] || [ "$1" = "-v" ]; then
     echo "AutoPR Engine Installer v${VERSION}"
     exit 0
 elif [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    # Show banner in help output
+    echo ""
+    echo "  ___        _        ____  ____    _____             _            "
+    echo " / _ \      | |      |  _ \|  _ \  | ____|_ __   __ _(_)_ __   ___ "
+    echo "| |_| |_   _| |_ ___ | |_) | |_) | |  _| | '_ \ / _\` | | '_ \ / _ \\"
+    echo "|  _  | | | | __/ _ \|  __/|  _ <  | |___| | | | (_| | | | | |  __/"
+    echo "|_| |_|\__,_|\__\___/|_|   |_| \_\ |_____|_| |_|\__, |_|_| |_|\___|"
+    echo "                                                |___/              "
+    echo ""
+    echo "AutoPR - AI-Powered GitHub PR Automation and Issue Management"
+    echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
@@ -96,7 +107,7 @@ check_prerequisites() {
     print_success "pip detected"
 
     # Check Docker for docker install type
-    if [ "$INSTALL_TYPE" == "docker" ]; then
+    if [ "$INSTALL_TYPE" = "docker" ]; then
         if ! command -v docker &> /dev/null; then
             print_error "Docker not found. Please install Docker"
             exit 1
@@ -120,7 +131,7 @@ install_pip() {
         print_warning "Consider using a virtual environment: python3 -m venv venv && source venv/bin/activate"
     fi
 
-    case $INSTALL_TYPE in
+    case "$INSTALL_TYPE" in
         "minimal")
             print_status "Installing minimal package (core only, no extras)..."
             pip3 install --no-deps autopr-engine || {
@@ -154,17 +165,17 @@ install_pip() {
                 # Clone and install
                 print_status "Cloning repository..."
                 CLONE_DIR=$(mktemp -d)
-                if git clone https://github.com/JustAGhosT/autopr-engine.git "$CLONE_DIR/autopr-engine"; then
-                    cd "$CLONE_DIR/autopr-engine"
+                if git clone https://github.com/JustAGhosT/autopr-engine.git "${CLONE_DIR}/autopr-engine"; then
+                    cd "${CLONE_DIR}/autopr-engine"
                     pip3 install -e ".[dev]" || {
                         print_error "Installation failed"
-                        rm -rf "$CLONE_DIR"
+                        rm -rf "${CLONE_DIR}"
                         exit 1
                     }
-                    print_status "Repository cloned to: $CLONE_DIR/autopr-engine"
+                    print_status "Repository cloned to: ${CLONE_DIR}/autopr-engine"
                 else
                     print_error "Failed to clone repository"
-                    rm -rf "$CLONE_DIR"
+                    rm -rf "${CLONE_DIR}"
                     exit 1
                 fi
             fi
@@ -315,7 +326,7 @@ EOF
 
 # Main installation flow
 main() {
-    case $INSTALL_TYPE in
+    case "$INSTALL_TYPE" in
         "action")
             setup_github_action
             ;;

@@ -283,3 +283,10 @@ local_settings.*
 .env.local
 .env.*.local
 .aider*
+
+# Local data and backups
+backups/
+data/
+
+# Consolidated local directory (cache and IDE configs)
+.local/

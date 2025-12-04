@@ -1,0 +1,18 @@
+# GitHub App Manifest
+# Use this at: https://github.com/settings/apps/new?manifest=1
+
+name: AutoPR
+description: Automated setup and configuration for Twines and Straps SA platform. One-click installation that automatically configures Azure secrets and GitHub Actions workflows.
+url: https://github.com/JustAGhosT/twinesandstraps
+hook_attributes:
+  url: https://your-app.azurewebsites.net/api/github-app/webhook
+  active: true
+public: true
+default_events:
+  - installation
+  - installation_repositories
+default_permissions:
+  secrets: write
+  metadata: read
+  contents: read
+

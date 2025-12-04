@@ -5,7 +5,7 @@ services:
   autopr-engine:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./docker/Dockerfile
       target: production
       args:
         RUN_TESTS: "false" # Skip tests in compose build
@@ -113,7 +113,7 @@ services:
   autopr-worker:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./docker/Dockerfile
       target: production
       args:
         RUN_TESTS: "false"
