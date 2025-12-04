@@ -17,6 +17,12 @@ export default function Home() {
               Installation
             </Link>
             <Link
+              href="/integration"
+              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              Integration
+            </Link>
+            <Link
               href="/download"
               className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
