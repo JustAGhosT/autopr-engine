@@ -8,7 +8,7 @@ name: Copilot Setup Steps
 on: workflow_dispatch
 
 env:
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.13"
 
 jobs:
   setup:
@@ -32,10 +32,11 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
-      # Install project dependencies including dev dependencies
+      # Install project dependencies
       - name: Install dependencies
         run: |
-          poetry install --no-interaction --no-root --with=dev
+          poetry env use python
+          poetry install --no-interaction --no-root
 
       # Install quality tools (matching CI/CD pipeline patterns)
       - name: Install quality tools
