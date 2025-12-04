@@ -21,6 +21,10 @@ from autopr.actions.ai_comment_analyzer import (
     AICommentAnalyzer,
     AICommentAnalysisInputs,
 )
+from autopr.actions.autogen_multi_agent import (
+    autogen_multi_agent_action,
+    AutoGenInputs,
+)
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
 from autopr.actions.registry import ActionRegistry
@@ -30,6 +34,8 @@ from autopr.config import AutoPRConfig
 from autopr.engine import AutoPREngine
 from autopr.exceptions import AutoPRException, ConfigurationError
 from autopr.quality.metrics_collector import MetricsCollector
+from autopr.database.config import get_db
+from autopr.database.models import IntegrationEvent
 # from autopr.workflows.workflow_manager import WorkflowManager  # Not implemented yet
 
 # Configure logging
