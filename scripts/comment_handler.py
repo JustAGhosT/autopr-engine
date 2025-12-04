@@ -8,20 +8,29 @@ def main():
     file_path = sys.argv[2]
     analysis = json.loads(analysis_json)
 
-    if analysis.get('fix_code'):
+    if analysis.get('auto_fixable') and analysis.get('search_block') and analysis.get('replace_block'):
         print("Auto-fixable action detected. Applying fix...")
-        apply_fix(analysis['fix_code'], file_path)
+        apply_fix(analysis['search_block'], analysis['replace_block'], file_path)
         commit_changes(file_path)
     else:
         print("No auto-fixable action detected.")
 
-def apply_fix(fix_code, file_path):
+def apply_fix(search_block, replace_block, file_path):
     if not file_path:
         print("Error: file_path is not defined.")
         sys.exit(1)
 
+    with open(file_path, 'r') as f:
+        content = f.read()
+
+    if content.count(search_block) != 1:
+        print(f"Error: search_block is not unique in {file_path}. Found {content.count(search_block)} instances.")
+        sys.exit(1)
+
+    new_content = content.replace(search_block, replace_block)
+
     with open(file_path, 'w') as f:
-        f.write(fix_code)
+        f.write(new_content)
 
 def commit_changes(file_path):
     subprocess.run(['git', 'config', '--global', 'user.name', 'github-actions[bot]'], check=True)

@@ -60,3 +60,22 @@ jobs:
             '{body: $body, path: $path, diff_url: $diff_url}')
 
           poetry run autopr create-event --event-type "pr_comment" --payload "$PAYLOAD"
+      - name: Analyze Comment
+        if: steps.check_config.outputs.result == 'true'
+        id: analysis
+        run: |
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          FILE_PATH="${{ github.event.comment.path }}"
+          PR_DIFF_URL="${{ github.event.issue.pull_request.diff_url }}"
+          PR_DIFF=$(curl -sL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" $PR_DIFF_URL)
+
+          ANALYSIS_JSON=$(poetry run autopr analyze-comment --comment-body "$COMMENT_BODY" --file-path "$FILE_PATH" --pr-diff "$PR_DIFF")
+          echo "json=$ANALYSIS_JSON" >> $GITHUB_OUTPUT
+
+      - name: Apply Fix
+        if: steps.check_config.outputs.result == 'true' && fromJson(steps.analysis.outputs.json).auto_fixable
+        run: |
+          FILE_PATH="${{ github.event.comment.path }}"
+          python scripts/comment_handler.py '${{ steps.analysis.outputs.json }}' "$FILE_PATH"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
