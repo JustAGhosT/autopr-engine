@@ -56,10 +56,10 @@ jobs:
       - name: Lint YAML templates
         run: |
           echo "Validating templates..."
-          yamllint templates/quick-start/*.yml || true
+          yamllint templates/quick-start/*.yml templates/quick-start/*.yaml || true
 
           echo "Validating workflows..."
-          yamllint .github/workflows/*.yml || true
+          yamllint .github/workflows/*.yml .github/workflows/*.yaml || true
 
       - name: Validate GitHub Actions syntax
         run: |
@@ -69,7 +69,7 @@ jobs:
           import yaml
 
           templates_dir = 'templates/quick-start'
-          files = [f for f in os.listdir(templates_dir) if f.endswith('.yml')]
+          files = [f for f in os.listdir(templates_dir) if f.endswith('.yml') or f.endswith('.yaml')]
 
           has_errors = False
 

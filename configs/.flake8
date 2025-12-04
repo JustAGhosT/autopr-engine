@@ -1,6 +1,27 @@
 [flake8]
-max-line-length = 999999
-extend-ignore = ALL
-per-file-ignores = *:ALL
-exclude = *
-max-complexity = 999999 
+# Reasonable linting configuration
+max-line-length = 120
+max-complexity = 10
+
+# Ignore specific rules only where necessary
+# TODO: Review and remove per-file-ignores as issues are fixed
+per-file-ignores =
+    # Migration in progress - will be removed as code is fixed
+    __init__.py:F401
+
+# Exclude common directories
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .mypy_cache,
+    .pytest_cache,
+    .ruff_cache,
+    migrations,
+    alembic/versions

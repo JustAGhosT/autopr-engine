@@ -4,11 +4,13 @@ Handles the callback from GitHub after app installation.
 """
 
 import os
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from github import GithubIntegration
+
+from autopr.exceptions import sanitize_error_message
 
 callback_router = APIRouter(prefix="/api/github-app", tags=["github-app"])
 
@@ -16,14 +18,12 @@ callback_router = APIRouter(prefix="/api/github-app", tags=["github-app"])
 @callback_router.get("/callback")
 async def callback(
     code: str | None = Query(None),
-    state: str | None = Query(None),
     installation_id: str | None = Query(None),
 ) -> RedirectResponse:
     """Handle GitHub App OAuth callback.
 
     Args:
         code: OAuth authorization code
-        state: OAuth state parameter
         installation_id: GitHub App installation ID
 
     Returns:
@@ -68,8 +68,8 @@ async def callback(
         return RedirectResponse(url=setup_url)
 
     except Exception as e:
+        sanitized_message = sanitize_error_message(str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to process installation: {str(e)}",
-        )
-
+            detail=f"Failed to process installation: {sanitized_message}",
+        ) from e

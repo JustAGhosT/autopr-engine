@@ -96,19 +96,36 @@ async def configure_repository_secrets(
                         public_key_data.key_id,
                     )
 
-                    logger.info(f"Set secret: {secret_name} for {owner}/{repo}")
+                    logger.info(
+                        "Set secret succeeded",
+                        extra={"secret_name": secret_name, "owner": owner, "repo": repo},
+                    )
 
                 except Exception as e:
                     logger.error(
-                        f"Failed to set secret {secret_name}: {e}",
+                        "Failed to set secret",
+                        extra={
+                            "secret_name": secret_name,
+                            "owner": owner,
+                            "repo": repo,
+                            "error_type": type(e).__name__,
+                        },
                         exc_info=True,
                     )
 
-        logger.info(f"Repository {owner}/{repo} configured successfully")
+        logger.info(
+            "Repository configured",
+            extra={"owner": owner, "repo": repo},
+        )
 
     except Exception as e:
         logger.error(
-            f"Failed to configure repository {owner}/{repo}: {e}",
+            "Failed to configure repository",
+            extra={
+                "owner": owner,
+                "repo": repo,
+                "error_type": type(e).__name__,
+            },
             exc_info=True,
         )
         raise

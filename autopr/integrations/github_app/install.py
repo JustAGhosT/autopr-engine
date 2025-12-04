@@ -15,13 +15,11 @@ install_router = APIRouter(prefix="/api/github-app", tags=["github-app"])
 
 @install_router.get("/install")
 async def install_app(
-    state: str | None = Query(None),
     repository: str | None = Query(None),
 ) -> RedirectResponse:
     """Initiate GitHub App installation OAuth flow.
 
     Args:
-        state: Optional state parameter for OAuth flow
         repository: Optional repository ID to pre-select
 
     Returns:
@@ -44,10 +42,6 @@ async def install_app(
         f"{site_url}/api/github-app/callback",
     )
 
-    # Generate state if not provided
-    if not state:
-        state = str(uuid.uuid4())
-
     # Build GitHub OAuth URL
     # Replace 'autopr' with your actual GitHub App slug after creation
     github_app_slug = os.getenv("GITHUB_APP_SLUG", "autopr")
@@ -55,7 +49,6 @@ async def install_app(
 
     # Build query parameters
     params = {
-        "state": state,
         "redirect_uri": redirect_uri,
     }
     if repository:
