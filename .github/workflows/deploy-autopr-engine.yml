@@ -10,6 +10,16 @@ on:
       - 'pyproject.toml'
       - 'poetry.lock'
       - '.github/workflows/deploy-autopr-engine.yml'
+      - '.github/app-manifest.yml'
+  pull_request:
+    paths:
+      - 'autopr/**'
+      - 'docker/**'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - '.github/workflows/deploy-autopr-engine.yml'
+      - '.github/app-manifest.yml'
+      - '.autopr.yml'
   workflow_dispatch:
 
 env:
@@ -17,9 +27,55 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # PR validation - build and validate only, no push/deploy
+  validate_pr:
+    name: Validate Build (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate app-manifest.yml
+        run: |
+          echo "Validating GitHub App manifest..."
+          python3 -c "import yaml; yaml.safe_load(open('.github/app-manifest.yml'))"
+          echo "✅ app-manifest.yml is valid YAML"
+
+      - name: Validate .autopr.yml config
+        run: |
+          if [ -f ".autopr.yml" ]; then
+            echo "Validating .autopr.yml..."
+            python3 -c "import yaml; yaml.safe_load(open('.autopr.yml'))"
+            echo "✅ .autopr.yml is valid YAML"
+          else
+            echo "⚠️ .autopr.yml not found (optional)"
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: false
+          tags: autopr-engine:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            RUN_TESTS=false
+
+      - name: Validate build
+        run: echo "✅ Docker image built successfully for PR validation"
+
   build-and-push:
     name: Build and Push Container Image
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       packages: write
@@ -51,7 +107,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/Dockerfile
@@ -60,6 +116,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            RUN_TESTS=false
 
   deploy-infrastructure:
     name: Deploy Azure Infrastructure

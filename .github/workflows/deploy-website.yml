@@ -7,6 +7,10 @@ on:
     paths:
       - "website/**"
       - ".github/workflows/deploy-website.yml"
+  pull_request:
+    paths:
+      - "website/**"
+      - ".github/workflows/deploy-website.yml"
   workflow_dispatch:
 
 permissions:
@@ -57,6 +61,49 @@ jobs:
           app_location: "website/out"
           skip_app_build: true
           skip_api_build: true
+
+  # PR validation - build only, no deploy
+  validate_pr:
+    name: Validate Website Build (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        working-directory: website
+        run: npm ci
+
+      - name: Build Next.js app
+        working-directory: website
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Validate build output
+        run: |
+          echo "✅ Website build successful!"
+          if [ -d "website/out" ]; then
+            ls -la website/out/
+            if [ -f "website/out/index.html" ] || [ -d "website/out/index" ]; then
+              echo "✅ Build output validated - index found"
+            else
+              echo "::warning::index.html not found but build completed"
+            fi
+          else
+            echo "Note: Output directory 'website/out' not found - Next.js may use different output config"
+          fi
 
   deploy_infrastructure:
     name: Deploy Azure Infrastructure

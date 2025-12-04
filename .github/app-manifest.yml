@@ -1,18 +1,38 @@
-# GitHub App Manifest
+# GitHub App Manifest for AutoPR Engine
+# Install at: https://github.com/apps/autopr-engine
 # Use this at: https://github.com/settings/apps/new?manifest=1
 
-name: AutoPR
-description: Automated setup and configuration for Twines and Straps SA platform. One-click installation that automatically configures Azure secrets and GitHub Actions workflows.
-url: https://github.com/JustAGhosT/twinesandstraps
+name: autopr-engine
+description: AI-powered GitHub PR automation - Intelligent code analysis, automated issue creation, and multi-agent collaboration for pull request workflows.
+url: https://app.autopr.io
 hook_attributes:
-  url: https://your-app.azurewebsites.net/api/github-app/webhook
+  url: https://app.autopr.io/api/github-app/webhook
   active: true
 public: true
+
+# Events to subscribe to for PR monitoring
 default_events:
   - installation
   - installation_repositories
+  - pull_request
+  - pull_request_review
+  - pull_request_review_comment
+  - issue_comment
+  - issues
+  - check_run
+  - check_suite
+
+# Permissions required for AutoPR functionality
 default_permissions:
-  secrets: write
+  # Read access to repository code and metadata
   metadata: read
   contents: read
+  # Read/Write access to pull requests and issues
+  pull_requests: write
+  issues: write
+  # Status checks for build/test integration
+  checks: write
+  statuses: write
+  # For webhook events
+  actions: read
 

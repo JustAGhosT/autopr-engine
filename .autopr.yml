@@ -1,0 +1,35 @@
+# .autopr.yml - AutoPR Engine Configuration
+# This is the sample configuration file referenced in the integration guide
+# See https://github.com/apps/autopr-engine for installation
+
+version: 1
+
+# Analysis settings
+analysis:
+  enabled: true
+  ai_provider: openai
+  model: gpt-4
+
+# Workflow definitions
+workflows:
+  - name: pr_review
+    triggers:
+      - pull_request.opened
+      - pull_request.synchronize
+    actions:
+      - ai_analysis
+      - security_scan
+      - create_issues
+
+# Notification settings (customize for your environment)
+notifications:
+  slack:
+    # Replace with your team's Slack channel
+    channel: "#pr-reviews"
+
+# Quality gates
+quality_gates:
+  security:
+    block_on_critical: true
+  coverage:
+    minimum: 80
