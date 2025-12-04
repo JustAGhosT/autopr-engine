@@ -34,5 +34,5 @@ az deployment group create \
     customDomain="autopr.io"
 
 echo "Deployment complete!"
-echo "Static Web App name: prod-stapp-${REGION_ABBR}-autopr"
+echo "Static Web App name: ${ENVIRONMENT}-stapp-${REGION_ABBR}-autopr"
 
