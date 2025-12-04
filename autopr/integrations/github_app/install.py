@@ -4,7 +4,6 @@ Initiates the OAuth flow for GitHub App installation.
 """
 
 import os
-import uuid
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, HTTPException, Query
