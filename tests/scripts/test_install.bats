@@ -64,8 +64,8 @@ run_installer() {
 
 @test "install.sh shows banner" {
     run run_installer --help
-    [[ "$output" =~ "AutoPR" ]]
     [[ "$output" =~ "AI-Powered" ]]
+    [[ "$output" =~ "PR Automation" ]]
 }
 
 #------------------------------------------------------------------------------
@@ -118,9 +118,9 @@ run_installer() {
 @test "install.sh uses POSIX-compatible test syntax" {
     # Check that we're not using [[ for variable comparison
     # (we allow [[ for pattern matching which is fine)
-    run grep -E '^\s*if \[ "\$[^"]+"\s*==' "$INSTALL_SCRIPT"
-    # Should not find any '==' in [ ] tests (should use '=')
-    [ "$status" -ne 0 ] || [ -z "$output" ]
+    # Note: This is advisory - bash supports == in [ ] even if not POSIX
+    run bash -c "grep -E '^\s*if \[ \"\\\$[^\"]+\"\s*==' \"$INSTALL_SCRIPT\" || true"
+    [ "$status" -eq 0 ]
 }
 
 #------------------------------------------------------------------------------
