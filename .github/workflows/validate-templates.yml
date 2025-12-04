@@ -87,7 +87,7 @@ jobs:
                   if not doc.get('name'):
                       print(f"  Warning: {file} missing 'name' field")
 
-                  # Check for 'on' trigger - PyYAML safe_load handles 'on' correctly as string key
+                  # Check for 'on' trigger - PyYAML may parse 'on' as boolean True (YAML 1.1)
                   if not doc.get('on') and not doc.get(True):
                       print(f"  Error: {file} missing 'on' trigger")
                       has_errors = True
