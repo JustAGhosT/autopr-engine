@@ -1,0 +1,43 @@
+# Copilot Setup Steps
+# This workflow defines the environment setup steps for GitHub Copilot coding agent.
+# It runs when Copilot is assigned to work on issues in this repository.
+# See: https://gh.io/copilot-coding-agent-tips
+
+name: Copilot Setup Steps
+
+on: workflow_dispatch
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # Install Poetry for dependency management
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      # Install project dependencies
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --with dev
+
+      # Install additional tools needed for development
+      - name: Install development tools
+        run: |
+          poetry run pip install ruff mypy pytest pytest-asyncio pytest-cov
