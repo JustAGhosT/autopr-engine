@@ -95,17 +95,6 @@ https://your-ngrok-url.ngrok.io/api/github-app/webhook
 
 Generate a strong random secret (save this securely):
 
-```text
-ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-Or generate using:
-
-```bash
-openssl rand -hex 32
-```
-
-**⚠️ IMPORTANT:** Save this secret - you'll need it for the `GITHUB_WEBHOOK_SECRET` environment variable!
 
 ## Permissions
 
