@@ -4,6 +4,12 @@ import { createContext, useContext, useEffect, useState, useLayoutEffect } from 
 
 type Theme = 'light' | 'dark' | 'system';
 
+const VALID_THEMES: Theme[] = ['light', 'dark', 'system'];
+
+function isValidTheme(value: string | null): value is Theme {
+  return value !== null && VALID_THEMES.includes(value as Theme);
+}
+
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -27,45 +33,50 @@ interface ThemeProviderProps {
 // Use useLayoutEffect on client, useEffect on server (to avoid warnings)
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
+// Helper to get system preference
+function getSystemTheme(): 'light' | 'dark' {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [mounted, setMounted] = useState(false);
+
+  // Compute resolved theme based on current theme setting
+  const resolvedTheme: 'light' | 'dark' = theme === 'system' ? getSystemTheme() : theme;
 
   // Initialize theme from localStorage on mount
   useIsomorphicLayoutEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    if (savedTheme) {
+    const savedTheme = localStorage.getItem('theme');
+    if (isValidTheme(savedTheme)) {
       setThemeState(savedTheme);
     }
     setMounted(true);
   }, []);
 
-  // Apply theme changes
+  // Apply theme class to document - this is a DOM side effect, not state
   useEffect(() => {
     if (!mounted) return;
 
     const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(resolvedTheme);
+  }, [resolvedTheme, mounted]);
+
+  // Listen for system theme changes when in system mode
+  useEffect(() => {
+    if (!mounted || theme !== 'system') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
-    const applyTheme = (resolvedValue: 'light' | 'dark') => {
-      root.classList.remove('light', 'dark');
-      root.classList.add(resolvedValue);
-      setResolvedTheme(resolvedValue);
+    const handler = () => {
+      // Force re-render to update resolvedTheme
+      setThemeState('system');
     };
 
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      applyTheme(mediaQuery.matches ? 'dark' : 'light');
-
-      const handler = (e: MediaQueryListEvent) => {
-        applyTheme(e.matches ? 'dark' : 'light');
-      };
-
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
-    } else {
-      applyTheme(theme);
-    }
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
   }, [theme, mounted]);
 
   const setTheme = (newTheme: Theme) => {
