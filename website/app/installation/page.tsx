@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AlphaBadge from "../components/AlphaBadge";
 
 export default function Installation() {
   return (
@@ -7,9 +8,10 @@ export default function Installation() {
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link
             href="/"
-            className="text-2xl font-bold text-zinc-900 dark:text-zinc-50"
+            className="flex items-center text-2xl font-bold text-zinc-900 dark:text-zinc-50"
           >
             AutoPR Engine
+            <AlphaBadge />
           </Link>
           <div className="flex gap-6">
             <Link

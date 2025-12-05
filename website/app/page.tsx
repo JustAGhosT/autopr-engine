@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AlphaBadge from "./components/AlphaBadge";
 
 export default function Home() {
   return (
@@ -6,8 +7,9 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-zinc-200 dark:border-zinc-800">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+          <div className="flex items-center text-2xl font-bold text-zinc-900 dark:text-zinc-50">
             AutoPR Engine
+            <AlphaBadge />
           </div>
           <div className="flex gap-6">
             <Link
@@ -43,8 +45,8 @@ export default function Home() {
       {/* Hero Section */}
       <main className="flex-1">
         <section className="mx-auto max-w-7xl px-6 py-24 text-center">
-          <div className="mb-8 inline-block rounded-full bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-2 text-sm font-semibold text-blue-900 dark:from-blue-950 dark:to-purple-950 dark:text-blue-100">
-            ⚡ Limited Time: Try our deployed instance →
+          <div className="mb-8 inline-block rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-2 text-sm font-semibold text-amber-900 dark:from-amber-950 dark:to-orange-950 dark:text-amber-100">
+            🚧 Alpha Preview - Try our early access version →
           </div>
           <h1 className="mb-6 text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
             AI-Powered GitHub PR Automation
@@ -60,7 +62,7 @@ export default function Home() {
               rel="noopener noreferrer"
               className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
             >
-              Try Deployed Instance
+              Try Alpha Preview
             </a>
             <Link
               href="/installation"
@@ -113,27 +115,37 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Limited Time Offer Section */}
+        {/* Alpha Preview Section */}
         <section className="mx-auto max-w-7xl px-6 py-12">
-          <div className="rounded-lg border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 p-8 text-center dark:from-blue-950 dark:to-purple-950">
-            <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
-              ⚡ Limited Time Offer
+          <div className="rounded-lg border-2 border-amber-500 bg-gradient-to-r from-amber-50 to-orange-50 p-8 text-center dark:from-amber-950 dark:to-orange-950">
+            <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+              🚧 Alpha Preview
             </div>
             <h2 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              Try AutoPR Engine Now - No Installation Required!
+              Try AutoPR Engine Alpha - Help Shape the Future!
             </h2>
             <p className="mb-6 text-lg text-zinc-700 dark:text-zinc-300">
-              Use our deployed AutoPR instance to experience the power of AI-powered PR automation.
-              Perfect for testing and evaluation before setting up your own instance.
+              AutoPR Engine is in active development. Try our alpha preview to experience the power 
+              of AI-powered PR automation and help us improve with your feedback.
             </p>
-            <a
-              href="https://app.autopr.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
-            >
-              Access Deployed Instance →
-            </a>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <a
+                href="https://app.autopr.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
+              >
+                Access Alpha Preview →
+              </a>
+              <a
+                href="https://github.com/JustAGhosT/autopr-engine/discussions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg border-2 border-amber-500 px-8 py-3 text-lg font-semibold text-amber-700 transition-colors hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900"
+              >
+                Share Feedback
+              </a>
+            </div>
           </div>
         </section>
 
@@ -144,7 +156,7 @@ export default function Home() {
               Ready to Transform Your Workflow?
             </h2>
             <p className="mb-8 text-xl text-zinc-300">
-              Get started with AutoPR Engine today and experience the future of PR automation.
+              Get started with AutoPR Engine alpha today and experience the future of PR automation.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
@@ -153,7 +165,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="inline-block rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-600 hover:to-purple-600 hover:shadow-lg"
               >
-                Try Deployed Instance
+                Try Alpha Preview
               </a>
               <Link
                 href="/installation"

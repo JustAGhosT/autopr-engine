@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import PromoBanner from "./components/PromoBanner";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
+  display: "swap",
+  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
+  display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", "monospace"],
 });
 
 export const metadata: Metadata = {
-  title: "AutoPR Engine - AI-Powered GitHub PR Automation",
-  description: "Transform your GitHub pull request workflows through intelligent analysis, issue creation, and multi-agent collaboration.",
+  title: "AutoPR Engine - AI-Powered GitHub PR Automation (Alpha Preview)",
+  description: "Transform your GitHub pull request workflows through intelligent analysis, issue creation, and multi-agent collaboration. Currently in alpha preview.",
 };
 
 export default function RootLayout({
