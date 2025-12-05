@@ -2,19 +2,19 @@
 
 export default function PromoBanner() {
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-3 text-center">
+    <div className="bg-gradient-to-r from-amber-500 to-orange-500 py-3 text-center">
       <div className="mx-auto max-w-7xl px-6">
         <p className="text-sm font-semibold text-white">
-          <span className="mr-2">⚡ Limited Time Only:</span>
+          <span className="mr-2">🚧 Alpha Preview:</span>
+          AutoPR Engine is currently in alpha. Features may change and some functionality may be limited.
           <a
-            href="https://app.autopr.io"
+            href="https://github.com/JustAGhosT/autopr-engine/discussions"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:no-underline"
+            className="ml-2 underline hover:no-underline"
           >
-            Use our deployed AutoPR instance
+            Share feedback →
           </a>
-          <span className="ml-2">→ Try it now!</span>
         </p>
       </div>
     </div>

@@ -1,53 +1,16 @@
-import Link from "next/link";
+import Header from "../components/Header";
 
 export default function Integration() {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-950">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-zinc-900 dark:text-zinc-50"
-          >
-            AutoPR Engine
-          </Link>
-          <div className="flex gap-6">
-            <Link
-              href="/installation"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              Installation
-            </Link>
-            <Link
-              href="/integration"
-              className="font-semibold text-zinc-900 dark:text-zinc-50"
-            >
-              Integration
-            </Link>
-            <Link
-              href="/download"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              Download
-            </Link>
-            <a
-              href="https://github.com/JustAGhosT/autopr-engine"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              GitHub
-            </a>
-          </div>
-        </nav>
-      </header>
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50/80 to-slate-100/50 dark:from-slate-900/80 dark:to-slate-950/50">
+      <Header currentPage="integration" />
 
       <main className="flex-1">
         <section className="mx-auto max-w-4xl px-6 py-24">
-          <h1 className="mb-6 text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="mb-6 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
             Integrate with AutoPR
           </h1>
-          <p className="mb-12 text-xl text-zinc-600 dark:text-zinc-400">
+          <p className="mb-12 text-xl text-slate-600 dark:text-slate-400">
             Connect your GitHub repositories to our deployed AutoPR instance at{" "}
             <a
               href="https://app.autopr.io"
@@ -62,16 +25,16 @@ export default function Integration() {
 
           <div className="space-y-8">
             {/* Step 1: Access the Deployed Instance */}
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   1
                 </span>
-                <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                   Access the Deployed Instance
                 </h2>
               </div>
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
                 Navigate to our hosted AutoPR instance and sign in with your
                 GitHub account:
               </p>
@@ -86,20 +49,20 @@ export default function Integration() {
             </div>
 
             {/* Step 2: Authorize GitHub Access */}
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   2
                 </span>
-                <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                   Authorize GitHub Access
                 </h2>
               </div>
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
                 When prompted, authorize AutoPR to access your GitHub
                 repositories. The following permissions are required:
               </p>
-              <ul className="list-disc space-y-2 pl-6 text-zinc-600 dark:text-zinc-400">
+              <ul className="list-disc space-y-2 pl-6 text-slate-600 dark:text-slate-400">
                 <li>
                   <strong>Read access</strong> to repository code and metadata
                 </li>
@@ -113,20 +76,20 @@ export default function Integration() {
             </div>
 
             {/* Step 3: Install the GitHub App */}
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   3
                 </span>
-                <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                   Install the GitHub App
                 </h2>
               </div>
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
                 Install the AutoPR GitHub App on your organization or personal
                 repositories:
               </p>
-              <ol className="list-decimal space-y-2 pl-6 text-zinc-600 dark:text-zinc-400">
+              <ol className="list-decimal space-y-2 pl-6 text-slate-600 dark:text-slate-400">
                 <li>
                   Go to{" "}
                   <a
@@ -150,20 +113,20 @@ export default function Integration() {
             </div>
 
             {/* Step 4: Configure Your Repositories */}
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   4
                 </span>
-                <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                   Configure Your Repositories
                 </h2>
               </div>
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
                 In the AutoPR dashboard, configure settings for each connected
                 repository:
               </p>
-              <ul className="list-disc space-y-2 pl-6 text-zinc-600 dark:text-zinc-400">
+              <ul className="list-disc space-y-2 pl-6 text-slate-600 dark:text-slate-400">
                 <li>
                   <strong>AI Analysis Settings:</strong> Choose which AI models
                   to use for code review (GPT-4, Claude, etc.)
@@ -184,20 +147,20 @@ export default function Integration() {
             </div>
 
             {/* Step 5: Add Configuration File (Optional) */}
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   5
                 </span>
-                <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                   Add Configuration File (Optional)
                 </h2>
               </div>
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
                 For advanced customization, add an <code>.autopr.yml</code>{" "}
                 configuration file to your repository:
               </p>
-              <div className="rounded-lg bg-zinc-900 p-4 font-mono text-sm text-zinc-50 dark:bg-zinc-800">
+              <div className="rounded-lg bg-slate-800 p-4 font-mono text-sm text-slate-50 dark:bg-slate-900">
                 <pre className="overflow-x-auto">{`# .autopr.yml
 version: 1
 analysis:
@@ -228,19 +191,19 @@ quality_gates:
             </div>
 
             {/* Step 6: Verify Integration */}
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
                   6
                 </span>
-                <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-50">
                   Verify Integration
                 </h2>
               </div>
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <p className="mb-4 text-slate-600 dark:text-slate-400">
                 Test your integration by creating a pull request:
               </p>
-              <ol className="list-decimal space-y-2 pl-6 text-zinc-600 dark:text-zinc-400">
+              <ol className="list-decimal space-y-2 pl-6 text-slate-600 dark:text-slate-400">
                 <li>Create a new branch and make some changes</li>
                 <li>Open a pull request to your main branch</li>
                 <li>
@@ -254,15 +217,15 @@ quality_gates:
           </div>
 
           {/* API Integration Section */}
-          <div className="mt-12 rounded-lg border-2 border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 p-8 dark:from-blue-950 dark:to-purple-950">
-            <h2 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+          <div className="mt-12 rounded-lg border-2 border-blue-500 bg-gradient-to-r from-blue-50/90 to-purple-50/90 p-8 backdrop-blur-sm dark:from-blue-950/80 dark:to-purple-950/80">
+            <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-50">
               API Integration
             </h2>
-            <p className="mb-4 text-zinc-700 dark:text-zinc-300">
+            <p className="mb-4 text-slate-700 dark:text-slate-300">
               For programmatic access, use the AutoPR API to integrate with your
               existing workflows and tools:
             </p>
-            <div className="rounded-lg bg-zinc-900 p-4 font-mono text-sm text-zinc-50 dark:bg-zinc-800">
+            <div className="rounded-lg bg-slate-800 p-4 font-mono text-sm text-slate-50 dark:bg-slate-900">
               <pre className="overflow-x-auto">{`# Example: Trigger analysis via API
 curl -X POST https://app.autopr.io/api/v1/analyze \\
   -H "Authorization: Bearer YOUR_API_TOKEN" \\
@@ -272,7 +235,7 @@ curl -X POST https://app.autopr.io/api/v1/analyze \\
     "pull_request": 123
   }'`}</pre>
             </div>
-            <p className="mt-4 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-4 text-slate-600 dark:text-slate-400">
               Generate your API token from the{" "}
               <a
                 href="https://app.autopr.io/settings/api"
@@ -287,40 +250,40 @@ curl -X POST https://app.autopr.io/api/v1/analyze \\
           </div>
 
           {/* Webhook Events */}
-          <div className="mt-8 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
-            <h2 className="mb-4 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <div className="mt-8 rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
+            <h2 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-slate-50">
               Webhook Events
             </h2>
-            <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+            <p className="mb-4 text-slate-600 dark:text-slate-400">
               AutoPR can send webhook notifications to your systems when
               analysis is complete:
             </p>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                    <th className="px-4 py-2 text-left font-semibold text-zinc-900 dark:text-zinc-50">
+                  <tr className="border-b border-slate-200 dark:border-slate-600">
+                    <th className="px-4 py-2 text-left font-semibold text-slate-900 dark:text-slate-50">
                       Event
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-zinc-900 dark:text-zinc-50">
+                    <th className="px-4 py-2 text-left font-semibold text-slate-900 dark:text-slate-50">
                       Description
                     </th>
                   </tr>
                 </thead>
-                <tbody className="text-zinc-600 dark:text-zinc-400">
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                <tbody className="text-slate-600 dark:text-slate-400">
+                  <tr className="border-b border-slate-100 dark:border-slate-700">
                     <td className="px-4 py-2 font-mono">analysis.completed</td>
                     <td className="px-4 py-2">
                       Fired when PR analysis finishes
                     </td>
                   </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                  <tr className="border-b border-slate-100 dark:border-slate-700">
                     <td className="px-4 py-2 font-mono">issues.created</td>
                     <td className="px-4 py-2">
                       Fired when AutoPR creates new issues
                     </td>
                   </tr>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                  <tr className="border-b border-slate-100 dark:border-slate-700">
                     <td className="px-4 py-2 font-mono">security.alert</td>
                     <td className="px-4 py-2">
                       Fired when security vulnerabilities are detected
@@ -338,7 +301,7 @@ curl -X POST https://app.autopr.io/api/v1/analyze \\
           </div>
 
           {/* Help Section */}
-          <div className="mt-12 rounded-lg bg-blue-50 p-6 dark:bg-blue-950">
+          <div className="mt-12 rounded-lg bg-blue-50/90 p-6 backdrop-blur-sm dark:bg-blue-950/80">
             <h3 className="mb-2 text-lg font-semibold text-blue-900 dark:text-blue-50">
               Need Help?
             </h3>
@@ -367,8 +330,8 @@ curl -X POST https://app.autopr.io/api/v1/analyze \\
         </section>
       </main>
 
-      <footer className="border-t border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto max-w-7xl px-6 py-8 text-center text-zinc-600 dark:text-zinc-400">
+      <footer className="border-t border-slate-200 bg-white/30 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/30">
+        <div className="mx-auto max-w-7xl px-6 py-8 text-center text-slate-600 dark:text-slate-400">
           <p>
             &copy; {new Date().getFullYear()} AutoPR Engine. All rights
             reserved.
