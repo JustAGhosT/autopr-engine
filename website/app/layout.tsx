@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import PromoBanner from "./components/PromoBanner";
 import { ThemeProvider } from "./components/ThemeProvider";
+import AnimatedBackground from "./components/AnimatedBackground";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,8 +37,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+          <AnimatedBackground />
           <PromoBanner />
-          {children}
+          <div className="relative z-10">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

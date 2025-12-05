@@ -11,15 +11,15 @@ interface HeaderProps {
 export default function Header({ currentPage = 'home' }: HeaderProps) {
   const navLinkClass = (page: string) =>
     currentPage === page
-      ? "font-semibold text-zinc-900 dark:text-zinc-50"
-      : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50";
+      ? "font-semibold text-slate-900 dark:text-slate-50"
+      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50";
 
   return (
-    <header className="border-b border-zinc-200 dark:border-zinc-800">
+    <header className="border-b border-slate-200 bg-white/50 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/50">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="flex items-center text-2xl font-bold text-zinc-900 dark:text-zinc-50"
+          className="flex items-center text-2xl font-bold text-slate-900 dark:text-slate-50"
         >
           AutoPR Engine
           <AlphaBadge />
@@ -38,7 +38,7 @@ export default function Header({ currentPage = 'home' }: HeaderProps) {
             href="https://github.com/JustAGhosT/autopr-engine"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+            className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50"
           >
             GitHub
           </a>

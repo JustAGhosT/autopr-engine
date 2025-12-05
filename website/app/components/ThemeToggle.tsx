@@ -79,7 +79,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={cycleTheme}
-      className="flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-50"
+      className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/50 px-3 py-1.5 text-sm text-slate-600 backdrop-blur-sm transition-colors hover:border-slate-300 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-50"
       aria-label={`Current theme: ${getLabel()}. Click to change.`}
       title={`Theme: ${getLabel()}`}
     >

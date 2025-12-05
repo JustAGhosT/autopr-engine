@@ -3,20 +3,20 @@ import Header from "./components/Header";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-950">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50/80 to-slate-100/50 dark:from-slate-900/80 dark:to-slate-950/50">
       {/* Header */}
       <Header currentPage="home" />
 
       {/* Hero Section */}
       <main className="flex-1">
         <section className="mx-auto max-w-7xl px-6 py-24 text-center">
-          <div className="mb-8 inline-block rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-2 text-sm font-semibold text-amber-900 dark:from-amber-950 dark:to-orange-950 dark:text-amber-100">
+          <div className="mb-8 inline-block rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-2 text-sm font-semibold text-amber-900 dark:from-amber-950/80 dark:to-orange-950/80 dark:text-amber-100">
             🚧 Alpha Preview - Try our early access version →
           </div>
-          <h1 className="mb-6 text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
+          <h1 className="mb-6 text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-6xl">
             AI-Powered GitHub PR Automation
           </h1>
-          <p className="mx-auto mb-12 max-w-2xl text-xl text-zinc-600 dark:text-zinc-400">
+          <p className="mx-auto mb-12 max-w-2xl text-xl text-slate-600 dark:text-slate-400">
             Transform your GitHub pull request workflows through intelligent analysis, 
             issue creation, and multi-agent collaboration.
           </p>
@@ -31,13 +31,13 @@ export default function Home() {
             </a>
             <Link
               href="/installation"
-              className="rounded-lg bg-zinc-900 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="rounded-lg bg-slate-800 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
             >
               Get Started
             </Link>
             <Link
               href="/download"
-              className="rounded-lg border-2 border-zinc-300 px-8 py-3 text-lg font-semibold text-zinc-900 transition-colors hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-50 dark:hover:border-zinc-600"
+              className="rounded-lg border-2 border-slate-300 bg-white/50 px-8 py-3 text-lg font-semibold text-slate-900 backdrop-blur-sm transition-colors hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-50 dark:hover:border-slate-500"
             >
               Download
             </Link>
@@ -46,33 +46,33 @@ export default function Home() {
 
         {/* Features Section */}
         <section className="mx-auto max-w-7xl px-6 py-24">
-          <h2 className="mb-12 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+          <h2 className="mb-12 text-center text-3xl font-bold text-slate-900 dark:text-slate-50">
             Key Features
           </h2>
           <div className="grid gap-8 md:grid-cols-3">
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
-              <h3 className="mb-3 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
+              <h3 className="mb-3 text-xl font-semibold text-slate-900 dark:text-slate-50">
                 🤖 AI-Powered Analysis
               </h3>
-              <p className="text-zinc-600 dark:text-zinc-400">
+              <p className="text-slate-600 dark:text-slate-400">
                 Intelligent code analysis using GPT-4, Claude, and other leading AI models 
                 to provide comprehensive PR reviews.
               </p>
             </div>
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
-              <h3 className="mb-3 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
+              <h3 className="mb-3 text-xl font-semibold text-slate-900 dark:text-slate-50">
                 🔄 Automated Workflows
               </h3>
-              <p className="text-zinc-600 dark:text-zinc-400">
+              <p className="text-slate-600 dark:text-slate-400">
                 Create custom workflows to automate issue creation, code reviews, 
                 and deployment processes.
               </p>
             </div>
-            <div className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
-              <h3 className="mb-3 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60">
+              <h3 className="mb-3 text-xl font-semibold text-slate-900 dark:text-slate-50">
                 🚀 Multi-Agent Collaboration
               </h3>
-              <p className="text-zinc-600 dark:text-zinc-400">
+              <p className="text-slate-600 dark:text-slate-400">
                 Leverage multiple AI agents working together to handle complex 
                 development tasks efficiently.
               </p>
@@ -82,14 +82,14 @@ export default function Home() {
 
         {/* Alpha Preview Section */}
         <section className="mx-auto max-w-7xl px-6 py-12">
-          <div className="rounded-lg border-2 border-amber-500 bg-gradient-to-r from-amber-50 to-orange-50 p-8 text-center dark:from-amber-950 dark:to-orange-950">
+          <div className="rounded-lg border-2 border-amber-500 bg-gradient-to-r from-amber-50/90 to-orange-50/90 p-8 text-center backdrop-blur-sm dark:from-amber-950/80 dark:to-orange-950/80">
             <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
               🚧 Alpha Preview
             </div>
-            <h2 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+            <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-50">
               Try AutoPR Engine Alpha - Help Shape the Future!
             </h2>
-            <p className="mb-6 text-lg text-zinc-700 dark:text-zinc-300">
+            <p className="mb-6 text-lg text-slate-700 dark:text-slate-300">
               AutoPR Engine is in active development. Try our alpha preview to experience the power 
               of AI-powered PR automation and help us improve with your feedback.
             </p>
@@ -106,7 +106,7 @@ export default function Home() {
                 href="https://github.com/JustAGhosT/autopr-engine/discussions"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block rounded-lg border-2 border-amber-500 px-8 py-3 text-lg font-semibold text-amber-700 transition-colors hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900"
+                className="inline-block rounded-lg border-2 border-amber-500 bg-white/50 px-8 py-3 text-lg font-semibold text-amber-700 backdrop-blur-sm transition-colors hover:bg-amber-100 dark:bg-slate-800/50 dark:text-amber-300 dark:hover:bg-amber-900/50"
               >
                 Share Feedback
               </a>
@@ -116,11 +116,11 @@ export default function Home() {
 
         {/* CTA Section */}
         <section className="mx-auto max-w-7xl px-6 py-24">
-          <div className="rounded-lg bg-zinc-900 p-12 text-center dark:bg-zinc-800">
+          <div className="rounded-lg bg-slate-800 p-12 text-center dark:bg-slate-800/90">
             <h2 className="mb-4 text-3xl font-bold text-white">
               Ready to Transform Your Workflow?
             </h2>
-            <p className="mb-8 text-xl text-zinc-300">
+            <p className="mb-8 text-xl text-slate-300">
               Get started with AutoPR Engine alpha today and experience the future of PR automation.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -134,7 +134,7 @@ export default function Home() {
               </a>
               <Link
                 href="/installation"
-                className="inline-block rounded-lg bg-white px-8 py-3 text-lg font-semibold text-zinc-900 transition-colors hover:bg-zinc-100"
+                className="inline-block rounded-lg bg-white px-8 py-3 text-lg font-semibold text-slate-900 transition-colors hover:bg-slate-100"
               >
                 Install Now
               </Link>
@@ -144,8 +144,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto max-w-7xl px-6 py-8 text-center text-zinc-600 dark:text-zinc-400">
+      <footer className="border-t border-slate-200 bg-white/30 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/30">
+        <div className="mx-auto max-w-7xl px-6 py-8 text-center text-slate-600 dark:text-slate-400">
           <p>&copy; {new Date().getFullYear()} AutoPR Engine. All rights reserved.</p>
         </div>
       </footer>
