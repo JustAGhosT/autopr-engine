@@ -1,48 +1,9 @@
-import Link from "next/link";
-import AlphaBadge from "../components/AlphaBadge";
+import Header from "../components/Header";
 
 export default function Installation() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-white dark:from-black dark:to-zinc-950">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="flex items-center text-2xl font-bold text-zinc-900 dark:text-zinc-50"
-          >
-            AutoPR Engine
-            <AlphaBadge />
-          </Link>
-          <div className="flex gap-6">
-            <Link
-              href="/installation"
-              className="font-semibold text-zinc-900 dark:text-zinc-50"
-            >
-              Installation
-            </Link>
-            <Link
-              href="/integration"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              Integration
-            </Link>
-            <Link
-              href="/download"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              Download
-            </Link>
-            <a
-              href="https://github.com/JustAGhosT/autopr-engine"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              GitHub
-            </a>
-          </div>
-        </nav>
-      </header>
+      <Header currentPage="installation" />
 
       <main className="flex-1">
         <section className="mx-auto max-w-4xl px-6 py-24">
