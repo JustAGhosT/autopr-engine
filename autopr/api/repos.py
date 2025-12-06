@@ -8,7 +8,7 @@ from typing import List
 import uuid
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from .deps import get_current_user, SessionData
 from .models import ApiResponse, RepositoryResponse, RepositoryUpdate, PaginationMeta
@@ -109,18 +109,12 @@ async def sync_repositories(user: SessionData = Depends(get_current_user)):
 
 @router.get("", response_model=ApiResponse[List[RepositoryResponse]])
 async def list_repositories(
-    page: int = 1,
-    per_page: int = 20,
-    sync: bool = False,
+    page: int = Query(1, ge=1, le=1000, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+    sync: bool = Query(False, description="Sync from GitHub first"),
     user: SessionData = Depends(get_current_user),
 ):
-    """List repositories for current user.
-
-    Args:
-        page: Page number (default 1)
-        per_page: Items per page (default 20)
-        sync: If True, sync from GitHub first
-    """
+    """List repositories for current user."""
     # Auto-sync if no repos exist or sync requested
     user_repos_count = len([r for r in _repositories.values() if r.get("user_id") == user.user_id])
     if sync or user_repos_count == 0:

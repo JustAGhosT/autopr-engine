@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import List, Optional
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from .deps import get_current_user, SessionData
 from .models import (
@@ -152,9 +152,9 @@ async def remove_exclusion(
 
 @router.get("/comments", response_model=ApiResponse[List[BotCommentResponse]])
 async def list_comments(
-    page: int = 1,
-    per_page: int = 20,
-    excluded: Optional[bool] = None,
+    page: int = Query(1, ge=1, le=1000, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+    excluded: Optional[bool] = Query(None, description="Filter by exclusion status"),
     user: SessionData = Depends(get_current_user),
 ):
     """List recent bot comments."""

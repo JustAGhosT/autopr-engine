@@ -10,6 +10,7 @@ import { BotsPage } from '@/pages/Bots'
 import { WorkflowsPage } from '@/pages/Workflows'
 import { SettingsPage } from '@/pages/Settings'
 import { LoginPage } from '@/pages/Login'
+import { NotFoundPage } from '@/pages/NotFound'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -49,7 +50,7 @@ export default function App() {
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

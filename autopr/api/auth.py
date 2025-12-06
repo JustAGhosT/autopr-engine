@@ -4,11 +4,15 @@ GitHub OAuth authentication and session management.
 """
 
 import secrets
+import time
 import httpx
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, JSONResponse
+
+# OAuth state expiry in seconds (5 minutes)
+OAUTH_STATE_TTL = 300
 
 from .deps import (
     create_session,
@@ -18,13 +22,34 @@ from .deps import (
     SessionData,
     SESSION_COOKIE_NAME,
     SESSION_MAX_AGE,
+    IS_PRODUCTION,
 )
 from .models import ApiResponse, UserResponse
 
 router = APIRouter()
 
-# State storage for OAuth (in production, use Redis with expiry)
-_oauth_states: dict[str, bool] = {}
+# State storage for OAuth with timestamp (in production, use Redis with expiry)
+_oauth_states: dict[str, float] = {}
+
+
+def _cleanup_expired_states() -> None:
+    """Remove expired OAuth states to prevent memory leaks."""
+    now = time.time()
+    expired = [state for state, created_at in _oauth_states.items()
+               if now - created_at > OAUTH_STATE_TTL]
+    for state in expired:
+        del _oauth_states[state]
+
+
+def _is_valid_state(state: str) -> bool:
+    """Check if OAuth state is valid and not expired."""
+    if state not in _oauth_states:
+        return False
+    created_at = _oauth_states[state]
+    if time.time() - created_at > OAUTH_STATE_TTL:
+        del _oauth_states[state]
+        return False
+    return True
 
 
 @router.get("/github/login")
@@ -38,9 +63,12 @@ async def github_login(request: Request):
             detail="GitHub OAuth not configured"
         )
 
-    # Generate state for CSRF protection
+    # Cleanup expired states periodically
+    _cleanup_expired_states()
+
+    # Generate state for CSRF protection with timestamp
     state = secrets.token_urlsafe(32)
-    _oauth_states[state] = True
+    _oauth_states[state] = time.time()
 
     # Build GitHub authorization URL
     params = {
@@ -57,11 +85,11 @@ async def github_login(request: Request):
 @router.get("/github/callback")
 async def github_callback(code: str, state: str, request: Request):
     """Handle GitHub OAuth callback."""
-    # Verify state
-    if state not in _oauth_states:
+    # Verify state is valid and not expired
+    if not _is_valid_state(state):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid OAuth state"
+            detail="Invalid or expired OAuth state"
         )
     del _oauth_states[state]
 
@@ -128,7 +156,7 @@ async def github_callback(code: str, state: str, request: Request):
         value=session_id,
         max_age=SESSION_MAX_AGE,
         httponly=True,
-        secure=True,  # Set to False for local development
+        secure=IS_PRODUCTION,
         samesite="lax",
     )
 
@@ -179,7 +207,7 @@ async def refresh_session(user: SessionData = Depends(get_current_user)):
         value=new_session_id,
         max_age=SESSION_MAX_AGE,
         httponly=True,
-        secure=True,
+        secure=IS_PRODUCTION,
         samesite="lax",
     )
 

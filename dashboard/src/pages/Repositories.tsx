@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { reposApi, Repository } from '../services/api'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
@@ -7,9 +7,22 @@ import { Badge } from '../components/ui/Badge'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { formatRelativeTime } from '../services/utils'
 
+// Cooldown period for sync button (30 seconds)
+const SYNC_COOLDOWN_MS = 30000
+
 export function RepositoriesPage() {
   const [page, setPage] = useState(1)
+  const [syncCooldown, setSyncCooldown] = useState(0)
   const queryClient = useQueryClient()
+
+  // Countdown timer for sync cooldown
+  useEffect(() => {
+    if (syncCooldown <= 0) return
+    const timer = setInterval(() => {
+      setSyncCooldown((prev) => Math.max(0, prev - 1000))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [syncCooldown])
 
   const { data, isLoading } = useQuery({
     queryKey: ['repos', page],
@@ -31,8 +44,16 @@ export function RepositoriesPage() {
 
   const syncMutation = useMutation({
     mutationFn: () => reposApi.sync(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['repos'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['repos'] })
+      setSyncCooldown(SYNC_COOLDOWN_MS)
+    },
   })
+
+  const handleSync = useCallback(() => {
+    if (syncCooldown > 0 || syncMutation.isPending) return
+    syncMutation.mutate()
+  }, [syncCooldown, syncMutation])
 
   const toggleRepo = (repo: Repository) => {
     if (repo.enabled) {
@@ -48,10 +69,13 @@ export function RepositoriesPage() {
         <h1 className="text-2xl font-bold text-gray-900">Repositories</h1>
         <Button
           variant="secondary"
-          onClick={() => syncMutation.mutate()}
+          onClick={handleSync}
           isLoading={syncMutation.isPending}
+          disabled={syncCooldown > 0}
         >
-          Sync from GitHub
+          {syncCooldown > 0
+            ? `Sync (${Math.ceil(syncCooldown / 1000)}s)`
+            : 'Sync from GitHub'}
         </Button>
       </div>
 

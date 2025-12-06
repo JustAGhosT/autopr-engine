@@ -1,8 +1,11 @@
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authApi, User } from '../services/api'
 
 export function useAuth() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['auth', 'me'],
@@ -18,7 +21,7 @@ export function useAuth() {
     mutationFn: authApi.logout,
     onSuccess: () => {
       queryClient.clear()
-      window.location.href = '/login'
+      navigate('/login')
     },
   })
 
@@ -34,10 +37,13 @@ export function useAuth() {
 
 export function useRequireAuth() {
   const auth = useAuth()
+  const navigate = useNavigate()
 
-  if (!auth.isLoading && !auth.isAuthenticated) {
-    window.location.href = '/login'
-  }
+  useEffect(() => {
+    if (!auth.isLoading && !auth.isAuthenticated) {
+      navigate('/login', { replace: true })
+    }
+  }, [auth.isLoading, auth.isAuthenticated, navigate])
 
   return auth
 }

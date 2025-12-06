@@ -8,8 +8,10 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional, Any
 
-from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import HTTPException, Request, status
+
+# Environment check for security settings
+IS_PRODUCTION = os.getenv("ENVIRONMENT", "development") == "production"
 
 # Session storage (in production, use Redis)
 _sessions: dict[str, dict[str, Any]] = {}
