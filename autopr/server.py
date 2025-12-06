@@ -140,9 +140,8 @@ def create_app() -> FastAPI:
         else:
             result = await health_checker.check_quick()
 
-        # Add version info for consistency
-        result["version"] = __version__
-        return result
+        # Add version info for consistency without mutating cached result
+        return {**result, "version": __version__}
 
     return app
 
