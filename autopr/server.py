@@ -1,6 +1,6 @@
-"""AutoPR Server with GitHub App Integration.
+"""AutoPR Server with GitHub App Integration and Dashboard.
 
-FastAPI server that can run alongside or replace the Flask dashboard.
+FastAPI server that provides the AutoPR Engine API and dashboard UI.
 """
 
 import os
@@ -11,6 +11,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 
 from autopr.health.health_checker import HealthChecker
+
+# Import dashboard router and version
+try:
+    from autopr.dashboard.router import router as dashboard_router
+    from autopr.dashboard.router import __version__ as DASHBOARD_VERSION
+    DASHBOARD_AVAILABLE = True
+except ImportError:
+    DASHBOARD_AVAILABLE = False
+    DASHBOARD_VERSION = "1.0.1"
 
 # Import GitHub App routers
 try:
@@ -24,6 +33,20 @@ try:
 except ImportError:
     GITHUB_APP_AVAILABLE = False
 
+# Use dashboard version as server version for consistency
+__version__ = DASHBOARD_VERSION
+
+# Shared health checker instance
+_health_checker: HealthChecker | None = None
+
+
+def get_health_checker() -> HealthChecker:
+    """Get or create the shared HealthChecker instance."""
+    global _health_checker
+    if _health_checker is None:
+        _health_checker = HealthChecker()
+    return _health_checker
+
 
 def create_app() -> FastAPI:
     """Create FastAPI application with GitHub App integration.
@@ -34,7 +57,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="AutoPR Engine",
         description="AI-Powered GitHub PR Automation and Issue Management",
-        version="1.0.1",
+        version=__version__,
     )
 
     # CORS middleware - restrict origins in production
@@ -42,17 +65,24 @@ def create_app() -> FastAPI:
     if cors_origins_env:
         # Parse comma-separated list of allowed origins
         cors_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+        allow_credentials = True  # Safe with specific origins
     else:
         # Development fallback: allow all origins only when env var not set
+        # Note: credentials cannot be used with wildcard origin per CORS spec
         cors_origins = ["*"]
+        allow_credentials = False
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
-        allow_credentials=True,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Include dashboard routes if available (must be first to handle "/" route)
+    if DASHBOARD_AVAILABLE:
+        app.include_router(dashboard_router)
 
     # Include GitHub App routes if available
     if GITHUB_APP_AVAILABLE:
@@ -61,11 +91,14 @@ def create_app() -> FastAPI:
         app.include_router(webhook_router)
         app.include_router(setup_router)
 
-    @app.get("/")
-    async def root():
-        """Root endpoint."""
+    # API info endpoint (when dashboard is not available or for API consumers)
+    @app.get("/api")
+    async def api_root():
+        """API root endpoint."""
         return {
             "message": "AutoPR Engine API",
+            "version": __version__,
+            "dashboard": "available" if DASHBOARD_AVAILABLE else "not configured",
             "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
         }
 
@@ -87,8 +120,8 @@ def create_app() -> FastAPI:
         # Return empty response with no-content status
         return Response(status_code=204)
 
-    # Initialize health checker (without engine for standalone mode)
-    health_checker = HealthChecker()
+    # Get shared health checker
+    health_checker = get_health_checker()
 
     @app.get("/health")
     async def health(detailed: bool = Query(False, description="Return detailed health info")):
@@ -103,8 +136,13 @@ def create_app() -> FastAPI:
             Health status response with status and optional component details.
         """
         if detailed:
-            return await health_checker.check_all(use_cache=True)
-        return await health_checker.check_quick()
+            result = await health_checker.check_all(use_cache=True)
+        else:
+            result = await health_checker.check_quick()
+
+        # Add version info for consistency
+        result["version"] = __version__
+        return result
 
     return app
 
@@ -122,4 +160,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

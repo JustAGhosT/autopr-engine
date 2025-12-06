@@ -61,7 +61,10 @@ class LintingIssue:
     requires_human_review: bool = False
 
     def __str__(self):
-        return f"{self.file_path}:{self.line_number}:{self.column_number}: {self.error_code} {self.message}"
+        return (
+            f"{self.file_path}:{self.line_number}:{self.column_number}: "
+            f"{self.error_code} {self.message}"
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary format for database storage."""

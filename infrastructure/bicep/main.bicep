@@ -3,6 +3,9 @@ param resourceGroupName string = 'autopr-rg'
 param acrName string = 'autopracr'
 param aksClusterName string = 'autopr-aks'
 
+@description('PostgreSQL administrator login username')
+param postgresLogin string = 'autopr'
+
 @secure()
 param postgresPassword string
 
@@ -54,7 +57,7 @@ resource postgres 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
   }
   properties: {
     version: '11'
-    administratorLogin: 'autopr'
+    administratorLogin: postgresLogin
     administratorLoginPassword: postgresPassword
     sslEnforcement: 'Enabled'
   }

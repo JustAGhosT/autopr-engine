@@ -77,6 +77,10 @@ BE CAREFUL: Some variables might be used for side effects or future functionalit
                 prompt += f"Content: {issue.line_content}\n\n"
 
         prompt += f"File content:\n```python\n{content}\n```\n\n"
-        prompt += "Please provide ONLY the specific lines that need to be fixed, not the entire file. Focus on the exact changes needed to resolve the variable issues."
+        prompt += (
+            "Please provide ONLY the specific lines that need to be fixed, "
+            "not the entire file. Focus on the exact changes needed to "
+            "resolve the variable issues."
+        )
 
         return prompt

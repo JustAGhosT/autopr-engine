@@ -274,8 +274,10 @@ class PrototypeEnhancer:
         packages_count = len(enhancement_result.get("packages_added", []))
         config_count = len(enhancement_result.get("configuration_updates", []))
 
+        platform = enhancement_result.get('platform', 'unknown')
+        enhancement_type = enhancement_result.get('enhancement_type', 'unknown')
         summary_parts = [
-            f"Enhanced {enhancement_result.get('platform', 'unknown')} project for {enhancement_result.get('enhancement_type', 'unknown')}",
+            f"Enhanced {platform} project for {enhancement_type}",
             f"Created {files_count} configuration files",
             f"Added {packages_count} packages",
             f"Applied {config_count} configuration updates",

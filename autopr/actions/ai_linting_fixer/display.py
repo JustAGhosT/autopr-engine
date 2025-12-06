@@ -340,7 +340,8 @@ class OperationDisplay:
                 )
             else:
                 self._print(
-                    f"{self.formatter.emoji('success')}Queued {queued_count} new issues (duplicates skipped)"
+                    f"{self.formatter.emoji('success')}Queued {queued_count} "
+                    f"new issues (duplicates skipped)"
                 )
 
     def show_processing_start(self, issue_count: int):
@@ -369,7 +370,8 @@ class OperationDisplay:
         """Show processing results."""
         if not self.config.is_quiet():
             self._print(
-                f"{self.formatter.emoji('success')}Processing complete: {fixed} fixes, {failed} failures"
+                f"{self.formatter.emoji('success')}Processing complete: "
+                f"{fixed} fixes, {failed} failures"
             )
 
     def show_dry_run_notice(self):

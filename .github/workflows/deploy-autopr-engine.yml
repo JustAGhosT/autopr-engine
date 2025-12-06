@@ -146,6 +146,14 @@ jobs:
 
             # For existing deployments, use secrets from GitHub (must be set manually)
             # This prevents password regeneration that would break existing DB connections
+            if [ -n "${{ secrets.AUTOPR_POSTGRES_LOGIN }}" ]; then
+              echo "Using postgres login from secrets"
+              echo "postgres_login=${{ secrets.AUTOPR_POSTGRES_LOGIN }}" >> $GITHUB_OUTPUT
+            else
+              echo "::warning::AUTOPR_POSTGRES_LOGIN secret not set. Using default 'autopr'."
+              echo "postgres_login=autopr" >> $GITHUB_OUTPUT
+            fi
+
             if [ -n "${{ secrets.AUTOPR_POSTGRES_PASSWORD }}" ]; then
               echo "Using existing postgres password from secrets"
               echo "postgres_password=${{ secrets.AUTOPR_POSTGRES_PASSWORD }}" >> $GITHUB_OUTPUT
@@ -169,12 +177,18 @@ jobs:
               fi
             fi
           else
-            echo "First deployment, generating new passwords..."
+            echo "First deployment, generating new credentials..."
+            if [ -n "${{ secrets.AUTOPR_POSTGRES_LOGIN }}" ]; then
+              echo "Using postgres login from secrets"
+              echo "postgres_login=${{ secrets.AUTOPR_POSTGRES_LOGIN }}" >> $GITHUB_OUTPUT
+            else
+              echo "postgres_login=autopr" >> $GITHUB_OUTPUT
+            fi
             POSTGRES_PWD=$(openssl rand -base64 32)
             REDIS_PWD=$(openssl rand -base64 32)
             echo "postgres_password=$POSTGRES_PWD" >> $GITHUB_OUTPUT
             echo "redis_password=$REDIS_PWD" >> $GITHUB_OUTPUT
-            echo "::notice::Save these passwords to GitHub secrets for future deployments: AUTOPR_POSTGRES_PASSWORD, AUTOPR_REDIS_PASSWORD"
+            echo "::notice::Save these credentials to GitHub secrets for future deployments: AUTOPR_POSTGRES_LOGIN, AUTOPR_POSTGRES_PASSWORD, AUTOPR_REDIS_PASSWORD"
           fi
 
       - name: Deploy Bicep Template
@@ -188,6 +202,7 @@ jobs:
               regionAbbr=san \
               location=eastus2 \
               containerImage=ghcr.io/justaghost/autopr-engine:latest \
+              postgresLogin="${{ steps.passwords.outputs.postgres_login }}" \
               postgresPassword="${{ steps.passwords.outputs.postgres_password }}" \
               redisPassword="${{ steps.passwords.outputs.redis_password }}"
 
