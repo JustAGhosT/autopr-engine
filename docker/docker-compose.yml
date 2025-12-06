@@ -92,8 +92,7 @@ services:
     image: redis:7-alpine
     container_name: autopr-redis
     restart: unless-stopped
-    # TODO: SECURITY - Use strong passwords in production
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
     volumes:
