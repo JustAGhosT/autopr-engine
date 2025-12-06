@@ -74,6 +74,7 @@ This PR fixes two critical deployment issues reported by users:
 ## Testing Performed
 
 ### Static Analysis ✅
+
 - Bicep template validation: `az bicep build` - PASSED
 - CodeQL security scan - 0 alerts
 - Code review - All feedback addressed
