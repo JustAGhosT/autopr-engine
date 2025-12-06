@@ -56,6 +56,21 @@ def get_health_checker() -> HealthChecker:
     return _health_checker
 
 
+async def root_fallback():
+    """Root endpoint fallback when dashboard is not available.
+    
+    Returns API information and available endpoints.
+    """
+    return {
+        "message": "AutoPR Engine API",
+        "version": __version__,
+        "dashboard": "not available (import failed)",
+        "api_docs": "/docs",
+        "health": "/health",
+        "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
+    }
+
+
 def create_app() -> FastAPI:
     """Create FastAPI application with GitHub App integration.
 
@@ -92,18 +107,8 @@ def create_app() -> FastAPI:
     if DASHBOARD_AVAILABLE:
         app.include_router(dashboard_router)
     else:
-        # Fallback root route when dashboard is not available
-        @app.get("/")
-        async def root_fallback():
-            """Root endpoint when dashboard is not available."""
-            return {
-                "message": "AutoPR Engine API",
-                "version": __version__,
-                "dashboard": "not available (import failed)",
-                "api_docs": "/docs",
-                "health": "/health",
-                "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
-            }
+        # Register fallback root route when dashboard is not available
+        app.get("/")(root_fallback)
 
     # Include GitHub App routes if available
     if GITHUB_APP_AVAILABLE:
