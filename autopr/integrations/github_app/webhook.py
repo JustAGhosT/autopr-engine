@@ -86,6 +86,10 @@ async def webhook(
                     owner,
                     repo.get("name", ""),
                 )
+        elif x_github_event == "issue_comment" and payload.get("action") == "created":
+            # Handle PR comments (issue_comment event includes PR comments)
+            if "pull_request" in payload.get("issue", {}):
+                await handle_pr_comment(payload)
     except Exception as e:
         from autopr.exceptions import sanitize_error_message
         
@@ -107,4 +111,103 @@ async def handle_installation(installation: dict) -> None:
     installation_id = installation.get("id")
     logger.info(f"Handling installation: {installation_id}")
     # Installation is handled, repositories will be configured via installation_repositories event
+
+
+async def handle_pr_comment(payload: dict) -> None:
+    """Handle PR comment event with filtering.
+
+    Args:
+        payload: Webhook payload containing comment data
+    """
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    comment = payload.get("comment", {})
+    commenter_username = comment.get("user", {}).get("login", "")
+    commenter_id = comment.get("user", {}).get("id")
+    
+    if not commenter_username:
+        logger.warning("Comment received without username, skipping")
+        return
+    
+    logger.info(f"Processing comment from {commenter_username}")
+    
+    # Check if commenter is allowed
+    try:
+        # Get database session (synchronous)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            
+            # Note: Using synchronous version since get_db() returns sync session
+            # The service detects this automatically via isinstance check
+            is_allowed = await service.is_commenter_allowed(commenter_username)
+            
+            if not is_allowed:
+                logger.info(f"Comment from {commenter_username} filtered (not in allowed list)")
+                
+                # Check if auto-add is enabled
+                settings = await service.get_settings()
+                if settings and settings.auto_add_commenters:
+                    # Add the commenter automatically
+                    await service.add_commenter(
+                        github_username=commenter_username,
+                        github_user_id=commenter_id,
+                        added_by="auto",
+                        notes="Automatically added via auto_add_commenters setting",
+                    )
+                    logger.info(f"Auto-added commenter: {commenter_username}")
+                    
+                    # Send auto-reply if enabled
+                    if settings.auto_reply_enabled:
+                        await send_comment_reply(payload, commenter_username, settings)
+                
+                # Don't process the comment
+                return
+            
+            # Update commenter activity
+            await service.update_commenter_activity(commenter_username)
+            
+            # Process the comment (existing logic would go here)
+            logger.info(f"Processing comment from allowed user: {commenter_username}")
+        finally:
+            db.close()
+            
+    except Exception as e:
+        logger.error(f"Error processing comment filter: {e}", exc_info=True)
+        # On error, allow comment to be processed (fail open)
+
+
+async def send_comment_reply(payload: dict, username: str, settings) -> None:
+    """Send auto-reply comment when adding a new commenter.
+
+    Args:
+        payload: Webhook payload
+        username: GitHub username of the new commenter
+        settings: Comment filter settings
+    """
+    try:
+        repo_full_name = payload.get("repository", {}).get("full_name", "")
+        comment_url = payload.get("comment", {}).get("url", "")
+        
+        if not repo_full_name or not comment_url:
+            logger.warning("Missing repo or comment URL for auto-reply")
+            return
+        
+        # Get the auto-reply message
+        message = settings.auto_reply_message.format(username=username)
+        
+        # Post reply comment using GitHub API
+        # This requires GitHub App credentials
+        # For now, just log it
+        logger.info(f"Would send auto-reply to {username}: {message}")
+        
+        # TODO: Implement actual GitHub API call to post comment
+        # This would require:
+        # 1. Get installation token
+        # 2. Use PyGithub or httpx to post comment
+        # 3. Handle rate limiting and errors
+        
+    except Exception as e:
+        logger.error(f"Error sending auto-reply: {e}", exc_info=True)
 

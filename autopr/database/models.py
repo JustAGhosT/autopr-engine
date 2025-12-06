@@ -365,6 +365,75 @@ class WorkflowTrigger(Base, AuditMixin):
         return f"<WorkflowTrigger(id={self.id}, type={self.trigger_type}, enabled={self.enabled})>"
 
 
+class AllowedCommenter(Base, AuditMixin):
+    """Allowed commenter model for PR comment filtering.
+    
+    Tracks users who are authorized to have their comments processed by AutoPR.
+    Users can be added manually via dashboard or automatically when they first comment.
+    """
+
+    __tablename__ = "allowed_commenters"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    github_username: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    github_user_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    added_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    last_comment_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    comment_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        Index("idx_allowed_commenters_username", "github_username"),
+        Index("idx_allowed_commenters_enabled", "enabled"),
+        Index("idx_allowed_commenters_user_id", "github_user_id"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<AllowedCommenter(username={self.github_username}, enabled={self.enabled})>"
+
+
+class CommentFilterSettings(Base, AuditMixin):
+    """Global settings for comment filtering.
+    
+    Stores configuration for how PR comments should be filtered and processed.
+    Only one record should exist in this table (singleton pattern).
+    """
+
+    __tablename__ = "comment_filter_settings"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    auto_add_commenters: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    auto_reply_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False,
+        comment="Disabled by default until GitHub API integration is complete"
+    )
+    auto_reply_message: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="Thank you for your comment! User @{username} has been added to the allowed commenters list. "
+        "Comments from this user will now be processed. You can manage this in your AutoPR dashboard."
+    )
+    whitelist_mode: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True,
+        comment="When True, only allowed commenters are processed. When False, all except blocked are processed."
+    )
+
+    __table_args__ = (
+        Index("idx_comment_filter_settings_enabled", "enabled"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<CommentFilterSettings(enabled={self.enabled}, auto_add={self.auto_add_commenters})>"
+
+
 # TODO: Production enhancements
 # - [ ] Add User model for authentication
 # - [ ] Add Organization/Team models for multi-tenancy
