@@ -145,7 +145,7 @@ class RateLimiter:
         allowed, info = self._limiter.is_allowed(client_ip, limit=self.requests_per_minute)
         # Evict oldest entries if cache is too large
         if len(self._last_info) >= self._max_cached_ips:
-            # Simple eviction: clear half the cache
+            # Simple eviction: clear half the cache (dict maintains insertion order in Python 3.7+)
             keys_to_remove = list(self._last_info.keys())[:len(self._last_info) // 2]
             for key in keys_to_remove:
                 del self._last_info[key]
@@ -860,9 +860,9 @@ async def api_save_config(
     try:
         dashboard_state.set_config(config.model_dump())
         return SuccessResponse(success=True)
-    except Exception:
+    except Exception as e:
         logger.exception("Failed to save config")
-        raise HTTPException(status_code=500, detail="Failed to save config") from None
+        raise HTTPException(status_code=500, detail="Failed to save config") from e
 
 
 # =============================================================================
