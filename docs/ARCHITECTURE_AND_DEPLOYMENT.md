@@ -67,6 +67,7 @@ There are TWO dashboards in this project:
 - Manages certificate renewal
 
 **How it works**:
+
 1. Bicep template creates the Static Web App
 2. Automatically adds custom domain binding resource
 3. Azure validates domain ownership via CNAME record
