@@ -24,7 +24,13 @@ class GeneratePropTable(Action[Inputs, Outputs]):
     id = "generate_prop_table"
 
     async def run(self, inputs: Inputs) -> Outputs:
-        command = f"npx -p react-docgen-typescript-loader@3.7.2 -p typescript@5 react-docgen-typescript {inputs.component_path} --compilerOptions '{{\"allowSyntheticDefaultImports\":true}}' --skipChildrenPropWithoutDoc"
+        command = (
+            f"npx -p react-docgen-typescript-loader@3.7.2 "
+            f"-p typescript@5 react-docgen-typescript "
+            f"{inputs.component_path} "
+            f"--compilerOptions '{{\"allowSyntheticDefaultImports\":true}}' "
+            f"--skipChildrenPropWithoutDoc"
+        )
 
         process = await asyncio.create_subprocess_shell(
             command,

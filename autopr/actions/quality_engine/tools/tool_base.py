@@ -150,10 +150,15 @@ class Tool[TConfig: Any, TIssue](ABC):
             if not self.is_available():
                 required_command = self.get_required_command()
                 if required_command:
-                    error_message = f"Tool '{self.name}' is not available. Required command '{required_command}' not found in PATH. Please install it first."
+                    error_message = (
+                        f"Tool '{self.name}' is not available. Required "
+                        f"command '{required_command}' not found in PATH. "
+                        f"Please install it first."
+                    )
                 else:
                     error_message = (
-                        f"Tool '{self.name}' is not available or properly configured."
+                        f"Tool '{self.name}' is not available or properly "
+                        f"configured."
                     )
                 return ToolExecutionResult(
                     success=False,

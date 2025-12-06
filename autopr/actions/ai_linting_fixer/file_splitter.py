@@ -98,9 +98,12 @@ class FileSplitter:
 
             logger.info(f"Split complete! Created {len(components)} components:")
             for i, component in enumerate(components, 1):
-                logger.info(
-                    f"  {i}. {component.name} ({component.component_type}) - Lines {component.start_line}-{component.end_line} (complexity: {component.complexity_score:.2f})"
+                msg = (
+                    f"  {i}. {component.name} ({component.component_type}) - "
+                    f"Lines {component.start_line}-{component.end_line} "
+                    f"(complexity: {component.complexity_score:.2f})"
                 )
+                logger.info(msg)
 
             # Performance metrics
             processing_time = time.time() - start_time

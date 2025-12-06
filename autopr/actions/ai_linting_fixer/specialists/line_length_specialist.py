@@ -82,6 +82,10 @@ Focus on making clean, readable fixes that improve code quality."""
                 prompt += f"Content: {issue.line_content}\n\n"
 
         prompt += f"File content:\n```python\n{content}\n```\n\n"
-        prompt += "Please provide ONLY the specific lines that need to be fixed, not the entire file. Focus on the exact changes needed to resolve the line length issues."
+        prompt += (
+            "Please provide ONLY the specific lines that need to be fixed, "
+            "not the entire file. Focus on the exact changes needed to "
+            "resolve the line length issues."
+        )
 
         return prompt

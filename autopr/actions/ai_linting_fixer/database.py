@@ -85,18 +85,32 @@ class AIInteractionDB:
             # Create triggers to keep FTS table in sync
             conn.execute(
                 """
-                CREATE TRIGGER IF NOT EXISTS interactions_ai AFTER INSERT ON ai_interactions BEGIN
-INSERT INTO interactions_fts(rowid, system_prompt, user_prompt, ai_response, issue_type, file_path) VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_type, new.file_path);
-VALUES (new.id, new.system_prompt, new.user_prompt, new.ai_response, new.issue_type, new.file_path);
+                CREATE TRIGGER IF NOT EXISTS interactions_ai 
+                AFTER INSERT ON ai_interactions BEGIN
+                    INSERT INTO interactions_fts(
+                        rowid, system_prompt, user_prompt, ai_response, 
+                        issue_type, file_path
+                    ) VALUES (
+                        new.id, new.system_prompt, new.user_prompt, 
+                        new.ai_response, new.issue_type, new.file_path
+                    );
                 END;
             """
             )
 
             conn.execute(
                 """
-                CREATE TRIGGER IF NOT EXISTS interactions_ad AFTER DELETE ON ai_interactions BEGIN
-                    INSERT INTO interactions_fts(interactions_fts, rowid, system_prompt, user_prompt, ai_response, issue_type, file_path)
-                    VALUES('delete', old.id, old.system_prompt, old.user_prompt, old.ai_response, old.issue_type, old.file_path);
+                CREATE TRIGGER IF NOT EXISTS interactions_ad 
+                AFTER DELETE ON ai_interactions BEGIN
+                    INSERT INTO interactions_fts(
+                        interactions_fts, rowid, system_prompt, 
+                        user_prompt, ai_response, issue_type, file_path
+                    )
+                    VALUES(
+                        'delete', old.id, old.system_prompt, 
+                        old.user_prompt, old.ai_response, old.issue_type, 
+                        old.file_path
+                    );
                 END;
             """
             )
