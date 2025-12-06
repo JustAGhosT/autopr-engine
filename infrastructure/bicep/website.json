@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "2200558722358862272"
+      "templateHash": "11930318282547927656"
     }
   },
   "parameters": {
@@ -62,6 +62,15 @@
           "outputLocation": "out"
         }
       }
+    },
+    {
+      "type": "Microsoft.Web/staticSites/customDomains",
+      "apiVersion": "2022-03-01",
+      "name": "[format('{0}/{1}', variables('staticWebAppName'), parameters('customDomain'))]",
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/staticSites', variables('staticWebAppName'))]"
+      ]
     }
   ],
   "outputs": {
@@ -80,6 +89,10 @@
     "customDomain": {
       "type": "string",
       "value": "[parameters('customDomain')]"
+    },
+    "customDomainValidationToken": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/staticSites', variables('staticWebAppName'))]"
     }
   }
 }

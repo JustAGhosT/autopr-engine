@@ -313,7 +313,7 @@ class RedisStorage(StorageBackend):
     def initialize_if_empty(self, key: str, value: Any) -> None:
         def _initialize():
             prefixed_key = self._key(key)
-            # Use atomic SET NX to avoid race condition
+            if not self._client.exists(prefixed_key):
             self._client.set(prefixed_key, json.dumps(value), nx=True)
             return True
         self._execute_with_retry("initialize_if_empty", _initialize, None)

@@ -10,6 +10,7 @@ import os
 import secrets
 import tempfile
 import threading
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -137,7 +138,7 @@ class RateLimiter:
             default_limit=requests_per_minute,
             window_seconds=60
         )
-        self._last_info: dict[str, dict] = {}
+        self._last_info: dict[str, dict] = {}  # Store last info for get_retry_after
         self._max_cached_ips = 10000  # Prevent unbounded memory growth
 
     def is_allowed(self, client_ip: str) -> bool:
