@@ -40,6 +40,10 @@ _user_exclusions: dict[str, dict] = {}
 _bot_comments: list[dict] = []
 
 
+# Builtin exclusions are considered to have always existed
+BUILTIN_CREATED_AT = "1970-01-01T00:00:00Z"
+
+
 def _get_all_exclusions(user_id: str) -> List[dict]:
     """Get all exclusions for a user (builtin + user-defined)."""
     exclusions = []
@@ -51,7 +55,7 @@ def _get_all_exclusions(user_id: str) -> List[dict]:
             "username": bot,
             "reason": "Built-in bot exclusion",
             "source": "builtin",
-            "created_at": "2024-01-01T00:00:00Z",
+            "created_at": BUILTIN_CREATED_AT,
         })
 
     # Add user exclusions
@@ -157,16 +161,17 @@ async def list_comments(
     excluded: Optional[bool] = Query(None, description="Filter by exclusion status"),
     user: SessionData = Depends(get_current_user),
 ):
-    """List recent bot comments."""
-    # Filter comments
-    filtered = _bot_comments
-    if excluded is not None:
-        filtered = [c for c in filtered if c["was_excluded"] == excluded]
+    """List recent bot comments for the current user."""
+    # Filter comments by user first, then by exclusion status
+    user_comments = [c for c in _bot_comments if c.get("user_id") == user.user_id]
 
-    total = len(filtered)
+    if excluded is not None:
+        user_comments = [c for c in user_comments if c["was_excluded"] == excluded]
+
+    total = len(user_comments)
     start = (page - 1) * per_page
     end = start + per_page
-    paginated = filtered[start:end]
+    paginated = user_comments[start:end]
 
     return ApiResponse(
         data=[BotCommentResponse(
@@ -191,11 +196,11 @@ async def list_comments(
 
 @router.get("/analytics", response_model=ApiResponse[dict])
 async def get_analytics(user: SessionData = Depends(get_current_user)):
-    """Get bot filtering analytics."""
-    # Calculate analytics from comments
+    """Get bot filtering analytics for the current user."""
+    # Calculate analytics from user's comments only
     bot_counts: dict[str, int] = {}
     for comment in _bot_comments:
-        if comment["was_excluded"]:
+        if comment.get("user_id") == user.user_id and comment["was_excluded"]:
             bot = comment["bot_username"]
             bot_counts[bot] = bot_counts.get(bot, 0) + 1
 

@@ -18,6 +18,51 @@ logger = logging.getLogger("autopr.api")
 # Environment check for security settings
 IS_PRODUCTION = os.getenv("ENVIRONMENT", "development") == "production"
 
+# Allowed origins for CSRF protection
+ALLOWED_ORIGINS = {
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
+    "https://app.autopr.io",
+}
+
+
+async def verify_csrf(request: Request) -> None:
+    """Verify CSRF protection for mutation requests.
+
+    Checks Origin header matches allowed origins.
+    Only applies to POST/PUT/PATCH/DELETE requests.
+    """
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        origin = request.headers.get("origin")
+
+        # Skip CSRF check for API key auth (stateless)
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer apr_"):
+            return
+
+        # In production, require valid Origin header
+        if IS_PRODUCTION:
+            if not origin:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Missing Origin header"
+                )
+            if origin not in ALLOWED_ORIGINS:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Invalid Origin"
+                )
+        else:
+            # In development, allow localhost variants
+            if origin and origin not in ALLOWED_ORIGINS:
+                if not origin.startswith("http://localhost"):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Invalid Origin"
+                    )
+
+
 # Session storage (in production, use Redis)
 _sessions: dict[str, dict[str, Any]] = {}
 

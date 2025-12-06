@@ -3,10 +3,11 @@
 Pydantic models for API request/response handling.
 """
 
+import re
 from datetime import datetime
 from typing import Generic, TypeVar, Optional, List, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 T = TypeVar("T")
 
@@ -101,10 +102,34 @@ class RepositoryUpdate(BaseModel):
 
 
 # Bot exclusion models
+# Valid GitHub username pattern (alphanumeric, hyphens, [bot] suffix allowed)
+GITHUB_USERNAME_PATTERN = re.compile(r'^[a-zA-Z0-9][-a-zA-Z0-9]*(\[bot\])?$')
+
+
 class BotExclusionCreate(BaseModel):
     """Bot exclusion create request."""
     username: str
     reason: Optional[str] = None
+
+    @field_validator('username')
+    @classmethod
+    def validate_username(cls, v: str) -> str:
+        """Validate bot username format."""
+        if not v or len(v) > 100:
+            raise ValueError('Username must be 1-100 characters')
+        if not GITHUB_USERNAME_PATTERN.match(v):
+            raise ValueError('Invalid username format')
+        return v
+
+    @field_validator('reason')
+    @classmethod
+    def validate_reason(cls, v: Optional[str]) -> Optional[str]:
+        """Sanitize and validate reason."""
+        if v is None:
+            return v
+        # Strip HTML tags and limit length
+        v = re.sub(r'<[^>]+>', '', v)
+        return v[:500] if len(v) > 500 else v
 
 
 class BotExclusionResponse(BaseModel):

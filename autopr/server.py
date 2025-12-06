@@ -3,7 +3,9 @@
 FastAPI server that can run alongside or replace the Flask dashboard.
 """
 
+import logging
 import os
+import sys
 from pathlib import Path
 
 from fastapi import FastAPI, Query, Request
@@ -12,6 +14,39 @@ from fastapi.responses import FileResponse, Response, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from autopr.health.health_checker import HealthChecker
+
+logger = logging.getLogger(__name__)
+
+# Required environment variables for dashboard functionality
+REQUIRED_ENV_VARS = {
+    "GITHUB_CLIENT_ID": "GitHub OAuth client ID for dashboard login",
+    "GITHUB_CLIENT_SECRET": "GitHub OAuth client secret",
+}
+
+# Optional but recommended environment variables
+RECOMMENDED_ENV_VARS = {
+    "ENVIRONMENT": "Deployment environment (development/production)",
+    "CORS_ALLOWED_ORIGINS": "Comma-separated list of allowed CORS origins",
+}
+
+
+def validate_environment() -> dict[str, list[str]]:
+    """Validate required and recommended environment variables.
+
+    Returns:
+        Dict with 'missing' and 'warnings' lists.
+    """
+    result = {"missing": [], "warnings": []}
+
+    for var, description in REQUIRED_ENV_VARS.items():
+        if not os.getenv(var):
+            result["missing"].append(f"{var}: {description}")
+
+    for var, description in RECOMMENDED_ENV_VARS.items():
+        if not os.getenv(var):
+            result["warnings"].append(f"{var}: {description}")
+
+    return result
 
 # Import Dashboard API router
 try:
@@ -36,12 +71,29 @@ except ImportError:
 DASHBOARD_DIR = Path(__file__).parent.parent / "dashboard" / "dist"
 
 
-def create_app() -> FastAPI:
+def create_app(skip_env_validation: bool = False) -> FastAPI:
     """Create FastAPI application with GitHub App integration.
+
+    Args:
+        skip_env_validation: If True, skip environment variable validation.
 
     Returns:
         Configured FastAPI application
     """
+    # Validate environment on startup
+    if not skip_env_validation:
+        env_status = validate_environment()
+
+        if env_status["warnings"]:
+            for warning in env_status["warnings"]:
+                logger.warning(f"Missing recommended env var: {warning}")
+
+        if env_status["missing"]:
+            logger.warning(
+                "Missing required environment variables for full dashboard functionality:\n"
+                + "\n".join(f"  - {m}" for m in env_status["missing"])
+            )
+
     app = FastAPI(
         title="AutoPR Engine",
         description="AI-Powered GitHub PR Automation and Issue Management",

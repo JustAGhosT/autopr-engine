@@ -71,10 +71,15 @@ async def github_login(request: Request):
     _oauth_states[state] = time.time()
 
     # Build GitHub authorization URL
+    # Scope explanation:
+    # - user:email: Access user email (for notifications)
+    # - read:user: Read user profile info
+    # - read:org: Check org membership (for team features)
+    # - public_repo: Access public repos only (safer than full 'repo')
     params = {
         "client_id": config["client_id"],
         "redirect_uri": config["redirect_uri"],
-        "scope": "user:email read:org repo",
+        "scope": "user:email read:user read:org public_repo",
         "state": state,
     }
 
