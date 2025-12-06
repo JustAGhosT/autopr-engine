@@ -4,6 +4,35 @@
 comment_analyzer:
   enabled: true
 
+  # Bot exclusion settings - comments from these accounts are ignored
+  # Add or remove bots as needed. Use exact username matches.
+  bot_exclusions:
+    enabled: true
+    # Common CI/CD and code review bots
+    excluded_users:
+      - "github-actions[bot]"
+      - "dependabot[bot]"
+      - "renovate[bot]"
+      - "coderabbitai[bot]"
+      - "chatgpt-codex-connector[bot]"
+      - "copilot[bot]"
+      - "codacy[bot]"
+      - "codecov[bot]"
+      - "sonarcloud[bot]"
+      - "snyk-bot"
+      - "imgbot[bot]"
+      - "allcontributors[bot]"
+      - "stale[bot]"
+      - "mergify[bot]"
+      - "netlify[bot]"
+      - "vercel[bot]"
+    # Also exclude any user ending with [bot]
+    exclude_bot_suffix: true
+    # Optional: exclude users by pattern (regex)
+    # excluded_patterns:
+    #   - ".*\\[bot\\]$"
+    #   - "^bot-.*"
+
 quality_engine:
   default_mode: "smart"
   max_concurrent_fixes: 5
