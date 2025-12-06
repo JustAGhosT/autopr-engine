@@ -47,10 +47,13 @@ FROM python:3.13-slim AS production
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/.local/bin:$PATH" \
-    AUTOPR_ENV=production
+    AUTOPR_ENV=production \
+    # Poetry configuration - disable virtualenv creation since deps are in site-packages
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_CACHE_DIR=/home/autopr/.cache/pypoetry
 
-# Create non-root user for security
-RUN groupadd -r autopr && useradd -r -g autopr autopr
+# Create non-root user for security with home directory
+RUN groupadd -r autopr && useradd -r -g autopr -m -d /home/autopr autopr
 
 # Install runtime system dependencies
 RUN apt-get update && apt-get install -y \
@@ -60,9 +63,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Create application directories
+# Create application directories and ensure home directory ownership
 RUN mkdir -p /app /app/logs /app/data /app/config && \
-    chown -R autopr:autopr /app
+    chown -R autopr:autopr /app && \
+    chown -R autopr:autopr /home/autopr
 
 # Set working directory
 WORKDIR /app
