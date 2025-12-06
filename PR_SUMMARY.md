@@ -44,6 +44,7 @@ This PR fixes two critical deployment issues reported by users:
 ## Additional Improvements
 
 ### Static Web App Routing Configuration ✅
+
 - Added `website/public/staticwebapp.config.json` for proper Next.js SPA routing
 - Configured navigation fallback to handle client-side routing
 - Set appropriate cache headers
