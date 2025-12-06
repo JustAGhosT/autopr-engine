@@ -139,10 +139,17 @@ class RateLimiter:
             window_seconds=60
         )
         self._last_info: dict[str, dict] = {}  # Store last info for get_retry_after
+        self._max_cached_ips = 10000  # Prevent unbounded memory growth
 
     def is_allowed(self, client_ip: str) -> bool:
         """Check if request from client IP is allowed."""
         allowed, info = self._limiter.is_allowed(client_ip, limit=self.requests_per_minute)
+        # Evict oldest entries if cache is too large
+        if len(self._last_info) >= self._max_cached_ips:
+            # Simple eviction: clear half the cache (dict maintains insertion order in Python 3.7+)
+            keys_to_remove = list(self._last_info.keys())[:len(self._last_info) // 2]
+            for key in keys_to_remove:
+                del self._last_info[key]
         self._last_info[client_ip] = info
         return allowed
 
@@ -222,6 +229,7 @@ class DashboardState:
     KEY_START_TIME = "start_time"
     KEY_TOTAL_CHECKS = "total_checks"
     KEY_TOTAL_ISSUES = "total_issues"
+    KEY_TOTAL_SUCCESSFUL_CHECKS = "total_successful_checks"
     KEY_SUCCESS_RATE = "success_rate"
     KEY_AVG_PROCESSING_TIME = "avg_processing_time"
     KEY_RECENT_ACTIVITY = "recent_activity"
@@ -259,6 +267,7 @@ class DashboardState:
         self._storage.initialize_if_empty(self.KEY_START_TIME, datetime.now().isoformat())
         self._storage.initialize_if_empty(self.KEY_TOTAL_CHECKS, 0)
         self._storage.initialize_if_empty(self.KEY_TOTAL_ISSUES, 0)
+        self._storage.initialize_if_empty(self.KEY_TOTAL_SUCCESSFUL_CHECKS, 0)
         self._storage.initialize_if_empty(self.KEY_SUCCESS_RATE, 0.0)
         self._storage.initialize_if_empty(self.KEY_AVG_PROCESSING_TIME, 0.0)
 
@@ -423,14 +432,18 @@ class DashboardState:
             issues_found = result.get("total_issues_found", 0)
             self._storage.increment(self.KEY_TOTAL_ISSUES, issues_found)
 
-            # Calculate and update success rate
-            recent = self.recent_activity
-            successful_checks = sum(
-                1 for activity in recent if activity.get("success", False)
-            )
+            # Calculate and update success rate using persistent counter
             if result.get("success", False):
-                successful_checks += 1
-            new_success_rate = successful_checks / new_total_checks if new_total_checks > 0 else 0.0
+                total_successful = self._storage.increment(
+                    self.KEY_TOTAL_SUCCESSFUL_CHECKS, 1
+                )
+            else:
+                total_successful = self._storage.get(
+                    self.KEY_TOTAL_SUCCESSFUL_CHECKS, 0
+                )
+            new_success_rate = (
+                total_successful / new_total_checks if new_total_checks > 0 else 0.0
+            )
             self._storage.set(self.KEY_SUCCESS_RATE, new_success_rate)
 
             # Update average processing time
@@ -574,10 +587,10 @@ async def dashboard_home(request: Request):
             "index.html",
             {"request": request, "data": dashboard_state.get_status()}
         )
-    except Exception as e:
-        logger.error(f"Failed to render dashboard template: {e}")
+    except Exception:
+        logger.exception("Failed to render dashboard template")
         return HTMLResponse(
-            content=f"<html><body><h1>Template Error</h1><p>{e}</p></body></html>",
+            content="<html><body><h1>Template Error</h1><p>Internal server error</p></body></html>",
             status_code=500
         )
 
@@ -849,8 +862,232 @@ async def api_save_config(
         dashboard_state.set_config(config.model_dump())
         return SuccessResponse(success=True)
     except Exception as e:
-        logger.error(f"Failed to save config: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to save config: {e}")
+        logger.exception("Failed to save config")
+        raise HTTPException(status_code=500, detail="Failed to save config") from e
+
+
+# =============================================================================
+# Comment Filtering Endpoints
+# =============================================================================
+
+class CommentFilterSettingsRequest(BaseModel):
+    """Request model for comment filter settings."""
+    enabled: bool = Field(description="Enable comment filtering")
+    auto_add_commenters: bool = Field(description="Automatically add new commenters")
+    auto_reply_enabled: bool = Field(description="Enable auto-reply to new commenters")
+    auto_reply_message: str = Field(description="Template for auto-reply message")
+    whitelist_mode: bool = Field(description="Use whitelist mode (True) or blacklist (False)")
+
+
+class CommentFilterSettingsResponse(BaseModel):
+    """Response model for comment filter settings."""
+    enabled: bool
+    auto_add_commenters: bool
+    auto_reply_enabled: bool
+    auto_reply_message: str
+    whitelist_mode: bool
+
+
+class AllowedCommenterRequest(BaseModel):
+    """Request model for adding an allowed commenter."""
+    github_username: str = Field(description="GitHub username")
+    github_user_id: int | None = Field(default=None, description="GitHub user ID")
+    notes: str | None = Field(default=None, description="Optional notes")
+
+
+class AllowedCommenterResponse(BaseModel):
+    """Response model for allowed commenter."""
+    github_username: str
+    github_user_id: int | None
+    enabled: bool
+    comment_count: int
+    last_comment_at: str | None
+    created_at: str
+    notes: str | None
+
+
+@router.get(
+    "/api/comment-filter/settings",
+    response_model=CommentFilterSettingsResponse,
+    summary="Get Comment Filter Settings",
+    description="Get current comment filtering settings.",
+)
+async def api_get_comment_filter_settings(
+    _: str | None = Depends(verify_api_key),
+) -> CommentFilterSettingsResponse:
+    """Get comment filter settings."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            settings = await service.get_settings()
+            
+            if settings is None:
+                # Return default settings
+                return CommentFilterSettingsResponse(
+                    enabled=True,
+                    auto_add_commenters=False,
+                    auto_reply_enabled=True,
+                    auto_reply_message="Thank you for your comment! User @{username} has been added to the allowed commenters list.",
+                    whitelist_mode=True,
+                )
+            
+            return CommentFilterSettingsResponse(
+                enabled=settings.enabled,
+                auto_add_commenters=settings.auto_add_commenters,
+                auto_reply_enabled=settings.auto_reply_enabled,
+                auto_reply_message=settings.auto_reply_message,
+                whitelist_mode=settings.whitelist_mode,
+            )
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to get comment filter settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get settings: {e}")
+
+
+@router.post(
+    "/api/comment-filter/settings",
+    response_model=SuccessResponse,
+    summary="Update Comment Filter Settings",
+    description="Update comment filtering settings.",
+)
+async def api_update_comment_filter_settings(
+    settings: CommentFilterSettingsRequest,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
+    """Update comment filter settings."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            await service.update_settings(
+                enabled=settings.enabled,
+                auto_add_commenters=settings.auto_add_commenters,
+                auto_reply_enabled=settings.auto_reply_enabled,
+                auto_reply_message=settings.auto_reply_message,
+                whitelist_mode=settings.whitelist_mode,
+            )
+            return SuccessResponse(success=True)
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to update comment filter settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update settings: {e}")
+
+
+@router.get(
+    "/api/comment-filter/commenters",
+    response_model=list[AllowedCommenterResponse],
+    summary="List Allowed Commenters",
+    description="Get list of allowed commenters with pagination.",
+)
+async def api_list_commenters(
+    enabled_only: bool = Query(default=True, description="Only show enabled commenters"),
+    limit: int = Query(default=100, ge=1, le=500, description="Maximum results"),
+    offset: int = Query(default=0, ge=0, description="Results offset"),
+    _: str | None = Depends(verify_api_key),
+) -> list[AllowedCommenterResponse]:
+    """List allowed commenters."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            commenters = await service.list_commenters(
+                enabled_only=enabled_only,
+                limit=limit,
+                offset=offset,
+            )
+            
+            return [
+                AllowedCommenterResponse(
+                    github_username=c.github_username,
+                    github_user_id=c.github_user_id,
+                    enabled=c.enabled,
+                    comment_count=c.comment_count,
+                    last_comment_at=c.last_comment_at.isoformat() if c.last_comment_at else None,
+                    created_at=c.created_at.isoformat(),
+                    notes=c.notes,
+                )
+                for c in commenters
+            ]
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to list commenters: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to list commenters: {e}")
+
+
+@router.post(
+    "/api/comment-filter/commenters",
+    response_model=SuccessResponse,
+    summary="Add Allowed Commenter",
+    description="Add a user to the allowed commenters list.",
+)
+async def api_add_commenter(
+    commenter: AllowedCommenterRequest,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
+    """Add an allowed commenter."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            await service.add_commenter(
+                github_username=commenter.github_username,
+                github_user_id=commenter.github_user_id,
+                added_by="dashboard",
+                notes=commenter.notes,
+            )
+            return SuccessResponse(success=True)
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to add commenter: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to add commenter: {e}")
+
+
+@router.delete(
+    "/api/comment-filter/commenters/{username}",
+    response_model=SuccessResponse,
+    summary="Remove Allowed Commenter",
+    description="Remove a user from the allowed commenters list.",
+)
+async def api_remove_commenter(
+    username: str,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
+    """Remove an allowed commenter."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            success = await service.remove_commenter(username)
+            if not success:
+                raise HTTPException(status_code=404, detail=f"Commenter not found: {username}")
+            return SuccessResponse(success=True)
+        finally:
+            db.close()
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to remove commenter: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to remove commenter: {e}")
 
 
 # =============================================================================
