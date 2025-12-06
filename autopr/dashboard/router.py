@@ -867,6 +867,230 @@ async def api_save_config(
 
 
 # =============================================================================
+# Comment Filtering Endpoints
+# =============================================================================
+
+class CommentFilterSettingsRequest(BaseModel):
+    """Request model for comment filter settings."""
+    enabled: bool = Field(description="Enable comment filtering")
+    auto_add_commenters: bool = Field(description="Automatically add new commenters")
+    auto_reply_enabled: bool = Field(description="Enable auto-reply to new commenters")
+    auto_reply_message: str = Field(description="Template for auto-reply message")
+    whitelist_mode: bool = Field(description="Use whitelist mode (True) or blacklist (False)")
+
+
+class CommentFilterSettingsResponse(BaseModel):
+    """Response model for comment filter settings."""
+    enabled: bool
+    auto_add_commenters: bool
+    auto_reply_enabled: bool
+    auto_reply_message: str
+    whitelist_mode: bool
+
+
+class AllowedCommenterRequest(BaseModel):
+    """Request model for adding an allowed commenter."""
+    github_username: str = Field(description="GitHub username")
+    github_user_id: int | None = Field(default=None, description="GitHub user ID")
+    notes: str | None = Field(default=None, description="Optional notes")
+
+
+class AllowedCommenterResponse(BaseModel):
+    """Response model for allowed commenter."""
+    github_username: str
+    github_user_id: int | None
+    enabled: bool
+    comment_count: int
+    last_comment_at: str | None
+    created_at: str
+    notes: str | None
+
+
+@router.get(
+    "/api/comment-filter/settings",
+    response_model=CommentFilterSettingsResponse,
+    summary="Get Comment Filter Settings",
+    description="Get current comment filtering settings.",
+)
+async def api_get_comment_filter_settings(
+    _: str | None = Depends(verify_api_key),
+) -> CommentFilterSettingsResponse:
+    """Get comment filter settings."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            settings = await service.get_settings()
+            
+            if settings is None:
+                # Return default settings
+                return CommentFilterSettingsResponse(
+                    enabled=True,
+                    auto_add_commenters=False,
+                    auto_reply_enabled=True,
+                    auto_reply_message="Thank you for your comment! User @{username} has been added to the allowed commenters list.",
+                    whitelist_mode=True,
+                )
+            
+            return CommentFilterSettingsResponse(
+                enabled=settings.enabled,
+                auto_add_commenters=settings.auto_add_commenters,
+                auto_reply_enabled=settings.auto_reply_enabled,
+                auto_reply_message=settings.auto_reply_message,
+                whitelist_mode=settings.whitelist_mode,
+            )
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to get comment filter settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get settings: {e}")
+
+
+@router.post(
+    "/api/comment-filter/settings",
+    response_model=SuccessResponse,
+    summary="Update Comment Filter Settings",
+    description="Update comment filtering settings.",
+)
+async def api_update_comment_filter_settings(
+    settings: CommentFilterSettingsRequest,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
+    """Update comment filter settings."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            await service.update_settings(
+                enabled=settings.enabled,
+                auto_add_commenters=settings.auto_add_commenters,
+                auto_reply_enabled=settings.auto_reply_enabled,
+                auto_reply_message=settings.auto_reply_message,
+                whitelist_mode=settings.whitelist_mode,
+            )
+            return SuccessResponse(success=True)
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to update comment filter settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update settings: {e}")
+
+
+@router.get(
+    "/api/comment-filter/commenters",
+    response_model=list[AllowedCommenterResponse],
+    summary="List Allowed Commenters",
+    description="Get list of allowed commenters with pagination.",
+)
+async def api_list_commenters(
+    enabled_only: bool = Query(default=True, description="Only show enabled commenters"),
+    limit: int = Query(default=100, ge=1, le=500, description="Maximum results"),
+    offset: int = Query(default=0, ge=0, description="Results offset"),
+    _: str | None = Depends(verify_api_key),
+) -> list[AllowedCommenterResponse]:
+    """List allowed commenters."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            commenters = await service.list_commenters(
+                enabled_only=enabled_only,
+                limit=limit,
+                offset=offset,
+            )
+            
+            return [
+                AllowedCommenterResponse(
+                    github_username=c.github_username,
+                    github_user_id=c.github_user_id,
+                    enabled=c.enabled,
+                    comment_count=c.comment_count,
+                    last_comment_at=c.last_comment_at.isoformat() if c.last_comment_at else None,
+                    created_at=c.created_at.isoformat(),
+                    notes=c.notes,
+                )
+                for c in commenters
+            ]
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to list commenters: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to list commenters: {e}")
+
+
+@router.post(
+    "/api/comment-filter/commenters",
+    response_model=SuccessResponse,
+    summary="Add Allowed Commenter",
+    description="Add a user to the allowed commenters list.",
+)
+async def api_add_commenter(
+    commenter: AllowedCommenterRequest,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
+    """Add an allowed commenter."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            await service.add_commenter(
+                github_username=commenter.github_username,
+                github_user_id=commenter.github_user_id,
+                added_by="dashboard",
+                notes=commenter.notes,
+            )
+            return SuccessResponse(success=True)
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Failed to add commenter: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to add commenter: {e}")
+
+
+@router.delete(
+    "/api/comment-filter/commenters/{username}",
+    response_model=SuccessResponse,
+    summary="Remove Allowed Commenter",
+    description="Remove a user from the allowed commenters list.",
+)
+async def api_remove_commenter(
+    username: str,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
+    """Remove an allowed commenter."""
+    from autopr.database.config import get_db
+    from autopr.services.comment_filter import CommentFilterService
+    
+    try:
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
+            success = await service.remove_commenter(username)
+            if not success:
+                raise HTTPException(status_code=404, detail=f"Commenter not found: {username}")
+            return SuccessResponse(success=True)
+        finally:
+            db.close()
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to remove commenter: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to remove commenter: {e}")
+
+
+# =============================================================================
 # Exports
 # =============================================================================
 
