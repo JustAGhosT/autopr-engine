@@ -1,0 +1,610 @@
+/**
+ * AutoPR Engine Design Tokens
+ *
+ * Centralized design tokens for consistent styling across all AutoPR applications.
+ * These tokens define the foundational visual language of the AutoPR brand.
+ *
+ * Usage:
+ * - Import this file in your application's global CSS
+ * - Reference tokens using CSS custom properties: var(--token-name)
+ *
+ * @version 1.0.0
+ * @updated 2025-12-06
+ */
+
+/* ==========================================================================
+   1. COLOR TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     1.1 Core Brand Colors
+     -------------------------------------------------------------------------- */
+
+  /* Primary Blue - Main action color */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  /* Secondary Purple - Accent color for gradients */
+  --color-secondary-50: #faf5ff;
+  --color-secondary-100: #f3e8ff;
+  --color-secondary-200: #e9d5ff;
+  --color-secondary-300: #d8b4fe;
+  --color-secondary-400: #c084fc;
+  --color-secondary-500: #a855f7;
+  --color-secondary-600: #9333ea;
+  --color-secondary-700: #7e22ce;
+  --color-secondary-800: #6b21a8;
+  --color-secondary-900: #581c87;
+  --color-secondary-950: #3b0764;
+
+  /* --------------------------------------------------------------------------
+     1.2 Alpha Preview / Warning Colors (Amber/Orange)
+     -------------------------------------------------------------------------- */
+
+  --color-alpha-50: #fffbeb;
+  --color-alpha-100: #fef3c7;
+  --color-alpha-200: #fde68a;
+  --color-alpha-300: #fcd34d;
+  --color-alpha-400: #fbbf24;
+  --color-alpha-500: #f59e0b;
+  --color-alpha-600: #d97706;
+  --color-alpha-700: #b45309;
+  --color-alpha-800: #92400e;
+  --color-alpha-900: #78350f;
+  --color-alpha-950: #451a03;
+
+  /* Orange accent for alpha branding */
+  --color-alpha-accent-400: #fb923c;
+  --color-alpha-accent-500: #f97316;
+  --color-alpha-accent-600: #ea580c;
+
+  /* --------------------------------------------------------------------------
+     1.3 Neutral Colors (Slate)
+     -------------------------------------------------------------------------- */
+
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
+
+  /* --------------------------------------------------------------------------
+     1.4 Semantic Colors
+     -------------------------------------------------------------------------- */
+
+  /* Success - Green */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-900: #14532d;
+
+  /* Error - Red */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-900: #7f1d1d;
+
+  /* Warning - Uses alpha colors (amber) */
+  --color-warning-50: var(--color-alpha-50);
+  --color-warning-100: var(--color-alpha-100);
+  --color-warning-500: var(--color-alpha-500);
+  --color-warning-600: var(--color-alpha-600);
+  --color-warning-700: var(--color-alpha-700);
+  --color-warning-900: var(--color-alpha-900);
+
+  /* Info - Blue */
+  --color-info-50: var(--color-primary-50);
+  --color-info-100: var(--color-primary-100);
+  --color-info-500: var(--color-primary-500);
+  --color-info-600: var(--color-primary-600);
+
+  /* --------------------------------------------------------------------------
+     1.5 Theme Colors (Light Mode Default)
+     -------------------------------------------------------------------------- */
+
+  --color-background: var(--color-neutral-50);
+  --color-foreground: var(--color-neutral-800);
+  --color-background-secondary: var(--color-neutral-100);
+  --color-foreground-secondary: var(--color-neutral-600);
+  --color-foreground-muted: var(--color-neutral-400);
+
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-surface-overlay: rgba(255, 255, 255, 0.5);
+
+  --color-border: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  --color-link: var(--color-primary-600);
+  --color-link-hover: var(--color-primary-700);
+
+  /* Interactive element colors */
+  --color-button-primary-bg: var(--color-primary-600);
+  --color-button-primary-text: #ffffff;
+  --color-button-primary-hover: var(--color-primary-700);
+
+  /* Alpha badge specific */
+  --color-alpha-badge-bg: var(--color-alpha-100);
+  --color-alpha-badge-text: var(--color-alpha-800);
+  --color-alpha-badge-border: var(--color-alpha-300);
+
+  /* Particle animation colors */
+  --color-particle: rgba(59, 130, 246, 1);
+  --color-particle-connection: rgba(59, 130, 246, 0.2);
+}
+
+/* Dark Mode Theme Colors */
+.dark {
+  --color-background: var(--color-neutral-900);
+  --color-foreground: var(--color-neutral-200);
+  --color-background-secondary: var(--color-neutral-800);
+  --color-foreground-secondary: var(--color-neutral-400);
+  --color-foreground-muted: var(--color-neutral-500);
+
+  --color-surface: var(--color-neutral-800);
+  --color-surface-elevated: var(--color-neutral-700);
+  --color-surface-overlay: rgba(15, 23, 42, 0.5);
+
+  --color-border: var(--color-neutral-700);
+  --color-border-strong: var(--color-neutral-600);
+
+  --color-link: var(--color-primary-400);
+  --color-link-hover: var(--color-primary-300);
+
+  /* Interactive element colors */
+  --color-button-primary-bg: var(--color-primary-600);
+  --color-button-primary-text: #ffffff;
+  --color-button-primary-hover: var(--color-primary-500);
+
+  /* Alpha badge specific */
+  --color-alpha-badge-bg: var(--color-alpha-900);
+  --color-alpha-badge-text: var(--color-alpha-200);
+  --color-alpha-badge-border: var(--color-alpha-700);
+
+  /* Particle animation colors */
+  --color-particle: rgba(147, 197, 253, 1);
+  --color-particle-connection: rgba(147, 197, 253, 0.2);
+}
+
+/* ==========================================================================
+   2. TYPOGRAPHY TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     2.1 Font Families
+     -------------------------------------------------------------------------- */
+
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, 'SF Mono',
+    Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* --------------------------------------------------------------------------
+     2.2 Font Sizes
+     -------------------------------------------------------------------------- */
+
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+  --font-size-6xl: 3.75rem;     /* 60px */
+
+  /* --------------------------------------------------------------------------
+     2.3 Line Heights
+     -------------------------------------------------------------------------- */
+
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* --------------------------------------------------------------------------
+     2.4 Font Weights
+     -------------------------------------------------------------------------- */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* --------------------------------------------------------------------------
+     2.5 Letter Spacing
+     -------------------------------------------------------------------------- */
+
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+}
+
+/* ==========================================================================
+   3. SPACING TOKENS
+   ========================================================================== */
+
+:root {
+  /* Base unit: 4px */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem;   /* 2px */
+  --space-1: 0.25rem;      /* 4px */
+  --space-1-5: 0.375rem;   /* 6px */
+  --space-2: 0.5rem;       /* 8px */
+  --space-2-5: 0.625rem;   /* 10px */
+  --space-3: 0.75rem;      /* 12px */
+  --space-3-5: 0.875rem;   /* 14px */
+  --space-4: 1rem;         /* 16px */
+  --space-5: 1.25rem;      /* 20px */
+  --space-6: 1.5rem;       /* 24px */
+  --space-7: 1.75rem;      /* 28px */
+  --space-8: 2rem;         /* 32px */
+  --space-9: 2.25rem;      /* 36px */
+  --space-10: 2.5rem;      /* 40px */
+  --space-11: 2.75rem;     /* 44px */
+  --space-12: 3rem;        /* 48px */
+  --space-14: 3.5rem;      /* 56px */
+  --space-16: 4rem;        /* 64px */
+  --space-20: 5rem;        /* 80px */
+  --space-24: 6rem;        /* 96px */
+  --space-28: 7rem;        /* 112px */
+  --space-32: 8rem;        /* 128px */
+}
+
+/* ==========================================================================
+   4. LAYOUT TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     4.1 Container Widths
+     -------------------------------------------------------------------------- */
+
+  --container-xs: 20rem;    /* 320px */
+  --container-sm: 24rem;    /* 384px */
+  --container-md: 28rem;    /* 448px */
+  --container-lg: 32rem;    /* 512px */
+  --container-xl: 36rem;    /* 576px */
+  --container-2xl: 42rem;   /* 672px */
+  --container-3xl: 48rem;   /* 768px */
+  --container-4xl: 56rem;   /* 896px */
+  --container-5xl: 64rem;   /* 1024px */
+  --container-6xl: 72rem;   /* 1152px */
+  --container-7xl: 80rem;   /* 1280px - main container */
+
+  /* --------------------------------------------------------------------------
+     4.2 Z-Index Scale
+     -------------------------------------------------------------------------- */
+
+  --z-index-base: 0;
+  --z-index-dropdown: 10;
+  --z-index-sticky: 20;
+  --z-index-fixed: 30;
+  --z-index-backdrop: 40;
+  --z-index-modal: 50;
+  --z-index-popover: 60;
+  --z-index-tooltip: 70;
+  --z-index-toast: 80;
+}
+
+/* ==========================================================================
+   5. BORDER TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     5.1 Border Radius
+     -------------------------------------------------------------------------- */
+
+  --radius-none: 0;
+  --radius-sm: 0.125rem;    /* 2px */
+  --radius-default: 0.25rem; /* 4px */
+  --radius-md: 0.375rem;    /* 6px */
+  --radius-lg: 0.5rem;      /* 8px */
+  --radius-xl: 0.75rem;     /* 12px */
+  --radius-2xl: 1rem;       /* 16px */
+  --radius-3xl: 1.5rem;     /* 24px */
+  --radius-full: 9999px;
+
+  /* --------------------------------------------------------------------------
+     5.2 Border Widths
+     -------------------------------------------------------------------------- */
+
+  --border-width-0: 0;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-4: 4px;
+  --border-width-8: 8px;
+}
+
+/* ==========================================================================
+   6. SHADOW TOKENS
+   ========================================================================== */
+
+:root {
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-default: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+                    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+               0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+               0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+               0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  --shadow-none: 0 0 #0000;
+
+  /* Colored shadows for interactive elements */
+  --shadow-primary: 0 4px 14px 0 rgba(37, 99, 235, 0.25);
+  --shadow-alpha: 0 4px 14px 0 rgba(245, 158, 11, 0.25);
+}
+
+.dark {
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-default: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
+                    0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4),
+               0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4),
+               0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4),
+               0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   7. ANIMATION & TRANSITION TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     7.1 Transition Durations
+     -------------------------------------------------------------------------- */
+
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+
+  /* --------------------------------------------------------------------------
+     7.2 Easing Functions
+     -------------------------------------------------------------------------- */
+
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* --------------------------------------------------------------------------
+     7.3 Common Transitions
+     -------------------------------------------------------------------------- */
+
+  --transition-colors: background-color, border-color, color, fill, stroke;
+  --transition-all: all;
+  --transition-opacity: opacity;
+  --transition-shadow: box-shadow;
+  --transition-transform: transform;
+}
+
+/* ==========================================================================
+   8. GRADIENT TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     8.1 Primary Gradients
+     -------------------------------------------------------------------------- */
+
+  /* Main CTA button gradient */
+  --gradient-primary: linear-gradient(to right, var(--color-primary-600), var(--color-secondary-600));
+  --gradient-primary-hover: linear-gradient(to right, var(--color-primary-700), var(--color-secondary-700));
+  --gradient-primary-light: linear-gradient(to right, var(--color-primary-500), var(--color-secondary-500));
+
+  /* --------------------------------------------------------------------------
+     8.2 Alpha/Preview Branding Gradients
+     -------------------------------------------------------------------------- */
+
+  /* Promo banner gradient */
+  --gradient-alpha-banner: linear-gradient(to right, var(--color-alpha-500), var(--color-alpha-accent-500));
+
+  /* Alpha section background */
+  --gradient-alpha-bg: linear-gradient(to right,
+    rgba(255, 251, 235, 0.9),  /* amber-50/90 */
+    rgba(255, 247, 237, 0.9)   /* orange-50/90 */
+  );
+
+  /* Alpha pill/badge background */
+  --gradient-alpha-pill: linear-gradient(to right, var(--color-alpha-50), var(--color-alpha-accent-400));
+
+  /* --------------------------------------------------------------------------
+     8.3 Page Background Gradients
+     -------------------------------------------------------------------------- */
+
+  /* Light mode page background */
+  --gradient-page-light: linear-gradient(to bottom,
+    rgba(248, 250, 252, 0.8),   /* slate-50/80 */
+    rgba(241, 245, 249, 0.5)    /* slate-100/50 */
+  );
+
+  /* Dark mode page background */
+  --gradient-page-dark: linear-gradient(to bottom,
+    rgba(15, 23, 42, 0.8),      /* slate-900/80 */
+    rgba(2, 6, 23, 0.5)         /* slate-950/50 */
+  );
+
+  /* --------------------------------------------------------------------------
+     8.4 Feature Section Gradients
+     -------------------------------------------------------------------------- */
+
+  --gradient-feature-blue: linear-gradient(to right,
+    rgba(239, 246, 255, 0.9),   /* blue-50/90 */
+    rgba(250, 245, 255, 0.9)    /* purple-50/90 */
+  );
+}
+
+.dark {
+  /* Alpha section background - dark mode */
+  --gradient-alpha-bg: linear-gradient(to right,
+    rgba(69, 26, 3, 0.8),       /* amber-950/80 */
+    rgba(67, 20, 7, 0.8)        /* orange-950/80 */
+  );
+
+  /* Feature section - dark mode */
+  --gradient-feature-blue: linear-gradient(to right,
+    rgba(23, 37, 84, 0.8),      /* blue-950/80 */
+    rgba(59, 7, 100, 0.8)       /* purple-950/80 */
+  );
+}
+
+/* ==========================================================================
+   9. FOCUS & ACCESSIBILITY TOKENS
+   ========================================================================== */
+
+:root {
+  /* Focus ring styles */
+  --focus-ring-color: var(--color-primary-500);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-style: solid;
+
+  /* Focus visible outline */
+  --focus-outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+
+  /* Minimum touch target size (WCAG 2.5.5) */
+  --touch-target-min: 44px;
+
+  /* Reduced motion preference */
+  --motion-duration: var(--duration-200);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration: 0ms;
+    --duration-75: 0ms;
+    --duration-100: 0ms;
+    --duration-150: 0ms;
+    --duration-200: 0ms;
+    --duration-300: 0ms;
+    --duration-500: 0ms;
+    --duration-700: 0ms;
+    --duration-1000: 0ms;
+  }
+}
+
+/* ==========================================================================
+   10. COMPONENT-SPECIFIC TOKENS
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     10.1 Button Tokens
+     -------------------------------------------------------------------------- */
+
+  --button-height-sm: 2rem;       /* 32px */
+  --button-height-default: 2.5rem; /* 40px */
+  --button-height-lg: 2.75rem;    /* 44px */
+
+  --button-padding-x-sm: var(--space-3);
+  --button-padding-x-default: var(--space-4);
+  --button-padding-x-lg: var(--space-6);
+
+  --button-font-size: var(--font-size-sm);
+  --button-font-weight: var(--font-weight-semibold);
+  --button-border-radius: var(--radius-lg);
+
+  /* --------------------------------------------------------------------------
+     10.2 Card Tokens
+     -------------------------------------------------------------------------- */
+
+  --card-padding: var(--space-6);
+  --card-border-radius: var(--radius-lg);
+  --card-border-width: var(--border-width-1);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-lg);
+
+  /* --------------------------------------------------------------------------
+     10.3 Badge Tokens
+     -------------------------------------------------------------------------- */
+
+  --badge-padding-x: var(--space-2-5);
+  --badge-padding-y: var(--space-0-5);
+  --badge-font-size: var(--font-size-xs);
+  --badge-font-weight: var(--font-weight-semibold);
+  --badge-border-radius: var(--radius-full);
+
+  /* --------------------------------------------------------------------------
+     10.4 Input Tokens
+     -------------------------------------------------------------------------- */
+
+  --input-height: 2.5rem;          /* 40px */
+  --input-padding-x: var(--space-3);
+  --input-border-radius: var(--radius-md);
+  --input-border-width: var(--border-width-1);
+
+  /* --------------------------------------------------------------------------
+     10.5 Header Tokens
+     -------------------------------------------------------------------------- */
+
+  --header-height: 4rem;           /* 64px */
+  --header-padding-x: var(--space-6);
+
+  /* --------------------------------------------------------------------------
+     10.6 Promo Banner Tokens
+     -------------------------------------------------------------------------- */
+
+  --banner-padding-y: var(--space-3);
+  --banner-font-size: var(--font-size-sm);
+}
+
+/* ==========================================================================
+   11. SCROLLBAR TOKENS
+   ========================================================================== */
+
+:root {
+  --scrollbar-width: 12px;
+  --scrollbar-track-bg: transparent;
+  --scrollbar-thumb-bg: #888888;
+  --scrollbar-thumb-hover-bg: #555555;
+  --scrollbar-thumb-radius: 6px;
+}
+
+.dark {
+  --scrollbar-thumb-bg: #555555;
+  --scrollbar-thumb-hover-bg: #888888;
+}
