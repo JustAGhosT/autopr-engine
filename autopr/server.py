@@ -70,19 +70,6 @@ async def root_fallback():
         "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
     }
 
-# Use dashboard version as server version for consistency
-__version__ = DASHBOARD_VERSION
-
-# Shared health checker instance
-_health_checker: HealthChecker | None = None
-
-
-def get_health_checker() -> HealthChecker:
-    """Get or create the shared HealthChecker instance."""
-    global _health_checker
-    if _health_checker is None:
-        _health_checker = HealthChecker()
-    return _health_checker
 
 
 def create_app() -> FastAPI:
