@@ -68,17 +68,40 @@ Add this token as `AZURE_STATIC_WEB_APPS_API_TOKEN` in your GitHub repository se
 
 ### Configure Custom Domain
 
-1. Get the domain validation token from Azure portal or CLI
-2. Add the required DNS TXT record to your domain provider
-3. Once validated, the custom domain will be automatically configured
+The Bicep template automatically creates the custom domain binding. To complete the setup:
 
-```bash
-# Get domain validation token
-az staticwebapp hostname show \
-  --name prod-stapp-san-autopr \
-  --resource-group prod-rg-san-autopr \
-  --hostname autopr.io
-```
+1. **Get the domain validation token**:
+   ```bash
+   # Get the Static Web App ID from deployment outputs
+   STATIC_WEB_APP_ID=$(az deployment group show \
+     --resource-group prod-rg-san-autopr \
+     --name <deployment-name> \
+     --query properties.outputs.customDomainValidationToken.value \
+     --output tsv)
+   
+   # Get the default hostname (this is what you'll point your DNS to)
+   DEFAULT_HOSTNAME=$(az deployment group show \
+     --resource-group prod-rg-san-autopr \
+     --name <deployment-name> \
+     --query properties.outputs.staticWebAppUrl.value \
+     --output tsv)
+   ```
+
+2. **Add DNS records** to your domain provider:
+   - Add a CNAME record: `autopr.io` → `$DEFAULT_HOSTNAME`
+   - For domain validation, Azure Static Web Apps uses an automatic validation process via the CNAME record
+
+3. **Wait for validation**: Azure will automatically validate and provision the SSL certificate (usually takes 5-15 minutes after DNS propagates)
+
+4. **Verify custom domain status**:
+   ```bash
+   az staticwebapp hostname show \
+     --name prod-stapp-san-autopr \
+     --resource-group prod-rg-san-autopr \
+     --hostname autopr.io
+   ```
+
+**Note**: The custom domain binding is now configured automatically in the Bicep template, so you won't need to re-link it after each deployment. The certificate will also be automatically managed and renewed by Azure.
 
 ## Resource Details
 
