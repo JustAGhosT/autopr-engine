@@ -134,11 +134,48 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Generate passwords
+      - name: Check if resources exist and get/generate passwords
         id: passwords
         run: |
-          echo "postgres_password=$(openssl rand -base64 32)" >> $GITHUB_OUTPUT
-          echo "redis_password=$(openssl rand -base64 32)" >> $GITHUB_OUTPUT
+          RESOURCE_GROUP="prod-rg-san-autopr"
+          CONTAINER_APP="prod-autopr-san-app"
+
+          # Check if container app exists
+          if az containerapp show -n $CONTAINER_APP -g $RESOURCE_GROUP &>/dev/null; then
+            echo "Container app exists, checking for existing secrets..."
+
+            # For existing deployments, use secrets from GitHub (must be set manually)
+            # This prevents password regeneration that would break existing DB connections
+            if [ -n "${{ secrets.AUTOPR_POSTGRES_PASSWORD }}" ]; then
+              echo "Using existing postgres password from secrets"
+              echo "postgres_password=${{ secrets.AUTOPR_POSTGRES_PASSWORD }}" >> $GITHUB_OUTPUT
+            else
+              echo "::warning::AUTOPR_POSTGRES_PASSWORD secret not set. Using generated password (may break existing DB)."
+              echo "postgres_password=$(openssl rand -base64 32)" >> $GITHUB_OUTPUT
+            fi
+
+            if [ -n "${{ secrets.AUTOPR_REDIS_PASSWORD }}" ]; then
+              echo "Using existing redis password from secrets"
+              echo "redis_password=${{ secrets.AUTOPR_REDIS_PASSWORD }}" >> $GITHUB_OUTPUT
+            else
+              # Redis password can be retrieved from Azure
+              REDIS_KEY=$(az redis list-keys -n prod-autopr-san-redis -g $RESOURCE_GROUP --query primaryKey -o tsv 2>/dev/null || echo "")
+              if [ -n "$REDIS_KEY" ]; then
+                echo "Retrieved redis password from Azure"
+                echo "redis_password=$REDIS_KEY" >> $GITHUB_OUTPUT
+              else
+                echo "::warning::Could not retrieve Redis password. Using generated password."
+                echo "redis_password=$(openssl rand -base64 32)" >> $GITHUB_OUTPUT
+              fi
+            fi
+          else
+            echo "First deployment, generating new passwords..."
+            POSTGRES_PWD=$(openssl rand -base64 32)
+            REDIS_PWD=$(openssl rand -base64 32)
+            echo "postgres_password=$POSTGRES_PWD" >> $GITHUB_OUTPUT
+            echo "redis_password=$REDIS_PWD" >> $GITHUB_OUTPUT
+            echo "::notice::Save these passwords to GitHub secrets for future deployments: AUTOPR_POSTGRES_PASSWORD, AUTOPR_REDIS_PASSWORD"
+          fi
 
       - name: Deploy Bicep Template
         run: |
