@@ -139,6 +139,7 @@ After deployment, verify:
 ## Security Summary
 
 ✅ **No vulnerabilities introduced**
+
 - CodeQL scan: 0 alerts
 - CSP policy tightened
 - No unsafe dependencies added
