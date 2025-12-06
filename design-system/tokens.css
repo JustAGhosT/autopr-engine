@@ -314,6 +314,20 @@
   --z-index-popover: 60;
   --z-index-tooltip: 70;
   --z-index-toast: 80;
+
+  /* --------------------------------------------------------------------------
+     4.3 Responsive Breakpoints
+     --------------------------------------------------------------------------
+     Note: CSS custom properties cannot be used in media queries directly.
+     These are documented values for reference and JavaScript usage.
+     Use @media (min-width: 640px) etc. in your styles.
+     -------------------------------------------------------------------------- */
+
+  --breakpoint-sm: 640px;   /* Small devices (landscape phones) */
+  --breakpoint-md: 768px;   /* Medium devices (tablets) */
+  --breakpoint-lg: 1024px;  /* Large devices (desktops) */
+  --breakpoint-xl: 1280px;  /* Extra large devices (large desktops) */
+  --breakpoint-2xl: 1536px; /* 2X large devices (larger desktops) */
 }
 
 /* ==========================================================================

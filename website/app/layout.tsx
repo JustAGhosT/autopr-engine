@@ -37,11 +37,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+          {/* Skip link for keyboard/screen reader accessibility */}
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
           <AnimatedBackground />
           <PromoBanner />
-          <div className="relative z-10">
+          <main id="main-content" className="relative z-10" role="main">
             {children}
-          </div>
+          </main>
         </ThemeProvider>
       </body>
     </html>

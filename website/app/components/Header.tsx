@@ -14,24 +14,42 @@ export default function Header({ currentPage = 'home' }: HeaderProps) {
       ? "font-semibold text-slate-900 dark:text-slate-50"
       : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50";
 
+  const isCurrentPage = (page: string) => currentPage === page;
+
   return (
     <header className="border-b border-slate-200 bg-white/50 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/50">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <nav
+        className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4"
+        aria-label="Main navigation"
+      >
         <Link
           href="/"
           className="flex items-center text-2xl font-bold text-slate-900 dark:text-slate-50"
+          aria-current={isCurrentPage('home') ? 'page' : undefined}
         >
           AutoPR Engine
           <AlphaBadge />
         </Link>
         <div className="flex items-center gap-6">
-          <Link href="/installation" className={navLinkClass('installation')}>
+          <Link
+            href="/installation"
+            className={navLinkClass('installation')}
+            aria-current={isCurrentPage('installation') ? 'page' : undefined}
+          >
             Installation
           </Link>
-          <Link href="/integration" className={navLinkClass('integration')}>
+          <Link
+            href="/integration"
+            className={navLinkClass('integration')}
+            aria-current={isCurrentPage('integration') ? 'page' : undefined}
+          >
             Integration
           </Link>
-          <Link href="/download" className={navLinkClass('download')}>
+          <Link
+            href="/download"
+            className={navLinkClass('download')}
+            aria-current={isCurrentPage('download') ? 'page' : undefined}
+          >
             Download
           </Link>
           <a
@@ -39,6 +57,7 @@ export default function Header({ currentPage = 'home' }: HeaderProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50"
+            aria-label="View AutoPR Engine on GitHub (opens in new tab)"
           >
             GitHub
           </a>

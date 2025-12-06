@@ -2,7 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom animations */
+/* Import centralized design tokens */
+@import "../../design-system/tokens.css";
+
+/* ============================================================================
+   shadcn/ui CSS Variables - Aligned with Design Tokens
+   ============================================================================ */
+
+@layer base {
+  :root {
+    /* shadcn base colors mapped to design tokens */
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+
+    --card: var(--color-surface);
+    --card-foreground: var(--color-foreground);
+
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-foreground);
+
+    --primary: var(--color-primary-600);
+    --primary-foreground: #ffffff;
+
+    --secondary: var(--color-neutral-100);
+    --secondary-foreground: var(--color-neutral-900);
+
+    --muted: var(--color-neutral-100);
+    --muted-foreground: var(--color-neutral-500);
+
+    --accent: var(--color-neutral-100);
+    --accent-foreground: var(--color-neutral-900);
+
+    --destructive: var(--color-error-500);
+    --destructive-foreground: #ffffff;
+
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--color-primary-500);
+
+    --radius: var(--radius-lg);
+
+    /* Chart colors for analytics */
+    --chart-1: var(--color-primary-500);
+    --chart-2: var(--color-secondary-500);
+    --chart-3: var(--color-success-500);
+    --chart-4: var(--color-alpha-500);
+    --chart-5: var(--color-error-500);
+  }
+
+  .dark {
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+
+    --card: var(--color-surface);
+    --card-foreground: var(--color-foreground);
+
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-foreground);
+
+    --primary: var(--color-primary-500);
+    --primary-foreground: #ffffff;
+
+    --secondary: var(--color-neutral-800);
+    --secondary-foreground: var(--color-neutral-50);
+
+    --muted: var(--color-neutral-800);
+    --muted-foreground: var(--color-neutral-400);
+
+    --accent: var(--color-neutral-800);
+    --accent-foreground: var(--color-neutral-50);
+
+    --destructive: var(--color-error-600);
+    --destructive-foreground: #ffffff;
+
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--color-primary-400);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+}
+
+/* ============================================================================
+   Custom Animations
+   ============================================================================ */
+
 @keyframes slide-in {
   from {
     transform: translateX(100%);
@@ -15,51 +108,55 @@
 }
 
 .animate-slide-in {
-  animation: slide-in 0.3s ease-out;
+  animation: slide-in var(--duration-300) var(--ease-out);
 }
 
-/* Dark mode support */
+/* ============================================================================
+   Dark Mode Support
+   ============================================================================ */
+
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
   }
 }
 
-/* Smooth transitions */
+/* ============================================================================
+   Smooth Transitions (using design tokens)
+   ============================================================================ */
+
 * {
-  transition-property: background-color, border-color, color;
-  transition-duration: 200ms;
-  transition-timing-function: ease-in-out;
+  transition-property: var(--transition-colors);
+  transition-duration: var(--duration-200);
+  transition-timing-function: var(--ease-in-out);
 }
 
-/* Focus visible for accessibility */
+/* ============================================================================
+   Focus States (using design tokens)
+   ============================================================================ */
+
 *:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
-/* Scrollbar styling for dark mode */
+/* ============================================================================
+   Scrollbar Styling (using design tokens)
+   ============================================================================ */
+
 ::-webkit-scrollbar {
-  width: 12px;
+  width: var(--scrollbar-width);
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 6px;
+  background: var(--scrollbar-thumb-bg);
+  border-radius: var(--scrollbar-thumb-radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #555;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #888;
+  background: var(--scrollbar-thumb-hover-bg);
 }

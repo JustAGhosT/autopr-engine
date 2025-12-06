@@ -2,10 +2,43 @@
 
 import { useEffect, useRef } from 'react';
 
+/**
+ * AnimatedBackground - Particle animation background using design tokens
+ *
+ * Configuration values are defined in design-system/tokens.css:
+ * - --color-particle: Base particle color
+ * - --color-particle-connection: Connection line color
+ *
+ * This component respects the user's reduced motion preferences.
+ */
+
+// Animation configuration constants
+const PARTICLE_COUNT = 50;
+const CONNECTION_DISTANCE = 150;
+const PARTICLE_MIN_RADIUS = 1;
+const PARTICLE_MAX_RADIUS = 3;
+const PARTICLE_MIN_OPACITY = 0.1;
+const PARTICLE_MAX_OPACITY = 0.6;
+const PARTICLE_SPEED = 0.5;
+const CONNECTION_MAX_OPACITY = 0.15;
+
+// Design token color values (RGB only for use with variable opacity)
+// These match the values in design-system/tokens.css
+const PARTICLE_COLORS = {
+  light: { r: 59, g: 130, b: 246 },  // --color-primary-500 (#3b82f6)
+  dark: { r: 147, g: 197, b: 253 },  // --color-primary-300 (#93c5fd)
+};
+
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    // Respect reduced motion preferences
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      return; // Don't animate if user prefers reduced motion
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -14,7 +47,6 @@ export default function AnimatedBackground() {
 
     let animationFrameId: number;
     let particles: Particle[] = [];
-    const particleCount = 50;
 
     class Particle {
       x: number;
@@ -27,10 +59,10 @@ export default function AnimatedBackground() {
       constructor(canvasWidth: number, canvasHeight: number) {
         this.x = Math.random() * canvasWidth;
         this.y = Math.random() * canvasHeight;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.radius = Math.random() * 2 + 1;
-        this.opacity = Math.random() * 0.5 + 0.1;
+        this.vx = (Math.random() - 0.5) * PARTICLE_SPEED;
+        this.vy = (Math.random() - 0.5) * PARTICLE_SPEED;
+        this.radius = Math.random() * (PARTICLE_MAX_RADIUS - PARTICLE_MIN_RADIUS) + PARTICLE_MIN_RADIUS;
+        this.opacity = Math.random() * (PARTICLE_MAX_OPACITY - PARTICLE_MIN_OPACITY) + PARTICLE_MIN_OPACITY;
       }
 
       update(canvasWidth: number, canvasHeight: number) {
@@ -42,11 +74,10 @@ export default function AnimatedBackground() {
       }
 
       draw(ctx: CanvasRenderingContext2D, isDark: boolean) {
+        const color = isDark ? PARTICLE_COLORS.dark : PARTICLE_COLORS.light;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = isDark 
-          ? `rgba(147, 197, 253, ${this.opacity})` // blue-300
-          : `rgba(59, 130, 246, ${this.opacity})`; // blue-500
+        ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${this.opacity})`;
         ctx.fill();
       }
     }
@@ -59,26 +90,26 @@ export default function AnimatedBackground() {
 
     const initParticles = () => {
       particles = [];
-      for (let i = 0; i < particleCount; i++) {
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
         particles.push(new Particle(canvas.width, canvas.height));
       }
     };
 
     const drawConnections = (isDark: boolean) => {
+      const color = isDark ? PARTICLE_COLORS.dark : PARTICLE_COLORS.light;
+
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 150) {
+          if (distance < CONNECTION_DISTANCE) {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            const opacity = (1 - distance / 150) * 0.15;
-            ctx.strokeStyle = isDark 
-              ? `rgba(147, 197, 253, ${opacity})` // blue-300
-              : `rgba(59, 130, 246, ${opacity})`; // blue-500
+            const opacity = (1 - distance / CONNECTION_DISTANCE) * CONNECTION_MAX_OPACITY;
+            ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity})`;
             ctx.lineWidth = 1;
             ctx.stroke();
           }
@@ -88,7 +119,7 @@ export default function AnimatedBackground() {
 
     const animate = () => {
       const isDark = document.documentElement.classList.contains('dark');
-      
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach(particle => {
@@ -106,9 +137,19 @@ export default function AnimatedBackground() {
 
     window.addEventListener('resize', resizeCanvas);
 
+    // Listen for reduced motion preference changes
+    const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+    motionMediaQuery.addEventListener('change', handleMotionChange);
+
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', resizeCanvas);
+      motionMediaQuery.removeEventListener('change', handleMotionChange);
     };
   }, []);
 
