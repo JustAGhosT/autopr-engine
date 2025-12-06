@@ -4,9 +4,9 @@
 
 name: autopr-engine
 description: AI-powered GitHub PR automation - Intelligent code analysis, automated issue creation, and multi-agent collaboration for pull request workflows.
-url: https://app.autopr.io
+url: https://prod-autopr-san-app.bravewave-1f1ec0f2.eastus2.azurecontainerapps.io
 hook_attributes:
-  url: https://app.autopr.io/api/github-app/webhook
+  url: https://prod-autopr-san-app.bravewave-1f1ec0f2.eastus2.azurecontainerapps.io/api/github-app/webhook
   active: true
 public: true
 

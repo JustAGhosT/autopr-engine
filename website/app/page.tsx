@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Header from "./components/Header";
+import { APP_URL } from "./config/constants";
 
 export default function Home() {
   return (
@@ -22,7 +23,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
-              href="https://app.autopr.io"
+              href={APP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
@@ -95,7 +96,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
-                href="https://app.autopr.io"
+                href={APP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
@@ -125,7 +126,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
-                href="https://app.autopr.io"
+                href={APP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-3 text-lg font-semibold text-white transition-all hover:from-blue-600 hover:to-purple-600 hover:shadow-lg"
