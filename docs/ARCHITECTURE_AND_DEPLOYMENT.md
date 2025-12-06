@@ -43,6 +43,7 @@ AutoPR uses a two-domain architecture to separate concerns:
 There are TWO dashboards in this project:
 
 ### Marketing Website Dashboard (Next.js)
+
 - Location: `website/` directory
 - Served at: **autopr.io**
 - Purpose: Public-facing marketing and documentation
