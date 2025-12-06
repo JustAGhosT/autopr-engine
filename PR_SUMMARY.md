@@ -23,6 +23,7 @@ This PR fixes two critical deployment issues reported by users:
 - `infrastructure/bicep/README-WEBSITE.md` - Updated documentation
 
 ### 2. Landing Page Showing Health Check Instead of Dashboard ✅
+
 **Problem**: Users reported seeing a health check response at `/` on app.autopr.io instead of the dashboard.
 
 **Root Cause Analysis**: 
