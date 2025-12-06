@@ -3,10 +3,13 @@
 FROM python:3.13-slim AS builder
 
 # Set environment variables
+# POETRY_VIRTUALENVS_CREATE=false ensures packages install to site-packages
+# rather than a virtual environment, making them available in production stage
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    POETRY_VIRTUALENVS_CREATE=false
 
 # Install system dependencies for building
 RUN apt-get update && apt-get install -y \
