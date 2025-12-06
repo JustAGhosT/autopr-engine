@@ -50,6 +50,7 @@ This PR fixes two critical deployment issues reported by users:
 - Configured 404 handling
 
 ### Architecture Documentation ✅
+
 - Created comprehensive `docs/ARCHITECTURE_AND_DEPLOYMENT.md`
 - Clarifies the two-domain architecture (autopr.io vs app.autopr.io)
 - Explains the separation between marketing website and API backend
