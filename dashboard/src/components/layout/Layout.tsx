@@ -1,20 +1,10 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
-import { useRequireAuth } from '../../hooks/useAuth'
-import { LoadingPage } from '../ui/LoadingSpinner'
 
+// Note: Auth is handled by ProtectedRoute in App.tsx
+// Layout only renders when user is already authenticated
 export function Layout() {
-  const { isLoading, isAuthenticated } = useRequireAuth()
-
-  if (isLoading) {
-    return <LoadingPage />
-  }
-
-  if (!isAuthenticated) {
-    return null // Will redirect to login
-  }
-
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />

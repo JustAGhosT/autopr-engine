@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
+import { useToast } from '../components/Toast'
 import { formatRelativeTime } from '../services/utils'
 
 // Cooldown period for sync button (30 seconds)
@@ -14,6 +15,7 @@ export function RepositoriesPage() {
   const [page, setPage] = useState(1)
   const [syncCooldown, setSyncCooldown] = useState(0)
   const queryClient = useQueryClient()
+  const { addToast } = useToast()
 
   // Countdown timer for sync cooldown
   useEffect(() => {
@@ -34,20 +36,31 @@ export function RepositoriesPage() {
 
   const enableMutation = useMutation({
     mutationFn: ({ owner, name }: { owner: string; name: string }) => reposApi.enable(owner, name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['repos'] }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['repos'] })
+      addToast(`Enabled ${variables.owner}/${variables.name}`, 'success')
+    },
+    onError: () => addToast('Failed to enable repository', 'error'),
   })
 
   const disableMutation = useMutation({
     mutationFn: ({ owner, name }: { owner: string; name: string }) => reposApi.disable(owner, name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['repos'] }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['repos'] })
+      addToast(`Disabled ${variables.owner}/${variables.name}`, 'success')
+    },
+    onError: () => addToast('Failed to disable repository', 'error'),
   })
 
   const syncMutation = useMutation({
     mutationFn: () => reposApi.sync(),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['repos'] })
       setSyncCooldown(SYNC_COOLDOWN_MS)
+      const synced = response.data?.synced ?? 0
+      addToast(`Synced ${synced} repositories from GitHub`, 'success')
     },
+    onError: () => addToast('Failed to sync repositories', 'error'),
   })
 
   const handleSync = useCallback(() => {

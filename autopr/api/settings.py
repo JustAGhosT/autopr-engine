@@ -3,16 +3,23 @@
 User settings and API key management.
 """
 
+import hashlib
+import secrets
+import uuid
 from datetime import datetime
 from typing import List
-import secrets
-import hashlib
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from .deps import get_current_user, SessionData
-from .models import ApiResponse, ApiKeyCreate, ApiKeyResponse, ApiKeyCreated
+from .deps import SessionData, get_current_user
+from .models import (
+    ApiKeyCreate,
+    ApiKeyCreated,
+    ApiKeyResponse,
+    ApiResponse,
+    UserSettingsResponse,
+    UserSettingsUpdate,
+)
 
 router = APIRouter()
 
@@ -26,32 +33,38 @@ def _hash_key(key: str) -> str:
     return hashlib.sha256(key.encode()).hexdigest()
 
 
-@router.get("")
+DEFAULT_SETTINGS = {
+    "notifications_email": True,
+    "notifications_pr_activity": True,
+    "notifications_workflow_failures": True,
+    "default_quality_mode": "fast",
+    "auto_create_issues": True,
+}
+
+
+@router.get("", response_model=ApiResponse[UserSettingsResponse])
 async def get_settings(user: SessionData = Depends(get_current_user)):
     """Get user settings."""
-    settings = _user_settings.get(user.user_id, {
-        "notifications_email": True,
-        "notifications_pr_activity": True,
-        "notifications_workflow_failures": True,
-        "default_quality_mode": "fast",
-        "auto_create_issues": True,
-    })
-
-    return ApiResponse(data=settings)
+    settings = {**DEFAULT_SETTINGS, **_user_settings.get(user.user_id, {})}
+    return ApiResponse(data=UserSettingsResponse(**settings))
 
 
-@router.patch("")
+@router.patch("", response_model=ApiResponse[UserSettingsResponse])
 async def update_settings(
-    data: dict,
+    data: UserSettingsUpdate,
     user: SessionData = Depends(get_current_user),
 ):
     """Update user settings."""
     if user.user_id not in _user_settings:
         _user_settings[user.user_id] = {}
 
-    _user_settings[user.user_id].update(data)
+    # Only update fields that were provided (not None)
+    update_data = data.model_dump(exclude_unset=True)
+    _user_settings[user.user_id].update(update_data)
 
-    return ApiResponse(data=_user_settings[user.user_id])
+    # Return merged settings
+    settings = {**DEFAULT_SETTINGS, **_user_settings[user.user_id]}
+    return ApiResponse(data=UserSettingsResponse(**settings))
 
 
 @router.get("/api-keys", response_model=ApiResponse[List[ApiKeyResponse]])

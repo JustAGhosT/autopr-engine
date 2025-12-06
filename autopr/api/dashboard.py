@@ -3,14 +3,14 @@
 Dashboard statistics and activity endpoints.
 """
 
+import uuid
 from datetime import datetime, timedelta
 from typing import List
-import uuid
 
 from fastapi import APIRouter, Depends
 
-from .deps import get_current_user, SessionData
-from .models import ApiResponse, DashboardStats, ActivityItem
+from .deps import SessionData, get_current_user
+from .models import ActivityItem, ApiResponse, DashboardStats
 
 router = APIRouter()
 

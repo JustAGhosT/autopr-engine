@@ -25,7 +25,7 @@ class TriggerDeployment(Action[Inputs, Outputs]):
     async def run(self, inputs: Inputs) -> Outputs:
         headers = {"Content-Type": "application/json"}
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
                     inputs.webhook_url, json=inputs.client_payload, headers=headers
                 )

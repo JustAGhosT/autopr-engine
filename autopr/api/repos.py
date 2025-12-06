@@ -3,37 +3,75 @@
 Repository management endpoints.
 """
 
+import asyncio
+import uuid
 from datetime import datetime
 from typing import List
-import uuid
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from .deps import get_current_user, SessionData
-from .models import ApiResponse, RepositoryResponse, RepositoryUpdate, PaginationMeta
+from .deps import SessionData, get_current_user
+from .models import (
+    ApiResponse,
+    PaginationMeta,
+    RepositoryResponse,
+    RepositoryUpdate,
+    SuccessResponse,
+    SyncResponse,
+)
 
 router = APIRouter()
 
 # Mock repository storage (in production, use database)
 _repositories: dict[str, dict] = {}
 
+# Retry configuration for external API calls
+MAX_RETRIES = 3
+RETRY_DELAY = 1.0  # seconds
+
+
+async def _fetch_with_retry(
+    client: httpx.AsyncClient,
+    url: str,
+    headers: dict,
+    max_retries: int = MAX_RETRIES,
+) -> httpx.Response:
+    """Fetch URL with exponential backoff retry."""
+    last_exception = None
+    for attempt in range(max_retries):
+        try:
+            response = await client.get(url, headers=headers)
+            return response
+        except httpx.RequestError as e:
+            last_exception = e
+            if attempt < max_retries - 1:
+                delay = RETRY_DELAY * (2 ** attempt)
+                await asyncio.sleep(delay)
+    raise last_exception
+
 
 async def _fetch_github_repos(github_token: str) -> List[dict]:
-    """Fetch repositories from GitHub API."""
+    """Fetch repositories from GitHub API with retry logic."""
     repos = []
     page = 1
     per_page = 100  # Max allowed by GitHub API
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        headers = {
+            "Authorization": f"Bearer {github_token}",
+            "Accept": "application/vnd.github+json",
+        }
+
         while True:
-            response = await client.get(
-                f"https://api.github.com/user/repos?page={page}&per_page={per_page}&sort=updated",
-                headers={
-                    "Authorization": f"Bearer {github_token}",
-                    "Accept": "application/vnd.github+json",
-                },
-            )
+            try:
+                response = await _fetch_with_retry(
+                    client,
+                    f"https://api.github.com/user/repos?page={page}&per_page={per_page}&sort=updated",
+                    headers,
+                )
+            except httpx.RequestError:
+                break
 
             if response.status_code != 200:
                 break
@@ -61,7 +99,7 @@ def _get_user_repos(user_id: str, page: int = 1, per_page: int = 20) -> tuple[Li
     return user_repos[start:end], total
 
 
-@router.post("/sync")
+@router.post("/sync", response_model=SyncResponse)
 async def sync_repositories(user: SessionData = Depends(get_current_user)):
     """Sync repositories from GitHub."""
     github_repos = await _fetch_github_repos(user.github_token)
@@ -104,7 +142,7 @@ async def sync_repositories(user: SessionData = Depends(get_current_user)):
 
         synced += 1
 
-    return {"success": True, "synced": synced, "total": len(github_repos)}
+    return SyncResponse(success=True, synced=synced, total=len(github_repos))
 
 
 @router.get("", response_model=ApiResponse[List[RepositoryResponse]])
@@ -221,7 +259,7 @@ async def update_repository(
     )
 
 
-@router.post("/{owner}/{name}/enable")
+@router.post("/{owner}/{name}/enable", response_model=SuccessResponse)
 async def enable_repository(
     owner: str,
     name: str,
@@ -254,10 +292,10 @@ async def enable_repository(
         repo["enabled"] = True
         repo["updated_at"] = datetime.utcnow().isoformat()
 
-    return {"success": True}
+    return SuccessResponse()
 
 
-@router.post("/{owner}/{name}/disable")
+@router.post("/{owner}/{name}/disable", response_model=SuccessResponse)
 async def disable_repository(
     owner: str,
     name: str,
@@ -280,4 +318,4 @@ async def disable_repository(
     repo["enabled"] = False
     repo["updated_at"] = datetime.utcnow().isoformat()
 
-    return {"success": True}
+    return SuccessResponse()

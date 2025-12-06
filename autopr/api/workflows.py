@@ -3,14 +3,20 @@
 Workflow management endpoints.
 """
 
+import uuid
 from datetime import datetime
 from typing import List
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from .deps import get_current_user, SessionData
-from .models import ApiResponse, WorkflowResponse, WorkflowUpdate, PaginationMeta
+from .deps import SessionData, get_current_user
+from .models import (
+    ApiResponse,
+    ExecutionResponse,
+    TriggerResponse,
+    WorkflowResponse,
+    WorkflowUpdate,
+)
 
 router = APIRouter()
 
@@ -54,14 +60,23 @@ DEFAULT_WORKFLOWS = [
     },
 ]
 
-# Mock workflow storage
-_workflows: dict[str, dict] = {w["id"]: w.copy() for w in DEFAULT_WORKFLOWS}
+# Mock workflow storage - keyed by user_id -> workflow_id -> workflow
+_user_workflows: dict[str, dict[str, dict]] = {}
 _workflow_executions: dict[str, list] = {}
+
+
+def _get_user_workflows(user_id: str) -> dict[str, dict]:
+    """Get or initialize workflows for a user."""
+    if user_id not in _user_workflows:
+        # Initialize with default workflows for this user
+        _user_workflows[user_id] = {w["id"]: w.copy() for w in DEFAULT_WORKFLOWS}
+    return _user_workflows[user_id]
 
 
 @router.get("", response_model=ApiResponse[List[WorkflowResponse]])
 async def list_workflows(user: SessionData = Depends(get_current_user)):
-    """List all workflows."""
+    """List all workflows for the current user."""
+    workflows = _get_user_workflows(user.user_id)
     return ApiResponse(
         data=[WorkflowResponse(
             id=w["id"],
@@ -71,7 +86,7 @@ async def list_workflows(user: SessionData = Depends(get_current_user)):
             triggers=w["triggers"],
             last_run_at=datetime.fromisoformat(w["last_run_at"]) if w.get("last_run_at") else None,
             run_count=w["run_count"],
-        ) for w in _workflows.values()]
+        ) for w in workflows.values()]
     )
 
 
@@ -80,8 +95,9 @@ async def get_workflow(
     workflow_id: str,
     user: SessionData = Depends(get_current_user),
 ):
-    """Get a specific workflow."""
-    workflow = _workflows.get(workflow_id)
+    """Get a specific workflow for the current user."""
+    workflows = _get_user_workflows(user.user_id)
+    workflow = workflows.get(workflow_id)
 
     if not workflow:
         raise HTTPException(
@@ -108,8 +124,9 @@ async def update_workflow(
     update: WorkflowUpdate,
     user: SessionData = Depends(get_current_user),
 ):
-    """Update workflow settings."""
-    workflow = _workflows.get(workflow_id)
+    """Update workflow settings for the current user."""
+    workflows = _get_user_workflows(user.user_id)
+    workflow = workflows.get(workflow_id)
 
     if not workflow:
         raise HTTPException(
@@ -135,13 +152,14 @@ async def update_workflow(
     )
 
 
-@router.post("/{workflow_id}/trigger")
+@router.post("/{workflow_id}/trigger", response_model=TriggerResponse)
 async def trigger_workflow(
     workflow_id: str,
     user: SessionData = Depends(get_current_user),
 ):
-    """Manually trigger a workflow."""
-    workflow = _workflows.get(workflow_id)
+    """Manually trigger a workflow for the current user."""
+    workflows = _get_user_workflows(user.user_id)
+    workflow = workflows.get(workflow_id)
 
     if not workflow:
         raise HTTPException(
@@ -155,14 +173,15 @@ async def trigger_workflow(
             detail="Workflow is disabled"
         )
 
-    # Record execution
+    # Record execution - keyed by user_id:workflow_id for user isolation
+    execution_key = f"{user.user_id}:{workflow_id}"
     execution_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
 
-    if workflow_id not in _workflow_executions:
-        _workflow_executions[workflow_id] = []
+    if execution_key not in _workflow_executions:
+        _workflow_executions[execution_key] = []
 
-    _workflow_executions[workflow_id].append({
+    _workflow_executions[execution_key].append({
         "id": execution_id,
         "workflow_id": workflow_id,
         "triggered_by": user.github_login,
@@ -175,20 +194,24 @@ async def trigger_workflow(
     workflow["run_count"] += 1
     workflow["last_run_at"] = now
 
-    return {"success": True, "execution_id": execution_id}
+    return TriggerResponse(success=True, execution_id=execution_id)
 
 
-@router.get("/{workflow_id}/executions")
+@router.get("/{workflow_id}/executions", response_model=ApiResponse[List[ExecutionResponse]])
 async def get_executions(
     workflow_id: str,
     user: SessionData = Depends(get_current_user),
 ):
-    """Get workflow execution history."""
-    if workflow_id not in _workflows:
+    """Get workflow execution history for the current user."""
+    workflows = _get_user_workflows(user.user_id)
+    if workflow_id not in workflows:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Workflow not found"
         )
 
-    executions = _workflow_executions.get(workflow_id, [])
-    return ApiResponse(data=executions[-20:])  # Last 20 executions
+    execution_key = f"{user.user_id}:{workflow_id}"
+    executions = _workflow_executions.get(execution_key, [])
+    return ApiResponse(
+        data=[ExecutionResponse(**e) for e in executions[-20:]]
+    )

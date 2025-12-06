@@ -38,6 +38,34 @@ class ApiError(BaseModel):
     details: Optional[List[ErrorDetail]] = None
 
 
+class SuccessResponse(BaseModel):
+    """Simple success response."""
+    success: bool = True
+
+
+class SyncResponse(BaseModel):
+    """Repository sync response."""
+    success: bool
+    synced: int
+    total: int
+
+
+class TriggerResponse(BaseModel):
+    """Workflow trigger response."""
+    success: bool
+    execution_id: str
+
+
+class ExecutionResponse(BaseModel):
+    """Workflow execution record."""
+    id: str
+    workflow_id: str
+    triggered_by: str
+    status: str
+    started_at: str
+    completed_at: Optional[str] = None
+
+
 class ErrorResponse(BaseModel):
     """Error response wrapper."""
     error: ApiError
@@ -139,6 +167,32 @@ class ActivityItem(BaseModel):
 
 
 # Settings models
+class UserSettingsUpdate(BaseModel):
+    """User settings update request."""
+    notifications_email: Optional[bool] = None
+    notifications_pr_activity: Optional[bool] = None
+    notifications_workflow_failures: Optional[bool] = None
+    default_quality_mode: Optional[str] = None
+    auto_create_issues: Optional[bool] = None
+
+
+class UserSettingsResponse(BaseModel):
+    """User settings response model."""
+    notifications_email: bool
+    notifications_pr_activity: bool
+    notifications_workflow_failures: bool
+    default_quality_mode: str
+    auto_create_issues: bool
+
+
+class RepositorySettingsUpdate(BaseModel):
+    """Repository settings update request."""
+    auto_analyze_prs: Optional[bool] = None
+    auto_create_issues: Optional[bool] = None
+    quality_mode: Optional[str] = None
+    exclude_paths: Optional[List[str]] = None
+
+
 class ApiKeyCreate(BaseModel):
     """API key create request."""
     name: str

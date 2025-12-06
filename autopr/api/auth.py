@@ -5,26 +5,26 @@ GitHub OAuth authentication and session management.
 
 import secrets
 import time
-import httpx
 from urllib.parse import urlencode
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import RedirectResponse, JSONResponse
-
-# OAuth state expiry in seconds (5 minutes)
-OAUTH_STATE_TTL = 300
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from .deps import (
+    IS_PRODUCTION,
+    SESSION_COOKIE_NAME,
+    SESSION_MAX_AGE,
+    SessionData,
     create_session,
     delete_session,
     get_current_user,
     get_github_oauth_config,
-    SessionData,
-    SESSION_COOKIE_NAME,
-    SESSION_MAX_AGE,
-    IS_PRODUCTION,
 )
 from .models import ApiResponse, UserResponse
+
+# OAuth state expiry in seconds (5 minutes)
+OAUTH_STATE_TTL = 300
 
 router = APIRouter()
 
@@ -96,7 +96,7 @@ async def github_callback(code: str, state: str, request: Request):
     config = get_github_oauth_config()
 
     # Exchange code for access token
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         token_response = await client.post(
             "https://github.com/login/oauth/access_token",
             data={
