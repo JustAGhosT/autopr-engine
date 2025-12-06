@@ -147,6 +147,7 @@ curl https://app.autopr.io/health
 - Check container logs for import errors
 
 ### "Certificate keeps expiring"
+
 - Should not happen anymore with the new Bicep configuration
 - Azure automatically renews certificates for custom domains
 - Verify the `customDomains` resource exists in Bicep template
