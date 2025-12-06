@@ -95,11 +95,17 @@ class AutoPRConfig:
             env_value = os.getenv(env_var)
             if env_value is not None:
                 # Handle type conversion
-                if attr_name in {"max_concurrent_workflows", "workflow_timeout", "workflow_retry_attempts", "workflow_retry_delay"}:
+                int_fields = {
+                    "max_concurrent_workflows", "workflow_timeout",
+                    "workflow_retry_attempts", "workflow_retry_delay"
+                }
+                if attr_name in int_fields:
                     setattr(self, attr_name, int(env_value))
                 elif attr_name == "enable_debug_logging":
                     setattr(
-                        self, attr_name, env_value.lower() in {"true", "1", "yes", "on"}
+                        self,
+                        attr_name,
+                        env_value.lower() in {"true", "1", "yes", "on"}
                     )
                 else:
                     setattr(self, attr_name, env_value)

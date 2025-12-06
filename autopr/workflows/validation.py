@@ -36,7 +36,11 @@ class WorkflowContextValidator(BaseModel):
         import re
         # Allow alphanumeric, hyphens, underscores, dots, and spaces
         if not re.match(r'^[a-zA-Z0-9\s._-]+$', v):
-            msg = "Workflow name contains invalid characters. Only alphanumeric, hyphens, underscores, dots, and spaces are allowed."
+            msg = (
+                "Workflow name contains invalid characters. "
+                "Only alphanumeric, hyphens, underscores, dots, "
+                "and spaces are allowed."
+            )
             raise ValueError(msg)
         return v
     
