@@ -13,6 +13,9 @@ param postgresLocation string = 'southafricanorth'
 @description('Container image name. Must be publicly accessible or use registry credentials. Build and push the image first using the GitHub Actions workflow. Default is a placeholder for testing.')
 param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 
+@description('PostgreSQL administrator login username')
+param postgresLogin string = 'autopr'
+
 @secure()
 @description('PostgreSQL administrator password')
 param postgresPassword string
@@ -61,7 +64,7 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-pr
     tier: 'Burstable'
   }
   properties: {
-    administratorLogin: 'autopr'
+    administratorLogin: postgresLogin
     administratorLoginPassword: postgresPassword
     version: '15'
     storage: {
@@ -160,7 +163,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
             }
             {
               name: 'POSTGRES_USER'
-              value: 'autopr'
+              value: postgresLogin
             }
             {
               name: 'POSTGRES_PASSWORD'
