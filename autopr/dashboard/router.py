@@ -46,12 +46,13 @@ class DashboardState:
         self.success_rate = 0.0
         self.average_processing_time = 0.0
         self.recent_activity: list[dict[str, Any]] = []
+        # Note: ai_enhanced uses underscore to match QualityMode enum
         self.quality_stats = {
             "ultra-fast": {"count": 0, "avg_time": 0.0},
             "fast": {"count": 0, "avg_time": 0.0},
             "smart": {"count": 0, "avg_time": 0.0},
             "comprehensive": {"count": 0, "avg_time": 0.0},
-            "ai-enhanced": {"count": 0, "avg_time": 0.0},
+            "ai_enhanced": {"count": 0, "avg_time": 0.0},
         }
         self.health_checker = HealthChecker()
         self._allowed_directories = self._get_allowed_directories()
@@ -269,8 +270,11 @@ async def api_quality_check(request: QualityCheckRequest):
             valid_files.append(str(Path(file_path).resolve()))
         files = valid_files
 
-    # Normalize mode
-    normalized_mode = mode.lower().strip()
+    # Normalize mode - convert hyphens to underscores for ai-enhanced -> ai_enhanced
+    normalized_mode = mode.lower().strip().replace("-", "_")
+    # But keep ultra-fast as hyphenated (it's the enum value)
+    if normalized_mode == "ultra_fast":
+        normalized_mode = "ultra-fast"
 
     # Validate mode
     try:
