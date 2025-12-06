@@ -77,6 +77,7 @@ There are TWO dashboards in this project:
 **Problem**: SPA routing wasn't configured properly
 
 **Solution**: Added `staticwebapp.config.json` that:
+
 - Configures fallback routing for Next.js
 - Sets proper cache headers
 - Handles 404 redirects to index.html
