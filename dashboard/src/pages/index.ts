@@ -1,0 +1,6 @@
+export { LoginPage } from './Login'
+export { DashboardPage } from './Dashboard'
+export { RepositoriesPage } from './Repositories'
+export { BotsPage } from './Bots'
+export { WorkflowsPage } from './Workflows'
+export { SettingsPage } from './Settings'

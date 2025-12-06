@@ -6,11 +6,19 @@ FastAPI server that can run alongside or replace the Flask dashboard.
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from autopr.health.health_checker import HealthChecker
+
+# Import Dashboard API router
+try:
+    from autopr.api import api_router
+    DASHBOARD_API_AVAILABLE = True
+except ImportError:
+    DASHBOARD_API_AVAILABLE = False
 
 # Import GitHub App routers
 try:
@@ -23,6 +31,9 @@ try:
     GITHUB_APP_AVAILABLE = True
 except ImportError:
     GITHUB_APP_AVAILABLE = False
+
+# Dashboard static files directory
+DASHBOARD_DIR = Path(__file__).parent.parent / "dashboard" / "dist"
 
 
 def create_app() -> FastAPI:
@@ -54,20 +65,16 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Include Dashboard API routes if available
+    if DASHBOARD_API_AVAILABLE:
+        app.include_router(api_router)
+
     # Include GitHub App routes if available
     if GITHUB_APP_AVAILABLE:
         app.include_router(install_router)
         app.include_router(callback_router)
         app.include_router(webhook_router)
         app.include_router(setup_router)
-
-    @app.get("/")
-    async def root():
-        """Root endpoint."""
-        return {
-            "message": "AutoPR Engine API",
-            "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
-        }
 
     @app.get("/favicon.ico")
     async def favicon():
@@ -105,6 +112,43 @@ def create_app() -> FastAPI:
         if detailed:
             return await health_checker.check_all(use_cache=True)
         return await health_checker.check_quick()
+
+    # Serve dashboard static files if available
+    if DASHBOARD_DIR.exists():
+        # Mount static assets
+        assets_dir = DASHBOARD_DIR / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @app.get("/{full_path:path}")
+        async def serve_spa(request: Request, full_path: str):
+            """Serve the React SPA for all non-API routes."""
+            # Don't serve SPA for API routes
+            if full_path.startswith("api/"):
+                return Response(status_code=404)
+
+            # Try to serve static file first
+            file_path = DASHBOARD_DIR / full_path
+            if file_path.is_file():
+                return FileResponse(file_path)
+
+            # Otherwise serve index.html for SPA routing
+            index_path = DASHBOARD_DIR / "index.html"
+            if index_path.exists():
+                return FileResponse(index_path)
+
+            return Response(status_code=404)
+    else:
+        # Fallback API response when dashboard not built
+        @app.get("/")
+        async def root():
+            """Root endpoint."""
+            return {
+                "message": "AutoPR Engine API",
+                "dashboard": "not built (run: cd dashboard && npm run build)",
+                "api_available": DASHBOARD_API_AVAILABLE,
+                "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
+            }
 
     return app
 
