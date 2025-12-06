@@ -1,9 +1,12 @@
-"""Tests for dashboard storage backends."""
+"""Tests for dashboard storage backends.
+
+Note: This file uses pytest assertions which are the standard testing pattern.
+The B101 warnings about assert are expected and correct for test files.
+"""
+# ruff: noqa: S101
 
 import time
-import pytest
 from autopr.dashboard.storage import (
-    StorageBackend,
     InMemoryStorage,
     RedisStorage,
     get_storage,

@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import secrets
+import tempfile
 import threading
 import time
 from datetime import datetime
@@ -511,7 +512,8 @@ def _get_config_path() -> Path:
         home = Path.home()
         return home / ".autopr" / "dashboard_config.json"
     except (RuntimeError, OSError):
-        return Path("/tmp") / ".autopr" / "dashboard_config.json"
+        # Use system temp directory when home is not available
+        return Path(tempfile.gettempdir()) / ".autopr" / "dashboard_config.json"
 
 
 def _get_client_ip(request: Request) -> str:
@@ -795,12 +797,15 @@ async def _run_quality_check(files: list[str], mode: str) -> dict[str, Any]:
 
 
 async def _simulate_quality_check(files: list[str], mode: str) -> dict[str, Any]:
-    """Simulate a quality check result (fallback when engine unavailable)."""
-    import random
+    """Simulate a quality check result (fallback when engine unavailable).
+
+    Note: Uses standard random for demo/simulation data only - not for security.
+    """
+    import random  # noqa: S311 - not used for security, just simulation data
 
     await asyncio.sleep(0.1)
-    processing_time = random.uniform(1.0, 5.0)
-    total_issues = random.randint(0, 20)
+    processing_time = random.uniform(1.0, 5.0)  # noqa: S311
+    total_issues = random.randint(0, 20)  # noqa: S311
 
     return {
         "success": True,
@@ -809,9 +814,9 @@ async def _simulate_quality_check(files: list[str], mode: str) -> dict[str, Any]
         "mode": mode,
         "files_checked": len(files),
         "issues_by_tool": {
-            "ruff": random.randint(0, 5),
-            "mypy": random.randint(0, 3),
-            "bandit": random.randint(0, 2),
+            "ruff": random.randint(0, 5),  # noqa: S311
+            "mypy": random.randint(0, 3),  # noqa: S311
+            "bandit": random.randint(0, 2),  # noqa: S311
         },
         "simulated": True,
     }
