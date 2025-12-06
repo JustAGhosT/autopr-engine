@@ -48,6 +48,18 @@ if [ -z "$REDIS_PASSWORD" ]; then
   REDIS_PASSWORD=$(openssl rand -base64 32)
 fi
 
+# Save credentials securely before deployment
+CREDENTIALS_FILE=".credentials-${RESOURCE_GROUP}.json"
+cat > "$CREDENTIALS_FILE" << CREDS_EOF
+{
+  "resource_group": "$RESOURCE_GROUP",
+  "postgres_password": "$POSTGRES_PASSWORD",
+  "redis_password": "$REDIS_PASSWORD",
+  "created_at": "$(date -Iseconds)"
+}
+CREDS_EOF
+chmod 600 "$CREDENTIALS_FILE"
+
 # Deploy the infrastructure
 echo "Deploying infrastructure..."
 az deployment group create \
@@ -65,10 +77,11 @@ az deployment group create \
   --output json > deployment-output.json
 
 echo "Deployment complete!"
-echo "PostgreSQL password: $POSTGRES_PASSWORD"
-echo "Redis password: $REDIS_PASSWORD"
 echo ""
-echo "⚠️  IMPORTANT: Save these passwords securely!"
+echo "⚠️  IMPORTANT: Credentials saved to $CREDENTIALS_FILE"
+echo "   Store them in a secure secrets manager (Azure Key Vault, etc.)"
+echo "   Then delete the file: rm $CREDENTIALS_FILE"
+echo "   DO NOT commit credentials files to version control!"
 echo ""
 echo "Container App URL:"
 jq -r '.properties.outputs.containerAppUrl.value' deployment-output.json
