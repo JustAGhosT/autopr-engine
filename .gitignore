@@ -290,3 +290,7 @@ data/
 
 # Consolidated local directory (cache and IDE configs)
 .local/
+
+# Deployment credentials and outputs (NEVER commit these)
+.credentials-*.json
+deployment-output.json
