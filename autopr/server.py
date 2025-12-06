@@ -12,12 +12,14 @@ from fastapi.responses import FileResponse, Response
 
 from autopr.health.health_checker import HealthChecker
 
-# Import dashboard router
+# Import dashboard router and version
 try:
     from autopr.dashboard.router import router as dashboard_router
+    from autopr.dashboard.router import __version__ as DASHBOARD_VERSION
     DASHBOARD_AVAILABLE = True
 except ImportError:
     DASHBOARD_AVAILABLE = False
+    DASHBOARD_VERSION = "1.0.1"
 
 # Import GitHub App routers
 try:
@@ -31,6 +33,20 @@ try:
 except ImportError:
     GITHUB_APP_AVAILABLE = False
 
+# Use dashboard version as server version for consistency
+__version__ = DASHBOARD_VERSION
+
+# Shared health checker instance
+_health_checker: HealthChecker | None = None
+
+
+def get_health_checker() -> HealthChecker:
+    """Get or create the shared HealthChecker instance."""
+    global _health_checker
+    if _health_checker is None:
+        _health_checker = HealthChecker()
+    return _health_checker
+
 
 def create_app() -> FastAPI:
     """Create FastAPI application with GitHub App integration.
@@ -41,7 +57,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="AutoPR Engine",
         description="AI-Powered GitHub PR Automation and Issue Management",
-        version="1.0.1",
+        version=__version__,
     )
 
     # CORS middleware - restrict origins in production
@@ -78,7 +94,7 @@ def create_app() -> FastAPI:
         """API root endpoint."""
         return {
             "message": "AutoPR Engine API",
-            "version": "1.0.1",
+            "version": __version__,
             "dashboard": "available" if DASHBOARD_AVAILABLE else "not configured",
             "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
         }
@@ -101,13 +117,16 @@ def create_app() -> FastAPI:
         # Return empty response with no-content status
         return Response(status_code=204)
 
-    # Initialize health checker (without engine for standalone mode)
-    health_checker = HealthChecker()
+    # Get shared health checker
+    health_checker = get_health_checker()
 
     @app.get("/health")
     async def health(detailed: bool = Query(False, description="Return detailed health info")):
         """
         Health check endpoint.
+
+        This is the primary health endpoint. The dashboard also exposes /api/health
+        with additional uptime information.
 
         Args:
             detailed: If True, perform comprehensive health check with all components.
@@ -117,8 +136,13 @@ def create_app() -> FastAPI:
             Health status response with status and optional component details.
         """
         if detailed:
-            return await health_checker.check_all(use_cache=True)
-        return await health_checker.check_quick()
+            result = await health_checker.check_all(use_cache=True)
+        else:
+            result = await health_checker.check_quick()
+
+        # Add version info for consistency
+        result["version"] = __version__
+        return result
 
     return app
 
@@ -136,4 +160,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
