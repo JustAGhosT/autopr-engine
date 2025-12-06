@@ -3,6 +3,7 @@
 FastAPI server that provides the AutoPR Engine API and dashboard UI.
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -12,14 +13,19 @@ from fastapi.responses import FileResponse, Response
 
 from autopr.health.health_checker import HealthChecker
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
 # Import dashboard router and version
 try:
     from autopr.dashboard.router import router as dashboard_router
     from autopr.dashboard.router import __version__ as DASHBOARD_VERSION
     DASHBOARD_AVAILABLE = True
-except ImportError:
+    logger.info("Dashboard module loaded successfully")
+except ImportError as e:
     DASHBOARD_AVAILABLE = False
     DASHBOARD_VERSION = "1.0.1"
+    logger.warning(f"Dashboard module not available: {e}")
 
 # Import GitHub App routers
 try:
@@ -30,8 +36,10 @@ try:
         setup_router,
     )
     GITHUB_APP_AVAILABLE = True
-except ImportError:
+    logger.info("GitHub App integration loaded successfully")
+except ImportError as e:
     GITHUB_APP_AVAILABLE = False
+    logger.warning(f"GitHub App integration not available: {e}")
 
 # Use dashboard version as server version for consistency
 __version__ = DASHBOARD_VERSION
@@ -83,6 +91,19 @@ def create_app() -> FastAPI:
     # Include dashboard routes if available (must be first to handle "/" route)
     if DASHBOARD_AVAILABLE:
         app.include_router(dashboard_router)
+    else:
+        # Fallback root route when dashboard is not available
+        @app.get("/")
+        async def root_fallback():
+            """Root endpoint when dashboard is not available."""
+            return {
+                "message": "AutoPR Engine API",
+                "version": __version__,
+                "dashboard": "not available (import failed)",
+                "api_docs": "/docs",
+                "health": "/health",
+                "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
+            }
 
     # Include GitHub App routes if available
     if GITHUB_APP_AVAILABLE:
