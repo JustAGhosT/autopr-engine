@@ -130,6 +130,7 @@ curl https://app.autopr.io/health
 ## Common Issues
 
 ### "Why is autopr.io not showing the website?"
+
 - Check DNS propagation (can take up to 48 hours)
 - Verify custom domain binding exists in Azure portal
 - Check that website build deployed successfully in GitHub Actions
