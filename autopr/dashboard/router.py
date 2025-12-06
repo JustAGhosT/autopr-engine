@@ -137,11 +137,18 @@ class RateLimiter:
             default_limit=requests_per_minute,
             window_seconds=60
         )
-        self._last_info: dict[str, dict] = {}  # Store last info for get_retry_after
+        self._last_info: dict[str, dict] = {}
+        self._max_cached_ips = 10000  # Prevent unbounded memory growth
 
     def is_allowed(self, client_ip: str) -> bool:
         """Check if request from client IP is allowed."""
         allowed, info = self._limiter.is_allowed(client_ip, limit=self.requests_per_minute)
+        # Evict oldest entries if cache is too large
+        if len(self._last_info) >= self._max_cached_ips:
+            # Simple eviction: clear half the cache
+            keys_to_remove = list(self._last_info.keys())[:len(self._last_info) // 2]
+            for key in keys_to_remove:
+                del self._last_info[key]
         self._last_info[client_ip] = info
         return allowed
 
@@ -221,6 +228,7 @@ class DashboardState:
     KEY_START_TIME = "start_time"
     KEY_TOTAL_CHECKS = "total_checks"
     KEY_TOTAL_ISSUES = "total_issues"
+    KEY_TOTAL_SUCCESSFUL_CHECKS = "total_successful_checks"
     KEY_SUCCESS_RATE = "success_rate"
     KEY_AVG_PROCESSING_TIME = "avg_processing_time"
     KEY_RECENT_ACTIVITY = "recent_activity"
@@ -258,6 +266,7 @@ class DashboardState:
         self._storage.initialize_if_empty(self.KEY_START_TIME, datetime.now().isoformat())
         self._storage.initialize_if_empty(self.KEY_TOTAL_CHECKS, 0)
         self._storage.initialize_if_empty(self.KEY_TOTAL_ISSUES, 0)
+        self._storage.initialize_if_empty(self.KEY_TOTAL_SUCCESSFUL_CHECKS, 0)
         self._storage.initialize_if_empty(self.KEY_SUCCESS_RATE, 0.0)
         self._storage.initialize_if_empty(self.KEY_AVG_PROCESSING_TIME, 0.0)
 
@@ -422,14 +431,18 @@ class DashboardState:
             issues_found = result.get("total_issues_found", 0)
             self._storage.increment(self.KEY_TOTAL_ISSUES, issues_found)
 
-            # Calculate and update success rate
-            recent = self.recent_activity
-            successful_checks = sum(
-                1 for activity in recent if activity.get("success", False)
-            )
+            # Calculate and update success rate using persistent counter
             if result.get("success", False):
-                successful_checks += 1
-            new_success_rate = successful_checks / new_total_checks if new_total_checks > 0 else 0.0
+                total_successful = self._storage.increment(
+                    self.KEY_TOTAL_SUCCESSFUL_CHECKS, 1
+                )
+            else:
+                total_successful = self._storage.get(
+                    self.KEY_TOTAL_SUCCESSFUL_CHECKS, 0
+                )
+            new_success_rate = (
+                total_successful / new_total_checks if new_total_checks > 0 else 0.0
+            )
             self._storage.set(self.KEY_SUCCESS_RATE, new_success_rate)
 
             # Update average processing time
@@ -573,10 +586,10 @@ async def dashboard_home(request: Request):
             "index.html",
             {"request": request, "data": dashboard_state.get_status()}
         )
-    except Exception as e:
-        logger.error(f"Failed to render dashboard template: {e}")
+    except Exception:
+        logger.exception("Failed to render dashboard template")
         return HTMLResponse(
-            content=f"<html><body><h1>Template Error</h1><p>{e}</p></body></html>",
+            content="<html><body><h1>Template Error</h1><p>Internal server error</p></body></html>",
             status_code=500
         )
 
@@ -847,9 +860,9 @@ async def api_save_config(
     try:
         dashboard_state.set_config(config.model_dump())
         return SuccessResponse(success=True)
-    except Exception as e:
-        logger.error(f"Failed to save config: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to save config: {e}")
+    except Exception:
+        logger.exception("Failed to save config")
+        raise HTTPException(status_code=500, detail="Failed to save config") from None
 
 
 # =============================================================================
