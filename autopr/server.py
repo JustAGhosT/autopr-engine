@@ -4,8 +4,11 @@ FastAPI server that can run alongside or replace the Flask dashboard.
 """
 
 import os
+from pathlib import Path
+
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, Response
 
 from autopr.health.health_checker import HealthChecker
 
@@ -65,6 +68,24 @@ def create_app() -> FastAPI:
             "message": "AutoPR Engine API",
             "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
         }
+
+    @app.get("/favicon.ico")
+    async def favicon():
+        """Serve favicon - returns empty response to prevent slow 404 lookups."""
+        # Check for favicon in common locations
+        favicon_paths = [
+            Path(__file__).parent.parent / "website" / "app" / "favicon.ico",
+            Path(__file__).parent / "static" / "favicon.ico",
+        ]
+        for favicon_path in favicon_paths:
+            if favicon_path.exists():
+                return FileResponse(
+                    favicon_path,
+                    media_type="image/x-icon",
+                    headers={"Cache-Control": "public, max-age=86400"},
+                )
+        # Return empty response with no-content status
+        return Response(status_code=204)
 
     # Initialize health checker (without engine for standalone mode)
     health_checker = HealthChecker()
