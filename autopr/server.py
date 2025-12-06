@@ -4,8 +4,10 @@ FastAPI server that can run alongside or replace the Flask dashboard.
 """
 
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+
+from autopr.health.health_checker import HealthChecker
 
 # Import GitHub App routers
 try:
@@ -64,10 +66,24 @@ def create_app() -> FastAPI:
             "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
         }
 
+    # Initialize health checker (without engine for standalone mode)
+    health_checker = HealthChecker()
+
     @app.get("/health")
-    async def health():
-        """Health check endpoint."""
-        return {"status": "healthy"}
+    async def health(detailed: bool = Query(False, description="Return detailed health info")):
+        """
+        Health check endpoint.
+
+        Args:
+            detailed: If True, perform comprehensive health check with all components.
+                     If False (default), perform quick check for low latency.
+
+        Returns:
+            Health status response with status and optional component details.
+        """
+        if detailed:
+            return await health_checker.check_all(use_cache=True)
+        return await health_checker.check_quick()
 
     return app
 

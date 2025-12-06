@@ -17,6 +17,7 @@ from flask_cors import CORS
 
 from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
 from autopr.actions.quality_engine.models import QualityMode
+from autopr.health.health_checker import HealthChecker
 from autopr.quality.metrics_collector import MetricsCollector
 
 
@@ -39,6 +40,7 @@ class AutoPRDashboard:
         # Initialize components
         self.metrics_collector = MetricsCollector()
         self.quality_engine = QualityEngine()
+        self.health_checker = HealthChecker()
 
         # Dashboard data
         self.dashboard_data = {
@@ -307,16 +309,33 @@ class AutoPRDashboard:
 
         @self.app.route("/api/health")
         def api_health():
-            """Health check endpoint."""
-            return jsonify(
-                {
-                    "status": "healthy",
-                    "uptime": (
-                        datetime.now() - self.dashboard_data["start_time"]
-                    ).total_seconds(),
-                    "version": "1.0.0",
-                }
-            )
+            """
+            Health check endpoint.
+
+            Query params:
+                detailed: If 'true', perform comprehensive health check.
+                         Otherwise, perform quick check for low latency.
+
+            Returns:
+                Health status with uptime and version info.
+            """
+            detailed = request.args.get("detailed", "false").lower() == "true"
+
+            # Get health status from checker
+            if detailed:
+                health_result = asyncio.run(
+                    self.health_checker.check_all(use_cache=True)
+                )
+            else:
+                health_result = asyncio.run(self.health_checker.check_quick())
+
+            # Add dashboard-specific info
+            health_result["uptime"] = (
+                datetime.now() - self.dashboard_data["start_time"]
+            ).total_seconds()
+            health_result["version"] = "1.0.0"
+
+            return jsonify(health_result)
 
     def _get_status(self) -> dict[str, Any]:
         """Get current dashboard status."""

@@ -36,7 +36,7 @@ class ComponentHealth:
 class HealthChecker:
     """
     Comprehensive health checker for AutoPR components.
-    
+
     Checks health of:
     - Database connectivity
     - LLM provider availability
@@ -44,27 +44,42 @@ class HealthChecker:
     - System resources (CPU, memory, disk)
     - Workflow engine health
     """
-    
+
+    # Cache TTL in seconds
+    CACHE_TTL_SECONDS = 10
+
     def __init__(self, engine: Any = None):
         """
         Initialize health checker.
-        
+
         Args:
             engine: AutoPREngine instance (optional)
         """
         self.engine = engine
         self.last_check_time: float | None = None
         self.last_check_results: dict[str, ComponentHealth] | None = None
+        self._last_cpu_percent: float = 0.0
+        self._last_cpu_check_time: float = 0.0
     
-    async def check_all(self) -> dict[str, Any]:
+    async def check_all(self, use_cache: bool = False) -> dict[str, Any]:
         """
         Perform comprehensive health check on all components.
-        
+
+        Args:
+            use_cache: If True, return cached results if available and fresh
+
         Returns:
             Dictionary with overall health status and component details
         """
+        # Return cached results if fresh and caching is enabled
+        if use_cache and self._is_cache_valid():
+            cached = self.get_cached_results()
+            if cached:
+                cached["cached"] = True
+                return cached
+
         start_time = time.time()
-        
+
         # Run all health checks in parallel
         checks = [
             self._check_database(),
@@ -73,7 +88,7 @@ class HealthChecker:
             self._check_system_resources(),
             self._check_workflow_engine(),
         ]
-        
+
         results = await asyncio.gather(*checks, return_exceptions=True)
         
         # Process results
@@ -307,12 +322,19 @@ class HealthChecker:
     async def _check_system_resources(self) -> ComponentHealth:
         """Check system resource utilization."""
         start_time = time.time()
-        
+
         try:
             import psutil
-            
-            # CPU usage
-            cpu_percent = psutil.cpu_percent(interval=0.1)
+
+            # CPU usage - use non-blocking call (interval=None) with cached fallback
+            # This avoids the 100ms+ blocking delay from interval=0.1
+            cpu_percent = psutil.cpu_percent(interval=None)
+            if cpu_percent == 0.0 and self._last_cpu_percent > 0:
+                # Use cached value if current reading is 0 (first call returns 0)
+                cpu_percent = self._last_cpu_percent
+            else:
+                self._last_cpu_percent = cpu_percent
+                self._last_cpu_check_time = time.time()
             
             # Memory usage
             memory = psutil.virtual_memory()
@@ -471,13 +493,13 @@ class HealthChecker:
     def get_cached_results(self) -> dict[str, Any] | None:
         """
         Get cached health check results.
-        
+
         Returns:
             Last health check results, or None if no cached results
         """
         if not self.last_check_results:
             return None
-        
+
         return {
             "status": self._determine_overall_health(self.last_check_results).value,
             "timestamp": self.last_check_time,
@@ -491,3 +513,71 @@ class HealthChecker:
                 for name, health in self.last_check_results.items()
             },
         }
+
+    def _is_cache_valid(self) -> bool:
+        """Check if cached results are still valid."""
+        if self.last_check_time is None:
+            return False
+        return (time.time() - self.last_check_time) < self.CACHE_TTL_SECONDS
+
+    async def check_quick(self) -> dict[str, Any]:
+        """
+        Perform a quick health check suitable for high-frequency polling.
+
+        Returns cached results if available, otherwise performs minimal checks.
+        This is optimized for low latency (<10ms) responses.
+
+        Returns:
+            Dictionary with health status
+        """
+        start_time = time.time()
+
+        # Return cached results if fresh
+        if self._is_cache_valid():
+            cached = self.get_cached_results()
+            if cached:
+                cached["cached"] = True
+                return cached
+
+        # Perform minimal health check (no external calls)
+        try:
+            import psutil
+
+            # Non-blocking CPU check
+            cpu_percent = psutil.cpu_percent(interval=None)
+            if cpu_percent == 0.0 and self._last_cpu_percent > 0:
+                cpu_percent = self._last_cpu_percent
+            else:
+                self._last_cpu_percent = cpu_percent
+
+            memory = psutil.virtual_memory()
+            memory_percent = memory.percent
+
+            response_time = (time.time() - start_time) * 1000
+
+            if cpu_percent > 90 or memory_percent > 90:
+                status = HealthStatus.DEGRADED
+            else:
+                status = HealthStatus.HEALTHY
+
+            return {
+                "status": status.value,
+                "timestamp": time.time(),
+                "response_time_ms": response_time,
+                "cached": False,
+                "quick_check": True,
+                "resources": {
+                    "cpu_percent": cpu_percent,
+                    "memory_percent": memory_percent,
+                },
+            }
+
+        except ImportError:
+            # psutil not available, return basic healthy status
+            return {
+                "status": HealthStatus.HEALTHY.value,
+                "timestamp": time.time(),
+                "response_time_ms": (time.time() - start_time) * 1000,
+                "cached": False,
+                "quick_check": True,
+            }
