@@ -29,6 +29,7 @@ The system uses a singleton settings record with the following options:
 ### Filtering Modes
 
 #### Whitelist Mode (Default)
+
 - Only users in the allowed list can have comments processed
 - New users are ignored unless manually added or auto-add is enabled
 - Recommended for high-security environments
