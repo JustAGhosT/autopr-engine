@@ -79,6 +79,27 @@ class DashboardState:
         except (ValueError, OSError, RuntimeError) as e:
             return False, f"Invalid path: {e}"
 
+    def sanitize_file_list(self, files: list[str]) -> tuple[list[str], list[str]]:
+        """Validate and sanitize a list of file paths.
+
+        Args:
+            files: List of file paths to validate
+
+        Returns:
+            Tuple of (valid_files, error_messages)
+        """
+        valid_files = []
+        errors = []
+
+        for file_path in files:
+            is_valid, error = self.validate_path(file_path)
+            if is_valid:
+                valid_files.append(str(Path(file_path).resolve()))
+            else:
+                errors.append(f"{file_path}: {error}")
+
+        return valid_files, errors
+
     def get_status(self) -> dict[str, Any]:
         """Get current dashboard status."""
         uptime = datetime.now() - self.start_time

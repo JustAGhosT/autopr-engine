@@ -609,7 +609,7 @@ After applying fixes:
 
 ```bash
 # Test imports
-poetry run python -c "from autopr.dashboard.server import AutoPRDashboard; print('✅ Dashboard imports')"
+poetry run python -c "from autopr.dashboard.router import DashboardState; print('✅ Dashboard imports')"
 poetry run python -c "from autopr.database.config import get_db; print('✅ Database config imports')"
 poetry run python -c "from autopr.features import *; print('✅ Features import')"
 
