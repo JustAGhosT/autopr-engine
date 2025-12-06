@@ -154,7 +154,8 @@ class AIInteractionDB:
                     line_content TEXT,
 
                     -- Processing status
-                    status TEXT NOT NULL DEFAULT 'pending',  -- pending, in_progress, completed, failed, skipped
+                    -- pending, in_progress, completed, failed, skipped
+                    status TEXT NOT NULL DEFAULT 'pending',
                     priority INTEGER DEFAULT 5,  -- 1-10, higher = more priority
                     assigned_worker_id TEXT,
                     assigned_agent_type TEXT,
@@ -179,11 +180,14 @@ class AIInteractionDB:
 
             # Create index for efficient querying
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_issues_status ON linting_issues_queue(status, priority DESC, created_timestamp)"
+                "CREATE INDEX IF NOT EXISTS idx_issues_status ON "
+                "linting_issues_queue(status, priority DESC, "
+                "created_timestamp)"
             )
 
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_issues_session ON linting_issues_queue(session_id, status)"
+                "CREATE INDEX IF NOT EXISTS idx_issues_session ON "
+                "linting_issues_queue(session_id, status)"
             )
 
             conn.commit()
@@ -194,14 +198,17 @@ class AIInteractionDB:
             conn.execute(
                 """
                 INSERT INTO ai_interactions (
-                    timestamp, file_path, issue_type, issue_details, provider_used, model_used,
-                    system_prompt, user_prompt, ai_response, fix_successful, confidence_score,
-                    fixed_codes, error_message, syntax_valid_before, syntax_valid_after,
-                    file_size_chars, prompt_tokens, response_tokens,
-                    processing_duration, api_response_time, queue_wait_time,
-                    file_complexity_score, parallel_worker_id, retry_count,
-                    memory_usage_mb, tokens_per_second, agent_type
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    timestamp, file_path, issue_type, issue_details,
+                    provider_used, model_used, system_prompt, user_prompt,
+                    ai_response, fix_successful, confidence_score,
+                    fixed_codes, error_message, syntax_valid_before,
+                    syntax_valid_after, file_size_chars, prompt_tokens,
+                    response_tokens, processing_duration, api_response_time,
+                    queue_wait_time, file_complexity_score,
+                    parallel_worker_id, retry_count, memory_usage_mb,
+                    tokens_per_second, agent_type
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     interaction_data["timestamp"],
@@ -344,8 +351,10 @@ class AIInteractionDB:
                 SELECT
                     provider_used,
                     COUNT(*) as attempts,
-                    SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END) as successes,
-                    AVG(CASE WHEN confidence_score IS NOT NULL THEN confidence_score END) as average_confidence
+                    SUM(CASE WHEN fix_successful = 1 THEN 1 ELSE 0 END) 
+                        as successes,
+                    AVG(CASE WHEN confidence_score IS NOT NULL 
+                        THEN confidence_score END) as average_confidence
                 FROM ai_interactions
                 GROUP BY provider_used
                 """

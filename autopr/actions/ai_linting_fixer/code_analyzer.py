@@ -284,7 +284,10 @@ class CodeAnalyzer:
                                 "line": node.lineno,
                                 "name": node.name,
                                 "complexity": func_complexity,
-                                "message": f"Function '{node.name}' has high cyclomatic complexity ({func_complexity})",
+                                "message": (
+                                    f"Function '{node.name}' has high "
+                                    f"cyclomatic complexity ({func_complexity})"
+                                ),
                             }
                         )
 

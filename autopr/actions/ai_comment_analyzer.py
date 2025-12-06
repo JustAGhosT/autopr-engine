@@ -50,9 +50,12 @@ def analyze_comment_with_ai(
     4. Priority level
     5. Appropriate tags
 
-    If the comment is a fix request, provide a `search_block` and a `replace_block` for the fix.
-    The `search_block` should be a small, unique snippet of code to identify the location of the change.
-    The `replace_block` should be the code that replaces the `search_block`.
+    If the comment is a fix request, provide a `search_block` and a 
+    `replace_block` for the fix.
+    The `search_block` should be a small, unique snippet of code to 
+    identify the location of the change.
+    The `replace_block` should be the code that replaces the 
+    `search_block`.
 
     Return JSON with analysis results.
     """
