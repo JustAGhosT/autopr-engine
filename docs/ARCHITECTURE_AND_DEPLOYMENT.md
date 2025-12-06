@@ -109,6 +109,7 @@ az deployment group show \
 ## Verifying Deployments
 
 ### Check Website (autopr.io)
+
 ```bash
 curl -I https://autopr.io
 # Should return 200 OK with HTML content
