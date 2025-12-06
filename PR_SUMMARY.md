@@ -71,6 +71,7 @@ This PR fixes two critical deployment issues reported by users:
 - Code review - All feedback addressed
 
 ### Build Verification ✅
+
 - Next.js website build: `npm run build` - SUCCESS
 - staticwebapp.config.json correctly copied to output directory
 - All pages generated successfully
