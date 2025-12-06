@@ -207,30 +207,102 @@ async def verify_api_key(
 # Dashboard State
 # =============================================================================
 
+# Import storage after it's defined to avoid circular imports
+from autopr.dashboard.storage import get_storage, StorageBackend
+
+
 class DashboardState:
     """Manages dashboard state and data.
 
-    Note: State is stored in memory and will be lost on restart.
-    For production, consider backing with Redis or database.
+    Supports multiple storage backends:
+    - In-memory (default): Fast but not persistent
+    - Redis: Persistent and shareable across instances
+
+    Configure via AUTOPR_STORAGE_BACKEND and REDIS_URL environment variables.
     """
 
-    def __init__(self):
-        self._lock = threading.Lock()  # Thread-safe state updates
-        self.start_time = datetime.now()
-        self.total_checks = 0
-        self.total_issues = 0
-        self.success_rate = 0.0
-        self.average_processing_time = 0.0
-        self.recent_activity: list[dict[str, Any]] = []
-        # Note: ai_enhanced uses underscore to match QualityMode enum
-        self.quality_stats = {
-            "ultra-fast": {"count": 0, "avg_time": 0.0},
-            "fast": {"count": 0, "avg_time": 0.0},
-            "smart": {"count": 0, "avg_time": 0.0},
-            "comprehensive": {"count": 0, "avg_time": 0.0},
-            "ai_enhanced": {"count": 0, "avg_time": 0.0},
-        }
+    # Storage keys
+    KEY_START_TIME = "start_time"
+    KEY_TOTAL_CHECKS = "total_checks"
+    KEY_TOTAL_ISSUES = "total_issues"
+    KEY_SUCCESS_RATE = "success_rate"
+    KEY_AVG_PROCESSING_TIME = "avg_processing_time"
+    KEY_RECENT_ACTIVITY = "recent_activity"
+    KEY_QUALITY_STATS = "quality_stats"
+
+    # Default quality stats structure
+    DEFAULT_QUALITY_STATS = {
+        "ultra-fast": {"count": 0, "avg_time": 0.0},
+        "fast": {"count": 0, "avg_time": 0.0},
+        "smart": {"count": 0, "avg_time": 0.0},
+        "comprehensive": {"count": 0, "avg_time": 0.0},
+        "ai_enhanced": {"count": 0, "avg_time": 0.0},
+    }
+
+    def __init__(self, storage: StorageBackend | None = None):
+        self._storage = storage or get_storage()
+        self._lock = threading.Lock()  # For local operations
         self._allowed_directories = self._get_allowed_directories()
+
+        # Initialize storage with defaults if empty
+        self._initialize_storage()
+
+    def _initialize_storage(self) -> None:
+        """Initialize storage with default values if empty."""
+        self._storage.initialize_if_empty(self.KEY_START_TIME, datetime.now().isoformat())
+        self._storage.initialize_if_empty(self.KEY_TOTAL_CHECKS, 0)
+        self._storage.initialize_if_empty(self.KEY_TOTAL_ISSUES, 0)
+        self._storage.initialize_if_empty(self.KEY_SUCCESS_RATE, 0.0)
+        self._storage.initialize_if_empty(self.KEY_AVG_PROCESSING_TIME, 0.0)
+
+        # Initialize quality stats
+        for mode, stats in self.DEFAULT_QUALITY_STATS.items():
+            self._storage.initialize_if_empty(f"{self.KEY_QUALITY_STATS}:{mode}", stats)
+
+    @property
+    def start_time(self) -> datetime:
+        """Get server start time."""
+        time_str = self._storage.get(self.KEY_START_TIME)
+        if time_str:
+            try:
+                return datetime.fromisoformat(time_str)
+            except (ValueError, TypeError):
+                pass
+        return datetime.now()
+
+    @property
+    def total_checks(self) -> int:
+        """Get total number of checks."""
+        return self._storage.get(self.KEY_TOTAL_CHECKS, 0)
+
+    @property
+    def total_issues(self) -> int:
+        """Get total number of issues found."""
+        return self._storage.get(self.KEY_TOTAL_ISSUES, 0)
+
+    @property
+    def success_rate(self) -> float:
+        """Get success rate."""
+        return self._storage.get(self.KEY_SUCCESS_RATE, 0.0)
+
+    @property
+    def average_processing_time(self) -> float:
+        """Get average processing time."""
+        return self._storage.get(self.KEY_AVG_PROCESSING_TIME, 0.0)
+
+    @property
+    def recent_activity(self) -> list[dict[str, Any]]:
+        """Get recent activity list."""
+        return self._storage.get_list(self.KEY_RECENT_ACTIVITY)
+
+    @property
+    def quality_stats(self) -> dict[str, dict[str, Any]]:
+        """Get quality stats for all modes."""
+        stats = {}
+        for mode in self.DEFAULT_QUALITY_STATS:
+            mode_stats = self._storage.get(f"{self.KEY_QUALITY_STATS}:{mode}")
+            stats[mode] = mode_stats if mode_stats else {"count": 0, "avg_time": 0.0}
+        return stats
 
     def get_uptime_seconds(self) -> float:
         """Get uptime in seconds."""
@@ -281,17 +353,16 @@ class DashboardState:
 
     def get_status(self) -> dict[str, Any]:
         """Get current dashboard status."""
-        with self._lock:
-            uptime = datetime.now() - self.start_time
-            return {
-                "uptime_seconds": uptime.total_seconds(),
-                "uptime_formatted": str(uptime).split(".")[0],
-                "total_checks": self.total_checks,
-                "total_issues": self.total_issues,
-                "success_rate": self.success_rate,
-                "average_processing_time": self.average_processing_time,
-                "quality_stats": self.quality_stats.copy(),
-            }
+        uptime = datetime.now() - self.start_time
+        return {
+            "uptime_seconds": uptime.total_seconds(),
+            "uptime_formatted": str(uptime).split(".")[0],
+            "total_checks": self.total_checks,
+            "total_issues": self.total_issues,
+            "success_rate": self.success_rate,
+            "average_processing_time": self.average_processing_time,
+            "quality_stats": self.quality_stats,
+        }
 
     def get_metrics(self) -> dict[str, Any]:
         """Get metrics data for charts.
@@ -299,34 +370,34 @@ class DashboardState:
         Note: Returns actual historical data from recent_activity when available,
         otherwise returns empty lists for chart rendering.
         """
-        with self._lock:
-            return {
-                "processing_times": self._get_processing_times_data(),
-                "issue_counts": self._get_issue_counts_data(),
-                "quality_mode_usage": self._get_quality_mode_usage_data(),
-            }
+        recent = self.recent_activity
+        return {
+            "processing_times": self._get_processing_times_data(recent),
+            "issue_counts": self._get_issue_counts_data(recent),
+            "quality_mode_usage": self._get_quality_mode_usage_data(),
+        }
 
-    def _get_processing_times_data(self) -> list[dict[str, Any]]:
+    def _get_processing_times_data(self, recent: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Get processing times data for charts from recent activity."""
-        if self.recent_activity:
+        if recent:
             return [
                 {
                     "timestamp": activity["timestamp"],
                     "processing_time": activity.get("processing_time", 0),
                 }
-                for activity in self.recent_activity[-24:]
+                for activity in recent[-24:]
             ]
         return []
 
-    def _get_issue_counts_data(self) -> list[dict[str, Any]]:
+    def _get_issue_counts_data(self, recent: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Get issue counts data for charts from recent activity."""
-        if self.recent_activity:
+        if recent:
             return [
                 {
                     "timestamp": activity["timestamp"],
                     "issues": activity.get("issues_found", 0),
                 }
-                for activity in self.recent_activity[-24:]
+                for activity in recent[-24:]
             ]
         return []
 
@@ -338,56 +409,53 @@ class DashboardState:
         }
 
     def update_with_result(self, result: dict[str, Any], mode: str):
-        """Update dashboard data with quality check result (thread-safe)."""
+        """Update dashboard data with quality check result."""
         with self._lock:
-            self.total_checks += 1
-            self.total_issues += result.get("total_issues_found", 0)
+            # Increment counters
+            new_total_checks = self._storage.increment(self.KEY_TOTAL_CHECKS, 1)
+            issues_found = result.get("total_issues_found", 0)
+            self._storage.increment(self.KEY_TOTAL_ISSUES, issues_found)
 
-            # Update success rate
+            # Calculate and update success rate
+            recent = self.recent_activity
             successful_checks = sum(
-                1 for activity in self.recent_activity if activity.get("success", False)
+                1 for activity in recent if activity.get("success", False)
             )
             if result.get("success", False):
                 successful_checks += 1
-            if self.total_checks > 0:
-                self.success_rate = successful_checks / self.total_checks
-            else:
-                self.success_rate = 0.0
+            new_success_rate = successful_checks / new_total_checks if new_total_checks > 0 else 0.0
+            self._storage.set(self.KEY_SUCCESS_RATE, new_success_rate)
 
             # Update average processing time
             new_time = result.get("processing_time", 0)
-            if self.total_checks > 1:
-                self.average_processing_time = (
-                    self.average_processing_time * (self.total_checks - 1) + new_time
-                ) / self.total_checks
+            old_avg = self.average_processing_time
+            if new_total_checks > 1:
+                new_avg = (old_avg * (new_total_checks - 1) + new_time) / new_total_checks
             else:
-                self.average_processing_time = new_time
+                new_avg = new_time
+            self._storage.set(self.KEY_AVG_PROCESSING_TIME, new_avg)
 
             # Update quality mode stats
-            if mode in self.quality_stats:
-                stats = self.quality_stats[mode]
-                stats["count"] += 1
-                if stats["count"] > 1:
-                    stats["avg_time"] = (
-                        stats["avg_time"] * (stats["count"] - 1) + new_time
-                    ) / stats["count"]
+            if mode in self.DEFAULT_QUALITY_STATS:
+                mode_key = f"{self.KEY_QUALITY_STATS}:{mode}"
+                current_stats = self._storage.get(mode_key, {"count": 0, "avg_time": 0.0})
+                new_count = current_stats["count"] + 1
+                if new_count > 1:
+                    new_mode_avg = (current_stats["avg_time"] * (new_count - 1) + new_time) / new_count
                 else:
-                    stats["avg_time"] = new_time
+                    new_mode_avg = new_time
+                self._storage.set(mode_key, {"count": new_count, "avg_time": new_mode_avg})
 
             # Add to recent activity
             activity = {
                 "timestamp": datetime.now().isoformat(),
                 "mode": mode,
                 "files_checked": result.get("files_checked", 0),
-                "issues_found": result.get("total_issues_found", 0),
+                "issues_found": issues_found,
                 "processing_time": result.get("processing_time", 0),
                 "success": result.get("success", False),
             }
-            self.recent_activity.append(activity)
-
-            # Keep only last 50 activities
-            if len(self.recent_activity) > 50:
-                self.recent_activity = self.recent_activity[-50:]
+            self._storage.append_to_list(self.KEY_RECENT_ACTIVITY, activity, max_length=50)
 
 
 # =============================================================================
