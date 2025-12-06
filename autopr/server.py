@@ -1,6 +1,6 @@
-"""AutoPR Server with GitHub App Integration.
+"""AutoPR Server with GitHub App Integration and Dashboard.
 
-FastAPI server that can run alongside or replace the Flask dashboard.
+FastAPI server that provides the AutoPR Engine API and dashboard UI.
 """
 
 import os
@@ -9,8 +9,16 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 
 from autopr.health.health_checker import HealthChecker
+
+# Import dashboard router
+try:
+    from autopr.dashboard.router import router as dashboard_router
+    DASHBOARD_AVAILABLE = True
+except ImportError:
+    DASHBOARD_AVAILABLE = False
 
 # Import GitHub App routers
 try:
@@ -54,6 +62,10 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Include dashboard routes if available (must be first to handle "/" route)
+    if DASHBOARD_AVAILABLE:
+        app.include_router(dashboard_router)
+
     # Include GitHub App routes if available
     if GITHUB_APP_AVAILABLE:
         app.include_router(install_router)
@@ -61,11 +73,14 @@ def create_app() -> FastAPI:
         app.include_router(webhook_router)
         app.include_router(setup_router)
 
-    @app.get("/")
-    async def root():
-        """Root endpoint."""
+    # API info endpoint (when dashboard is not available or for API consumers)
+    @app.get("/api")
+    async def api_root():
+        """API root endpoint."""
         return {
             "message": "AutoPR Engine API",
+            "version": "1.0.1",
+            "dashboard": "available" if DASHBOARD_AVAILABLE else "not configured",
             "github_app": "available" if GITHUB_APP_AVAILABLE else "not configured",
         }
 
