@@ -5,6 +5,7 @@
 AutoPR uses a two-domain architecture to separate concerns:
 
 ### 1. **autopr.io** - Marketing Website (Static Web App)
+
 - **Technology**: Next.js 16 (Static Site Generation)
 - **Deployment**: Azure Static Web App
 - **Purpose**: Marketing, documentation, downloads, integration guides
