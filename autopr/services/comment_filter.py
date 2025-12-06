@@ -104,26 +104,28 @@ class CommentFilterService:
             # If filtering is disabled, allow all comments
             return True
         
+        # Query for commenter without filtering by enabled status first
         if self._is_async:
             result = await self.db_session.execute(
                 select(AllowedCommenter).where(
-                    AllowedCommenter.github_username == github_username,
-                    AllowedCommenter.enabled == True  # noqa: E712
+                    AllowedCommenter.github_username == github_username
                 )
             )
             commenter = result.scalar_one_or_none()
         else:
             commenter = self.db_session.query(AllowedCommenter).filter(
-                AllowedCommenter.github_username == github_username,
-                AllowedCommenter.enabled == True  # noqa: E712
+                AllowedCommenter.github_username == github_username
             ).first()
         
-        # In whitelist mode: allowed only if in list
-        # In blacklist mode: allowed if not in list (or in list but enabled)
+        # In whitelist mode: allowed only if in list AND enabled
+        # In blacklist mode: allowed unless explicitly blocked (in list AND disabled)
         if settings.whitelist_mode:
-            return commenter is not None
+            return commenter is not None and commenter.enabled
         else:
-            return commenter is None or commenter.enabled
+            # Blacklist mode: user is allowed unless they are explicitly blocked
+            if commenter is None:
+                return True  # Not in list, so allowed
+            return commenter.enabled  # In list: allowed if enabled, blocked if disabled
 
     async def add_commenter(
         self,
