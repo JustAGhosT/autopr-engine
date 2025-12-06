@@ -903,12 +903,13 @@ async def api_get_comment_filter_settings(
     _: str | None = Depends(verify_api_key),
 ) -> CommentFilterSettingsResponse:
     """Get comment filter settings."""
-    from autopr.database.config import get_session
+    from autopr.database.config import get_db
     from autopr.services.comment_filter import CommentFilterService
     
     try:
-        with get_session() as session:
-            service = CommentFilterService(session)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
             settings = await service.get_settings()
             
             if settings is None:
@@ -928,6 +929,8 @@ async def api_get_comment_filter_settings(
                 auto_reply_message=settings.auto_reply_message,
                 whitelist_mode=settings.whitelist_mode,
             )
+        finally:
+            db.close()
     except Exception as e:
         logger.error(f"Failed to get comment filter settings: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get settings: {e}")
@@ -944,12 +947,13 @@ async def api_update_comment_filter_settings(
     _: str | None = Depends(verify_api_key),
 ) -> SuccessResponse:
     """Update comment filter settings."""
-    from autopr.database.config import get_session
+    from autopr.database.config import get_db
     from autopr.services.comment_filter import CommentFilterService
     
     try:
-        with get_session() as session:
-            service = CommentFilterService(session)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
             await service.update_settings(
                 enabled=settings.enabled,
                 auto_add_commenters=settings.auto_add_commenters,
@@ -958,6 +962,8 @@ async def api_update_comment_filter_settings(
                 whitelist_mode=settings.whitelist_mode,
             )
             return SuccessResponse(success=True)
+        finally:
+            db.close()
     except Exception as e:
         logger.error(f"Failed to update comment filter settings: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to update settings: {e}")
@@ -976,12 +982,13 @@ async def api_list_commenters(
     _: str | None = Depends(verify_api_key),
 ) -> list[AllowedCommenterResponse]:
     """List allowed commenters."""
-    from autopr.database.config import get_session
+    from autopr.database.config import get_db
     from autopr.services.comment_filter import CommentFilterService
     
     try:
-        with get_session() as session:
-            service = CommentFilterService(session)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
             commenters = await service.list_commenters(
                 enabled_only=enabled_only,
                 limit=limit,
@@ -1000,6 +1007,8 @@ async def api_list_commenters(
                 )
                 for c in commenters
             ]
+        finally:
+            db.close()
     except Exception as e:
         logger.error(f"Failed to list commenters: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to list commenters: {e}")
@@ -1016,12 +1025,13 @@ async def api_add_commenter(
     _: str | None = Depends(verify_api_key),
 ) -> SuccessResponse:
     """Add an allowed commenter."""
-    from autopr.database.config import get_session
+    from autopr.database.config import get_db
     from autopr.services.comment_filter import CommentFilterService
     
     try:
-        with get_session() as session:
-            service = CommentFilterService(session)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
             await service.add_commenter(
                 github_username=commenter.github_username,
                 github_user_id=commenter.github_user_id,
@@ -1029,6 +1039,8 @@ async def api_add_commenter(
                 notes=commenter.notes,
             )
             return SuccessResponse(success=True)
+        finally:
+            db.close()
     except Exception as e:
         logger.error(f"Failed to add commenter: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to add commenter: {e}")
@@ -1045,16 +1057,19 @@ async def api_remove_commenter(
     _: str | None = Depends(verify_api_key),
 ) -> SuccessResponse:
     """Remove an allowed commenter."""
-    from autopr.database.config import get_session
+    from autopr.database.config import get_db
     from autopr.services.comment_filter import CommentFilterService
     
     try:
-        with get_session() as session:
-            service = CommentFilterService(session)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
             success = await service.remove_commenter(username)
             if not success:
                 raise HTTPException(status_code=404, detail=f"Commenter not found: {username}")
             return SuccessResponse(success=True)
+        finally:
+            db.close()
     except HTTPException:
         raise
     except Exception as e:

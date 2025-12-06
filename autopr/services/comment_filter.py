@@ -282,7 +282,7 @@ class CommentFilterService:
         query = select(AllowedCommenter)
         
         if enabled_only:
-            query = query.where(AllowedCommenter.enabled == True)  # noqa: E712
+            query = query.where(AllowedCommenter.enabled.is_(True))
         
         query = query.order_by(AllowedCommenter.created_at.desc())
         query = query.limit(limit).offset(offset)
@@ -291,11 +291,8 @@ class CommentFilterService:
             result = await self.db_session.execute(query)
             return list(result.scalars().all())
         else:
-            return self.db_session.query(AllowedCommenter).filter(
-                AllowedCommenter.enabled == True if enabled_only else True  # noqa: E712
-            ).order_by(
-                AllowedCommenter.created_at.desc()
-            ).limit(limit).offset(offset).all()
+            result = self.db_session.execute(query)
+            return list(result.scalars().all())
 
     async def get_auto_reply_message(self, github_username: str) -> Optional[str]:
         """Get the auto-reply message for a new commenter.

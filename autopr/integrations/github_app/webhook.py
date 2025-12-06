@@ -119,7 +119,7 @@ async def handle_pr_comment(payload: dict) -> None:
     Args:
         payload: Webhook payload containing comment data
     """
-    from autopr.database.config import get_session
+    from autopr.database.config import get_db
     from autopr.services.comment_filter import CommentFilterService
     
     comment = payload.get("comment", {})
@@ -134,9 +134,13 @@ async def handle_pr_comment(payload: dict) -> None:
     
     # Check if commenter is allowed
     try:
-        with get_session() as session:
-            service = CommentFilterService(session)
+        # Get database session (synchronous)
+        db = next(get_db())
+        try:
+            service = CommentFilterService(db)
             
+            # Note: Using synchronous version since get_db() returns sync session
+            # The service detects this automatically via isinstance check
             is_allowed = await service.is_commenter_allowed(commenter_username)
             
             if not is_allowed:
@@ -166,6 +170,8 @@ async def handle_pr_comment(payload: dict) -> None:
             
             # Process the comment (existing logic would go here)
             logger.info(f"Processing comment from allowed user: {commenter_username}")
+        finally:
+            db.close()
             
     except Exception as e:
         logger.error(f"Error processing comment filter: {e}", exc_info=True)
