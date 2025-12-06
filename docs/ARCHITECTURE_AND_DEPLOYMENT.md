@@ -115,6 +115,7 @@ curl -I https://autopr.io
 ```
 
 ### Check Backend (app.autopr.io)
+
 ```bash
 # Dashboard
 curl https://app.autopr.io/
