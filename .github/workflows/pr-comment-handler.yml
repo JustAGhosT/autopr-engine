@@ -12,24 +12,72 @@ jobs:
     if: github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
-      - name: Check if comment analysis is enabled
-        id: check_config
-        uses: mikefarah/yq@v4
+      - name: Quick checkout for config
+        uses: actions/checkout@v4
         with:
-          cmd: yq '.comment_analyzer.enabled' configs/config.yaml
+          sparse-checkout: configs/config.yaml
+          sparse-checkout-cone-mode: false
 
-      - name: Checkout code
-        if: steps.check_config.outputs.result == 'true'
+      - name: Check if commenter is excluded bot
+        id: check_bot
+        run: |
+          COMMENTER="${{ github.event.comment.user.login }}"
+          echo "Checking if '$COMMENTER' is an excluded bot..."
+
+          # Check if bot exclusions are enabled
+          BOT_EXCLUSIONS_ENABLED=$(yq '.comment_analyzer.bot_exclusions.enabled // false' configs/config.yaml)
+          if [ "$BOT_EXCLUSIONS_ENABLED" != "true" ]; then
+            echo "Bot exclusions disabled, processing comment"
+            echo "is_excluded=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check excluded users list
+          EXCLUDED_USERS=$(yq '.comment_analyzer.bot_exclusions.excluded_users[]' configs/config.yaml 2>/dev/null || echo "")
+          for user in $EXCLUDED_USERS; do
+            # Remove quotes from YAML output
+            user=$(echo "$user" | tr -d '"')
+            if [ "$COMMENTER" = "$user" ]; then
+              echo "User '$COMMENTER' is in excluded list, skipping"
+              echo "is_excluded=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+
+          # Check for [bot] suffix if enabled
+          EXCLUDE_BOT_SUFFIX=$(yq '.comment_analyzer.bot_exclusions.exclude_bot_suffix // false' configs/config.yaml)
+          if [ "$EXCLUDE_BOT_SUFFIX" = "true" ]; then
+            if [[ "$COMMENTER" == *"[bot]" ]]; then
+              echo "User '$COMMENTER' has [bot] suffix, skipping"
+              echo "is_excluded=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+
+          echo "User '$COMMENTER' is not excluded, processing comment"
+          echo "is_excluded=false" >> $GITHUB_OUTPUT
+
+      - name: Check if comment analysis is enabled
+        if: steps.check_bot.outputs.is_excluded != 'true'
+        id: check_config
+        run: |
+          ENABLED=$(yq '.comment_analyzer.enabled // false' configs/config.yaml)
+          echo "result=$ENABLED" >> $GITHUB_OUTPUT
+
+      - name: Full checkout
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true'
         uses: actions/checkout@v4
 
+      # Define reusable condition: not a bot AND analysis enabled
+      # All subsequent steps use this combined condition
       - name: Set up Python
-        if: steps.check_config.outputs.result == 'true'
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
       - name: Install Poetry
-        if: steps.check_config.outputs.result == 'true'
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true'
         uses: snok/install-poetry@v1
         with:
           version: latest
@@ -37,7 +85,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Load cached venv
-        if: steps.check_config.outputs.result == 'true'
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true'
         id: cached-poetry-dependencies
         uses: actions/cache@v4
         with:
@@ -45,13 +93,13 @@ jobs:
           key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install Python dependencies
-        if: steps.check_config.outputs.result == 'true' && steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true' && steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           poetry env use python
           poetry install --no-interaction --no-root
 
       - name: Create Integration Event
-        if: steps.check_config.outputs.result == 'true'
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true'
         run: |
           PAYLOAD=$(jq -n \
             --arg body "${{ github.event.comment.body }}" \
@@ -60,8 +108,9 @@ jobs:
             '{body: $body, path: $path, diff_url: $diff_url}')
 
           poetry run autopr create-event --event-type "pr_comment" --payload "$PAYLOAD"
+
       - name: Analyze Comment
-        if: steps.check_config.outputs.result == 'true'
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true'
         id: analysis
         run: |
           COMMENT_BODY="${{ github.event.comment.body }}"
@@ -73,7 +122,7 @@ jobs:
           echo "json=$ANALYSIS_JSON" >> $GITHUB_OUTPUT
 
       - name: Apply Fix
-        if: steps.check_config.outputs.result == 'true' && fromJson(steps.analysis.outputs.json).auto_fixable
+        if: steps.check_bot.outputs.is_excluded != 'true' && steps.check_config.outputs.result == 'true' && fromJson(steps.analysis.outputs.json).auto_fixable
         run: |
           FILE_PATH="${{ github.event.comment.path }}"
           python scripts/comment_handler.py '${{ steps.analysis.outputs.json }}' "$FILE_PATH"

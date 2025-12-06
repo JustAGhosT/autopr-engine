@@ -101,7 +101,10 @@ class BaseAgent[InputT, OutputT]:
             from autopr.utils.volume_utils import get_volume_level_name
 
             level_name = get_volume_level_name(self.volume_config.volume)
-            self.backstory = f"{self.backstory}\nYou are currently operating at volume level {self.volume_config.volume} ({level_name})."
+            self.backstory = (
+                f"{self.backstory}\nYou are currently operating at "
+                f"volume level {self.volume_config.volume} ({level_name})."
+            )
         except Exception:
             pass
 

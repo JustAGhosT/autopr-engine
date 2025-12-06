@@ -169,7 +169,9 @@ class AxoloIntegration:
         self.active_channels[pr_key] = channel
 
         logger.info(
-            f"PR channel created - channel_id: {channel.channel_id}, pr_number: {pr_data['pr_number']}, repository: {pr_data['repository']}"
+            f"PR channel created - channel_id: {channel.channel_id}, "
+            f"pr_number: {pr_data['pr_number']}, "
+            f"repository: {pr_data['repository']}"
         )
 
         return channel
@@ -239,7 +241,8 @@ class AxoloIntegration:
         await self.messaging.post_slack_message(message)
 
         logger.info(
-            f"Analysis posted to channel - channel_id: {channel.channel_id}, issues_count: {len(analysis_result.get('issues_found', []))}"
+            f"Analysis posted to channel - channel_id: {channel.channel_id}, "
+            f"issues_count: {len(analysis_result.get('issues_found', []))}"
         )
 
     async def link_linear_issues(

@@ -71,6 +71,7 @@ async def root_fallback():
     }
 
 
+
 def create_app() -> FastAPI:
     """Create FastAPI application with GitHub App integration.
 

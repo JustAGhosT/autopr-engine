@@ -113,7 +113,10 @@ class AICodeAnalyzer:
         # Create the messages for the LLM
         file_extension = os.path.splitext(file_path)[1]
         language = self._get_language_from_extension(file_extension)
-        user_prompt = f"Please analyze the following {language} code from file '{file_path}'.\n\n```{language}\n{code_content}\n```"
+        user_prompt = (
+            f"Please analyze the following {language} code from file "
+            f"'{file_path}'.\n\n```{language}\n{code_content}\n```"
+        )
 
         messages = [
             LLMMessage(role="system", content=self._system_prompt),
