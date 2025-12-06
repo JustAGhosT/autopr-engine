@@ -38,6 +38,11 @@ else
 fi
 
 # Generate passwords if not provided
+if [ -z "$POSTGRES_LOGIN" ]; then
+  echo "Using default PostgreSQL login..."
+  POSTGRES_LOGIN="autopr"
+fi
+
 if [ -z "$POSTGRES_PASSWORD" ]; then
   echo "Generating PostgreSQL password..."
   POSTGRES_PASSWORD=$(openssl rand -base64 32)
@@ -53,6 +58,7 @@ CREDENTIALS_FILE=".credentials-${RESOURCE_GROUP}.json"
 cat > "$CREDENTIALS_FILE" << CREDS_EOF
 {
   "resource_group": "$RESOURCE_GROUP",
+  "postgres_login": "$POSTGRES_LOGIN",
   "postgres_password": "$POSTGRES_PASSWORD",
   "redis_password": "$REDIS_PASSWORD",
   "created_at": "$(date -Iseconds)"
@@ -72,6 +78,7 @@ az deployment group create \
     location="$LOCATION" \
     postgresLocation="$POSTGRES_LOCATION" \
     containerImage="$CONTAINER_IMAGE" \
+    postgresLogin="$POSTGRES_LOGIN" \
     postgresPassword="$POSTGRES_PASSWORD" \
     redisPassword="$REDIS_PASSWORD" \
   --output json > deployment-output.json

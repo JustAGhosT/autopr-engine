@@ -61,6 +61,7 @@ The script will:
 
 2. **Generate passwords**:
    ```bash
+   POSTGRES_LOGIN="autopr"  # Or your custom username
    POSTGRES_PASSWORD=$(openssl rand -base64 32)
    REDIS_PASSWORD=$(openssl rand -base64 32)
    ```
@@ -75,6 +76,7 @@ The script will:
        regionAbbr=san \
        location=eastus2 \
        containerImage=ghcr.io/justaghost/autopr-engine:latest \
+       postgresLogin="$POSTGRES_LOGIN" \
        postgresPassword="$POSTGRES_PASSWORD" \
        redisPassword="$REDIS_PASSWORD"
    ```
@@ -87,6 +89,7 @@ The script will:
 - `regionAbbr`: Region abbreviation (san, eus, wus, etc.)
 - `location`: Azure region (eastus2, westus2, etc.)
 - `containerImage`: Full container image path
+- `postgresLogin`: PostgreSQL administrator username (default: autopr)
 - `postgresPassword`: PostgreSQL administrator password (secure)
 - `redisPassword`: Redis password (secure)
 
@@ -103,7 +106,7 @@ The Container App is configured with the following environment variables:
 - `POSTGRES_HOST`: PostgreSQL server FQDN
 - `POSTGRES_PORT`: PostgreSQL port (5432)
 - `POSTGRES_DB`: Database name (autopr)
-- `POSTGRES_USER`: Database user (autopr)
+- `POSTGRES_USER`: Database user (configured via `postgresLogin` parameter, default: autopr)
 - `POSTGRES_PASSWORD`: Database password (via secretRef, not plaintext)
 - `POSTGRES_SSLMODE`: SSL mode (require)
 
@@ -178,8 +181,10 @@ az postgres flexible-server show \
   --output json
 
 # Connect using psql
-psql -h <fqdn> -U autopr -d autopr
+psql -h <fqdn> -U <postgres_login> -d autopr
 ```
+
+**Note:** The PostgreSQL username is configured via the `postgresLogin` parameter (defaults to 'autopr'). For production deployments using GitHub Actions, set the `AUTOPR_POSTGRES_LOGIN` secret to customize the username.
 
 ### Connect to Redis
 
