@@ -6,11 +6,9 @@
 
 /**
  * The deployed AutoPR Engine application URL.
- * This is the Azure Container Apps URL where the engine is deployed.
- * 
- * Note: Once a custom domain (app.autopr.io) is configured, update this constant.
+ * This is the custom domain configured for the Azure Container Apps deployment.
  */
-export const APP_URL = 'https://prod-autopr-san-app.bravewave-1f1ec0f2.eastus2.azurecontainerapps.io';
+export const APP_URL = 'https://app.autopr.io';
 
 /**
  * API base URL for AutoPR Engine

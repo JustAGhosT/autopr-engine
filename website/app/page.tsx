@@ -117,11 +117,11 @@ export default function Home() {
 
         {/* CTA Section */}
         <section className="mx-auto max-w-7xl px-6 py-24">
-          <div className="rounded-lg bg-slate-800 p-12 text-center dark:bg-slate-800/90">
-            <h2 className="mb-4 text-3xl font-bold text-white">
+          <div className="rounded-lg border border-slate-200 bg-gradient-to-r from-slate-100 to-slate-50 p-12 text-center dark:border-slate-700 dark:from-slate-800 dark:to-slate-900">
+            <h2 className="mb-4 text-3xl font-bold text-slate-900 dark:text-white">
               Ready to Transform Your Workflow?
             </h2>
-            <p className="mb-8 text-xl text-slate-300">
+            <p className="mb-8 text-xl text-slate-600 dark:text-slate-300">
               Get started with AutoPR Engine alpha today and experience the future of PR automation.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -135,7 +135,7 @@ export default function Home() {
               </a>
               <Link
                 href="/installation"
-                className="inline-block rounded-lg bg-white px-8 py-3 text-lg font-semibold text-slate-900 transition-colors hover:bg-slate-100"
+                className="inline-block rounded-lg border-2 border-slate-300 bg-white px-8 py-3 text-lg font-semibold text-slate-900 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:hover:border-slate-500 dark:hover:bg-slate-700"
               >
                 Install Now
               </Link>
