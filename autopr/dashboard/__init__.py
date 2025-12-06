@@ -9,10 +9,12 @@ from autopr.dashboard.router import (
     RateLimiter,
     StatusResponse,
     MetricsResponse,
+    ActivityRecord,
     QualityCheckRequest,
     QualityCheckResponse,
     ConfigRequest,
     ConfigResponse,
+    SuccessResponse,
     router,
     dashboard_state,
     __version__,
@@ -28,8 +30,10 @@ __all__ = [
     # Response models
     "StatusResponse",
     "MetricsResponse",
+    "ActivityRecord",
     "QualityCheckResponse",
     "ConfigResponse",
+    "SuccessResponse",
     # Request models
     "QualityCheckRequest",
     "ConfigRequest",

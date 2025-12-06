@@ -10,7 +10,7 @@ import os
 import threading
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -46,13 +46,6 @@ class StatusResponse(BaseModel):
     success_rate: float = Field(description="Success rate (0.0 to 1.0)")
     average_processing_time: float = Field(description="Average processing time in seconds")
     quality_stats: dict[str, QualityModeStats] = Field(description="Stats per quality mode")
-
-
-class MetricsDataPoint(BaseModel):
-    """Single data point for metrics charts."""
-    timestamp: str = Field(description="ISO timestamp")
-    processing_time: float | None = Field(default=None, description="Processing time")
-    issues: int | None = Field(default=None, description="Issue count")
 
 
 class MetricsResponse(BaseModel):
@@ -166,8 +159,9 @@ class RateLimiter:
             return max(0, int(60 - (time.time() - oldest)))
 
 
-# Rate limiter for quality check endpoint (10 requests per minute)
-quality_check_limiter = RateLimiter(requests_per_minute=10)
+# Rate limiter for quality check endpoint (configurable via env var)
+_rate_limit = int(os.getenv("AUTOPR_RATE_LIMIT", "10"))
+quality_check_limiter = RateLimiter(requests_per_minute=_rate_limit)
 
 
 # =============================================================================

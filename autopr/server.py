@@ -65,14 +65,17 @@ def create_app() -> FastAPI:
     if cors_origins_env:
         # Parse comma-separated list of allowed origins
         cors_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+        allow_credentials = True  # Safe with specific origins
     else:
         # Development fallback: allow all origins only when env var not set
+        # Note: credentials cannot be used with wildcard origin per CORS spec
         cors_origins = ["*"]
+        allow_credentials = False
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
-        allow_credentials=True,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -124,9 +127,6 @@ def create_app() -> FastAPI:
     async def health(detailed: bool = Query(False, description="Return detailed health info")):
         """
         Health check endpoint.
-
-        This is the primary health endpoint. The dashboard also exposes /api/health
-        with additional uptime information.
 
         Args:
             detailed: If True, perform comprehensive health check with all components.
