@@ -18,6 +18,7 @@ AutoPR uses a two-domain architecture to separate concerns:
 **Custom Domain Configuration**: Now automatically configured via Bicep template. Certificate is automatically managed by Azure.
 
 ### 2. **app.autopr.io** - Application Backend (Container App)
+
 - **Technology**: FastAPI (Python 3.13)
 - **Deployment**: Azure Container Apps
 - **Purpose**: Backend API, GitHub App integration, dashboard
