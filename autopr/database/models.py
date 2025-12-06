@@ -411,7 +411,10 @@ class CommentFilterSettings(Base, AuditMixin):
     )
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     auto_add_commenters: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    auto_reply_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    auto_reply_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False,
+        comment="Disabled by default until GitHub API integration is complete"
+    )
     auto_reply_message: Mapped[str] = mapped_column(
         Text,
         nullable=False,

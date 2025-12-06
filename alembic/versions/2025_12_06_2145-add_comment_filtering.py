@@ -47,7 +47,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('enabled', sa.Boolean(), nullable=False, server_default='true'),
         sa.Column('auto_add_commenters', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('auto_reply_enabled', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('auto_reply_enabled', sa.Boolean(), nullable=False, server_default='false'),  # Disabled by default until GitHub API is implemented
         sa.Column(
             'auto_reply_message',
             sa.Text(),
@@ -63,9 +63,10 @@ def upgrade() -> None:
     op.create_index('idx_comment_filter_settings_enabled', 'comment_filter_settings', ['enabled'])
     
     # Insert default settings (singleton record)
+    # NOTE: auto_reply_enabled is false by default as GitHub API integration is pending
     op.execute("""
         INSERT INTO comment_filter_settings (id, enabled, auto_add_commenters, auto_reply_enabled, whitelist_mode)
-        VALUES (gen_random_uuid(), true, false, true, true)
+        VALUES (gen_random_uuid(), true, false, false, true)
     """)
 
 

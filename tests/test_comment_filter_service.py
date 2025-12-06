@@ -38,11 +38,11 @@ def in_memory_db():
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
     
-    # Create default settings
+    # Create default settings (with auto_reply_enabled=False by default)
     default_settings = CommentFilterSettings(
         enabled=True,
         auto_add_commenters=False,
-        auto_reply_enabled=True,
+        auto_reply_enabled=False,  # Disabled by default until GitHub API is implemented
         whitelist_mode=True,
     )
     session.add(default_settings)
@@ -71,7 +71,7 @@ class TestCommentFilterSettings:
         assert settings is not None
         assert settings.enabled is True
         assert settings.auto_add_commenters is False
-        assert settings.auto_reply_enabled is True
+        assert settings.auto_reply_enabled is False  # Default is False until GitHub API implemented
         assert settings.whitelist_mode is True
 
     @pytest.mark.asyncio
@@ -96,8 +96,8 @@ class TestCommentFilterSettings:
         updated = await comment_service.update_settings(enabled=False)
         
         assert updated.enabled is False
-        # Other fields should remain unchanged
-        assert updated.auto_reply_enabled is True
+        # Other fields should remain unchanged (including False auto_reply_enabled)
+        assert updated.auto_reply_enabled is False
         assert updated.whitelist_mode is True
 
     @pytest.mark.asyncio
@@ -306,8 +306,9 @@ class TestAutoReplyMessage:
     @pytest.mark.asyncio
     async def test_get_auto_reply_message_formats_username(self, comment_service):
         """Test that auto-reply message formats username correctly."""
-        # Set a custom message with username placeholder
+        # First enable auto_reply and set a custom message with username placeholder
         await comment_service.update_settings(
+            auto_reply_enabled=True,
             auto_reply_message="Hello @{username}! Welcome."
         )
         
@@ -317,15 +318,16 @@ class TestAutoReplyMessage:
     @pytest.mark.asyncio
     async def test_get_auto_reply_message_when_disabled(self, comment_service):
         """Test that no message is returned when auto-reply is disabled."""
-        # Disable auto-reply
-        await comment_service.update_settings(auto_reply_enabled=False)
-        
+        # Auto-reply is disabled by default
         message = await comment_service.get_auto_reply_message("testuser")
         assert message is None
 
     @pytest.mark.asyncio
     async def test_get_auto_reply_message_default(self, comment_service):
-        """Test default auto-reply message."""
+        """Test default auto-reply message when enabled."""
+        # Enable auto-reply to test the default message
+        await comment_service.update_settings(auto_reply_enabled=True)
+        
         message = await comment_service.get_auto_reply_message("testuser")
         
         assert message is not None
