@@ -4,6 +4,7 @@ Repository management endpoints.
 """
 
 import asyncio
+import hashlib
 import uuid
 from datetime import datetime
 from typing import List
@@ -22,6 +23,16 @@ from .models import (
 )
 
 router = APIRouter()
+
+
+def _generate_mock_github_id(full_name: str) -> int:
+    """Generate a deterministic mock GitHub ID from repo full name.
+
+    Uses SHA-256 hash truncated to 8 digits for consistency across sessions.
+    """
+    hash_bytes = hashlib.sha256(full_name.encode()).digest()
+    # Take first 4 bytes and convert to int, then mod to get 8-digit number
+    return int.from_bytes(hash_bytes[:4], 'big') % 100000000
 
 # Mock repository storage (in production, use database)
 _repositories: dict[str, dict] = {}
@@ -278,7 +289,7 @@ async def enable_repository(
         repo = {
             "id": str(uuid.uuid4()),
             "user_id": user.user_id,
-            "github_id": hash(full_name) % 1000000,  # Mock ID
+            "github_id": _generate_mock_github_id(full_name),
             "owner": owner,
             "name": name,
             "full_name": full_name,

@@ -12,6 +12,7 @@ from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from autopr.health.health_checker import HealthChecker
 
@@ -116,6 +117,45 @@ def create_app(skip_env_validation: bool = False) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Add CSRF protection middleware for API routes
+    if DASHBOARD_API_AVAILABLE:
+        from autopr.api.deps import verify_csrf
+
+        class CSRFMiddleware(BaseHTTPMiddleware):
+            """Middleware to verify CSRF protection on mutation requests."""
+
+            async def dispatch(self, request: Request, call_next):
+                # Only check CSRF for API routes
+                if request.url.path.startswith("/api/"):
+                    await verify_csrf(request)
+                return await call_next(request)
+
+        app.add_middleware(CSRFMiddleware)
+
+    # Add caching headers middleware
+    class CacheHeadersMiddleware(BaseHTTPMiddleware):
+        """Middleware to add appropriate Cache-Control headers."""
+
+        async def dispatch(self, request: Request, call_next):
+            response = await call_next(request)
+
+            # Skip if response already has Cache-Control
+            if "cache-control" in response.headers:
+                return response
+
+            # Add caching headers based on route and method
+            if request.method == "GET":
+                if request.url.path.startswith("/api/"):
+                    # API responses: private, must revalidate for fresh data
+                    response.headers["Cache-Control"] = "private, no-cache, must-revalidate"
+                elif request.url.path.startswith("/assets/"):
+                    # Static assets: long cache with immutable
+                    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+
+            return response
+
+    app.add_middleware(CacheHeadersMiddleware)
 
     # Include Dashboard API routes if available
     if DASHBOARD_API_AVAILABLE:
