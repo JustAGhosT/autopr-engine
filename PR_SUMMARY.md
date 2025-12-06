@@ -30,6 +30,7 @@ This PR fixes two critical deployment issues reported by users:
 - This would result in a 404 error at `/`, leading to confusion
 
 **Solution**:
+
 - Added comprehensive logging to track module import success/failure
 - Added a fallback route at `/` that returns helpful API information when dashboard is unavailable
 - The fallback clearly indicates "dashboard not available (import failed)" and lists other available endpoints
