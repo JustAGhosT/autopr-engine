@@ -152,6 +152,7 @@ After deployment, verify:
 ## Questions & Support
 
 For questions about these changes, see:
+
 - Architecture guide in `docs/ARCHITECTURE_AND_DEPLOYMENT.md`
 - Infrastructure README in `infrastructure/bicep/README-WEBSITE.md`
 - Troubleshooting section in ARCHITECTURE_AND_DEPLOYMENT.md
