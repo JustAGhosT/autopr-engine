@@ -6,7 +6,7 @@ Marketing and documentation website for AutoPR Engine, built with Next.js and de
 
 - **Home Page**: Project promotion and key features
 - **Installation Guide**: Step-by-step installation instructions
-- **Integration Guide**: How to integrate with the deployed AutoPR instance at app.autopr.io
+- **Integration Guide**: How to integrate with the deployed AutoPR instance
 - **Download Page**: Links to various download methods
 
 ## Development

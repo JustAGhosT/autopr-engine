@@ -1,4 +1,5 @@
 import Header from "../components/Header";
+import { APP_URL, API_URL } from "../config/constants";
 
 export default function Integration() {
   return (
@@ -11,16 +12,7 @@ export default function Integration() {
             Integrate with AutoPR
           </h1>
           <p className="mb-12 text-xl text-slate-600 dark:text-slate-400">
-            Connect your GitHub repositories to our deployed AutoPR instance at{" "}
-            <a
-              href="https://app.autopr.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline dark:text-blue-400"
-            >
-              app.autopr.io
-            </a>
-            .
+            Connect your GitHub repositories to our deployed AutoPR instance.
           </p>
 
           <div className="space-y-8">
@@ -39,12 +31,12 @@ export default function Integration() {
                 GitHub account:
               </p>
               <a
-                href="https://app.autopr.io"
+                href={APP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
               >
-                Open app.autopr.io →
+                Open AutoPR Engine →
               </a>
             </div>
 
@@ -227,7 +219,7 @@ quality_gates:
             </p>
             <div className="rounded-lg bg-slate-800 p-4 font-mono text-sm text-slate-50 dark:bg-slate-900">
               <pre className="overflow-x-auto">{`# Example: Trigger analysis via API
-curl -X POST https://app.autopr.io/api/v1/analyze \\
+curl -X POST ${API_URL}/v1/analyze \\
   -H "Authorization: Bearer YOUR_API_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -238,7 +230,7 @@ curl -X POST https://app.autopr.io/api/v1/analyze \\
             <p className="mt-4 text-slate-600 dark:text-slate-400">
               Generate your API token from the{" "}
               <a
-                href="https://app.autopr.io/settings/api"
+                href={`${APP_URL}/settings/api`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline dark:text-blue-400"
