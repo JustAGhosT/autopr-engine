@@ -8,12 +8,14 @@ import json
 import logging
 import os
 import threading
+import time
+from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
@@ -25,12 +27,77 @@ __version__ = "1.0.1"
 logger = logging.getLogger(__name__)
 
 
-# Pydantic models for request/response validation
+# =============================================================================
+# Response Models (for OpenAPI documentation)
+# =============================================================================
+
+class QualityModeStats(BaseModel):
+    """Statistics for a quality mode."""
+    count: int = Field(description="Number of checks run in this mode")
+    avg_time: float = Field(description="Average processing time in seconds")
+
+
+class StatusResponse(BaseModel):
+    """Response model for dashboard status."""
+    uptime_seconds: float = Field(description="Server uptime in seconds")
+    uptime_formatted: str = Field(description="Human-readable uptime string")
+    total_checks: int = Field(description="Total quality checks performed")
+    total_issues: int = Field(description="Total issues found across all checks")
+    success_rate: float = Field(description="Success rate (0.0 to 1.0)")
+    average_processing_time: float = Field(description="Average processing time in seconds")
+    quality_stats: dict[str, QualityModeStats] = Field(description="Stats per quality mode")
+
+
+class MetricsDataPoint(BaseModel):
+    """Single data point for metrics charts."""
+    timestamp: str = Field(description="ISO timestamp")
+    processing_time: float | None = Field(default=None, description="Processing time")
+    issues: int | None = Field(default=None, description="Issue count")
+
+
+class MetricsResponse(BaseModel):
+    """Response model for metrics data."""
+    processing_times: list[dict[str, Any]] = Field(description="Processing time history")
+    issue_counts: list[dict[str, Any]] = Field(description="Issue count history")
+    quality_mode_usage: dict[str, int] = Field(description="Usage count per quality mode")
+
+
+class ActivityRecord(BaseModel):
+    """Single activity record."""
+    timestamp: str = Field(description="ISO timestamp of the check")
+    mode: str = Field(description="Quality mode used")
+    files_checked: int = Field(description="Number of files checked")
+    issues_found: int = Field(description="Number of issues found")
+    processing_time: float = Field(description="Processing time in seconds")
+    success: bool = Field(description="Whether the check succeeded")
+
+
 class QualityCheckRequest(BaseModel):
     """Request model for quality check endpoint."""
-    mode: str = Field(default="fast", description="Quality check mode")
-    files: list[str] = Field(default_factory=list, description="List of files to check")
-    directory: str = Field(default="", description="Directory to scan")
+    mode: str = Field(default="fast", description="Quality check mode (ultra-fast, fast, smart, comprehensive, ai_enhanced)")
+    files: list[str] = Field(default_factory=list, description="List of file paths to check")
+    directory: str = Field(default="", description="Directory to scan for files")
+
+    model_config = {"json_schema_extra": {
+        "example": {
+            "mode": "fast",
+            "files": ["src/main.py", "src/utils.py"],
+            "directory": ""
+        }
+    }}
+
+
+class QualityCheckResponse(BaseModel):
+    """Response model for quality check results."""
+    success: bool = Field(description="Whether the check completed successfully")
+    total_issues_found: int = Field(description="Total number of issues found")
+    processing_time: float = Field(description="Processing time in seconds")
+    mode: str = Field(description="Quality mode that was used")
+    files_checked: int = Field(description="Number of files checked")
+    issues_by_tool: dict[str, int] = Field(default_factory=dict, description="Issue counts per tool")
+    simulated: bool = Field(default=False, description="Whether results are simulated")
+    error: str | None = Field(default=None, description="Error message if failed")
+    details: Any | None = Field(default=None, description="Detailed results")
 
 
 class ConfigRequest(BaseModel):
@@ -39,8 +106,112 @@ class ConfigRequest(BaseModel):
     auto_fix: bool = Field(default=False, description="Enable auto-fix")
     max_file_size: int = Field(default=10000, description="Max file size in lines")
     notifications: bool = Field(default=True, description="Enable notifications")
-    refresh_interval: int = Field(default=30, description="Dashboard refresh interval")
+    refresh_interval: int = Field(default=30, description="Dashboard refresh interval in seconds")
 
+
+class ConfigResponse(BaseModel):
+    """Response model for configuration."""
+    quality_mode: str
+    auto_fix: bool
+    notifications: bool
+    max_file_size: int
+    refresh_interval: int
+
+
+class SuccessResponse(BaseModel):
+    """Generic success response."""
+    success: bool = Field(description="Operation success status")
+
+
+# =============================================================================
+# Rate Limiting
+# =============================================================================
+
+class RateLimiter:
+    """Simple in-memory rate limiter.
+
+    Limits requests per IP address within a time window.
+    """
+
+    def __init__(self, requests_per_minute: int = 10):
+        self.requests_per_minute = requests_per_minute
+        self.requests: dict[str, list[float]] = defaultdict(list)
+        self._lock = threading.Lock()
+
+    def is_allowed(self, client_ip: str) -> bool:
+        """Check if request from client IP is allowed."""
+        now = time.time()
+        window_start = now - 60  # 1 minute window
+
+        with self._lock:
+            # Clean old requests
+            self.requests[client_ip] = [
+                ts for ts in self.requests[client_ip] if ts > window_start
+            ]
+
+            # Check limit
+            if len(self.requests[client_ip]) >= self.requests_per_minute:
+                return False
+
+            # Record request
+            self.requests[client_ip].append(now)
+            return True
+
+    def get_retry_after(self, client_ip: str) -> int:
+        """Get seconds until next request is allowed."""
+        with self._lock:
+            if not self.requests[client_ip]:
+                return 0
+            oldest = min(self.requests[client_ip])
+            return max(0, int(60 - (time.time() - oldest)))
+
+
+# Rate limiter for quality check endpoint (10 requests per minute)
+quality_check_limiter = RateLimiter(requests_per_minute=10)
+
+
+# =============================================================================
+# Authentication
+# =============================================================================
+
+def get_api_key() -> str | None:
+    """Get configured API key from environment."""
+    return os.getenv("AUTOPR_API_KEY")
+
+
+async def verify_api_key(
+    x_api_key: str | None = Header(default=None, description="API key for authentication")
+) -> str | None:
+    """Verify API key if authentication is enabled.
+
+    If AUTOPR_API_KEY is set, requests must include matching X-API-Key header.
+    If not set, all requests are allowed (open access).
+    """
+    required_key = get_api_key()
+
+    if required_key is None:
+        # No authentication required
+        return None
+
+    if x_api_key is None:
+        raise HTTPException(
+            status_code=401,
+            detail="API key required. Set X-API-Key header.",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
+
+    if x_api_key != required_key:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid API key",
+        )
+
+    return x_api_key
+
+
+# =============================================================================
+# Dashboard State
+# =============================================================================
 
 class DashboardState:
     """Manages dashboard state and data.
@@ -132,7 +303,7 @@ class DashboardState:
         """Get metrics data for charts.
 
         Note: Returns actual historical data from recent_activity when available,
-        otherwise returns placeholder data for chart rendering.
+        otherwise returns empty lists for chart rendering.
         """
         with self._lock:
             return {
@@ -143,7 +314,6 @@ class DashboardState:
 
     def _get_processing_times_data(self) -> list[dict[str, Any]]:
         """Get processing times data for charts from recent activity."""
-        # Return actual data from recent activity if available
         if self.recent_activity:
             return [
                 {
@@ -152,12 +322,10 @@ class DashboardState:
                 }
                 for activity in self.recent_activity[-24:]
             ]
-        # Return empty list when no data (frontend should handle empty state)
         return []
 
     def _get_issue_counts_data(self) -> list[dict[str, Any]]:
         """Get issue counts data for charts from recent activity."""
-        # Return actual data from recent activity if available
         if self.recent_activity:
             return [
                 {
@@ -166,7 +334,6 @@ class DashboardState:
                 }
                 for activity in self.recent_activity[-24:]
             ]
-        # Return empty list when no data
         return []
 
     def _get_quality_mode_usage_data(self) -> dict[str, int]:
@@ -229,29 +396,48 @@ class DashboardState:
                 self.recent_activity = self.recent_activity[-50:]
 
 
+# =============================================================================
+# Helpers
+# =============================================================================
+
 def _get_config_path() -> Path:
     """Get configuration file path, handling container environments."""
-    # Check for explicit config directory
     config_dir = os.getenv("AUTOPR_CONFIG_DIR")
     if config_dir:
         return Path(config_dir) / "dashboard_config.json"
 
-    # Try XDG config directory (Linux standard)
     xdg_config = os.getenv("XDG_CONFIG_HOME")
     if xdg_config:
         return Path(xdg_config) / "autopr" / "dashboard_config.json"
 
-    # Try home directory
     try:
         home = Path.home()
         return home / ".autopr" / "dashboard_config.json"
     except (RuntimeError, OSError):
-        # Fallback for containers without home directory
         return Path("/tmp") / ".autopr" / "dashboard_config.json"
 
 
-# Create router and state
-router = APIRouter(tags=["dashboard"])
+def _get_client_ip(request: Request) -> str:
+    """Get client IP address from request."""
+    # Check for forwarded header (behind proxy)
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+# =============================================================================
+# Router Setup
+# =============================================================================
+
+router = APIRouter(
+    tags=["Dashboard"],
+    responses={
+        401: {"description": "API key required"},
+        403: {"description": "Invalid API key"},
+        429: {"description": "Rate limit exceeded"},
+    },
+)
 dashboard_state = DashboardState()
 
 # Set up templates with error handling
@@ -264,7 +450,17 @@ else:
     logger.warning(f"Templates directory not found: {templates_dir}")
 
 
-@router.get("/", response_class=HTMLResponse)
+# =============================================================================
+# Endpoints
+# =============================================================================
+
+@router.get(
+    "/",
+    response_class=HTMLResponse,
+    summary="Dashboard UI",
+    description="Serves the main dashboard web interface.",
+    include_in_schema=False,  # Hide from API docs since it's HTML
+)
 async def dashboard_home(request: Request):
     """Serve the main dashboard page."""
     if templates is None:
@@ -287,40 +483,69 @@ async def dashboard_home(request: Request):
         )
 
 
-@router.get("/api/status")
-async def api_status():
+@router.get(
+    "/api/status",
+    response_model=StatusResponse,
+    summary="Get Dashboard Status",
+    description="Returns current dashboard status including uptime, check counts, and statistics.",
+)
+async def api_status(_: str | None = Depends(verify_api_key)) -> StatusResponse:
     """Get dashboard status."""
-    return dashboard_state.get_status()
+    return StatusResponse(**dashboard_state.get_status())
 
 
-@router.get("/api/metrics")
-async def api_metrics():
-    """Get metrics data."""
-    return dashboard_state.get_metrics()
+@router.get(
+    "/api/metrics",
+    response_model=MetricsResponse,
+    summary="Get Metrics Data",
+    description="Returns metrics data for dashboard charts including processing times and issue counts.",
+)
+async def api_metrics(_: str | None = Depends(verify_api_key)) -> MetricsResponse:
+    """Get metrics data for charts."""
+    return MetricsResponse(**dashboard_state.get_metrics())
 
 
-@router.get("/api/history")
-async def api_history():
+@router.get(
+    "/api/history",
+    response_model=list[ActivityRecord],
+    summary="Get Activity History",
+    description="Returns recent quality check activity history (last 50 checks).",
+)
+async def api_history(_: str | None = Depends(verify_api_key)) -> list[ActivityRecord]:
     """Get activity history."""
-    return dashboard_state.recent_activity.copy()
+    return [ActivityRecord(**record) for record in dashboard_state.recent_activity]
 
 
-@router.post("/api/quality-check")
-async def api_quality_check(request: QualityCheckRequest):
-    """
-    Run a quality check on specified files or directory.
-
-    Args:
-        request: Quality check request with mode, files, and directory.
-
-    Returns:
-        Quality check results.
-    """
+@router.post(
+    "/api/quality-check",
+    response_model=QualityCheckResponse,
+    summary="Run Quality Check",
+    description="Run a quality check on specified files or directory. Rate limited to 10 requests per minute.",
+    responses={
+        429: {"description": "Rate limit exceeded. Retry after the specified time."},
+    },
+)
+async def api_quality_check(
+    request: Request,
+    body: QualityCheckRequest,
+    _: str | None = Depends(verify_api_key),
+) -> QualityCheckResponse:
+    """Run a quality check on specified files or directory."""
     import glob as glob_module
 
-    mode = request.mode
-    files = list(request.files)  # Copy to avoid mutation
-    directory = request.directory
+    # Rate limiting
+    client_ip = _get_client_ip(request)
+    if not quality_check_limiter.is_allowed(client_ip):
+        retry_after = quality_check_limiter.get_retry_after(client_ip)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit exceeded. Try again in {retry_after} seconds.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    mode = body.mode
+    files = list(body.files)
+    directory = body.directory
 
     if not files and not directory:
         raise HTTPException(status_code=400, detail="No files or directory specified")
@@ -335,9 +560,8 @@ async def api_quality_check(request: QualityCheckRequest):
             valid_files.append(str(Path(file_path).resolve()))
         files = valid_files
 
-    # Normalize mode - convert hyphens to underscores for ai-enhanced -> ai_enhanced
+    # Normalize mode
     normalized_mode = mode.lower().strip().replace("-", "_")
-    # But keep ultra-fast as hyphenated (it's the enum value)
     if normalized_mode == "ultra_fast":
         normalized_mode = "ultra-fast"
 
@@ -384,7 +608,7 @@ async def api_quality_check(request: QualityCheckRequest):
                 detail=f"No relevant files found in directory: {directory}"
             )
 
-        # Validate scanned files to ensure they're within allowed directories
+        # Validate scanned files
         validated_files = []
         for scanned_file in scanned_files:
             is_valid, _ = dashboard_state.validate_path(scanned_file)
@@ -398,27 +622,24 @@ async def api_quality_check(request: QualityCheckRequest):
             )
         files = validated_files
 
-    # Run quality check using the actual engine
+    # Run quality check
     result = await _run_quality_check(files, normalized_mode)
 
     # Update dashboard state
     dashboard_state.update_with_result(result, normalized_mode)
 
-    return result
+    return QualityCheckResponse(**result)
 
 
 async def _run_quality_check(files: list[str], mode: str) -> dict[str, Any]:
-    """Run quality check using the actual QualityEngine.
-
-    Falls back to simulation if engine is not available.
-    """
-    import time
+    """Run quality check using the actual QualityEngine."""
+    import time as time_module
 
     try:
         from autopr.actions.quality_engine.engine import QualityEngine
         from autopr.actions.quality_engine.models import QualityInputs
 
-        start_time = time.time()
+        start_time = time_module.time()
 
         engine = QualityEngine()
         inputs = QualityInputs(
@@ -427,10 +648,8 @@ async def _run_quality_check(files: list[str], mode: str) -> dict[str, Any]:
             enable_ai_agents=(mode == "ai_enhanced"),
         )
 
-        # Run the quality check
         result = await asyncio.to_thread(engine.run, inputs)
-
-        processing_time = time.time() - start_time
+        processing_time = time_module.time() - start_time
 
         return {
             "success": True,
@@ -440,6 +659,7 @@ async def _run_quality_check(files: list[str], mode: str) -> dict[str, Any]:
             "files_checked": len(files),
             "issues_by_tool": getattr(result, 'issues_by_tool', {}),
             "details": getattr(result, 'details', None),
+            "simulated": False,
         }
     except ImportError:
         logger.warning("QualityEngine not available, using simulation")
@@ -453,6 +673,8 @@ async def _run_quality_check(files: list[str], mode: str) -> dict[str, Any]:
             "processing_time": 0,
             "mode": mode,
             "files_checked": len(files),
+            "issues_by_tool": {},
+            "simulated": False,
         }
 
 
@@ -475,34 +697,48 @@ async def _simulate_quality_check(files: list[str], mode: str) -> dict[str, Any]
             "mypy": random.randint(0, 3),
             "bandit": random.randint(0, 2),
         },
-        "simulated": True,  # Flag to indicate this is simulated data
+        "simulated": True,
     }
 
 
-@router.get("/api/config")
-async def get_config():
+@router.get(
+    "/api/config",
+    response_model=ConfigResponse,
+    summary="Get Configuration",
+    description="Returns current dashboard configuration settings.",
+)
+async def get_config(_: str | None = Depends(verify_api_key)) -> ConfigResponse:
     """Get current configuration."""
     config_path = _get_config_path()
     if config_path.exists():
         try:
             with open(config_path) as f:
-                return json.load(f)
+                data = json.load(f)
+                return ConfigResponse(**data)
         except json.JSONDecodeError as e:
             logger.warning(f"Invalid config file: {e}")
         except OSError as e:
             logger.warning(f"Could not read config file: {e}")
 
-    return {
-        "quality_mode": "fast",
-        "auto_fix": False,
-        "notifications": True,
-        "max_file_size": 10000,
-        "refresh_interval": 30,
-    }
+    return ConfigResponse(
+        quality_mode="fast",
+        auto_fix=False,
+        notifications=True,
+        max_file_size=10000,
+        refresh_interval=30,
+    )
 
 
-@router.post("/api/config")
-async def save_config(config: ConfigRequest):
+@router.post(
+    "/api/config",
+    response_model=SuccessResponse,
+    summary="Save Configuration",
+    description="Save dashboard configuration settings.",
+)
+async def save_config(
+    config: ConfigRequest,
+    _: str | None = Depends(verify_api_key),
+) -> SuccessResponse:
     """Save configuration."""
     config_path = _get_config_path()
 
@@ -510,7 +746,7 @@ async def save_config(config: ConfigRequest):
         config_path.parent.mkdir(parents=True, exist_ok=True)
         with open(config_path, "w") as f:
             json.dump(config.model_dump(), f, indent=2)
-        return {"success": True}
+        return SuccessResponse(success=True)
     except OSError as e:
         logger.error(f"Failed to save config: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save config: {e}")
@@ -519,5 +755,20 @@ async def save_config(config: ConfigRequest):
         raise HTTPException(status_code=500, detail=f"Failed to serialize config: {e}")
 
 
-# Export for use by server.py
-__all__ = ["router", "dashboard_state", "DashboardState", "__version__"]
+# =============================================================================
+# Exports
+# =============================================================================
+
+__all__ = [
+    "router",
+    "dashboard_state",
+    "DashboardState",
+    "RateLimiter",
+    "StatusResponse",
+    "MetricsResponse",
+    "QualityCheckRequest",
+    "QualityCheckResponse",
+    "ConfigRequest",
+    "ConfigResponse",
+    "__version__",
+]
