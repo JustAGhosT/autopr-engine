@@ -59,6 +59,7 @@ This PR fixes two critical deployment issues reported by users:
 
 ### Security Improvements ✅
 
+
 - Tightened Content Security Policy in staticwebapp.config.json
 - Removed unnecessary `unsafe-eval` directive
 - Kept minimal `unsafe-inline` only for Next.js generated styles
