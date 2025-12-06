@@ -34,10 +34,7 @@ echo "🔧 Setting up pre-commit hooks..."
 pre-commit install
 
 # Create necessary directories
-mkdir -p logs
-data
-temp
-.coverage
+mkdir -p logs data temp .coverage
 
 # Set up environment file from example
 if [ ! -f .env ]; then

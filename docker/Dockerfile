@@ -82,9 +82,9 @@ USER autopr
 # Expose port for web server
 EXPOSE 8080
 
-# Health check
+# Health check using curl (available in the image)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD poetry run python -c "import requests; requests.get('http://localhost:8080/health')"
+    CMD curl --fail http://localhost:8080/health || exit 1
 
 # Default environment variables
 ENV AUTOPR_HOST=0.0.0.0 \

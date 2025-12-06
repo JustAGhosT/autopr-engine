@@ -65,10 +65,10 @@ az deployment group create \
   --output json > deployment-output.json
 
 echo "Deployment complete!"
-echo "PostgreSQL password: $POSTGRES_PASSWORD"
-echo "Redis password: $REDIS_PASSWORD"
 echo ""
-echo "⚠️  IMPORTANT: Save these passwords securely!"
+echo "⚠️  IMPORTANT: Passwords have been saved to deployment-output.json"
+echo "   Store them securely and delete the file after retrieving credentials."
+echo "   DO NOT commit deployment-output.json to version control!"
 echo ""
 echo "Container App URL:"
 jq -r '.properties.outputs.containerAppUrl.value' deployment-output.json
