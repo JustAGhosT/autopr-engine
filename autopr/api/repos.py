@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import List
 import uuid
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from .deps import get_current_user, SessionData
@@ -18,6 +19,39 @@ router = APIRouter()
 _repositories: dict[str, dict] = {}
 
 
+async def _fetch_github_repos(github_token: str) -> List[dict]:
+    """Fetch repositories from GitHub API."""
+    repos = []
+    page = 1
+    per_page = 100  # Max allowed by GitHub API
+
+    async with httpx.AsyncClient() as client:
+        while True:
+            response = await client.get(
+                f"https://api.github.com/user/repos?page={page}&per_page={per_page}&sort=updated",
+                headers={
+                    "Authorization": f"Bearer {github_token}",
+                    "Accept": "application/vnd.github+json",
+                },
+            )
+
+            if response.status_code != 200:
+                break
+
+            page_repos = response.json()
+            if not page_repos:
+                break
+
+            repos.extend(page_repos)
+            page += 1
+
+            # Limit to first 500 repos
+            if len(repos) >= 500:
+                break
+
+    return repos
+
+
 def _get_user_repos(user_id: str, page: int = 1, per_page: int = 20) -> tuple[List[dict], int]:
     """Get repositories for a user with pagination."""
     user_repos = [r for r in _repositories.values() if r.get("user_id") == user_id]
@@ -27,13 +61,71 @@ def _get_user_repos(user_id: str, page: int = 1, per_page: int = 20) -> tuple[Li
     return user_repos[start:end], total
 
 
+@router.post("/sync")
+async def sync_repositories(user: SessionData = Depends(get_current_user)):
+    """Sync repositories from GitHub."""
+    github_repos = await _fetch_github_repos(user.github_token)
+
+    synced = 0
+    now = datetime.utcnow().isoformat()
+
+    for gh_repo in github_repos:
+        full_name = gh_repo["full_name"]
+        owner, name = full_name.split("/", 1)
+
+        # Check if repo already exists
+        existing = next(
+            (r for r in _repositories.values()
+             if r["github_id"] == gh_repo["id"] and r["user_id"] == user.user_id),
+            None
+        )
+
+        if existing:
+            # Update existing repo
+            existing["full_name"] = full_name
+            existing["owner"] = owner
+            existing["name"] = name
+            existing["updated_at"] = now
+        else:
+            # Create new repo entry
+            repo = {
+                "id": str(uuid.uuid4()),
+                "user_id": user.user_id,
+                "github_id": gh_repo["id"],
+                "owner": owner,
+                "name": name,
+                "full_name": full_name,
+                "enabled": False,
+                "settings": {},
+                "created_at": now,
+                "updated_at": now,
+            }
+            _repositories[repo["id"]] = repo
+
+        synced += 1
+
+    return {"success": True, "synced": synced, "total": len(github_repos)}
+
+
 @router.get("", response_model=ApiResponse[List[RepositoryResponse]])
 async def list_repositories(
     page: int = 1,
     per_page: int = 20,
+    sync: bool = False,
     user: SessionData = Depends(get_current_user),
 ):
-    """List repositories for current user."""
+    """List repositories for current user.
+
+    Args:
+        page: Page number (default 1)
+        per_page: Items per page (default 20)
+        sync: If True, sync from GitHub first
+    """
+    # Auto-sync if no repos exist or sync requested
+    user_repos_count = len([r for r in _repositories.values() if r.get("user_id") == user.user_id])
+    if sync or user_repos_count == 0:
+        await sync_repositories(user)
+
     repos, total = _get_user_repos(user.user_id, page, per_page)
 
     return ApiResponse(

@@ -114,6 +114,7 @@ export const reposApi = {
     api.patch<ApiResponse<Repository>>(`/repos/${owner}/${name}`, data),
   enable: (owner: string, name: string) => api.post(`/repos/${owner}/${name}/enable`),
   disable: (owner: string, name: string) => api.post(`/repos/${owner}/${name}/disable`),
+  sync: () => api.post('/repos/sync'),
 }
 
 export const botsApi = {
@@ -136,7 +137,7 @@ export const workflowsApi = {
 
 export const dashboardApi = {
   getStats: () => api.get<ApiResponse<DashboardStats>>('/dashboard/stats'),
-  getActivity: (limit = 20) => api.get<ApiResponse<ActivityItem[]>>(`/activity?limit=${limit}`),
+  getActivity: (limit = 20) => api.get<ApiResponse<ActivityItem[]>>(`/dashboard/activity?limit=${limit}`),
 }
 
 export const settingsApi = {

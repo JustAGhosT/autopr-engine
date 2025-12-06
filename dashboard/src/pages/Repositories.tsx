@@ -29,6 +29,11 @@ export function RepositoriesPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['repos'] }),
   })
 
+  const syncMutation = useMutation({
+    mutationFn: () => reposApi.sync(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['repos'] }),
+  })
+
   const toggleRepo = (repo: Repository) => {
     if (repo.enabled) {
       disableMutation.mutate({ owner: repo.owner, name: repo.name })
@@ -41,6 +46,13 @@ export function RepositoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Repositories</h1>
+        <Button
+          variant="secondary"
+          onClick={() => syncMutation.mutate()}
+          isLoading={syncMutation.isPending}
+        >
+          Sync from GitHub
+        </Button>
       </div>
 
       <Card>
