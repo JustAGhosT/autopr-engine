@@ -13,8 +13,8 @@ import json
 import logging
 import os
 import threading
+import time
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -74,24 +74,43 @@ class InMemoryStorage(StorageBackend):
 
     Fast but not persistent. Data is lost on restart.
     Suitable for development and single-instance deployments.
+    Supports TTL (time-to-live) for automatic key expiration.
     """
 
     def __init__(self):
         self._data: dict[str, Any] = {}
+        self._expiry: dict[str, float] = {}  # key -> expiry timestamp
         self._lock = threading.Lock()
         logger.info("Using in-memory storage backend")
 
+    def _is_expired(self, key: str) -> bool:
+        """Check if a key has expired."""
+        if key not in self._expiry:
+            return False
+        return time.time() > self._expiry[key]
+
+    def _cleanup_expired(self, key: str) -> None:
+        """Remove key if expired."""
+        if self._is_expired(key):
+            self._data.pop(key, None)
+            self._expiry.pop(key, None)
+
     def get(self, key: str, default: Any = None) -> Any:
         with self._lock:
+            self._cleanup_expired(key)
             return self._data.get(key, default)
 
     def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         with self._lock:
             self._data[key] = value
-        # Note: TTL not implemented for in-memory storage
+            if ttl is not None:
+                self._expiry[key] = time.time() + ttl
+            elif key in self._expiry:
+                del self._expiry[key]
 
     def increment(self, key: str, amount: int = 1) -> int:
         with self._lock:
+            self._cleanup_expired(key)
             current = self._data.get(key, 0)
             new_value = current + amount
             self._data[key] = new_value
@@ -99,6 +118,7 @@ class InMemoryStorage(StorageBackend):
 
     def append_to_list(self, key: str, value: Any, max_length: int = 50) -> None:
         with self._lock:
+            self._cleanup_expired(key)
             if key not in self._data:
                 self._data[key] = []
             self._data[key].append(value)
@@ -107,20 +127,24 @@ class InMemoryStorage(StorageBackend):
 
     def get_list(self, key: str) -> list[Any]:
         with self._lock:
+            self._cleanup_expired(key)
             return list(self._data.get(key, []))
 
     def update_dict(self, key: str, field: str, value: Any) -> None:
         with self._lock:
+            self._cleanup_expired(key)
             if key not in self._data:
                 self._data[key] = {}
             self._data[key][field] = value
 
     def get_dict(self, key: str) -> dict[str, Any]:
         with self._lock:
+            self._cleanup_expired(key)
             return dict(self._data.get(key, {}))
 
     def initialize_if_empty(self, key: str, value: Any) -> None:
         with self._lock:
+            self._cleanup_expired(key)
             if key not in self._data:
                 self._data[key] = value
 
@@ -133,15 +157,21 @@ class RedisStorage(StorageBackend):
 
     Persistent and shareable across multiple instances.
     Suitable for production deployments.
+    Includes automatic reconnection on connection failures.
 
     Requires REDIS_URL environment variable.
     """
+
+    # Minimum seconds between reconnection attempts
+    RECONNECT_COOLDOWN = 5.0
 
     def __init__(self, redis_url: str | None = None, key_prefix: str = "autopr:dashboard:"):
         self._key_prefix = key_prefix
         self._redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
         self._client = None
         self._available = False
+        self._last_reconnect_attempt = 0.0
+        self._lock = threading.Lock()
         self._connect()
 
     def _connect(self) -> None:
@@ -165,93 +195,128 @@ class RedisStorage(StorageBackend):
             logger.warning(f"Failed to connect to Redis: {e}. Falling back to in-memory.")
             self._available = False
 
+    def _try_reconnect(self) -> bool:
+        """Attempt to reconnect to Redis with cooldown.
+
+        Returns:
+            True if reconnection succeeded, False otherwise.
+        """
+        now = time.time()
+        with self._lock:
+            if now - self._last_reconnect_attempt < self.RECONNECT_COOLDOWN:
+                return False
+            self._last_reconnect_attempt = now
+
+        logger.info("Attempting to reconnect to Redis...")
+        self._connect()
+        return self._available
+
+    def _execute_with_retry(self, operation: str, func, default: Any = None):
+        """Execute a Redis operation with automatic retry on connection failure.
+
+        Args:
+            operation: Name of the operation for logging.
+            func: Callable that performs the Redis operation.
+            default: Default value to return on failure.
+
+        Returns:
+            Result of func() on success, default on failure.
+        """
+        if not self._available:
+            # Try to reconnect if not available
+            if not self._try_reconnect():
+                return default
+
+        try:
+            return func()
+        except Exception as e:
+            # Check if it's a connection error
+            error_str = str(e).lower()
+            is_connection_error = any(
+                term in error_str
+                for term in ["connection", "timeout", "refused", "reset", "broken pipe"]
+            )
+
+            if is_connection_error:
+                logger.warning(f"Redis connection error in {operation}: {e}")
+                self._available = False
+                # Try one reconnection
+                if self._try_reconnect():
+                    try:
+                        return func()
+                    except Exception as retry_error:
+                        logger.error(f"Redis {operation} failed after reconnect: {retry_error}")
+            else:
+                logger.error(f"Redis {operation} error: {e}")
+
+            return default
+
     def _key(self, key: str) -> str:
         """Get prefixed key."""
         return f"{self._key_prefix}{key}"
 
     def get(self, key: str, default: Any = None) -> Any:
-        if not self._available:
-            return default
-        try:
+        def _get():
             value = self._client.get(self._key(key))
             if value is None:
                 return default
             return json.loads(value)
-        except Exception as e:
-            logger.error(f"Redis get error: {e}")
-            return default
+        return self._execute_with_retry("get", _get, default)
 
     def set(self, key: str, value: Any, ttl: int | None = None) -> None:
-        if not self._available:
-            return
-        try:
+        def _set():
             serialized = json.dumps(value)
             if ttl:
                 self._client.setex(self._key(key), ttl, serialized)
             else:
                 self._client.set(self._key(key), serialized)
-        except Exception as e:
-            logger.error(f"Redis set error: {e}")
+            return True
+        self._execute_with_retry("set", _set, None)
 
     def increment(self, key: str, amount: int = 1) -> int:
-        if not self._available:
-            return 0
-        try:
+        def _increment():
             return self._client.incrby(self._key(key), amount)
-        except Exception as e:
-            logger.error(f"Redis increment error: {e}")
-            return 0
+        result = self._execute_with_retry("increment", _increment, 0)
+        return result if isinstance(result, int) else 0
 
     def append_to_list(self, key: str, value: Any, max_length: int = 50) -> None:
-        if not self._available:
-            return
-        try:
+        def _append():
             prefixed_key = self._key(key)
             serialized = json.dumps(value)
             pipe = self._client.pipeline()
             pipe.rpush(prefixed_key, serialized)
             pipe.ltrim(prefixed_key, -max_length, -1)
             pipe.execute()
-        except Exception as e:
-            logger.error(f"Redis append_to_list error: {e}")
+            return True
+        self._execute_with_retry("append_to_list", _append, None)
 
     def get_list(self, key: str) -> list[Any]:
-        if not self._available:
-            return []
-        try:
+        def _get_list():
             items = self._client.lrange(self._key(key), 0, -1)
             return [json.loads(item) for item in items]
-        except Exception as e:
-            logger.error(f"Redis get_list error: {e}")
-            return []
+        result = self._execute_with_retry("get_list", _get_list, [])
+        return result if isinstance(result, list) else []
 
     def update_dict(self, key: str, field: str, value: Any) -> None:
-        if not self._available:
-            return
-        try:
+        def _update():
             self._client.hset(self._key(key), field, json.dumps(value))
-        except Exception as e:
-            logger.error(f"Redis update_dict error: {e}")
+            return True
+        self._execute_with_retry("update_dict", _update, None)
 
     def get_dict(self, key: str) -> dict[str, Any]:
-        if not self._available:
-            return {}
-        try:
+        def _get_dict():
             data = self._client.hgetall(self._key(key))
             return {k: json.loads(v) for k, v in data.items()}
-        except Exception as e:
-            logger.error(f"Redis get_dict error: {e}")
-            return {}
+        result = self._execute_with_retry("get_dict", _get_dict, {})
+        return result if isinstance(result, dict) else {}
 
     def initialize_if_empty(self, key: str, value: Any) -> None:
-        if not self._available:
-            return
-        try:
+        def _initialize():
             prefixed_key = self._key(key)
             if not self._client.exists(prefixed_key):
                 self._client.set(prefixed_key, json.dumps(value))
-        except Exception as e:
-            logger.error(f"Redis initialize_if_empty error: {e}")
+            return True
+        self._execute_with_retry("initialize_if_empty", _initialize, None)
 
     def is_available(self) -> bool:
         return self._available

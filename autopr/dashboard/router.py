@@ -7,14 +7,14 @@ import asyncio
 import json
 import logging
 import os
+import secrets
 import threading
 import time
-from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
@@ -120,43 +120,38 @@ class SuccessResponse(BaseModel):
 # Rate Limiting
 # =============================================================================
 
-class RateLimiter:
-    """Simple in-memory rate limiter.
+# Use the existing rate limiter from security module
+from autopr.security.rate_limiting import RateLimiter as SecurityRateLimiter
 
+
+class RateLimiter:
+    """Rate limiter wrapper for dashboard endpoints.
+
+    Provides a simplified API on top of the security module's RateLimiter.
     Limits requests per IP address within a time window.
     """
 
     def __init__(self, requests_per_minute: int = 10):
         self.requests_per_minute = requests_per_minute
-        self.requests: dict[str, list[float]] = defaultdict(list)
-        self._lock = threading.Lock()
+        self._limiter = SecurityRateLimiter(
+            default_limit=requests_per_minute,
+            window_seconds=60
+        )
+        self._last_info: dict[str, dict] = {}  # Store last info for get_retry_after
 
     def is_allowed(self, client_ip: str) -> bool:
         """Check if request from client IP is allowed."""
-        now = time.time()
-        window_start = now - 60  # 1 minute window
-
-        with self._lock:
-            # Clean old requests
-            self.requests[client_ip] = [
-                ts for ts in self.requests[client_ip] if ts > window_start
-            ]
-
-            # Check limit
-            if len(self.requests[client_ip]) >= self.requests_per_minute:
-                return False
-
-            # Record request
-            self.requests[client_ip].append(now)
-            return True
+        allowed, info = self._limiter.is_allowed(client_ip, limit=self.requests_per_minute)
+        self._last_info[client_ip] = info
+        return allowed
 
     def get_retry_after(self, client_ip: str) -> int:
         """Get seconds until next request is allowed."""
-        with self._lock:
-            if not self.requests[client_ip]:
-                return 0
-            oldest = min(self.requests[client_ip])
-            return max(0, int(60 - (time.time() - oldest)))
+        if client_ip in self._last_info:
+            return self._last_info[client_ip].get("retry_after", 0)
+        # If no cached info, check current state
+        _, info = self._limiter.is_allowed(client_ip, limit=self.requests_per_minute)
+        return info.get("retry_after", 0)
 
 
 # Rate limiter for quality check endpoint (configurable via env var)
@@ -194,7 +189,8 @@ async def verify_api_key(
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
-    if x_api_key != required_key:
+    # Use timing-safe comparison to prevent timing attacks
+    if not secrets.compare_digest(x_api_key, required_key):
         raise HTTPException(
             status_code=403,
             detail="Invalid API key",
@@ -229,6 +225,7 @@ class DashboardState:
     KEY_AVG_PROCESSING_TIME = "avg_processing_time"
     KEY_RECENT_ACTIVITY = "recent_activity"
     KEY_QUALITY_STATS = "quality_stats"
+    KEY_CONFIG = "config"
 
     # Default quality stats structure
     DEFAULT_QUALITY_STATS = {
@@ -237,6 +234,15 @@ class DashboardState:
         "smart": {"count": 0, "avg_time": 0.0},
         "comprehensive": {"count": 0, "avg_time": 0.0},
         "ai_enhanced": {"count": 0, "avg_time": 0.0},
+    }
+
+    # Default configuration
+    DEFAULT_CONFIG = {
+        "quality_mode": "fast",
+        "auto_fix": False,
+        "notifications": True,
+        "max_file_size": 10000,
+        "refresh_interval": 30,
     }
 
     def __init__(self, storage: StorageBackend | None = None):
@@ -457,6 +463,35 @@ class DashboardState:
             }
             self._storage.append_to_list(self.KEY_RECENT_ACTIVITY, activity, max_length=50)
 
+    def get_config(self) -> dict[str, Any]:
+        """Get dashboard configuration from storage.
+
+        Falls back to file system config for backwards compatibility,
+        then to defaults if neither exists.
+        """
+        # Try storage backend first
+        config = self._storage.get(self.KEY_CONFIG)
+        if config:
+            return {**self.DEFAULT_CONFIG, **config}
+
+        # Fall back to file system for backwards compatibility
+        config_path = _get_config_path()
+        if config_path.exists():
+            try:
+                with open(config_path) as f:
+                    data = json.load(f)
+                    # Migrate to storage backend
+                    self._storage.set(self.KEY_CONFIG, data)
+                    return {**self.DEFAULT_CONFIG, **data}
+            except (json.JSONDecodeError, OSError) as e:
+                logger.warning(f"Could not read config file: {e}")
+
+        return dict(self.DEFAULT_CONFIG)
+
+    def set_config(self, config: dict[str, Any]) -> None:
+        """Save dashboard configuration to storage."""
+        self._storage.set(self.KEY_CONFIG, config)
+
 
 # =============================================================================
 # Helpers
@@ -571,11 +606,18 @@ async def api_metrics(_: str | None = Depends(verify_api_key)) -> MetricsRespons
     "/api/history",
     response_model=list[ActivityRecord],
     summary="Get Activity History",
-    description="Returns recent quality check activity history (last 50 checks).",
+    description="Returns recent quality check activity history with optional pagination.",
 )
-async def api_history(_: str | None = Depends(verify_api_key)) -> list[ActivityRecord]:
-    """Get activity history."""
-    return [ActivityRecord(**record) for record in dashboard_state.recent_activity]
+async def api_history(
+    limit: int = Query(default=50, ge=1, le=100, description="Maximum number of records to return"),
+    offset: int = Query(default=0, ge=0, description="Number of records to skip"),
+    _: str | None = Depends(verify_api_key),
+) -> list[ActivityRecord]:
+    """Get activity history with pagination support."""
+    all_activity = dashboard_state.recent_activity
+    # Apply pagination (newest first, so reverse the list)
+    paginated = all_activity[::-1][offset:offset + limit]
+    return [ActivityRecord(**record) for record in paginated]
 
 
 @router.post(
@@ -622,16 +664,28 @@ async def api_quality_check(
             valid_files.append(str(Path(file_path).resolve()))
         files = valid_files
 
-    # Normalize mode
-    normalized_mode = mode.lower().strip().replace("-", "_")
-    if normalized_mode == "ultra_fast":
-        normalized_mode = "ultra-fast"
+    # Normalize mode to match QualityMode enum values
+    # Enum values: "ultra-fast", "fast", "smart", "comprehensive", "ai_enhanced"
+    normalized_mode = mode.lower().strip()
+
+    # Map alternative formats to canonical enum values
+    mode_aliases = {
+        "ultra_fast": "ultra-fast",
+        "ultrafast": "ultra-fast",
+        "ai-enhanced": "ai_enhanced",
+        "aienhanced": "ai_enhanced",
+    }
+    normalized_mode = mode_aliases.get(normalized_mode, normalized_mode)
 
     # Validate mode
     try:
         QualityMode(normalized_mode)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Unknown quality mode: {mode}")
+        valid_modes = [m.value for m in QualityMode]
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown quality mode: {mode}. Valid modes: {', '.join(valid_modes)}"
+        )
 
     # Handle directory scanning
     if not files and directory:
@@ -767,54 +821,31 @@ async def _simulate_quality_check(files: list[str], mode: str) -> dict[str, Any]
     "/api/config",
     response_model=ConfigResponse,
     summary="Get Configuration",
-    description="Returns current dashboard configuration settings.",
+    description="Returns current dashboard configuration settings. Uses storage backend with file system fallback.",
 )
-async def get_config(_: str | None = Depends(verify_api_key)) -> ConfigResponse:
-    """Get current configuration."""
-    config_path = _get_config_path()
-    if config_path.exists():
-        try:
-            with open(config_path) as f:
-                data = json.load(f)
-                return ConfigResponse(**data)
-        except json.JSONDecodeError as e:
-            logger.warning(f"Invalid config file: {e}")
-        except OSError as e:
-            logger.warning(f"Could not read config file: {e}")
-
-    return ConfigResponse(
-        quality_mode="fast",
-        auto_fix=False,
-        notifications=True,
-        max_file_size=10000,
-        refresh_interval=30,
-    )
+async def api_get_config(_: str | None = Depends(verify_api_key)) -> ConfigResponse:
+    """Get current configuration from storage backend."""
+    config_data = dashboard_state.get_config()
+    return ConfigResponse(**config_data)
 
 
 @router.post(
     "/api/config",
     response_model=SuccessResponse,
     summary="Save Configuration",
-    description="Save dashboard configuration settings.",
+    description="Save dashboard configuration settings to storage backend.",
 )
-async def save_config(
+async def api_save_config(
     config: ConfigRequest,
     _: str | None = Depends(verify_api_key),
 ) -> SuccessResponse:
-    """Save configuration."""
-    config_path = _get_config_path()
-
+    """Save configuration to storage backend."""
     try:
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(config_path, "w") as f:
-            json.dump(config.model_dump(), f, indent=2)
+        dashboard_state.set_config(config.model_dump())
         return SuccessResponse(success=True)
-    except OSError as e:
+    except Exception as e:
         logger.error(f"Failed to save config: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save config: {e}")
-    except (TypeError, ValueError) as e:
-        logger.error(f"Failed to serialize config: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to serialize config: {e}")
 
 
 # =============================================================================
@@ -828,9 +859,11 @@ __all__ = [
     "RateLimiter",
     "StatusResponse",
     "MetricsResponse",
+    "ActivityRecord",
     "QualityCheckRequest",
     "QualityCheckResponse",
     "ConfigRequest",
     "ConfigResponse",
+    "SuccessResponse",
     "__version__",
 ]
