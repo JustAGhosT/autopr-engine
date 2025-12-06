@@ -11,6 +11,7 @@ This PR fixes two critical deployment issues reported by users:
 
 **Solution**:
 
+
 - Added `Microsoft.Web/staticSites/customDomains` resource to `website.bicep`
 - This resource automatically creates and maintains the custom domain binding
 - Azure now manages the SSL certificate lifecycle (provisioning and renewal)
