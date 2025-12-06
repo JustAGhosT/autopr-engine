@@ -50,6 +50,7 @@ There are TWO dashboards in this project:
 - Technology: React/Next.js with Tailwind CSS
 
 ### Application Dashboard (Python)
+
 - Location: `autopr/dashboard/` directory  
 - Served at: **app.autopr.io/**
 - Purpose: Internal monitoring and quality checks
