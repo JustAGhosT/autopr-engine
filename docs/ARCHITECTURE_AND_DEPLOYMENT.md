@@ -142,6 +142,7 @@ curl https://app.autopr.io/health
 - Verify `staticwebapp.config.json` exists in the `out/` directory
 
 ### "Why is app.autopr.io showing a health check at /"
+
 - This is incorrect - it should show the Python dashboard
 - Check that `DASHBOARD_AVAILABLE` is True in server logs
 - Verify `autopr/dashboard/templates/index.html` exists in container
