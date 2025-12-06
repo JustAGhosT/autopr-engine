@@ -3,10 +3,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Theme integration with Tailwind */
+/* Theme integration with Tailwind v4 */
 @theme inline {
-  --color-background: var(--color-background);
-  --color-foreground: var(--color-foreground);
+  /* Map Tailwind theme to design tokens - use the underlying values, not circular refs */
+  --color-background: var(--color-neutral-50);
+  --color-foreground: var(--color-neutral-800);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -30,14 +31,16 @@ body {
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  z-index: 100;
+  z-index: var(--z-index-toast);
   transition: top var(--duration-200) var(--ease-out);
 }
 
 .skip-link:focus {
   top: var(--space-4);
   left: var(--space-4);
-  outline: none;
+  /* Use visible focus ring instead of removing outline */
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* Focus visible using design tokens */
@@ -53,7 +56,7 @@ body {
   transition-timing-function: var(--ease-in-out);
 }
 
-/* Scrollbar styling using design tokens */
+/* Scrollbar styling - WebKit browsers */
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
 }
@@ -69,4 +72,10 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover-bg);
+}
+
+/* Scrollbar styling - Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg);
 }

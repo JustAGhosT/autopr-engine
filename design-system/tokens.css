@@ -8,7 +8,7 @@
  * - Import this file in your application's global CSS
  * - Reference tokens using CSS custom properties: var(--token-name)
  *
- * @version 1.0.0
+ * @version 1.0.2
  * @updated 2025-12-06
  */
 
@@ -425,14 +425,21 @@
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   /* --------------------------------------------------------------------------
-     7.3 Common Transitions
+     7.3 Common Transition Properties (Reference Only)
+     --------------------------------------------------------------------------
+     IMPORTANT: CSS custom properties CANNOT be used with transition-property
+     because the browser treats the entire value as a single invalid property.
+     These are documented for reference. Use the explicit list in your CSS:
+
+     transition-property: background-color, border-color, color, fill, stroke;
      -------------------------------------------------------------------------- */
 
-  --transition-colors: background-color, border-color, color, fill, stroke;
-  --transition-all: all;
-  --transition-opacity: opacity;
-  --transition-shadow: box-shadow;
-  --transition-transform: transform;
+  /* Reference values - do NOT use with transition-property directly */
+  --transition-colors-ref: "background-color, border-color, color, fill, stroke";
+  --transition-all-ref: "all";
+  --transition-opacity-ref: "opacity";
+  --transition-shadow-ref: "box-shadow";
+  --transition-transform-ref: "transform";
 }
 
 /* ==========================================================================

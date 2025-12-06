@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 /**
  * AnimatedBackground - Particle animation background using design tokens
@@ -9,7 +9,8 @@ import { useEffect, useRef } from 'react';
  * - --color-particle: Base particle color
  * - --color-particle-connection: Connection line color
  *
- * This component respects the user's reduced motion preferences.
+ * This component respects the user's reduced motion preferences and
+ * responds dynamically when the preference changes.
  */
 
 // Animation configuration constants
@@ -29,14 +30,102 @@ const PARTICLE_COLORS = {
   dark: { r: 147, g: 197, b: 253 },  // --color-primary-300 (#93c5fd)
 };
 
+class Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  opacity: number;
+
+  constructor(canvasWidth: number, canvasHeight: number) {
+    this.x = Math.random() * canvasWidth;
+    this.y = Math.random() * canvasHeight;
+    this.vx = (Math.random() - 0.5) * PARTICLE_SPEED;
+    this.vy = (Math.random() - 0.5) * PARTICLE_SPEED;
+    this.radius = Math.random() * (PARTICLE_MAX_RADIUS - PARTICLE_MIN_RADIUS) + PARTICLE_MIN_RADIUS;
+    this.opacity = Math.random() * (PARTICLE_MAX_OPACITY - PARTICLE_MIN_OPACITY) + PARTICLE_MIN_OPACITY;
+  }
+
+  update(canvasWidth: number, canvasHeight: number) {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if (this.x < 0 || this.x > canvasWidth) this.vx *= -1;
+    if (this.y < 0 || this.y > canvasHeight) this.vy *= -1;
+  }
+
+  draw(ctx: CanvasRenderingContext2D, isDark: boolean) {
+    const color = isDark ? PARTICLE_COLORS.dark : PARTICLE_COLORS.light;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${this.opacity})`;
+    ctx.fill();
+  }
+}
+
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(true); // Default to true (safe)
 
+  // Check initial reduced motion preference on mount
   useEffect(() => {
-    // Respect reduced motion preferences
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const initParticles = useCallback((width: number, height: number) => {
+    particlesRef.current = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particlesRef.current.push(new Particle(width, height));
+    }
+  }, []);
+
+  const drawConnections = useCallback((ctx: CanvasRenderingContext2D, isDark: boolean) => {
+    const color = isDark ? PARTICLE_COLORS.dark : PARTICLE_COLORS.light;
+    const particles = particlesRef.current;
+
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < CONNECTION_DISTANCE) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          const opacity = (1 - distance / CONNECTION_DISTANCE) * CONNECTION_MAX_OPACITY;
+          ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+  }, []);
+
+  // Animation effect - starts/stops based on reduced motion preference
+  useEffect(() => {
+    // Don't animate if user prefers reduced motion
     if (prefersReducedMotion) {
-      return; // Don't animate if user prefers reduced motion
+      // Clear canvas when reduced motion is enabled
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      return;
     }
 
     const canvas = canvasRef.current;
@@ -45,76 +134,10 @@ export default function AnimatedBackground() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let particles: Particle[] = [];
-
-    class Particle {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-      opacity: number;
-
-      constructor(canvasWidth: number, canvasHeight: number) {
-        this.x = Math.random() * canvasWidth;
-        this.y = Math.random() * canvasHeight;
-        this.vx = (Math.random() - 0.5) * PARTICLE_SPEED;
-        this.vy = (Math.random() - 0.5) * PARTICLE_SPEED;
-        this.radius = Math.random() * (PARTICLE_MAX_RADIUS - PARTICLE_MIN_RADIUS) + PARTICLE_MIN_RADIUS;
-        this.opacity = Math.random() * (PARTICLE_MAX_OPACITY - PARTICLE_MIN_OPACITY) + PARTICLE_MIN_OPACITY;
-      }
-
-      update(canvasWidth: number, canvasHeight: number) {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.x < 0 || this.x > canvasWidth) this.vx *= -1;
-        if (this.y < 0 || this.y > canvasHeight) this.vy *= -1;
-      }
-
-      draw(ctx: CanvasRenderingContext2D, isDark: boolean) {
-        const color = isDark ? PARTICLE_COLORS.dark : PARTICLE_COLORS.light;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${this.opacity})`;
-        ctx.fill();
-      }
-    }
-
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      initParticles();
-    };
-
-    const initParticles = () => {
-      particles = [];
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particles.push(new Particle(canvas.width, canvas.height));
-      }
-    };
-
-    const drawConnections = (isDark: boolean) => {
-      const color = isDark ? PARTICLE_COLORS.dark : PARTICLE_COLORS.light;
-
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < CONNECTION_DISTANCE) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            const opacity = (1 - distance / CONNECTION_DISTANCE) * CONNECTION_MAX_OPACITY;
-            ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity})`;
-            ctx.lineWidth = 1;
-            ctx.stroke();
-          }
-        }
-      }
+      initParticles(canvas.width, canvas.height);
     };
 
     const animate = () => {
@@ -122,14 +145,14 @@ export default function AnimatedBackground() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach(particle => {
+      particlesRef.current.forEach(particle => {
         particle.update(canvas.width, canvas.height);
         particle.draw(ctx, isDark);
       });
 
-      drawConnections(isDark);
+      drawConnections(ctx, isDark);
 
-      animationFrameId = requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
 
     resizeCanvas();
@@ -137,21 +160,13 @@ export default function AnimatedBackground() {
 
     window.addEventListener('resize', resizeCanvas);
 
-    // Listen for reduced motion preference changes
-    const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleMotionChange = (e: MediaQueryListEvent) => {
-      if (e.matches) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-    motionMediaQuery.addEventListener('change', handleMotionChange);
-
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       window.removeEventListener('resize', resizeCanvas);
-      motionMediaQuery.removeEventListener('change', handleMotionChange);
     };
-  }, []);
+  }, [prefersReducedMotion, initParticles, drawConnections]);
 
   return (
     <canvas

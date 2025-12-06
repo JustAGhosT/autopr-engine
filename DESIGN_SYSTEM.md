@@ -1053,6 +1053,16 @@ Before submitting changes:
 
 ## Changelog
 
+### Version 1.0.2 (December 6, 2025)
+- **Critical Fix:** Fixed circular CSS variable references in globals.css `@theme` block
+- **Critical Fix:** Moved `@import` before `@tailwind` directives in desktop App.css
+- **Critical Fix:** Fixed invalid `transition-property: var()` usage (CSS vars don't work for property lists)
+- **Desktop Fonts:** Added desktop-specific font stack (`--font-sans-desktop`) since Geist isn't available in Tauri
+- **Skip Link Fix:** Replaced `outline: none` with proper focus ring on skip link
+- **Firefox Scrollbars:** Added `scrollbar-width` and `scrollbar-color` for Firefox support
+- **Reduced Motion:** Fixed animation restart when user toggles reduced motion preference
+- **Token Docs:** Updated transition tokens documentation to warn about CSS limitations
+
 ### Version 1.0.1 (December 6, 2025)
 - **Token Integration:** Imported tokens.css into website globals.css and desktop App.css
 - **Font Fix:** Fixed font-family bug in globals.css (was Arial, now uses Geist via tokens)
