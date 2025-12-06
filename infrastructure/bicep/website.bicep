@@ -32,7 +32,15 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
   }
 }
 
+// Custom domain binding - automatically configures the domain
+resource customDomainBinding 'Microsoft.Web/staticSites/customDomains@2022-03-01' = {
+  parent: staticWebApp
+  name: customDomain
+  properties: {}
+}
+
 output staticWebAppName string = staticWebApp.name
 output staticWebAppUrl string = staticWebApp.properties.defaultHostname
 output resourceGroupName string = resourceGroup().name
 output customDomain string = customDomain
+output customDomainValidationToken string = staticWebApp.id
