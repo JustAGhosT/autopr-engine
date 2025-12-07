@@ -58,12 +58,14 @@ Added customDomain parameter with value "app.autopr.io".
 ### 5. Documentation
 
 **Updated `docs/ARCHITECTURE_AND_DEPLOYMENT.md`:**
+
 - Expanded Custom Domain Issue section to include both autopr.io and app.autopr.io
 - Added comprehensive DNS configuration section with examples
 - Added specific instructions for obtaining FQDNs from deployment outputs
 - Documented SSL certificate auto-management
 
 **Updated `infrastructure/bicep/README-AUTOPR-ENGINE.md`:**
+
 - Added customDomain to required parameters section
 - Updated Next Steps with detailed DNS configuration instructions
 - Added example DNS record configuration
