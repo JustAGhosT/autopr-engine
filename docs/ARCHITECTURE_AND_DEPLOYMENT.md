@@ -119,6 +119,8 @@ az deployment group show \
 
 ### app.autopr.io (Container App)
 
+For the backend Container App, configure a CNAME record pointing to the Azure Container Apps FQDN:
+
 ```
 Type: CNAME  
 Name: app
