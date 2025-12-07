@@ -105,7 +105,7 @@ az deployment group create \
   --parameters customDomain=$CUSTOM_DOMAIN ...
 ```
 
-### Why This Happens:
+### Why This Happens
 
 - Each deployment may try to create a certificate with the same domain name
 - Azure maintains strict uniqueness constraint on managed certificates per domain
