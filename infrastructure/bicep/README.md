@@ -14,6 +14,7 @@ This directory contains Azure Bicep templates and documentation for deploying Au
 - **[README-WEBSITE.md](./README-WEBSITE.md)** - Website deployment guide
 
 ### Technical Details
+
 - **[CERTIFICATE_FIX.md](./CERTIFICATE_FIX.md)** - Deep dive into managed certificate implementation
 - **[BUILD_AND_PUSH_IMAGE.md](./BUILD_AND_PUSH_IMAGE.md)** - Container image build process
 - **[NEXT_STEPS.md](./NEXT_STEPS.md)** - Post-deployment configuration
