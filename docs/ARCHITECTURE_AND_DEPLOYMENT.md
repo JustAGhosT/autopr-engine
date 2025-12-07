@@ -99,6 +99,7 @@ There are TWO dashboards in this project:
 For custom domain setup, add these DNS records:
 
 ### autopr.io (Static Web App)
+
 ```
 Type: CNAME
 Name: autopr.io (or @ for root domain)
