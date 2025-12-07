@@ -66,11 +66,13 @@ There are TWO dashboards in this project:
 **Solution**: Added custom domain configuration directly in the Bicep templates:
 
 **For autopr.io (Static Web App)**:
+
 - Added `Microsoft.Web/staticSites/customDomains` resource to `website.bicep`
 - This resource automatically creates and maintains the custom domain binding
 - Azure manages the SSL certificate lifecycle (provisioning and renewal)
 
 **For app.autopr.io (Container App)**:
+
 - Added `customDomains` configuration to the ingress settings in `autopr-engine.bicep`
 - Specified `bindingType: 'SniEnabled'` for automatic SSL certificate management
 - Azure manages the SSL certificate lifecycle (provisioning and renewal)
@@ -116,6 +118,7 @@ az deployment group show \
 ```
 
 ### app.autopr.io (Container App)
+
 ```
 Type: CNAME  
 Name: app
@@ -132,6 +135,7 @@ az deployment group show \
 ```
 
 **Note:** After adding the DNS records:
+
 1. Wait for DNS propagation (can take up to 48 hours, typically 15-30 minutes)
 2. Azure will automatically provision and manage SSL certificates for both domains
 3. Certificates are automatically renewed before expiration
