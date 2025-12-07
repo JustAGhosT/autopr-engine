@@ -44,6 +44,7 @@ resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificat
 
 This creates a free Azure-managed SSL certificate for the custom domain. Azure will automatically:
 
+
 - Validate domain ownership via CNAME records
 - Provision the certificate
 - Renew the certificate before expiration
