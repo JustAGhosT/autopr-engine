@@ -9,13 +9,14 @@ Configure via AUTOPR_STORAGE_BACKEND environment variable:
 - "redis": Redis storage (requires REDIS_URL)
 """
 
+from abc import ABC, abstractmethod
 import json
 import logging
 import os
 import threading
 import time
-from abc import ABC, abstractmethod
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
