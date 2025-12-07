@@ -48,6 +48,84 @@ Total time: Typically 20-45 minutes from DNS configuration to working HTTPS.
 
 ---
 
+## Common Error: "RequireCustomHostnameInEnvironment"
+
+### Error Message:
+```
+ERROR: "status":"Failed","error":{"code":"DeploymentFailed"
+"code":"RequireCustomHostnameInEnvironment"
+"message":"Creating managed certificate requires hostname 'app.*.io' added as a custom hostname to a container app or route in environment 'prod-*-san-env'"
+```
+
+### What This Means
+
+This is a **deployment ordering issue**. Azure requires the custom hostname to be added to a container app **before** a managed certificate can be created for it. This is a "chicken-and-egg" problem that occurs when:
+
+1. **The Bicep template tries to create the managed certificate first** before the container app exists
+2. **Azure validates the certificate creation** and finds no container app with that hostname
+3. **The deployment fails** because the prerequisite is not met
+
+### Root Cause
+
+In earlier versions of the template, the resources were defined in this order:
+1. Container App Environment
+2. **Managed Certificate** (requires hostname to exist)
+3. Container App (adds the hostname)
+
+This caused the deployment to fail because step 2 tried to validate before step 3 completed.
+
+### The Fix (Implemented)
+
+The template has been updated to fix this issue by:
+
+1. **Reordering resources**: The managed certificate is now created **after** the container app
+2. **Using `bindingType: 'Auto'`**: This allows Azure to automatically bind the certificate once it's provisioned
+3. **Adding explicit dependency**: The certificate resource includes `dependsOn: [containerApp]`
+
+The deployment now follows this correct order:
+1. Container App Environment
+2. Container App (adds the hostname with `bindingType: 'Auto'`)
+3. Managed Certificate (can now validate because hostname exists)
+4. Azure automatically binds the certificate to the hostname
+
+### What You Need to Do
+
+**Nothing!** If you're using the latest version of the template (after this fix), the deployment will work correctly. The changes are:
+
+✅ **Container app created first** with custom domain configured
+✅ **Certificate created second** after hostname is added
+✅ **Automatic certificate binding** via `bindingType: 'Auto'`
+✅ **Single deployment** - no need for two-step process
+
+### Verification
+
+After deployment, you can verify the setup:
+
+```bash
+# Check that the container app has the custom domain
+az containerapp show \
+  --name prod-autopr-san-app \
+  --resource-group prod-rg-san-autopr \
+  --query "properties.configuration.ingress.customDomains"
+
+# Check that the managed certificate was created
+az containerapp env certificate list \
+  --name prod-autopr-san-env \
+  --resource-group prod-rg-san-autopr \
+  --query "[?properties.subjectName=='app.autopr.io']"
+```
+
+### If You're Using an Older Template Version
+
+If you have an older version of the template that doesn't include this fix:
+
+1. **Pull the latest changes** from the repository
+2. **Redeploy** using the updated template
+
+The updated template is backward compatible and will work with existing deployments.
+
+---
+
 ## Common Error: "DuplicateManagedCertificateInEnvironment"
 
 ### Error Message:

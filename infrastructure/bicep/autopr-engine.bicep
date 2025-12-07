@@ -59,16 +59,6 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-10-02-preview' 
   }
 }
 
-resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = {
-  parent: containerAppEnv
-  name: 'cert-${replace(customDomain, '.', '-')}'
-  location: location
-  properties: {
-    subjectName: customDomain
-    domainControlValidation: 'CNAME'
-  }
-}
-
 resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
   name: postgresServerName
   location: postgresLocation
@@ -135,8 +125,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         customDomains: [
           {
             name: customDomain
-            certificateId: managedCertificate.id
-            bindingType: 'SniEnabled'
+            bindingType: 'Auto'
           }
         ]
       }
@@ -232,6 +221,22 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
       }
     }
   }
+}
+
+// Managed certificate must be created AFTER the container app
+// because Azure requires the custom hostname to be added to a container app
+// before a managed certificate can be created for it
+resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = {
+  parent: containerAppEnv
+  name: 'cert-${replace(customDomain, '.', '-')}'
+  location: location
+  properties: {
+    subjectName: customDomain
+    domainControlValidation: 'CNAME'
+  }
+  dependsOn: [
+    containerApp
+  ]
 }
 
 output containerAppName string = containerApp.name

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "5357243532765170479"
+      "templateHash": "14111739180302895686"
     }
   },
   "parameters": {
@@ -111,19 +111,6 @@
       ]
     },
     {
-      "type": "Microsoft.App/managedEnvironments/managedCertificates",
-      "apiVersion": "2024-10-02-preview",
-      "name": "[format('{0}/{1}', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "subjectName": "[parameters('customDomain')]",
-        "domainControlValidation": "CNAME"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]"
-      ]
-    },
-    {
       "type": "Microsoft.DBforPostgreSQL/flexibleServers",
       "apiVersion": "2023-06-01-preview",
       "name": "[variables('postgresServerName')]",
@@ -199,8 +186,7 @@
             "customDomains": [
               {
                 "name": "[parameters('customDomain')]",
-                "certificateId": "[resourceId('Microsoft.App/managedEnvironments/managedCertificates', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
-                "bindingType": "SniEnabled"
+                "bindingType": "Auto"
               }
             ]
           },
@@ -298,9 +284,22 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]",
-        "[resourceId('Microsoft.App/managedEnvironments/managedCertificates', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
         "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments/managedCertificates",
+      "apiVersion": "2024-10-02-preview",
+      "name": "[format('{0}/{1}', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "subjectName": "[parameters('customDomain')]",
+        "domainControlValidation": "CNAME"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/containerApps', variables('containerAppName'))]",
+        "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]"
       ]
     }
   ],
