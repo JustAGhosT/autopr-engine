@@ -66,7 +66,6 @@ Before deploying with a custom domain:
 
 1. **DNS Configuration**: Ensure your DNS has a CNAME record pointing to the Container App FQDN
    - Example: `CNAME app.autopr.io -> prod-autopr-san-app.eastus2.azurecontainerapps.io`
-   
 2. **Initial Deployment**: If DNS is not yet configured, you have two options:
    - Deploy without the custom domain first, configure DNS, then redeploy
    - Configure DNS before the first deployment (recommended)
