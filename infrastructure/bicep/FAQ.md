@@ -73,7 +73,7 @@ If you're using the GitHub Actions workflow (`.github/workflows/deploy-autopr-en
 2. ✅ Removes any duplicates before deployment
 3. ✅ Ensures clean deployment every time
 
-### Manual Fix:
+### Manual Fix
 
 If deploying manually with Azure CLI, run this cleanup script before deployment:
 
