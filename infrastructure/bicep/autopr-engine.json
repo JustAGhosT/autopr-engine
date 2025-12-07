@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "7305180306474585691"
+      "templateHash": "5357243532765170479"
     }
   },
   "parameters": {
@@ -94,7 +94,7 @@
     },
     {
       "type": "Microsoft.App/managedEnvironments",
-      "apiVersion": "2023-05-01",
+      "apiVersion": "2024-10-02-preview",
       "name": "[variables('containerAppEnvName')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -108,6 +108,19 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments/managedCertificates",
+      "apiVersion": "2024-10-02-preview",
+      "name": "[format('{0}/{1}', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "subjectName": "[parameters('customDomain')]",
+        "domainControlValidation": "CNAME"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]"
       ]
     },
     {
@@ -172,7 +185,7 @@
     },
     {
       "type": "Microsoft.App/containerApps",
-      "apiVersion": "2023-05-01",
+      "apiVersion": "2024-10-02-preview",
       "name": "[variables('containerAppName')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -186,6 +199,7 @@
             "customDomains": [
               {
                 "name": "[parameters('customDomain')]",
+                "certificateId": "[resourceId('Microsoft.App/managedEnvironments/managedCertificates', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
                 "bindingType": "SniEnabled"
               }
             ]
@@ -284,6 +298,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]",
+        "[resourceId('Microsoft.App/managedEnvironments/managedCertificates', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
         "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]"
       ]
@@ -296,7 +311,7 @@
     },
     "containerAppUrl": {
       "type": "string",
-      "value": "[format('https://{0}', reference(resourceId('Microsoft.App/containerApps', variables('containerAppName')), '2023-05-01').configuration.ingress.fqdn)]"
+      "value": "[format('https://{0}', reference(resourceId('Microsoft.App/containerApps', variables('containerAppName')), '2024-10-02-preview').configuration.ingress.fqdn)]"
     },
     "customDomain": {
       "type": "string",
