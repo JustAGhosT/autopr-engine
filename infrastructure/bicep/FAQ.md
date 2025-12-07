@@ -112,7 +112,7 @@ az deployment group create \
 - Old certificates may not be automatically cleaned up when redeploying
 - The cleanup ensures idempotent deployments
 
-### Prevention:
+### Prevention
 
 - Use the GitHub Actions workflow which handles cleanup automatically
 - If deploying manually, always run the cleanup script first
