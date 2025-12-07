@@ -105,6 +105,7 @@ bash deploy-website.sh prod san "eastus2"
 ## 📝 Architecture
 
 The deployment creates:
+
 - **Azure Container Apps**: Hosts the AutoPR Engine application
 - **Azure Database for PostgreSQL**: Primary database
 - **Azure Cache for Redis**: Caching and session storage
