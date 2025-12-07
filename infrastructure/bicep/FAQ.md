@@ -57,7 +57,7 @@ ERROR: "code": "DeploymentFailed"
 "message": "Another managed certificate with subject name 'app.*.io' and certificate name 'app.*.io-prod-aut-251205170140' available in environment 'prod-*-san-env'."
 ```
 
-### What This Means:
+### What This Means
 
 Azure Container Apps allows only **ONE managed certificate per domain per environment**. This error occurs when:
 
