@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "12163423014073071034"
+      "templateHash": "7305180306474585691"
     }
   },
   "parameters": {
@@ -44,6 +44,13 @@
         "description": "Container image name. Must be publicly accessible or use registry credentials. Build and push the image first using the GitHub Actions workflow. Default is a placeholder for testing."
       }
     },
+    "postgresLogin": {
+      "type": "string",
+      "defaultValue": "autopr",
+      "metadata": {
+        "description": "PostgreSQL administrator login username"
+      }
+    },
     "postgresPassword": {
       "type": "securestring",
       "metadata": {
@@ -55,6 +62,13 @@
       "metadata": {
         "description": "Redis password"
       }
+    },
+    "customDomain": {
+      "type": "string",
+      "defaultValue": "app.autopr.io",
+      "metadata": {
+        "description": "Custom domain name for the container app"
+      }
     }
   },
   "variables": {
@@ -62,9 +76,40 @@
     "containerAppName": "[format('{0}-app', variables('resourceNamePrefix'))]",
     "containerAppEnvName": "[format('{0}-env', variables('resourceNamePrefix'))]",
     "postgresServerName": "[format('{0}-postgres-{1}', variables('resourceNamePrefix'), uniqueString(resourceGroup().id, parameters('postgresLocation')))]",
-    "redisCacheName": "[format('{0}-redis', variables('resourceNamePrefix'))]"
+    "redisCacheName": "[format('{0}-redis', variables('resourceNamePrefix'))]",
+    "logAnalyticsWorkspaceName": "[format('{0}-logs', variables('resourceNamePrefix'))]"
   },
   "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "[variables('logAnalyticsWorkspaceName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2023-05-01",
+      "name": "[variables('containerAppEnvName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName')), '2022-10-01').customerId]",
+            "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName')), '2022-10-01').primarySharedKey]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
+      ]
+    },
     {
       "type": "Microsoft.DBforPostgreSQL/flexibleServers",
       "apiVersion": "2023-06-01-preview",
@@ -75,7 +120,7 @@
         "tier": "Burstable"
       },
       "properties": {
-        "administratorLogin": "autopr",
+        "administratorLogin": "[parameters('postgresLogin')]",
         "administratorLoginPassword": "[parameters('postgresPassword')]",
         "version": "15",
         "storage": {
@@ -111,6 +156,21 @@
       ]
     },
     {
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2023-08-01",
+      "name": "[variables('redisCacheName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "Basic",
+          "family": "C",
+          "capacity": 1
+        },
+        "enableNonSslPort": false,
+        "minimumTlsVersion": "1.2"
+      }
+    },
+    {
       "type": "Microsoft.App/containerApps",
       "apiVersion": "2023-05-01",
       "name": "[variables('containerAppName')]",
@@ -122,7 +182,13 @@
             "external": true,
             "targetPort": 8080,
             "allowInsecure": false,
-            "transport": "auto"
+            "transport": "auto",
+            "customDomains": [
+              {
+                "name": "[parameters('customDomain')]",
+                "bindingType": "SniEnabled"
+              }
+            ]
           },
           "secrets": [
             {
@@ -154,12 +220,12 @@
                   "value": "8080"
                 },
                 {
-                  "name": "DATABASE_URL",
-                  "value": "[format('postgresql://autopr:{0}@{1}:5432/autopr?sslmode=require', parameters('postgresPassword'), reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName')), '2023-06-01-preview').fullyQualifiedDomainName)]"
-                },
-                {
                   "name": "POSTGRES_HOST",
                   "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName')), '2023-06-01-preview').fullyQualifiedDomainName]"
+                },
+                {
+                  "name": "POSTGRES_PORT",
+                  "value": "5432"
                 },
                 {
                   "name": "POSTGRES_DB",
@@ -167,15 +233,15 @@
                 },
                 {
                   "name": "POSTGRES_USER",
-                  "value": "autopr"
+                  "value": "[parameters('postgresLogin')]"
                 },
                 {
                   "name": "POSTGRES_PASSWORD",
                   "secretRef": "postgres-password"
                 },
                 {
-                  "name": "REDIS_URL",
-                  "value": "[format('rediss://:{0}@{1}:6380?ssl=true', parameters('redisPassword'), reference(resourceId('Microsoft.Cache/redis', variables('redisCacheName')), '2023-08-01').hostName)]"
+                  "name": "POSTGRES_SSLMODE",
+                  "value": "require"
                 },
                 {
                   "name": "REDIS_HOST",
@@ -188,6 +254,10 @@
                 {
                   "name": "REDIS_PASSWORD",
                   "secretRef": "redis-password"
+                },
+                {
+                  "name": "REDIS_SSL",
+                  "value": "true"
                 }
               ],
               "resources": {
@@ -213,7 +283,9 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]"
+        "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]",
+        "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]",
+        "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]"
       ]
     }
   ],
@@ -225,6 +297,10 @@
     "containerAppUrl": {
       "type": "string",
       "value": "[format('https://{0}', reference(resourceId('Microsoft.App/containerApps', variables('containerAppName')), '2023-05-01').configuration.ingress.fqdn)]"
+    },
+    "customDomain": {
+      "type": "string",
+      "value": "[parameters('customDomain')]"
     },
     "postgresServerName": {
       "type": "string",

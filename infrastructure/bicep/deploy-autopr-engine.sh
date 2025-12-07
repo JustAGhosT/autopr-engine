@@ -9,6 +9,7 @@ REGION_ABBR=${2:-san}
 LOCATION=${3:-"eastus2"}
 POSTGRES_LOCATION=${4:-"southafricanorth"}
 CONTAINER_IMAGE=${5:-""}
+CUSTOM_DOMAIN=${6:-"app.autopr.io"}
 RESOURCE_GROUP="prod-rg-${REGION_ABBR}-autopr"
 
 # Use placeholder if no image specified
@@ -24,6 +25,7 @@ echo "Deploying AutoPR Engine infrastructure..."
 echo "Environment: $ENVIRONMENT"
 echo "Region: $REGION_ABBR"
 echo "Location: $LOCATION"
+echo "Custom Domain: $CUSTOM_DOMAIN"
 echo "Resource Group: $RESOURCE_GROUP"
 
 # Check if resource group exists, create if not
@@ -77,6 +79,7 @@ az deployment group create \
     regionAbbr="$REGION_ABBR" \
     location="$LOCATION" \
     postgresLocation="$POSTGRES_LOCATION" \
+    customDomain="$CUSTOM_DOMAIN" \
     containerImage="$CONTAINER_IMAGE" \
     postgresLogin="$POSTGRES_LOGIN" \
     postgresPassword="$POSTGRES_PASSWORD" \
@@ -92,4 +95,11 @@ echo "   DO NOT commit credentials files to version control!"
 echo ""
 echo "Container App URL:"
 jq -r '.properties.outputs.containerAppUrl.value' deployment-output.json
+echo ""
+echo "Custom Domain: $CUSTOM_DOMAIN"
+echo ""
+echo "Next steps:"
+echo "1. Add DNS CNAME record for $CUSTOM_DOMAIN pointing to the Container App URL above"
+echo "2. Wait for DNS propagation (typically 15-30 minutes)"
+echo "3. Azure will automatically provision the SSL certificate"
 

@@ -11,6 +11,9 @@
     "location": {
       "value": "eastus2"
     },
+    "customDomain": {
+      "value": "app.autopr.io"
+    },
     "containerImage": {
       "value": "ghcr.io/justaghost/autopr-engine:latest"
     },

@@ -24,6 +24,9 @@ param postgresPassword string
 @description('Redis password')
 param redisPassword string
 
+@description('Custom domain name for the container app')
+param customDomain string = 'app.autopr.io'
+
 var resourceNamePrefix = '${environment}-autopr-${regionAbbr}'
 var containerAppName = '${resourceNamePrefix}-app'
 var containerAppEnvName = '${resourceNamePrefix}-env'
@@ -119,6 +122,12 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 8080
         allowInsecure: false
         transport: 'auto'
+        customDomains: [
+          {
+            name: customDomain
+            bindingType: 'SniEnabled'
+          }
+        ]
       }
       secrets: [
         {
@@ -216,6 +225,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
 
 output containerAppName string = containerApp.name
 output containerAppUrl string = 'https://${containerApp.properties.configuration.ingress.fqdn}'
+output customDomain string = customDomain
 output postgresServerName string = postgresServer.name
 output postgresFqdn string = postgresServer.properties.fullyQualifiedDomainName
 output redisCacheName string = redisCache.name

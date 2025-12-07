@@ -201,6 +201,7 @@ jobs:
               environment=prod \
               regionAbbr=san \
               location=eastus2 \
+              customDomain=app.autopr.io \
               containerImage=ghcr.io/justaghost/autopr-engine:latest \
               postgresLogin="${{ steps.passwords.outputs.postgres_login }}" \
               postgresPassword="${{ steps.passwords.outputs.postgres_password }}" \
@@ -216,6 +217,7 @@ jobs:
             --output json)
           
           echo "container_app_url=$(echo $OUTPUTS | jq -r '.containerAppUrl.value')" >> $GITHUB_OUTPUT
+          echo "custom_domain=$(echo $OUTPUTS | jq -r '.customDomain.value')" >> $GITHUB_OUTPUT
           echo "postgres_fqdn=$(echo $OUTPUTS | jq -r '.postgresFqdn.value')" >> $GITHUB_OUTPUT
           echo "redis_host=$(echo $OUTPUTS | jq -r '.redisHostName.value')" >> $GITHUB_OUTPUT
 
@@ -223,6 +225,12 @@ jobs:
         run: |
           echo "✅ Deployment successful!"
           echo "Container App URL: ${{ steps.outputs.outputs.container_app_url }}"
+          echo "Custom Domain: ${{ steps.outputs.outputs.custom_domain }}"
           echo "PostgreSQL FQDN: ${{ steps.outputs.outputs.postgres_fqdn }}"
           echo "Redis Host: ${{ steps.outputs.outputs.redis_host }}"
+          echo ""
+          echo "⚠️ Next steps:"
+          echo "1. Add DNS CNAME record: ${{ steps.outputs.outputs.custom_domain }} -> Container App FQDN"
+          echo "2. Wait for DNS propagation (typically 15-30 minutes)"
+          echo "3. Azure will automatically provision the SSL certificate"
 

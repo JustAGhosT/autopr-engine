@@ -63,17 +63,27 @@ There are TWO dashboards in this project:
 
 **Problem**: Custom domain and certificate needed to be re-linked after each deployment
 
-**Solution**: Added `customDomains` resource to `website.bicep` that automatically:
-- Creates the custom domain binding
-- Provisions SSL certificate
-- Manages certificate renewal
+**Solution**: Added custom domain configuration directly in the Bicep templates:
+
+**For autopr.io (Static Web App)**:
+
+- Added `Microsoft.Web/staticSites/customDomains` resource to `website.bicep`
+- This resource automatically creates and maintains the custom domain binding
+- Azure manages the SSL certificate lifecycle (provisioning and renewal)
+
+**For app.autopr.io (Container App)**:
+
+- Added `customDomains` configuration to the ingress settings in `autopr-engine.bicep`
+- Specified `bindingType: 'SniEnabled'` for automatic SSL certificate management
+- Azure manages the SSL certificate lifecycle (provisioning and renewal)
 
 **How it works**:
 
-1. Bicep template creates the Static Web App
-2. Automatically adds custom domain binding resource
+1. Bicep template creates the resources (Static Web App and Container App)
+2. Automatically adds custom domain binding configuration
 3. Azure validates domain ownership via CNAME record
-4. Azure provisions and manages SSL certificate automatically
+4. Azure provisions and manages SSL certificates automatically
+5. No manual intervention needed after deployments
 
 ### Static Web App Routing - FIXED ✅
 
@@ -90,23 +100,48 @@ There are TWO dashboards in this project:
 
 For custom domain setup, add these DNS records:
 
+### autopr.io (Static Web App)
+
 ```
 Type: CNAME
-Name: autopr.io
+Name: autopr.io (or @ for root domain)
 Value: <static-web-app-default-hostname>
-
-Type: CNAME  
-Name: app
-Value: <container-app-fqdn>
+TTL: 3600
 ```
 
-The Static Web App default hostname is in the deployment outputs:
+The Static Web App default hostname can be found in the deployment outputs:
 ```bash
 az deployment group show \
   --resource-group prod-rg-san-autopr \
-  --name <deployment-name> \
+  --name website \
   --query properties.outputs.staticWebAppUrl.value
 ```
+
+### app.autopr.io (Container App)
+
+For the backend Container App, configure a CNAME record pointing to the Azure Container Apps FQDN:
+
+```
+Type: CNAME  
+Name: app
+Value: <container-app-fqdn>
+TTL: 3600
+```
+
+The Container App FQDN can be found in the deployment outputs:
+```bash
+az deployment group show \
+  --resource-group prod-rg-san-autopr \
+  --name autopr-engine \
+  --query properties.outputs.containerAppUrl.value
+```
+
+**Note:** After adding the DNS records:
+
+1. Wait for DNS propagation (can take up to 48 hours, typically 15-30 minutes)
+2. Azure will automatically provision and manage SSL certificates for both domains
+3. Certificates are automatically renewed before expiration
+4. No manual certificate management is required
 
 ## Verifying Deployments
 
