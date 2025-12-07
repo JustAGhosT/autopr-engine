@@ -42,7 +42,7 @@ All resources follow the pattern: `{env}-autopr-{region}-{resource}`
 
 ## Deployment
 
-### Option 1: Using the Deployment Script
+### Option 1: Using the Deployment Script (Recommended)
 
 ```bash
 bash infrastructure/bicep/deploy-autopr-engine.sh prod san "eastus2"
@@ -50,11 +50,24 @@ bash infrastructure/bicep/deploy-autopr-engine.sh prod san "eastus2"
 
 The script will:
 - Create the resource group if it doesn't exist
+- **Automatically cleanup duplicate certificates** (prevents deployment errors)
 - Generate secure passwords for PostgreSQL and Redis
 - Deploy all infrastructure components
 - Display the deployment outputs
 
 ### Option 2: Manual Deployment
+
+**Important:** If redeploying to an existing environment, first cleanup any duplicate managed certificates to prevent `DuplicateManagedCertificateInEnvironment` errors:
+
+```bash
+# Cleanup duplicate certificates (if environment already exists)
+bash infrastructure/bicep/cleanup-certificates.sh
+
+# Or use PowerShell on Windows:
+# .\infrastructure\bicep\cleanup-certificates.ps1
+```
+
+Then proceed with deployment:
 
 1. **Create resource group** (if not exists):
    ```bash
@@ -84,6 +97,31 @@ The script will:
        postgresPassword="$POSTGRES_PASSWORD" \
        redisPassword="$REDIS_PASSWORD"
    ```
+
+## Troubleshooting
+
+### DuplicateManagedCertificateInEnvironment Error
+
+If you encounter this error during deployment:
+
+```
+ERROR: "DuplicateManagedCertificateInEnvironment"
+"message": "Another managed certificate with subject name 'app.*.io' available in environment"
+```
+
+**Solution:** Run the certificate cleanup script before deployment:
+
+```bash
+# Linux/macOS
+bash infrastructure/bicep/cleanup-certificates.sh
+
+# Windows PowerShell
+.\infrastructure\bicep\cleanup-certificates.ps1
+```
+
+This removes any existing managed certificates for your domain, allowing a clean deployment. The GitHub Actions workflow handles this automatically.
+
+For more details, see [FAQ.md](./FAQ.md).
 
 ## Configuration
 

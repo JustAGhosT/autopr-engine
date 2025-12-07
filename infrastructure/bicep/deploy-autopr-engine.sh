@@ -39,6 +39,33 @@ else
   echo "Resource group already exists."
 fi
 
+# Cleanup duplicate certificates to prevent deployment failures
+ENV_NAME="${ENVIRONMENT}-autopr-${REGION_ABBR}-env"
+echo ""
+echo "Checking for duplicate managed certificates..."
+if az containerapp env show -n "$ENV_NAME" -g "$RESOURCE_GROUP" &>/dev/null; then
+  CERT_COUNT=$(az containerapp env certificate list \
+    --name "$ENV_NAME" \
+    --resource-group "$RESOURCE_GROUP" \
+    --query "length([?properties.subjectName=='$CUSTOM_DOMAIN' && type=='Microsoft.App/managedEnvironments/managedCertificates'])" \
+    --output tsv 2>/dev/null || echo "0")
+  
+  if [ "$CERT_COUNT" -gt 0 ]; then
+    echo "⚠️  Found $CERT_COUNT existing certificate(s) for domain $CUSTOM_DOMAIN"
+    echo "Cleaning up to prevent DuplicateManagedCertificateInEnvironment error..."
+    
+    # Run the cleanup script using path relative to this script's location
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    bash "$SCRIPT_DIR/cleanup-certificates.sh"
+    echo ""
+  else
+    echo "✅ No duplicate certificates found"
+  fi
+else
+  echo "ℹ️  Environment does not exist yet, skipping certificate cleanup"
+fi
+echo ""
+
 # Generate passwords if not provided
 if [ -z "$POSTGRES_LOGIN" ]; then
   echo "Using default PostgreSQL login..."
