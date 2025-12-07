@@ -3,7 +3,7 @@
 ## Your Question:
 > "can you sort the certificate or do i need to give you a linkn?"
 
-## Answer:
+## Answer
 **No certificate link needed! The system automatically sorts (manages) certificates for you!** 🎉
 
 Azure Container Apps now automatically provisions and manages free SSL/TLS certificates for your custom domain. You don't need to:
