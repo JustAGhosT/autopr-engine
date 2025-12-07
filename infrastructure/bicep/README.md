@@ -50,6 +50,7 @@ Follow the deployment guide in [README-AUTOPR-ENGINE.md](./README-AUTOPR-ENGINE.
 ## 🚀 Quick Deploy
 
 ### Prerequisites
+
 1. Azure CLI installed
 2. Appropriate Azure subscription permissions
 3. Docker image built and pushed (for AutoPR Engine)
