@@ -22,6 +22,7 @@ The fix involves three key changes to the `autopr-engine.bicep` file:
 ### 1. Updated API Versions
 
 Changed from `2023-05-01` to `2024-10-02-preview` for:
+
 - `Microsoft.App/managedEnvironments`
 - `Microsoft.App/containerApps`
 
