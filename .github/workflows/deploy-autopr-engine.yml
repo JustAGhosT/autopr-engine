@@ -191,6 +191,54 @@ jobs:
             echo "::notice::Save these credentials to GitHub secrets for future deployments: AUTOPR_POSTGRES_LOGIN, AUTOPR_POSTGRES_PASSWORD, AUTOPR_REDIS_PASSWORD"
           fi
 
+      - name: Cleanup duplicate managed certificates
+        run: |
+          RESOURCE_GROUP="prod-rg-san-autopr"
+          ENV_NAME="prod-autopr-san-env"
+          CUSTOM_DOMAIN="app.autopr.io"
+          
+          echo "🔍 Checking for existing managed certificates for domain: $CUSTOM_DOMAIN"
+          
+          # Check if environment exists
+          if az containerapp env show -n $ENV_NAME -g $RESOURCE_GROUP &>/dev/null; then
+            echo "Environment exists, checking for duplicate certificates..."
+            
+            # List all managed certificates and find duplicates for our domain
+            CERTS=$(az containerapp env certificate list \
+              --name $ENV_NAME \
+              --resource-group $RESOURCE_GROUP \
+              --output json 2>/dev/null || echo "[]")
+            
+            # Check if any certificates match our domain
+            DUPLICATE_CERTS=$(echo "$CERTS" | jq -r --arg domain "$CUSTOM_DOMAIN" \
+              '.[] | select(.properties.subjectName == $domain and .type == "Microsoft.App/managedEnvironments/managedCertificates") | .name')
+            
+            if [ -n "$DUPLICATE_CERTS" ]; then
+              echo "⚠️ Found duplicate managed certificate(s) for domain $CUSTOM_DOMAIN:"
+              echo "$DUPLICATE_CERTS"
+              echo ""
+              echo "🗑️ Removing duplicate certificates to prevent deployment conflicts..."
+              
+              while IFS= read -r cert_name; do
+                if [ -n "$cert_name" ]; then
+                  echo "Deleting certificate: $cert_name"
+                  az containerapp env certificate delete \
+                    --name $ENV_NAME \
+                    --resource-group $RESOURCE_GROUP \
+                    --certificate "$cert_name" \
+                    --yes || echo "⚠️ Failed to delete certificate $cert_name (may not exist or be in use)"
+                fi
+              done <<< "$DUPLICATE_CERTS"
+              
+              echo "✅ Cleanup completed"
+            else
+              echo "✅ No duplicate certificates found for $CUSTOM_DOMAIN"
+            fi
+          else
+            echo "ℹ️ Environment does not exist yet, skipping certificate cleanup"
+          fi
+          echo ""
+
       - name: Deploy Bicep Template
         run: |
           echo "ℹ️ Note: SSL certificates are automatically managed by Azure. No certificate upload needed!"

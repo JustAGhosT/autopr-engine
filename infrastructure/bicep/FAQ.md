@@ -48,6 +48,78 @@ Total time: Typically 20-45 minutes from DNS configuration to working HTTPS.
 
 ---
 
+## Common Error: "DuplicateManagedCertificateInEnvironment"
+
+### Error Message:
+```
+ERROR: "code": "DeploymentFailed"
+"code": "DuplicateManagedCertificateInEnvironment"
+"message": "Another managed certificate with subject name 'app.*.io' and certificate name 'app.*.io-prod-aut-251205170140' available in environment 'prod-*-san-env'."
+```
+
+### What This Means:
+
+Azure Container Apps allows only **ONE managed certificate per domain per environment**. This error occurs when:
+
+1. **Previous deployment created a certificate** that still exists in the environment
+2. **New deployment tries to create another certificate** for the same domain
+3. **Azure rejects the duplicate** to prevent conflicts
+
+### Automatic Fix (GitHub Actions):
+
+If you're using the GitHub Actions workflow (`.github/workflows/deploy-autopr-engine.yml`), this is **automatically handled** for you! The workflow includes a cleanup step that:
+
+1. ✅ Checks for existing managed certificates for your domain
+2. ✅ Removes any duplicates before deployment
+3. ✅ Ensures clean deployment every time
+
+### Manual Fix:
+
+If deploying manually with Azure CLI, run this cleanup script before deployment:
+
+```bash
+# Set your environment variables
+RESOURCE_GROUP="prod-rg-san-autopr"
+ENV_NAME="prod-autopr-san-env"
+CUSTOM_DOMAIN="app.autopr.io"
+
+# List all managed certificates for the domain
+az containerapp env certificate list \
+  --name $ENV_NAME \
+  --resource-group $RESOURCE_GROUP \
+  --query "[?properties.subjectName=='$CUSTOM_DOMAIN' && type=='Microsoft.App/managedEnvironments/managedCertificates'].name" \
+  --output tsv | while read -r cert_name; do
+  echo "Deleting duplicate certificate: $cert_name"
+  az containerapp env certificate delete \
+    --name $ENV_NAME \
+    --resource-group $RESOURCE_GROUP \
+    --certificate "$cert_name" \
+    --yes
+done
+
+# Now deploy your template
+az deployment group create \
+  --name autopr-engine \
+  --resource-group $RESOURCE_GROUP \
+  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --parameters customDomain=$CUSTOM_DOMAIN ...
+```
+
+### Why This Happens:
+
+- Each deployment may try to create a certificate with the same domain name
+- Azure maintains strict uniqueness constraint on managed certificates per domain
+- Old certificates may not be automatically cleaned up when redeploying
+- The cleanup ensures idempotent deployments
+
+### Prevention:
+
+- Use the GitHub Actions workflow which handles cleanup automatically
+- If deploying manually, always run the cleanup script first
+- The deployment is now designed to be fully idempotent
+
+---
+
 ## Common Error: "CertificateMissing"
 
 ### Error Message:
