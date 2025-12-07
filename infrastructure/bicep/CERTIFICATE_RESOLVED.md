@@ -64,6 +64,7 @@ az deployment group create \
 ## Still Getting the Error?
 
 If you still see the `CertificateMissing` error after updating your code:
+
 1. Verify you're using the latest template from `main` branch
 2. Check that DNS is configured correctly
 3. See detailed troubleshooting in [FAQ.md](./FAQ.md)
