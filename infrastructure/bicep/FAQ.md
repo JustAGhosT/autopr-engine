@@ -136,7 +136,7 @@ az containerapp show \
   --query "properties.configuration.ingress.customDomains"
 ```
 
-### Check Managed Certificate:
+### Check Managed Certificate
 ```bash
 az containerapp env certificate list \
   --name prod-autopr-san-env \
@@ -144,6 +144,7 @@ az containerapp env certificate list \
 ```
 
 ### Test HTTPS:
+
 ```bash
 curl -I https://app.autopr.io
 ```

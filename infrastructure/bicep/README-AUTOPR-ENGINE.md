@@ -260,6 +260,7 @@ ERROR: "code": "CertificateMissing",
 ### DNS and Certificate Issues
 
 See [FAQ.md](./FAQ.md) for common questions about:
+
 - Certificate management (automated, no action needed!)
 - DNS configuration requirements
 - Certificate validation timeline
