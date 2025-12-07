@@ -7,6 +7,7 @@
 **No certificate link needed! The system automatically sorts (manages) certificates for you!** 🎉
 
 Azure Container Apps now automatically provisions and manages free SSL/TLS certificates for your custom domain. You don't need to:
+
 - ❌ Buy a certificate
 - ❌ Upload a certificate
 - ❌ Provide a certificate link
@@ -21,7 +22,7 @@ The `CertificateMissing` error you saw has been **fixed** in the latest code. Th
 3. **Automatic Renewal** - Certificates renew before expiration
 4. **Single Deployment** - Everything works in one deployment
 
-## What You Need to Do:
+## What You Need to Do
 
 ### 1. Update Your Code (If Not Already Done)
 ```bash
@@ -29,6 +30,7 @@ git pull origin main
 ```
 
 ### 2. Configure DNS
+
 Add a CNAME record pointing your custom domain to the Container App:
 ```
 Type: CNAME
