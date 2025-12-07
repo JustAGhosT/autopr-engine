@@ -106,7 +106,7 @@ echo ""
 DELETED_COUNT=0
 FAILED_COUNT=0
 
-echo "$DUPLICATE_CERTS" | while IFS= read -r cert_name; do
+while IFS= read -r cert_name; do
     if [ -n "$cert_name" ]; then
         echo "Deleting certificate: $cert_name"
         if az containerapp env certificate delete \
@@ -122,7 +122,7 @@ echo "$DUPLICATE_CERTS" | while IFS= read -r cert_name; do
         fi
         echo ""
     fi
-done
+done < <(echo "$DUPLICATE_CERTS")
 
 echo "=============================================="
 echo "Cleanup Summary"
