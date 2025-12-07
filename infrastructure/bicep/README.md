@@ -2,6 +2,10 @@
 
 This directory contains Azure Bicep templates and documentation for deploying AutoPR infrastructure.
 
+## 🎉 Certificate Issue RESOLVED!
+
+**Having certificate errors?** The `CertificateMissing` error has been fixed! Azure now automatically manages SSL certificates. See **[CERTIFICATE_RESOLVED.md](./CERTIFICATE_RESOLVED.md)** for the quick answer.
+
 ## 📚 Documentation
 
 ### Quick Start
