@@ -79,6 +79,7 @@ az deployment group create \
 ```
 
 ### Deploy Website
+
 ```bash
 bash deploy-website.sh prod san "eastus2"
 ```
