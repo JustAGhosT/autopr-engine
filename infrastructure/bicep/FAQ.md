@@ -91,6 +91,7 @@ az deployment group create \
 ```
 
 #### Option 2: Deploy Without Custom Domain First
+
 ```bash
 # Deploy without customDomain parameter
 az deployment group create \
