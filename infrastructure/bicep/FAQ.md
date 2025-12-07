@@ -65,7 +65,7 @@ Azure Container Apps allows only **ONE managed certificate per domain per enviro
 2. **New deployment tries to create another certificate** for the same domain
 3. **Azure rejects the duplicate** to prevent conflicts
 
-### Automatic Fix (GitHub Actions):
+### Automatic Fix (GitHub Actions)
 
 If you're using the GitHub Actions workflow (`.github/workflows/deploy-autopr-engine.yml`), this is **automatically handled** for you! The workflow includes a cleanup step that:
 
