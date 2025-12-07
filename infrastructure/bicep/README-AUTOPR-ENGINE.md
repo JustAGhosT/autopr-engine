@@ -2,6 +2,10 @@
 
 This directory contains the Azure Bicep infrastructure definitions for deploying the AutoPR Engine application to Azure Container Apps.
 
+## 🔒 SSL/TLS Certificates - No Action Required!
+
+**You do NOT need to provide or upload SSL certificates!** Azure automatically manages free SSL/TLS certificates for your custom domain. Just configure your DNS CNAME record and Azure handles the rest. See [FAQ.md](./FAQ.md) for details.
+
 ## Architecture
 
 The deployment includes:
@@ -222,6 +226,16 @@ Total estimated monthly cost: ~$30-50 for light usage, $100-200 for moderate usa
 
 ## Troubleshooting
 
+### Certificate Deployment Error: "CertificateMissing"
+
+If you see an error like:
+```
+ERROR: "code": "CertificateMissing", 
+"message": "CertificateId property is missing for customDomain"
+```
+
+**Solution**: This has been fixed! Make sure you're using the latest version from the `main` branch. See the detailed [FAQ.md](./FAQ.md) for step-by-step resolution.
+
 ### Container App Not Starting
 
 1. Check logs: `az containerapp logs show --name prod-autopr-san-app --resource-group prod-rg-san-autopr`
@@ -242,6 +256,15 @@ Total estimated monthly cost: ~$30-50 for light usage, $100-200 for moderate usa
 2. Check SSL/TLS settings match connection string
 3. Verify password is correct
 4. Check firewall rules if applicable
+
+### DNS and Certificate Issues
+
+See [FAQ.md](./FAQ.md) for common questions about:
+
+- Certificate management (automated, no action needed!)
+- DNS configuration requirements
+- Certificate validation timeline
+- Troubleshooting custom domain setup
 
 ## Security Best Practices
 
