@@ -24,6 +24,7 @@ This directory contains Azure Bicep templates and documentation for deploying Au
 **No!** Azure automatically manages SSL certificates for you. See [FAQ.md](./FAQ.md).
 
 ### "I'm getting a 'CertificateMissing' error"
+
 This has been fixed. Pull the latest code from `main` branch. See [FAQ.md](./FAQ.md) for details.
 
 ### "How do I deploy?"
