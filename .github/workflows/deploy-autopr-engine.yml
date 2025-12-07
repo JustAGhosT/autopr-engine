@@ -193,6 +193,9 @@ jobs:
 
       - name: Deploy Bicep Template
         run: |
+          echo "ℹ️ Note: SSL certificates are automatically managed by Azure. No certificate upload needed!"
+          echo "📖 See infrastructure/bicep/FAQ.md for certificate details"
+          echo ""
           az deployment group create \
             --name autopr-engine \
             --resource-group prod-rg-san-autopr \
@@ -229,8 +232,12 @@ jobs:
           echo "PostgreSQL FQDN: ${{ steps.outputs.outputs.postgres_fqdn }}"
           echo "Redis Host: ${{ steps.outputs.outputs.redis_host }}"
           echo ""
+          echo "🔒 SSL Certificate: Automatically managed by Azure (no action needed)"
+          echo ""
           echo "⚠️ Next steps:"
           echo "1. Add DNS CNAME record: ${{ steps.outputs.outputs.custom_domain }} -> Container App FQDN"
           echo "2. Wait for DNS propagation (typically 15-30 minutes)"
-          echo "3. Azure will automatically provision the SSL certificate"
+          echo "3. Azure will automatically provision and bind the SSL certificate (5-15 minutes)"
+          echo ""
+          echo "📖 For troubleshooting, see: infrastructure/bicep/FAQ.md"
 
