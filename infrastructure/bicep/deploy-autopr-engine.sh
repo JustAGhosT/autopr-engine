@@ -54,8 +54,9 @@ if az containerapp env show -n "$ENV_NAME" -g "$RESOURCE_GROUP" &>/dev/null; the
     echo "⚠️  Found $CERT_COUNT existing certificate(s) for domain $CUSTOM_DOMAIN"
     echo "Cleaning up to prevent DuplicateManagedCertificateInEnvironment error..."
     
-    # Run the cleanup script
-    bash infrastructure/bicep/cleanup-certificates.sh
+    # Run the cleanup script using path relative to this script's location
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    bash "$SCRIPT_DIR/cleanup-certificates.sh"
     echo ""
   else
     echo "✅ No duplicate certificates found"

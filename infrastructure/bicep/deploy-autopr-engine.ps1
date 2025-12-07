@@ -5,7 +5,9 @@ param(
     [string]$Environment = "prod",
     [string]$RegionAbbr = "san",
     [string]$Location = "eastus2",
-    [string]$PostgresLocation = "southafricanorth"
+    [string]$PostgresLocation = "southafricanorth",
+    [string]$ContainerImage = "",
+    [string]$CustomDomain = "app.autopr.io"
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,7 +36,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Cleanup duplicate certificates to prevent deployment failures
-$CustomDomain = "app.autopr.io"
 $EnvName = "$Environment-autopr-$RegionAbbr-env"
 
 Write-Host ""
@@ -88,9 +89,7 @@ if (-not $env:REDIS_PASSWORD) {
     $env:REDIS_PASSWORD = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
 }
 
-# Get container image (use parameter or default)
-$ContainerImage = if ($args.Count -gt 4) { $args[4] } else { "" }
-
+# Get container image from parameter or default
 if ([string]::IsNullOrEmpty($ContainerImage)) {
     Write-Host "⚠️  WARNING: No container image specified. Using placeholder image for testing." -ForegroundColor Yellow
     Write-Host "   Build and push the image first, then update the Container App." -ForegroundColor Yellow
@@ -113,6 +112,7 @@ az deployment group create `
         regionAbbr=$RegionAbbr `
         location=$Location `
         postgresLocation=$PostgresLocation `
+        customDomain=$CustomDomain `
         containerImage=$ContainerImage `
         postgresPassword="$env:POSTGRES_PASSWORD" `
         redisPassword="$env:REDIS_PASSWORD" `

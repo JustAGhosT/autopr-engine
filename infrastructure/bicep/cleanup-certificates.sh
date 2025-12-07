@@ -70,7 +70,12 @@ if [ "$USE_JQ" = true ]; then
       '.[] | select(.properties.subjectName == $domain and .type == "Microsoft.App/managedEnvironments/managedCertificates") | .name')
 else
     # Alternative parsing without jq (less reliable but works in constrained environments)
-    DUPLICATE_CERTS=$(echo "$CERTS_OUTPUT" | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | head -1)
+    # This will get all certificate names, but cannot filter by domain - will need manual review
+    DUPLICATE_CERTS=$(echo "$CERTS_OUTPUT" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
+    if [ -n "$DUPLICATE_CERTS" ]; then
+        echo "⚠️ Warning: jq not available, cannot filter by domain. All certificates listed:" 
+        echo "Please review the list and confirm they are for domain: $CUSTOM_DOMAIN"
+    fi
 fi
 
 if [ -z "$DUPLICATE_CERTS" ] || [ "$DUPLICATE_CERTS" == "null" ]; then
