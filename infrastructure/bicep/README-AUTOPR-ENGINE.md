@@ -88,6 +88,7 @@ The script will:
 - `environment`: Environment name (prod, dev, staging)
 - `regionAbbr`: Region abbreviation (san, eus, wus, etc.)
 - `location`: Azure region (eastus2, westus2, etc.)
+- `customDomain`: Custom domain for the container app (default: app.autopr.io)
 - `containerImage`: Full container image path
 - `postgresLogin`: PostgreSQL administrator username (default: autopr)
 - `postgresPassword`: PostgreSQL administrator password (secure)
@@ -254,7 +255,11 @@ Total estimated monthly cost: ~$30-50 for light usage, $100-200 for moderate usa
 
 ## Next Steps
 
-1. Configure custom domain for the Container App
+1. **Configure custom domain DNS records**:
+   - Add a CNAME record for your custom domain (e.g., app.autopr.io) pointing to the Container App FQDN
+   - Obtain the FQDN from deployment outputs: `az deployment group show --resource-group prod-rg-san-autopr --name autopr-engine --query properties.outputs.containerAppUrl.value`
+   - Example DNS record: `CNAME app.autopr.io -> prod-autopr-san-app.<region>.azurecontainerapps.io`
+   - The SSL certificate will be automatically managed by Azure after DNS propagation
 2. Set up GitHub Actions for CI/CD (see `.github/workflows/deploy-autopr-engine.yml`)
 3. Configure additional environment variables (GitHub tokens, AI API keys)
 4. Set up monitoring alerts
