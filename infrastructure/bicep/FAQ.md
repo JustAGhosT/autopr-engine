@@ -18,7 +18,7 @@ Azure Container Apps automatically manages SSL/TLS certificates for your custom 
 1. **A custom domain name** (e.g., `app.autopr.io`)
 2. **DNS CNAME record** pointing your domain to the Container App FQDN
 
-### DNS Configuration Steps:
+### DNS Configuration Steps
 
 Before or immediately after deployment, add a CNAME record:
 
