@@ -253,13 +253,25 @@ Total estimated monthly cost: ~$30-50 for light usage, $100-200 for moderate usa
 6. **Enable Azure Defender** for threat detection
 7. **Use Network Security Groups** to restrict access
 
+## Custom Domain and SSL Certificate
+
+The infrastructure template now includes automatic setup of managed SSL certificates for custom domains:
+
+- **Managed Certificate**: A free Azure-managed SSL certificate is automatically created for the custom domain
+- **API Version**: Uses `2024-10-02-preview` which supports managed certificates in a single deployment
+- **Certificate Validation**: Azure validates domain ownership via CNAME records
+- **Automatic Renewal**: SSL certificates are automatically renewed by Azure
+
+**Important**: Before deploying, ensure your DNS is configured with the required CNAME record pointing to the Container App FQDN. Azure will validate domain ownership during certificate provisioning.
+
 ## Next Steps
 
-1. **Configure custom domain DNS records**:
+1. **Configure custom domain DNS records** (REQUIRED before deployment):
    - Add a CNAME record for your custom domain (e.g., app.autopr.io) pointing to the Container App FQDN
+   - You may need to deploy once without the custom domain first, then update DNS, then redeploy
    - Obtain the FQDN from deployment outputs: `az deployment group show --resource-group prod-rg-san-autopr --name autopr-engine --query properties.outputs.containerAppUrl.value`
    - Example DNS record: `CNAME app.autopr.io -> prod-autopr-san-app.<region>.azurecontainerapps.io`
-   - The SSL certificate will be automatically managed by Azure after DNS propagation
+   - The managed SSL certificate will be automatically provisioned by Azure after DNS validation
 2. Set up GitHub Actions for CI/CD (see `.github/workflows/deploy-autopr-engine.yml`)
 3. Configure additional environment variables (GitHub tokens, AI API keys)
 4. Set up monitoring alerts
