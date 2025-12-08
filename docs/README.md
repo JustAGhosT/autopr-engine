@@ -5,6 +5,11 @@
 Welcome to the AutoPR Engine documentation. This repository contains a comprehensive automated code
 review and quality management system with AI-powered analysis capabilities.
 
+### 🎯 **Quick Access**
+
+- **[Naming Recommendations](../NAMING_RECOMMENDATIONS.md)** - Quick reference guide for program naming and branding
+- **[Program Name Suggestions](PROGRAM_NAME_SUGGESTIONS.md)** - Comprehensive naming analysis with 15+ options
+
 ## 🏗️ **Architecture & Design**
 
 ### **Core Components**
