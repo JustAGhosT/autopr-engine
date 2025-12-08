@@ -49,7 +49,7 @@ jobs:
           cache: 'pip'
 
       - name: Install AutoPR Engine
-        run: pip install "autopr-engine[full]"
+        run: pip install "codeflow-engine[full]"
 
       - name: Determine PR number
         id: pr
@@ -134,7 +134,7 @@ jobs:
             }
 
             body += `---\n`;
-            body += `*Powered by [AutoPR Engine](https://github.com/JustAGhosT/autopr-engine) | `;
+            body += `*Powered by [AutoPR Engine](https://github.com/JustAGhosT/codeflow-engine) | `;
             body += `[View Full Report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})*`;
 
             await github.rest.issues.createComment({
@@ -176,7 +176,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install AutoPR Engine
-        run: pip install autopr-engine
+        run: pip install codeflow-engine
 
       - name: Parse Command
         id: command

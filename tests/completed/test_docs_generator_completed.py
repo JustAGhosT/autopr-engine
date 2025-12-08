@@ -1,5 +1,5 @@
 """
-Basic tests for C:\Users\smitj\repos\autopr\autopr-engine\autopr\actions\prototype_enhancement\generators\docs_generator.py
+Basic tests for C:\Users\smitj\repos\autopr\codeflow-engine\autopr\actions\prototype_enhancement\generators\docs_generator.py
 """
 
 import pytest

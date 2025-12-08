@@ -26,15 +26,15 @@ Ready-to-use GitHub Action workflow templates for adding AutoPR to your reposito
 
 ```bash
 # Minimal (simplest)
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/templates/quick-start/autopr-minimal.yml \
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/templates/quick-start/autopr-minimal.yml \
   -o .github/workflows/autopr.yml --create-dirs
 
 # Standard (recommended)
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/templates/quick-start/autopr-workflow.yml \
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/templates/quick-start/autopr-workflow.yml \
   -o .github/workflows/autopr.yml --create-dirs
 
 # Advanced (full features)
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/templates/quick-start/autopr-advanced.yml \
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/templates/quick-start/autopr-advanced.yml \
   -o .github/workflows/autopr.yml --create-dirs
 ```
 
@@ -170,4 +170,4 @@ permissions:
 
 - [Full Documentation](../../README.md)
 - [Installation Guide](../../INSTALL.md)
-- [Report Issues](https://github.com/JustAGhosT/autopr-engine/issues)
+- [Report Issues](https://github.com/JustAGhosT/codeflow-engine/issues)

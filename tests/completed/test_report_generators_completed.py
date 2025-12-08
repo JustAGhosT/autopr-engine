@@ -1,5 +1,5 @@
 """
-Basic tests for C:\Users\smitj\repos\autopr\autopr-engine\templates\discovery\report_generators.py
+Basic tests for C:\Users\smitj\repos\autopr\codeflow-engine\templates\discovery\report_generators.py
 """
 
 import pytest

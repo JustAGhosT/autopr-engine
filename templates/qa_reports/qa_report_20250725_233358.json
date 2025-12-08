@@ -8,7 +8,7 @@
     "timestamp": "2025-07-25T23:33:53.946339"
   },
   "template_results": {
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\platform-tiers.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\platform-tiers.yml": {
       "overall_score": 43.0,
       "scores": {
         "completeness": 50.0,
@@ -69,7 +69,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\adalo\\mobile-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\adalo\\mobile-app.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -100,7 +100,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\airtable\\database-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\airtable\\database-app.yml": {
       "overall_score": 97.5,
       "scores": {
         "completeness": 100.0,
@@ -131,7 +131,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\appsmith\\internal-tools.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\appsmith\\internal-tools.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -162,7 +162,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\betty-blocks\\enterprise-no-code.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\betty-blocks\\enterprise-no-code.yml": {
       "overall_score": 71.33333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -259,7 +259,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\bubble\\web-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\bubble\\web-app.yml": {
       "overall_score": 95.5,
       "scores": {
         "completeness": 100.0,
@@ -296,7 +296,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\budibase\\open-source-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\budibase\\open-source-app.yml": {
       "overall_score": 71.33333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -387,7 +387,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\buildship\\backend-automation.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\buildship\\backend-automation.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -412,7 +412,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\flutterflow\\mobile-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\flutterflow\\mobile-app.yml": {
       "overall_score": 95.5,
       "scores": {
         "completeness": 100.0,
@@ -443,7 +443,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\framer\\design-to-code.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\framer\\design-to-code.yml": {
       "overall_score": 97.5,
       "scores": {
         "completeness": 100.0,
@@ -486,7 +486,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\glide\\mobile-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\glide\\mobile-app.yml": {
       "overall_score": 93.5,
       "scores": {
         "completeness": 100.0,
@@ -529,7 +529,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\horizons\\web-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\horizons\\web-app.yml": {
       "overall_score": 95.5,
       "scores": {
         "completeness": 100.0,
@@ -560,7 +560,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\lovable\\web-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\lovable\\web-app.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -579,7 +579,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\mendix\\enterprise-lifecycle.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\mendix\\enterprise-lifecycle.yml": {
       "overall_score": 71.33333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -676,7 +676,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\power-apps\\business-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\power-apps\\business-app.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -701,7 +701,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\replit\\web-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\replit\\web-app.yml": {
       "overall_score": 95.5,
       "scores": {
         "completeness": 100.0,
@@ -732,7 +732,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\retool\\internal-tools.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\retool\\internal-tools.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -763,7 +763,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\softr\\database-driven-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\softr\\database-driven-app.yml": {
       "overall_score": 71.33333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -860,7 +860,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\supabase\\backend-service.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\supabase\\backend-service.yml": {
       "overall_score": 100.0,
       "scores": {
         "completeness": 100.0,
@@ -891,7 +891,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\thunkable\\mobile-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\thunkable\\mobile-app.yml": {
       "overall_score": 95.5,
       "scores": {
         "completeness": 100.0,
@@ -940,7 +940,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\wavemaker\\enterprise-app.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\wavemaker\\enterprise-app.yml": {
       "overall_score": 71.33333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -1031,7 +1031,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\webflow\\web-design.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\webflow\\web-design.yml": {
       "overall_score": 97.5,
       "scores": {
         "completeness": 100.0,
@@ -1062,7 +1062,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\weweb\\frontend-builder.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\weweb\\frontend-builder.yml": {
       "overall_score": 71.33333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -1159,7 +1159,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\platforms\\zapier\\automation.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\platforms\\zapier\\automation.yml": {
       "overall_score": 97.5,
       "scores": {
         "completeness": 100.0,
@@ -1196,7 +1196,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\use-cases\\ecommerce-store.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\use-cases\\ecommerce-store.yml": {
       "overall_score": 86.0,
       "scores": {
         "completeness": 100.0,
@@ -1257,7 +1257,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\use-cases\\project-management.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\use-cases\\project-management.yml": {
       "overall_score": 83.5,
       "scores": {
         "completeness": 100.0,
@@ -1318,7 +1318,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\use-cases\\social-platform.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\use-cases\\social-platform.yml": {
       "overall_score": 86.0,
       "scores": {
         "completeness": 100.0,
@@ -1361,7 +1361,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\integrations\\auth-integration.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\integrations\\auth-integration.yml": {
       "overall_score": 90.83333333333334,
       "scores": {
         "completeness": 83.33333333333334,
@@ -1398,7 +1398,7 @@
         }
       ]
     },
-    "C:\\Users\\smitj\\repos\\autopr\\autopr-engine\\templates\\integrations\\payment-integration.yml": {
+    "C:\\Users\\smitj\\repos\\autopr\\codeflow-engine\\templates\\integrations\\payment-integration.yml": {
       "overall_score": 88.83333333333334,
       "scores": {
         "completeness": 83.33333333333334,

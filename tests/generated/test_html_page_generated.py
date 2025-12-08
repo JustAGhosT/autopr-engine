@@ -1,5 +1,5 @@
 """
-Generated tests for C:\Users\smitj\repos\autopr\autopr-engine\autopr\reporting\html_page.py
+Generated tests for C:\Users\smitj\repos\autopr\codeflow-engine\autopr\reporting\html_page.py
 """
 
 import pytest

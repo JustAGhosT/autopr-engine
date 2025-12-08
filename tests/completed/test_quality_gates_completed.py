@@ -1,5 +1,5 @@
 """
-Basic tests for C:\Users\smitj\repos\autopr\autopr-engine\autopr\actions\quality_gates.py
+Basic tests for C:\Users\smitj\repos\autopr\codeflow-engine\autopr\actions\quality_gates.py
 """
 
 import pytest

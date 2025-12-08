@@ -78,7 +78,7 @@ class TestSanitizeErrorMessage:
         """Test that email addresses are redacted."""
         messages = [
             "User not found: admin@company.com",
-            "Email error: support@autopr-engine.com",
+            "Email error: support@codeflow-engine.com",
             "Failed to send to: john.doe@example.org",
         ]
         
@@ -86,7 +86,7 @@ class TestSanitizeErrorMessage:
             sanitized = sanitize_error_message(msg)
             # Should not contain email addresses
             assert "@company.com" not in sanitized
-            assert "@autopr-engine.com" not in sanitized
+            assert "@codeflow-engine.com" not in sanitized
             assert "@example.org" not in sanitized
             # Should contain redaction marker
             assert "[EMAIL_REDACTED]" in sanitized

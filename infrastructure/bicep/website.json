@@ -53,7 +53,7 @@
         "tier": "Standard"
       },
       "properties": {
-        "repositoryUrl": "https://github.com/JustAGhosT/autopr-engine",
+        "repositoryUrl": "https://github.com/JustAGhosT/codeflow-engine",
         "branch": "main",
         "buildProperties": {
           "appLocation": "website",
