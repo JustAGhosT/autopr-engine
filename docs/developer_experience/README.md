@@ -8,11 +8,11 @@ Welcome to the AutoPR Developer Experience documentation! This guide covers all 
 
 ```bash
 # Install AutoPR Engine with all developer tools
-pip install autopr-engine[full]
+pip install codeflow-engine[full]
 
 # Or install in development mode
-git clone https://github.com/autopr/autopr-engine.git
-cd autopr-engine
+git clone https://github.com/autopr/codeflow-engine.git
+cd codeflow-engine
 pip install -e .
 ```
 
@@ -429,7 +429,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install AutoPR
-        run: pip install autopr-engine[full]
+        run: pip install codeflow-engine[full]
       - name: Run quality check
         run: autopr check --mode comprehensive --directory ./src
 ```
@@ -470,14 +470,14 @@ repos:
 #### CLI Not Found
 ```bash
 # Ensure AutoPR is installed
-pip install autopr-engine[full]
+pip install codeflow-engine[full]
 
 # Check installation
 which autopr
 
 # Reinstall if needed
-pip uninstall autopr-engine
-pip install autopr-engine[full]
+pip uninstall codeflow-engine
+pip install codeflow-engine[full]
 ```
 
 #### VS Code Extension Issues
@@ -514,8 +514,8 @@ pip install flask flask-cors
 ### Getting Help
 
 - **Documentation**: [https://autopr.dev/docs](https://autopr.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/autopr/autopr-engine/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/autopr/autopr-engine/discussions)
+- **Issues**: [GitHub Issues](https://github.com/autopr/codeflow-engine/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/autopr/codeflow-engine/discussions)
 - **Discord**: [AutoPR Community](https://discord.gg/autopr)
 
 ## 🎯 Best Practices

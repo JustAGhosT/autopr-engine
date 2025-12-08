@@ -381,7 +381,7 @@ If maintaining AutoPR, consider positioning strategies that emphasize the platfo
 ## Migration Considerations
 
 ### Technical Debt Management
-- **Package Aliases:** Maintain `autopr-engine` as an alias for 6-12 months
+- **Package Aliases:** Maintain `codeflow-engine` as an alias for 6-12 months
 - **Redirects:** Set up domain redirects from old to new URLs
 - **Documentation:** Keep archived versions of old docs accessible
 - **Support:** Plan for user confusion and provide clear migration guides

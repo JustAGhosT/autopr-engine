@@ -244,12 +244,12 @@ After Split:
 
 ### **Phase 1: Repository Setup (Week 1)**
 
-#### **Create `autopr-engine` Repository**
+#### **Create `codeflow-engine` Repository**
 
 ```bash
 
 # Repository structure
-autopr-engine/
+codeflow-engine/
 ├── autopr/
 │   ├── actions/
 │   ├── workflows/
@@ -276,14 +276,14 @@ autopr-engine/
 from setuptools import setup, find_packages
 
 setup(
-    name="autopr-engine",
+    name="codeflow-engine",
     version="1.0.0",
     description="AI-powered GitHub PR automation and issue management",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="VeritasVault Team",
     author_email="dev@veritasvault.net",
-    url="https://github.com/veritasvault/autopr-engine",
+    url="https://github.com/veritasvault/codeflow-engine",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -325,18 +325,18 @@ setup(
 ```bash
 # Preserve git history for AutoPR files
 git subtree push --prefix=tools/autopr origin autopr-subtree
-git clone autopr-subtree autopr-engine
-cd autopr-engine
+git clone autopr-subtree codeflow-engine
+cd codeflow-engine
 git filter-branch --subdirectory-filter tools/autopr HEAD
 ```
 
 #### **Dependency Updates**
 
 ```python
-# Update vv-landing to use autopr-engine package
+# Update vv-landing to use codeflow-engine package
 # requirements.txt or pyproject.toml
 dependencies = [
-    "autopr-engine>=1.0.0",
+    "codeflow-engine>=1.0.0",
     # Remove AutoPR-specific dependencies
     # "autogen", "anthropic", "mistralai", etc.
 ]
@@ -371,7 +371,7 @@ jobs:
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'veritasvault',
-              repo: 'autopr-engine',
+              repo: 'codeflow-engine',
               workflow_id: 'pr-analysis.yml',
               ref: 'main',
               inputs: {
@@ -385,7 +385,7 @@ jobs:
 #### **Webhook Integration**
 
 ```python
-# autopr-engine/autopr/integrations/github_webhook.py
+# codeflow-engine/autopr/integrations/github_webhook.py
 class GitHubWebhookIntegration:
     def __init__(self):
         self.supported_repos = [
@@ -419,7 +419,7 @@ python -m build
 twine upload dist/*
 
 # Installation
-pip install autopr-engine
+pip install codeflow-engine
 ```
 
 #### **Docker Distribution**
@@ -445,7 +445,7 @@ CMD ["python", "-m", "autopr.server"]
 # .github/app.yml
 name: AutoPR Engine
 description: AI-powered GitHub PR automation and issue management
-homepage_url: https://github.com/veritasvault/autopr-engine
+homepage_url: https://github.com/veritasvault/codeflow-engine
 permissions:
   issues: write
   pull_requests: write
@@ -484,7 +484,7 @@ setup_url: https://autopr.veritasvault.net/setup
 
 ### **Distribution & Enhancement (Week 4)**
 
-- [ ] **Publish to PyPI** as autopr-engine package
+- [ ] **Publish to PyPI** as codeflow-engine package
 - [ ] **Create Docker Hub images** for easy deployment
 - [ ] **Submit to GitHub Marketplace** as app
 - [ ] **Create installation guides** for different platforms

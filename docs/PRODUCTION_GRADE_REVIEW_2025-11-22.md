@@ -70,15 +70,15 @@ This analysis identified **58 total items** across categories:
 
 ### Repository Context
 
-**Repository:** JustAGhosT/autopr-engine  
+**Repository:** JustAGhosT/codeflow-engine  
 **Branch Analyzed:** main  
-**Clone Location:** `/home/runner/work/autopr-engine/autopr-engine`  
+**Clone Location:** `/home/runner/work/codeflow-engine/codeflow-engine`  
 **Analysis Scope:** Complete repository including source, tests, docs, configs, and UI
 
 ### Directories in Scope
 
 ```
-autopr-engine/
+codeflow-engine/
 ├── autopr/                 # Core Python package (20,885 LOC, 368 files)
 │   ├── actions/           # Action implementations
 │   ├── agents/            # Agent system

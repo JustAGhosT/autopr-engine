@@ -231,19 +231,19 @@ python scripts/validate_build_system.py
 - **Primary**: `pyproject.toml` (PEP 621 + Poetry)
 - **Removed**: `requirements.txt`, `requirements-dev.txt`
 - **Optional Dependencies**: Available via
-  `pip install "autopr-engine[dev,monitoring,memory,ai,database,server,resilience]"`
+  `pip install "codeflow-engine[dev,monitoring,memory,ai,database,server,resilience]"`
 
 ### Installation Commands
 
 ```bash
 # Install with all optional dependencies
-pip install "autopr-engine[full]"
+pip install "codeflow-engine[full]"
 
 # Install with specific optional dependencies
-pip install "autopr-engine[dev,monitoring]"
+pip install "codeflow-engine[dev,monitoring]"
 
 # Install core only
-pip install "autopr-engine"
+pip install "codeflow-engine"
 ```
 
 ## Development Workflow Updates

@@ -221,7 +221,7 @@ aws secretsmanager create-secret \
 
 ```json
 {
-  "family": "autopr-engine",
+  "family": "codeflow-engine",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "2048",
@@ -230,8 +230,8 @@ aws secretsmanager create-secret \
   "taskRoleArn": "arn:aws:iam::xxxxx:role/autoprTaskRole",
   "containerDefinitions": [
     {
-      "name": "autopr-engine",
-      "image": "xxxxx.dkr.ecr.us-east-1.amazonaws.com/autopr-engine:latest",
+      "name": "codeflow-engine",
+      "image": "xxxxx.dkr.ecr.us-east-1.amazonaws.com/codeflow-engine:latest",
       "portMappings": [
         {
           "containerPort": 8080,
@@ -259,7 +259,7 @@ aws secretsmanager create-secret \
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/autopr-engine",
+          "awslogs-group": "/ecs/codeflow-engine",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -290,8 +290,8 @@ aws ecs create-cluster \
 # Create ECS service
 aws ecs create-service \
   --cluster autopr-cluster \
-  --service-name autopr-engine \
-  --task-definition autopr-engine:1 \
+  --service-name codeflow-engine \
+  --task-definition codeflow-engine:1 \
   --desired-count 2 \
   --launch-type FARGATE \
   --network-configuration "awsvpcConfiguration={
@@ -299,7 +299,7 @@ aws ecs create-service \
     securityGroups=[sg-xxxxx],
     assignPublicIp=DISABLED
   }" \
-  --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:us-east-1:xxxxx:targetgroup/autopr-tg/xxxxx,containerName=autopr-engine,containerPort=8080" \
+  --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:us-east-1:xxxxx:targetgroup/autopr-tg/xxxxx,containerName=codeflow-engine,containerPort=8080" \
   --health-check-grace-period-seconds 60
 ```
 
@@ -344,7 +344,7 @@ aws elbv2 create-listener \
 # Register scalable target
 aws application-autoscaling register-scalable-target \
   --service-namespace ecs \
-  --resource-id service/autopr-cluster/autopr-engine \
+  --resource-id service/autopr-cluster/codeflow-engine \
   --scalable-dimension ecs:service:DesiredCount \
   --min-capacity 2 \
   --max-capacity 10
@@ -352,7 +352,7 @@ aws application-autoscaling register-scalable-target \
 # Create scaling policy (CPU-based)
 aws application-autoscaling put-scaling-policy \
   --service-namespace ecs \
-  --resource-id service/autopr-cluster/autopr-engine \
+  --resource-id service/autopr-cluster/codeflow-engine \
   --scalable-dimension ecs:service:DesiredCount \
   --policy-name cpu-scaling \
   --policy-type TargetTrackingScaling \
@@ -376,10 +376,10 @@ aws application-autoscaling put-scaling-policy \
 
 ```bash
 # Build image
-docker build -t gcr.io/PROJECT_ID/autopr-engine:latest .
+docker build -t gcr.io/PROJECT_ID/codeflow-engine:latest .
 
 # Push to GCR
-docker push gcr.io/PROJECT_ID/autopr-engine:latest
+docker push gcr.io/PROJECT_ID/codeflow-engine:latest
 ```
 
 #### **2. Setup Cloud SQL (PostgreSQL)**
@@ -420,8 +420,8 @@ gcloud redis instances create autopr-redis \
 
 ```bash
 # Deploy service
-gcloud run deploy autopr-engine \
-  --image gcr.io/PROJECT_ID/autopr-engine:latest \
+gcloud run deploy codeflow-engine \
+  --image gcr.io/PROJECT_ID/codeflow-engine:latest \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -498,10 +498,10 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: autopr-engine
+  name: codeflow-engine
   namespace: autopr
   labels:
-    app: autopr-engine
+    app: codeflow-engine
 spec:
   replicas: 3
   strategy:
@@ -511,16 +511,16 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: autopr-engine
+      app: codeflow-engine
   template:
     metadata:
       labels:
-        app: autopr-engine
+        app: codeflow-engine
         version: v1
     spec:
       containers:
-      - name: autopr-engine
-        image: ghcr.io/YOUR_USERNAME/autopr-engine:latest
+      - name: codeflow-engine
+        image: ghcr.io/YOUR_USERNAME/codeflow-engine:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -584,10 +584,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: autopr-engine
+  name: codeflow-engine
   namespace: autopr
   labels:
-    app: autopr-engine
+    app: codeflow-engine
 spec:
   type: ClusterIP
   ports:
@@ -596,7 +596,7 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: autopr-engine
+    app: codeflow-engine
 ```
 
 #### **6. Ingress**
@@ -626,7 +626,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: autopr-engine
+            name: codeflow-engine
             port:
               number: 80
 ```
@@ -638,13 +638,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: autopr-engine-hpa
+  name: codeflow-engine-hpa
   namespace: autopr
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: autopr-engine
+    name: codeflow-engine
   minReplicas: 2
   maxReplicas: 10
   metrics:
@@ -697,7 +697,7 @@ kubectl get svc -n autopr
 kubectl get ingress -n autopr
 
 # Check logs
-kubectl logs -n autopr -l app=autopr-engine --tail=100 -f
+kubectl logs -n autopr -l app=codeflow-engine --tail=100 -f
 ```
 
 ---
@@ -827,9 +827,9 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'autopr-engine'
+  - job_name: 'codeflow-engine'
     static_configs:
-      - targets: ['autopr-engine:9090']
+      - targets: ['codeflow-engine:9090']
     metrics_path: '/metrics'
 ```
 
@@ -881,7 +881,7 @@ find /backups -name "autopr-*.sql.gz" -mtime +30 -delete
 #### **Application Won't Start**
 ```bash
 # Check logs
-kubectl logs -n autopr -l app=autopr-engine --tail=100
+kubectl logs -n autopr -l app=codeflow-engine --tail=100
 
 # Verify secrets
 kubectl get secret -n autopr autopr-secrets -o yaml
@@ -897,7 +897,7 @@ kubectl top pods -n autopr
 
 # Review workflow history size (should be limited to 1000)
 # Restart pods if needed
-kubectl rollout restart deployment/autopr-engine -n autopr
+kubectl rollout restart deployment/codeflow-engine -n autopr
 ```
 
 #### **Slow Performance**

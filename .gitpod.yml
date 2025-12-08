@@ -1,5 +1,5 @@
 # Gitpod configuration for AutoPR Engine
-# Open in Gitpod: https://gitpod.io/#https://github.com/JustAGhosT/autopr-engine
+# Open in Gitpod: https://gitpod.io/#https://github.com/JustAGhosT/codeflow-engine
 
 image:
   file: .gitpod.Dockerfile

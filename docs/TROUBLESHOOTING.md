@@ -226,7 +226,7 @@ export DATABASE_URL="sqlite:///./autopr.db"
 
 **Symptoms:**
 ```
-ERROR: Could not find a version that satisfies the requirement autopr-engine
+ERROR: Could not find a version that satisfies the requirement codeflow-engine
 ```
 
 **Solutions:**
@@ -241,18 +241,18 @@ python -m pip install --upgrade pip setuptools wheel
 python --version  # Should be 3.12 or higher
 
 # If needed, use specific Python version
-python3.12 -m pip install autopr-engine
+python3.12 -m pip install codeflow-engine
 ```
 
 **3. Install with all features:**
 ```bash
-pip install "autopr-engine[full]"
+pip install "codeflow-engine[full]"
 ```
 
 **4. Install from source:**
 ```bash
-git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine
+git clone https://github.com/JustAGhosT/codeflow-engine.git
+cd codeflow-engine
 pip install -e ".[dev]"
 ```
 
@@ -269,7 +269,7 @@ ModuleNotFoundError: No module named 'autopr'
 
 **1. Verify installation:**
 ```bash
-pip list | grep autopr-engine
+pip list | grep codeflow-engine
 python -c "import autopr; print(autopr.__version__)"
 ```
 
@@ -285,9 +285,9 @@ source venv/bin/activate
 
 **3. Reinstall clean:**
 ```bash
-pip uninstall autopr-engine
+pip uninstall codeflow-engine
 pip cache purge
-pip install autopr-engine
+pip install codeflow-engine
 ```
 
 ---
@@ -922,7 +922,7 @@ curl https://api.openai.com/v1/models \
 
 1. **Version:**
    ```bash
-   pip show autopr-engine
+   pip show codeflow-engine
    python --version
    uname -a
    ```
@@ -955,10 +955,10 @@ curl https://api.openai.com/v1/models \
 
 ### Support Channels
 
-- **GitHub Issues:** https://github.com/JustAGhosT/autopr-engine/issues
-- **Discussions:** https://github.com/JustAGhosT/autopr-engine/discussions
+- **GitHub Issues:** https://github.com/JustAGhosT/codeflow-engine/issues
+- **Discussions:** https://github.com/JustAGhosT/codeflow-engine/discussions
 - **Email:** support@justaghost.com
-- **Documentation:** https://autopr-engine.readthedocs.io
+- **Documentation:** https://codeflow-engine.readthedocs.io
 
 ---
 

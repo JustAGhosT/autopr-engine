@@ -1371,9 +1371,9 @@ print(f"Status: {status['status']}")
 2. **Search Issues:** Check GitHub issues for similar problems
 3. **Enable Debug Logging:** Set `LOG_LEVEL=DEBUG` for detailed logs
 4. **Contact Support:**
-   - Email: support@autopr-engine.example.com
+   - Email: support@codeflow-engine.example.com
    - Slack: #autopr-support
-   - GitHub Issues: https://github.com/owner/autopr-engine/issues
+   - GitHub Issues: https://github.com/owner/codeflow-engine/issues
 
 ### Reporting Issues
 

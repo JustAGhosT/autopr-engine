@@ -9,7 +9,7 @@ Choose the installation method that works best for you.
 | Method | Linux/macOS | Windows | Best For |
 |--------|-------------|---------|----------|
 | **One-liner** | `curl ... \| bash` | `irm ... \| iex` | Fastest setup |
-| **pip** | `pip install autopr-engine` | Same | Local development |
+| **pip** | `pip install codeflow-engine` | Same | Local development |
 | **Docker** | `docker compose up -d` | Same | Production deployment |
 | **GitHub Action** | Copy workflow file | Same | CI/CD integration |
 
@@ -18,30 +18,30 @@ Choose the installation method that works best for you.
 ## Option 1: One-Line Install (Recommended)
 
 > **Security Note:** Piping scripts to bash is convenient but review scripts before running.
-> You can inspect the script first: `curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | less`
+> You can inspect the script first: `curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.sh | less`
 
 ```bash
 # Standard installation
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.sh | bash
 
 # Full installation with all features
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | bash -s -- --full
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.sh | bash -s -- --full
 
 # Development installation
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | bash -s -- --dev
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.sh | bash -s -- --dev
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 # Standard installation
-irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.ps1 | iex
 
 # Full installation
-irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 -OutFile install.ps1; .\install.ps1 -Full
+irm https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.ps1 -OutFile install.ps1; .\install.ps1 -Full
 
 # Development installation
-irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 -OutFile install.ps1; .\install.ps1 -Dev
+irm https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.ps1 -OutFile install.ps1; .\install.ps1 -Dev
 ```
 
 ---
@@ -54,14 +54,14 @@ python3 -m venv venv
 source venv/bin/activate  # Windows: .\venv\Scripts\Activate.ps1
 
 # Basic installation
-pip install autopr-engine
+pip install codeflow-engine
 
 # With all features
-pip install "autopr-engine[full]"
+pip install "codeflow-engine[full]"
 
 # Development mode (from cloned repo)
-git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine
+git clone https://github.com/JustAGhosT/codeflow-engine.git
+cd codeflow-engine
 pip install -e ".[dev]"
 ```
 
@@ -71,8 +71,8 @@ pip install -e ".[dev]"
 
 ```bash
 # Clone and install
-git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine
+git clone https://github.com/JustAGhosT/codeflow-engine.git
+cd codeflow-engine
 
 # Quick start (creates .env and installs)
 make quickstart
@@ -99,11 +99,11 @@ make docker-up    # Start with Docker
 
 ```bash
 # Quick start
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | bash -s -- --docker
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.sh | bash -s -- --docker
 
 # Or manually:
-git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine
+git clone https://github.com/JustAGhosT/codeflow-engine.git
+cd codeflow-engine
 cp .env.example .env
 # Edit .env with your API keys
 docker-compose up -d
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install autopr-engine
+      - run: pip install codeflow-engine
       - run: autopr analyze --repo ${{ github.repository }} --pr ${{ github.event.pull_request.number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -149,10 +149,10 @@ jobs:
 
 ```bash
 # From your repository root:
-curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/templates/quick-start/autopr-minimal.yml \
+curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/templates/quick-start/autopr-minimal.yml \
   -o .github/workflows/autopr.yml --create-dirs
 
-# Or use make (if autopr-engine is cloned):
+# Or use make (if codeflow-engine is cloned):
 make setup-action
 ```
 
@@ -238,7 +238,7 @@ Error: Permission denied
 ```
 **Solution:** Use pip with --user flag
 ```bash
-pip install --user autopr-engine
+pip install --user codeflow-engine
 ```
 
 ### Missing API Key
@@ -265,7 +265,7 @@ export OPENAI_API_KEY=sk-your_key_here
 
 ```bash
 # pip
-pip uninstall autopr-engine
+pip uninstall codeflow-engine
 
 # Docker
 docker-compose down -v

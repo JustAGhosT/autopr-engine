@@ -336,8 +336,8 @@ To add new platforms:
 ## 📞 Support
 
 For issues or questions:
-- GitHub Issues: [Report bugs](https://github.com/JustAGhosT/autopr-engine/issues)
-- Discussions: [Ask questions](https://github.com/JustAGhosT/autopr-engine/discussions)
+- GitHub Issues: [Report bugs](https://github.com/JustAGhosT/codeflow-engine/issues)
+- Discussions: [Ask questions](https://github.com/JustAGhosT/codeflow-engine/discussions)
 - Email: support@justaghost.com
 
 ---
