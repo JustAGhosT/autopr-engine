@@ -222,7 +222,7 @@ Voice: Authoritative, protective, reliable
 - ✅ Customer base strongly associates with current name
 
 **Choose PullFlow if:**
-- ✅ PR automation remains core focus (but want refresh)
+- ✅ PR automation remains core focus and brand refresh is desired
 - ✅ GitHub-native positioning is key
 - ✅ Maximum memorability matters most
 - ✅ Developer-first brand is priority
