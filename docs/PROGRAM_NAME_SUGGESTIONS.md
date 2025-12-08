@@ -145,11 +145,14 @@ If maintaining AutoPR, consider positioning strategies that emphasize the platfo
 - **Best For:** Security-conscious organizations
 
 ### 6. ReviewBot AI (42/50 points)
+
 - **Strengths:** Honest, direct, explains itself
 - **Considerations:** "Bot" may feel dated or less sophisticated
 - **Best For:** Teams comfortable with chatbot metaphors
 
 ### 7. MergeFlow (41/50 points)
+
+
 - **Strengths:** Clean, focused on the merge process
 - **Considerations:** Narrower scope than competitors
 - **Best For:** PR-focused use cases
