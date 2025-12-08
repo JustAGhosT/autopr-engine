@@ -1,3 +1,19 @@
+# ⚠️ ARCHIVED - Repository Split Complete
+
+> **This repository has been split into focused, product-specific repositories.**
+> 
+> **See the new repositories:**
+> - [`codeflow-engine`](https://github.com/JustAGhosT/codeflow-engine) - Core engine (Python)
+> - [`codeflow-desktop`](https://github.com/JustAGhosT/codeflow-desktop) - Desktop application (Tauri/React)
+> - [`codeflow-vscode-extension`](https://github.com/JustAGhosT/codeflow-vscode-extension) - VS Code extension
+> - [`codeflow-infrastructure`](https://github.com/JustAGhosT/codeflow-infrastructure) - Production infrastructure (Bicep/Terraform)
+> - [`codeflow-azure-setup`](https://github.com/JustAGhosT/codeflow-azure-setup) - Azure bootstrap scripts
+> - [`codeflow-website`](https://github.com/JustAGhosT/codeflow-website) - Marketing website
+>
+> **Original monorepo history preserved at tag:** `legacy-autopr-monorepo-final`
+>
+> ---
+
 # AutoPR Engine 🤖
 
 ## AI-Powered GitHub PR Automation and Issue Management
