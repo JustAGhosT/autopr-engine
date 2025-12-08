@@ -45,7 +45,7 @@ All resources follow the pattern: `{env}-autopr-{region}-{resource}`
 ### Option 1: Using the Deployment Script (Recommended)
 
 ```bash
-bash infrastructure/bicep/deploy-autopr-engine.sh prod san "eastus2"
+bash infrastructure/bicep/deploy-codeflow-engine.sh prod san "eastus2"
 ```
 
 The script will:
@@ -87,12 +87,12 @@ Then proceed with deployment:
    ```bash
    az deployment group create \
      --resource-group prod-rg-san-autopr \
-     --template-file infrastructure/bicep/autopr-engine.bicep \
+     --template-file infrastructure/bicep/codeflow-engine.bicep \
      --parameters \
        environment=prod \
        regionAbbr=san \
        location=eastus2 \
-       containerImage=ghcr.io/justaghost/autopr-engine:latest \
+       containerImage=ghcr.io/justaghost/codeflow-engine:latest \
        postgresLogin="$POSTGRES_LOGIN" \
        postgresPassword="$POSTGRES_PASSWORD" \
        redisPassword="$REDIS_PASSWORD"
@@ -175,7 +175,7 @@ You can add additional environment variables (like GitHub tokens, AI API keys) t
 ```bash
 az deployment group show \
   --resource-group prod-rg-san-autopr \
-  --name autopr-engine \
+  --name codeflow-engine \
   --query properties.outputs \
   --output json
 ```
@@ -188,7 +188,7 @@ To update the container image after deployment:
 az containerapp update \
   --name prod-autopr-san-app \
   --resource-group prod-rg-san-autopr \
-  --image ghcr.io/justaghost/autopr-engine:latest
+  --image ghcr.io/justaghost/codeflow-engine:latest
 ```
 
 ### View Logs
@@ -330,10 +330,10 @@ The infrastructure template now includes automatic setup of managed SSL certific
 1. **Configure custom domain DNS records** (REQUIRED before deployment):
    - Add a CNAME record for your custom domain (e.g., app.autopr.io) pointing to the Container App FQDN
    - You may need to deploy once without the custom domain first, then update DNS, then redeploy
-   - Obtain the FQDN from deployment outputs: `az deployment group show --resource-group prod-rg-san-autopr --name autopr-engine --query properties.outputs.containerAppUrl.value`
+   - Obtain the FQDN from deployment outputs: `az deployment group show --resource-group prod-rg-san-autopr --name codeflow-engine --query properties.outputs.containerAppUrl.value`
    - Example DNS record: `CNAME app.autopr.io -> prod-autopr-san-app.<region>.azurecontainerapps.io`
    - The managed SSL certificate will be automatically provisioned by Azure after DNS validation
-2. Set up GitHub Actions for CI/CD (see `.github/workflows/deploy-autopr-engine.yml`)
+2. Set up GitHub Actions for CI/CD (see `.github/workflows/deploy-codeflow-engine.yml`)
 3. Configure additional environment variables (GitHub tokens, AI API keys)
 4. Set up monitoring alerts
 5. Configure backup and disaster recovery

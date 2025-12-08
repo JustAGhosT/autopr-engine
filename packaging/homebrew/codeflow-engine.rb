@@ -1,16 +1,16 @@
 # Homebrew formula for AutoPR Engine
-# Install with: brew install JustAGhosT/tap/autopr-engine
-# Or tap first: brew tap JustAGhosT/tap && brew install autopr-engine
+# Install with: brew install JustAGhosT/tap/codeflow-engine
+# Or tap first: brew tap JustAGhosT/tap && brew install codeflow-engine
 
-class AutoprEngine < Formula
+class CodeflowEngine < Formula
   include Language::Python::Virtualenv
 
   desc "AI-Powered GitHub PR Automation and Issue Management"
-  homepage "https://github.com/JustAGhosT/autopr-engine"
-  url "https://github.com/JustAGhosT/autopr-engine/archive/refs/tags/v1.0.1.tar.gz"
+  homepage "https://github.com/JustAGhosT/codeflow-engine"
+  url "https://github.com/JustAGhosT/codeflow-engine/archive/refs/tags/v1.0.1.tar.gz"
   sha256 "PLACEHOLDER_SHA256"  # Update with actual SHA256 after release
   license "MIT"
-  head "https://github.com/JustAGhosT/autopr-engine.git", branch: "main"
+  head "https://github.com/JustAGhosT/codeflow-engine.git", branch: "main"
 
   depends_on "python@3.12"
 
@@ -57,7 +57,7 @@ class AutoprEngine < Formula
         cd your-repo
         autopr init
 
-      Documentation: https://github.com/JustAGhosT/autopr-engine
+      Documentation: https://github.com/JustAGhosT/codeflow-engine
     EOS
   end
 

@@ -1,7 +1,7 @@
 ﻿{
-  "id": "/subscriptions/22f9eb18-6553-4b7d-9451-47d0195085fe/resourceGroups/prod-rg-san-autopr/providers/Microsoft.Resources/deployments/autopr-engine",
+  "id": "/subscriptions/22f9eb18-6553-4b7d-9451-47d0195085fe/resourceGroups/prod-rg-san-autopr/providers/Microsoft.Resources/deployments/codeflow-engine",
   "location": null,
-  "name": "autopr-engine",
+  "name": "codeflow-engine",
   "properties": {
     "correlationId": "a50a7e47-5518-46ab-844e-3bd79718b592",
     "debugSetting": null,

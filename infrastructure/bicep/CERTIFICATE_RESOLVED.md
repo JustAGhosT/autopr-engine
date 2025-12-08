@@ -42,15 +42,15 @@ Value: <Container-App-FQDN>  # Get this from deployment output
 
 ```bash
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group prod-rg-san-autopr \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
     customDomain=app.autopr.io \
-    containerImage=ghcr.io/justaghost/autopr-engine:latest \
+    containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="autopr" \
     postgresPassword="<your-password>" \
     redisPassword="<your-password>"

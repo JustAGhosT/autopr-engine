@@ -485,7 +485,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## How to Create Issues
 
-1. **Navigate to GitHub Issues:** Go to https://github.com/JustAGhosT/autopr-engine/issues
+1. **Navigate to GitHub Issues:** Go to https://github.com/JustAGhosT/codeflow-engine/issues
 2. **Click "New Issue"**
 3. **Copy the template** from this document for the specific issue
 4. **Fill in** the title and description

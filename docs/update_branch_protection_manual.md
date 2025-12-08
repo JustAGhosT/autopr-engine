@@ -11,7 +11,7 @@ The branch protection rules are expecting status checks that don't match our act
 Update the branch protection rules to match our actual workflow:
 
 1. **Go to GitHub Repository Settings**:
-   - Navigate to: https://github.com/JustAGhosT/autopr-engine/settings/branches
+   - Navigate to: https://github.com/JustAGhosT/codeflow-engine/settings/branches
    - Find the branch protection rule for `main` (or your target branch)
 
 2. **Update Required Status Checks**:
@@ -26,10 +26,10 @@ If you have proper GitHub CLI authentication:
 
 ```bash
 # Check current rules
-gh api repos/JustAGhosT/autopr-engine/branches/main/protection
+gh api repos/JustAGhosT/codeflow-engine/branches/main/protection
 
 # Update rules (replace with your actual requirements)
-gh api repos/JustAGhosT/autopr-engine/branches/main/protection \
+gh api repos/JustAGhosT/codeflow-engine/branches/main/protection \
   --method PUT \
   --field required_status_checks='{"strict":true,"contexts":["quality-assurance","testing","security","performance","build","documentation"]}'
 ```

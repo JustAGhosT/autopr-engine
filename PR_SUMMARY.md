@@ -115,7 +115,7 @@ az deployment group create \
 ### For Application Changes
 The GitHub Actions workflow will automatically deploy:
 1. Website changes via `.github/workflows/deploy-website.yml`
-2. Backend changes via `.github/workflows/deploy-autopr-engine.yml`
+2. Backend changes via `.github/workflows/deploy-codeflow-engine.yml`
 
 ## Verification Steps
 

@@ -67,8 +67,8 @@ The workflow system uses a volume-based approach (0-1000) to determine check int
 
 ```bash
 # Clone repository
-git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine
+git clone https://github.com/JustAGhosT/codeflow-engine.git
+cd codeflow-engine
 
 # Create virtual environment
 python -m venv venv

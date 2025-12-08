@@ -540,7 +540,7 @@ LOG_FORMAT=json
 LOG_FILE=/var/log/autopr/production.log
 
 # Structured logging fields
-SERVICE_NAME=autopr-engine
+SERVICE_NAME=codeflow-engine
 ENVIRONMENT=production
 VERSION=1.0.0
 ```

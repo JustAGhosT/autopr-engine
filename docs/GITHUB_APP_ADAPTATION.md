@@ -2,7 +2,7 @@
 
 ## ⚠️ Important Note
 
-The GitHub App code was migrated from a **Next.js/TypeScript** project (`twinesandstraps`) to `autopr-engine`, which is a **Python/FastAPI** project. The code needs to be adapted.
+The GitHub App code was migrated from a **Next.js/TypeScript** project (`twinesandstraps`) to `codeflow-engine`, which is a **Python/FastAPI** project. The code needs to be adapted.
 
 ## Current Situation
 
@@ -51,12 +51,12 @@ The `autopr-desktop` folder is a React/TypeScript project. You could:
 
 Create a separate Next.js microservice for the GitHub App:
 - Deploy separately
-- Call autopr-engine APIs when needed
+- Call codeflow-engine APIs when needed
 - Keep the code as-is
 
 ## Recommended: FastAPI Conversion
 
-Since autopr-engine already has:
+Since codeflow-engine already has:
 - FastAPI/Flask infrastructure (dashboard/server.py)
 - GitHub client (`autopr/clients/github_client.py`)
 - Integration system (`autopr/integrations/`)
@@ -70,7 +70,7 @@ Since autopr-engine already has:
    - `route.ts` → FastAPI route handlers
    - `github-secrets.ts` → Python encryption using `pynacl`
    - `page.tsx` → HTML template or API response
-3. **Integrate with existing autopr-engine**:
+3. **Integrate with existing codeflow-engine**:
    - Use `autopr/clients/github_client.py` if possible
    - Add to `autopr/integrations/` registry
 4. **Update dependencies** in `pyproject.toml`

@@ -1,7 +1,7 @@
 {
   "name": "AutoPR Engine Development",
   "dockerComposeFile": ["../docker-compose.yml", "docker-compose.override.yml"],
-  "service": "autopr-engine",
+  "service": "codeflow-engine",
   "workspaceFolder": "/workspace",
   "shutdownAction": "stopCompose",
   "features": {

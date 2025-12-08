@@ -497,7 +497,7 @@ gh auth login --scopes repo,workflow
 vault kv put autopr/prod github_token="new_token"
 
 # 4. Restart application
-kubectl rollout restart deployment/autopr-engine
+kubectl rollout restart deployment/codeflow-engine
 
 # 5. Audit recent activity
 gh api /user/events | jq '.[] | select(.created_at > "2025-01-01")'

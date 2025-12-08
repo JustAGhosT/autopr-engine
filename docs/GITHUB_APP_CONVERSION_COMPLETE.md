@@ -1,6 +1,6 @@
 # GitHub App Conversion Complete ✅
 
-The GitHub App code has been successfully converted from Next.js/TypeScript to Python/FastAPI and integrated into autopr-engine.
+The GitHub App code has been successfully converted from Next.js/TypeScript to Python/FastAPI and integrated into codeflow-engine.
 
 ## What Was Done
 

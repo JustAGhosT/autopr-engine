@@ -219,7 +219,7 @@ psql $DATABASE_URL -c "ANALYZE;"
 ```bash
 # Clone repository (or pull latest)
 cd /opt/autopr
-git clone https://github.com/your-org/autopr-engine.git .
+git clone https://github.com/your-org/codeflow-engine.git .
 # OR
 git pull origin main
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # AutoPR Engine - Simple Installation Script
-# Usage: curl -sSL https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.sh | bash
 # Or: ./install.sh [--full|--dev|--minimal]
 
 set -e
@@ -148,7 +148,7 @@ install_pip() {
             ;;
         "full")
             print_status "Installing full package with all features..."
-            pip3 install "autopr-engine[full]" || {
+            pip3 install "codeflow-engine[full]" || {
                 print_error "Installation failed"
                 exit 1
             }
@@ -165,8 +165,8 @@ install_pip() {
                 # Clone and install
                 print_status "Cloning repository..."
                 CLONE_DIR=$(mktemp -d)
-                if git clone https://github.com/JustAGhosT/autopr-engine.git "${CLONE_DIR}/autopr-engine"; then
-                    cd "${CLONE_DIR}/autopr-engine"
+                if git clone https://github.com/JustAGhosT/codeflow-engine.git "${CLONE_DIR}/codeflow-engine"; then
+                    cd "${CLONE_DIR}/codeflow-engine"
                     pip3 install -e ".[dev]" || {
                         print_error "Installation failed"
                         rm -rf "${CLONE_DIR}"
@@ -192,7 +192,7 @@ install_docker() {
     # Create directory if not in repo
     if [ ! -f "docker-compose.yml" ]; then
         print_status "Creating autopr directory..."
-        mkdir -p autopr-engine && cd autopr-engine || {
+        mkdir -p codeflow-engine && cd codeflow-engine || {
             print_error "Failed to create directory"
             exit 1
         }
@@ -269,7 +269,7 @@ show_next_steps() {
     echo "  4. Or use Docker:"
     echo "     docker-compose up -d"
     echo ""
-    echo "Documentation: https://github.com/JustAGhosT/autopr-engine"
+    echo "Documentation: https://github.com/JustAGhosT/codeflow-engine"
     echo ""
 }
 

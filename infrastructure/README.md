@@ -4,7 +4,7 @@ This directory contains the Infrastructure as Code (IaC) for the AutoPR project,
 
 ## Infrastructure Components
 
-### 1. AutoPR Engine Application (`bicep/autopr-engine.bicep`)
+### 1. AutoPR Engine Application (`bicep/codeflow-engine.bicep`)
 
 Production-ready infrastructure for the AutoPR Engine application:
 - **Azure Container Apps**: Serverless container hosting
@@ -37,7 +37,7 @@ Bicep is the native Azure IaC language and is recommended for Azure deployments:
 
 **AutoPR Engine:**
 ```bash
-bash infrastructure/bicep/deploy-autopr-engine.sh prod san "eastus2"
+bash infrastructure/bicep/deploy-codeflow-engine.sh prod san "eastus2"
 ```
 
 **Website:**

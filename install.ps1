@@ -1,5 +1,5 @@
 # AutoPR Engine - Windows Installation Script
-# Usage: irm https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/install.ps1 | iex
 # Or: .\install.ps1 [-Full] [-Dev] [-Minimal] [-Docker]
 
 [CmdletBinding()]
@@ -117,11 +117,11 @@ function Install-AutoPR {
     switch ($Type) {
         "Minimal" {
             Write-Status "Installing minimal package (core only)..."
-            pip install --no-deps autopr-engine
+            pip install --no-deps codeflow-engine
         }
         "Full" {
             Write-Status "Installing full package with all features..."
-            pip install "autopr-engine[full]"
+            pip install "codeflow-engine[full]"
         }
         "Dev" {
             Write-Status "Installing development package..."
@@ -129,14 +129,14 @@ function Install-AutoPR {
                 pip install -e ".[dev]"
             } else {
                 Write-Status "Cloning repository..."
-                git clone https://github.com/JustAGhosT/autopr-engine.git
-                Set-Location autopr-engine
+                git clone https://github.com/JustAGhosT/codeflow-engine.git
+                Set-Location codeflow-engine
                 pip install -e ".[dev]"
             }
         }
         default {
             Write-Status "Installing standard package..."
-            pip install autopr-engine
+            pip install codeflow-engine
         }
     }
 
@@ -154,8 +154,8 @@ function Install-Docker {
 
     if (-not (Test-Path "docker-compose.yml")) {
         Write-Status "Creating autopr directory..."
-        New-Item -ItemType Directory -Force -Path "autopr-engine" | Out-Null
-        Set-Location "autopr-engine"
+        New-Item -ItemType Directory -Force -Path "codeflow-engine" | Out-Null
+        Set-Location "codeflow-engine"
 
         Write-Status "Downloading Docker Compose configuration..."
         try {
@@ -220,7 +220,7 @@ function Show-NextSteps {
     Write-Host "  3. Add to your GitHub repo:"
     Write-Host "     .\install.ps1 -Action"
     Write-Host ""
-    Write-Host "Documentation: https://github.com/JustAGhosT/autopr-engine"
+    Write-Host "Documentation: https://github.com/JustAGhosT/codeflow-engine"
     Write-Host ""
 }
 

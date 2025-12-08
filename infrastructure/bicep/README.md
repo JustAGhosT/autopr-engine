@@ -34,20 +34,20 @@ Follow the deployment guide in [README-AUTOPR-ENGINE.md](./README-AUTOPR-ENGINE.
 ## 📂 Files
 
 ### Bicep Templates
-- `autopr-engine.bicep` - Main infrastructure template for AutoPR Engine
+- `codeflow-engine.bicep` - Main infrastructure template for AutoPR Engine
 - `website.bicep` - Static web app template
 - `main.bicep` - Combined deployment template
 
 ### Parameter Files
-- `autopr-engine-parameters.json` - Example parameters for AutoPR Engine
+- `codeflow-engine-parameters.json` - Example parameters for AutoPR Engine
 - `website-parameters.json` - Example parameters for website
 
 ### Deployment Scripts
 
-- `deploy-autopr-engine.sh` - Bash deployment script
-- `deploy-autopr-engine.ps1` - PowerShell deployment script
+- `deploy-codeflow-engine.sh` - Bash deployment script
+- `deploy-codeflow-engine.ps1` - PowerShell deployment script
 - `deploy-website.sh` - Website deployment script
-- `cleanup-autopr-engine.sh` - Resource cleanup script
+- `cleanup-codeflow-engine.sh` - Resource cleanup script
 
 ## 🚀 Quick Deploy
 
@@ -62,21 +62,21 @@ Follow the deployment guide in [README-AUTOPR-ENGINE.md](./README-AUTOPR-ENGINE.
 
 **Option 1: Using the script**
 ```bash
-bash deploy-autopr-engine.sh prod san "eastus2"
+bash deploy-codeflow-engine.sh prod san "eastus2"
 ```
 
 **Option 2: Manual deployment**
 ```bash
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group prod-rg-san-autopr \
-  --template-file autopr-engine.bicep \
+  --template-file codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
     customDomain=app.autopr.io \
-    containerImage=ghcr.io/justaghost/autopr-engine:latest \
+    containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="autopr" \
     postgresPassword="$(openssl rand -base64 32)" \
     redisPassword="$(openssl rand -base64 32)"

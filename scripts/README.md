@@ -22,10 +22,10 @@ This directory contains scripts to automatically create GitHub environments for 
 
 ```powershell
 # Run with parameters
-.\scripts\setup-github-environments.ps1 -Repository "your-org/autopr-engine" -Token "ghp_your_token_here"
+.\scripts\setup-github-environments.ps1 -Repository "your-org/codeflow-engine" -Token "ghp_your_token_here"
 
 # Dry run to see what would be created
-.\scripts\setup-github-environments.ps1 -Repository "your-org/autopr-engine" -Token "ghp_your_token_here" -DryRun
+.\scripts\setup-github-environments.ps1 -Repository "your-org/codeflow-engine" -Token "ghp_your_token_here" -DryRun
 ```
 
 ### Bash Script (Linux/macOS/WSL)
@@ -35,10 +35,10 @@ This directory contains scripts to automatically create GitHub environments for 
 chmod +x scripts/setup-github-environments.sh
 
 # Run with parameters
-./scripts/setup-github-environments.sh -r "your-org/autopr-engine" -t "ghp_your_token_here"
+./scripts/setup-github-environments.sh -r "your-org/codeflow-engine" -t "ghp_your_token_here"
 
 # Dry run to see what would be created
-./scripts/setup-github-environments.sh -r "your-org/autopr-engine" -t "ghp_your_token_here" --dry-run
+./scripts/setup-github-environments.sh -r "your-org/codeflow-engine" -t "ghp_your_token_here" --dry-run
 ```
 
 ## 🔧 What the Scripts Create
@@ -93,14 +93,14 @@ chmod +x scripts/setup-github-environments.sh
 
 ```powershell
 # Replace with your actual repository and token
-.\scripts\setup-github-environments.ps1 -Repository "your-username/autopr-engine" -Token "ghp_xxxxxxxxxxxxxxxxxxxx"
+.\scripts\setup-github-environments.ps1 -Repository "your-username/codeflow-engine" -Token "ghp_xxxxxxxxxxxxxxxxxxxx"
 ```
 
 ### For Organization Repository
 
 ```bash
 # Replace with your organization and token
-./scripts/setup-github-environments.sh -r "your-org/autopr-engine" -t "ghp_xxxxxxxxxxxxxxxxxxxx"
+./scripts/setup-github-environments.sh -r "your-org/codeflow-engine" -t "ghp_xxxxxxxxxxxxxxxxxxxx"
 ```
 
 ## ✅ Verification

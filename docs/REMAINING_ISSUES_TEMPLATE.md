@@ -590,7 +590,7 @@ Establish and maintain a comprehensive changelog following Keep a Changelog form
 ## How to Create Issues from This Template
 
 1. Copy each issue section (including title, labels, description, acceptance criteria)
-2. Go to: https://github.com/JustAGhosT/autopr-engine/issues/new
+2. Go to: https://github.com/JustAGhosT/codeflow-engine/issues/new
 3. Paste the content
 4. Add appropriate labels:
    - Priority: `high`, `medium`, `low`

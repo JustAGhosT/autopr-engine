@@ -4,7 +4,7 @@ Before deploying the AutoPR Engine infrastructure, you need to build and push th
 
 ## Option 1: Use GitHub Actions (Recommended)
 
-The GitHub Actions workflow (`.github/workflows/deploy-autopr-engine.yml`) will automatically build and push the image when you push to the `main` branch.
+The GitHub Actions workflow (`.github/workflows/deploy-codeflow-engine.yml`) will automatically build and push the image when you push to the `main` branch.
 
 1. **Push your code to trigger the build:**
    ```bash
@@ -15,7 +15,7 @@ The GitHub Actions workflow (`.github/workflows/deploy-autopr-engine.yml`) will 
 
 3. **The image will be available at:**
    ```
-   ghcr.io/justaghost/autopr-engine:latest
+   ghcr.io/justaghost/codeflow-engine:latest
    ```
 
 ## Option 2: Build and Push Manually
@@ -24,10 +24,10 @@ The GitHub Actions workflow (`.github/workflows/deploy-autopr-engine.yml`) will 
 
 ```bash
 # Build the Docker image
-docker build -f docker/Dockerfile -t autopr-engine:latest .
+docker build -f docker/Dockerfile -t codeflow-engine:latest .
 
 # Tag for GitHub Container Registry
-docker tag autopr-engine:latest ghcr.io/justaghost/autopr-engine:latest
+docker tag codeflow-engine:latest ghcr.io/justaghost/codeflow-engine:latest
 ```
 
 ### Push to GitHub Container Registry
@@ -43,7 +43,7 @@ docker tag autopr-engine:latest ghcr.io/justaghost/autopr-engine:latest
 
 3. **Push the image:**
    ```bash
-   docker push ghcr.io/justaghost/autopr-engine:latest
+   docker push ghcr.io/justaghost/codeflow-engine:latest
    ```
 
 ### Push to Azure Container Registry (Alternative)
@@ -57,17 +57,17 @@ If you prefer using Azure Container Registry:
 
 2. **Tag and push:**
    ```bash
-   docker tag autopr-engine:latest <your-acr-name>.azurecr.io/autopr-engine:latest
-   docker push <your-acr-name>.azurecr.io/autopr-engine:latest
+   docker tag codeflow-engine:latest <your-acr-name>.azurecr.io/codeflow-engine:latest
+   docker push <your-acr-name>.azurecr.io/codeflow-engine:latest
    ```
 
 3. **Update the deployment:**
    ```bash
    az deployment group create \
      --resource-group prod-rg-san-autopr \
-     --template-file infrastructure/bicep/autopr-engine.bicep \
+     --template-file infrastructure/bicep/codeflow-engine.bicep \
      --parameters \
-       containerImage="<your-acr-name>.azurecr.io/autopr-engine:latest" \
+       containerImage="<your-acr-name>.azurecr.io/codeflow-engine:latest" \
        ...
    ```
 
@@ -78,7 +78,7 @@ For testing the infrastructure deployment, you can use a placeholder image:
 ```bash
 az deployment group create \
   --resource-group prod-rg-san-autopr \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     containerImage="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest" \
     ...
@@ -94,6 +94,6 @@ Once you have the image built and pushed, update the Container App:
 az containerapp update \
   --name prod-autopr-san-app \
   --resource-group prod-rg-san-autopr \
-  --image ghcr.io/justaghost/autopr-engine:latest
+  --image ghcr.io/justaghost/codeflow-engine:latest
 ```
 

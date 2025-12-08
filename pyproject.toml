@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "autopr-engine"
+name = "codeflow-engine"
 version = "1.0.1"
 description = "AI-Powered GitHub PR Automation and Issue Management"
 authors = ["VeritasVault Team <dev@veritasvault.net>"]
@@ -64,12 +64,12 @@ flask-socketio = "^5.5.1"
 alembic = "^1.17.2"
 
 [tool.poetry.urls]
-Homepage = "https://github.com/veritasvault/autopr-engine"
-Documentation = "https://autopr-engine.readthedocs.io"
-Repository = "https://github.com/veritasvault/autopr-engine"
-"Bug Tracker" = "https://github.com/veritasvault/autopr-engine/issues"
-Changelog = "https://github.com/veritasvault/autopr-engine/blob/main/CHANGELOG.md"
-Discussions = "https://github.com/veritasvault/autopr-engine/discussions"
+Homepage = "https://github.com/veritasvault/codeflow-engine"
+Documentation = "https://codeflow-engine.readthedocs.io"
+Repository = "https://github.com/veritasvault/codeflow-engine"
+"Bug Tracker" = "https://github.com/veritasvault/codeflow-engine/issues"
+Changelog = "https://github.com/veritasvault/codeflow-engine/blob/main/CHANGELOG.md"
+Discussions = "https://github.com/veritasvault/codeflow-engine/discussions"
 
 [tool.poetry.scripts]
 autopr = "autopr.cli:main"
@@ -168,7 +168,7 @@ autopr = [
 minversion = "7.0"
 addopts = ["-ra", "--tb=short", "--maxfail=10", "-p", "no:langsmith"]
 testpaths = ["tests"]
-norecursedirs = ["tests/completed", "tests/archive", "tests/generated"]
+norecursedirs = []
 # pytest-asyncio configuration
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"

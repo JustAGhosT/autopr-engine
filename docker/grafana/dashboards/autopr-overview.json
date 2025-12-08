@@ -61,7 +61,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "up{job=\"autopr-engine\"}",
+          "expr": "up{job=\"codeflow-engine\"}",
           "refId": "A"
         }
       ],

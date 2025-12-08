@@ -332,7 +332,7 @@ AutoPR Engine uses **PostgreSQL** as the primary database with **SQLAlchemy ORM*
   "event_type": "deployment.completed",
   "event_id": "gh-123456",
   "payload": {
-    "repository": "autopr-engine",
+    "repository": "codeflow-engine",
     "branch": "main",
     "commit_sha": "abc123def456"
   },
@@ -615,7 +615,7 @@ Several tables use JSONB columns for flexible configuration and data storage:
 4. **integration_events.payload** - Event data from external systems
    ```json
    {
-     "repository": "autopr-engine",
+     "repository": "codeflow-engine",
      "pull_request_number": 123,
      "author": "user@example.com"
    }

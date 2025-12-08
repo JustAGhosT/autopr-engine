@@ -30,7 +30,7 @@ Analysis of remaining branches to determine what should be merged into `main`.
 ## 2. `feat/file-analyzer` & `feat/modular-file-analyzer` - **OUTDATED, CAN DELETE**
 
 **Status:** Both point to same commit `4e55171`  
-**Origin:** Old repository (`neuralliquid/autopr-engine`)  
+**Origin:** Old repository (`neuralliquid/codeflow-engine`)  
 **Behind main:** 44 commits
 
 **What it contains:**
@@ -52,12 +52,12 @@ Analysis of remaining branches to determine what should be merged into `main`.
 
 **What it changes:**
 - `.continue/rules/CONTINUE.md` - Updates Docker image reference
-- `.windsurf/rules/autopr-engine.md` - Updates organization reference  
-- `tools/autopr-engine.code-workspace` - Updates API base URLs
+- `.windsurf/rules/codeflow-engine.md` - Updates organization reference  
+- `tools/codeflow-engine.code-workspace` - Updates API base URLs
 
 **Analysis:**
 - 2 of 3 files don't exist in current main (`.continue/`, `.windsurf/` were removed)
-- Only `tools/autopr-engine.code-workspace` exists
+- Only `tools/codeflow-engine.code-workspace` exists
 - No "neuralliquid" references found in current codebase
 - **Recommendation:** **CHECK** if workspace file needs update, then delete branch
 
@@ -70,7 +70,7 @@ Analysis of remaining branches to determine what should be merged into `main`.
 2. **`feat/modular-file-analyzer`** - Feature already in main (same as above)
 
 ### ⚠️ Review Before Deleting:
-3. **`fix/repository-references`** - Check if `tools/autopr-engine.code-workspace` needs the update
+3. **`fix/repository-references`** - Check if `tools/codeflow-engine.code-workspace` needs the update
 
 ### 📦 Keep as Backup:
 4. **`backup/current-work`** - Keep for reference, but don't merge (too outdated)
@@ -79,7 +79,7 @@ Analysis of remaining branches to determine what should be merged into `main`.
 
 ## Action Plan
 
-1. Check `tools/autopr-engine.code-workspace` for any old references
+1. Check `tools/codeflow-engine.code-workspace` for any old references
 2. If clean, delete `fix/repository-references`
 3. Delete `feat/file-analyzer` and `feat/modular-file-analyzer`
 4. Keep `backup/current-work` as reference (or delete if not needed)

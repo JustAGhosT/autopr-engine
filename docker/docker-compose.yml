@@ -1,15 +1,15 @@
 version: "3.8"
 
 services:
-  # AutoPR Engine main application
-  autopr-engine:
+  # CodeFlow Engine main application
+  codeflow-engine:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
       target: production
       args:
         RUN_TESTS: "false" # Skip tests in compose build
-    container_name: autopr-engine
+    container_name: codeflow-engine
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -53,7 +53,7 @@ services:
       - postgres
       - redis
     networks:
-      - autopr-network
+      - codeflow-network
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
@@ -80,7 +80,7 @@ services:
     ports:
       - "5432:5432" # Expose for development access
     networks:
-      - autopr-network
+      - codeflow-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U autopr -d autopr"]
       interval: 10s
@@ -101,7 +101,7 @@ services:
     ports:
       - "6379:6379" # Expose for development access
     networks:
-      - autopr-network
+      - codeflow-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -144,7 +144,7 @@ services:
       - postgres
       - redis
     networks:
-      - autopr-network
+      - codeflow-network
 
   # Prometheus for metrics collection (optional)
   prometheus:
@@ -165,7 +165,7 @@ services:
       - prometheus_data:/prometheus
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
-      - autopr-network
+      - codeflow-network
 
   # Grafana for metrics visualization (optional)
   grafana:
@@ -186,7 +186,7 @@ services:
     depends_on:
       - prometheus
     networks:
-      - autopr-network
+      - codeflow-network
 
   # Nginx reverse proxy (optional, for production)
   nginx:
@@ -203,9 +203,9 @@ services:
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
     depends_on:
-      - autopr-engine
+      - codeflow-engine
     networks:
-      - autopr-network
+      - codeflow-network
 
 # Persistent volumes
 volumes:
@@ -232,7 +232,7 @@ volumes:
 
 # Networks
 networks:
-  autopr-network:
+  codeflow-network:
     driver: bridge
     ipam:
       config:

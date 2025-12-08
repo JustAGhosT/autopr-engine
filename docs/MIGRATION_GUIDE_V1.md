@@ -211,7 +211,7 @@ git checkout <previous-tag>
 pip install -e .
 
 # Or use specific version
-pip install autopr-engine==<previous-version>
+pip install codeflow-engine==<previous-version>
 ```
 
 ---
@@ -288,8 +288,8 @@ pytest
 ## Getting Help
 
 - **Documentation**: See `docs/NEW_FEATURES.md` for detailed feature docs
-- **Issues**: Report bugs at https://github.com/JustAGhosT/autopr-engine/issues
-- **Discussions**: Ask questions at https://github.com/JustAGhosT/autopr-engine/discussions
+- **Issues**: Report bugs at https://github.com/JustAGhosT/codeflow-engine/issues
+- **Discussions**: Ask questions at https://github.com/JustAGhosT/codeflow-engine/discussions
 - **Email**: support@justaghost.com
 
 ---

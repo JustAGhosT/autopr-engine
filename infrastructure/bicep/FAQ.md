@@ -33,7 +33,7 @@ To get your Container App FQDN after deployment:
 ```bash
 az deployment group show \
   --resource-group prod-rg-san-autopr \
-  --name autopr-engine \
+  --name codeflow-engine \
   --query properties.outputs.containerAppUrl.value
 ```
 
@@ -145,7 +145,7 @@ Azure Container Apps allows only **ONE managed certificate per domain per enviro
 
 ### Automatic Fix (GitHub Actions)
 
-If you're using the GitHub Actions workflow (`.github/workflows/deploy-autopr-engine.yml`), this is **automatically handled** for you! The workflow includes a cleanup step that:
+If you're using the GitHub Actions workflow (`.github/workflows/deploy-codeflow-engine.yml`), this is **automatically handled** for you! The workflow includes a cleanup step that:
 
 1. ✅ Checks for existing managed certificates for your domain
 2. ✅ Removes any duplicates before deployment
@@ -177,9 +177,9 @@ done
 
 # Now deploy your template
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group $RESOURCE_GROUP \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters customDomain=$CUSTOM_DOMAIN ...
 ```
 
@@ -226,15 +226,15 @@ git pull origin main
 
 # Redeploy with the updated template
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group prod-rg-san-autopr \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
     customDomain=app.autopr.io \
-    containerImage=ghcr.io/justaghost/autopr-engine:latest \
+    containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<your-login>" \
     postgresPassword="<your-password>" \
     redisPassword="<your-password>"
@@ -245,14 +245,14 @@ az deployment group create \
 ```bash
 # Deploy without customDomain parameter
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group prod-rg-san-autopr \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
-    containerImage=ghcr.io/justaghost/autopr-engine:latest \
+    containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<your-login>" \
     postgresPassword="<your-password>" \
     redisPassword="<your-password>"
@@ -261,15 +261,15 @@ az deployment group create \
 
 # Redeploy with custom domain
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group prod-rg-san-autopr \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
     customDomain=app.autopr.io \
-    containerImage=ghcr.io/justaghost/autopr-engine:latest \
+    containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<your-login>" \
     postgresPassword="<your-password>" \
     redisPassword="<your-password>"

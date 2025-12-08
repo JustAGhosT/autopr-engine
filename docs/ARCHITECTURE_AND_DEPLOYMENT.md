@@ -73,7 +73,7 @@ There are TWO dashboards in this project:
 
 **For app.autopr.io (Container App)**:
 
-- Added `customDomains` configuration to the ingress settings in `autopr-engine.bicep`
+- Added `customDomains` configuration to the ingress settings in `codeflow-engine.bicep`
 - Specified `bindingType: 'SniEnabled'` for automatic SSL certificate management
 - Azure manages the SSL certificate lifecycle (provisioning and renewal)
 
@@ -132,7 +132,7 @@ The Container App FQDN can be found in the deployment outputs:
 ```bash
 az deployment group show \
   --resource-group prod-rg-san-autopr \
-  --name autopr-engine \
+  --name codeflow-engine \
   --query properties.outputs.containerAppUrl.value
 ```
 
@@ -200,7 +200,7 @@ curl https://app.autopr.io/health
 ## Related Files
 
 - `infrastructure/bicep/website.bicep` - Static Web App infrastructure
-- `infrastructure/bicep/autopr-engine.bicep` - Container App infrastructure  
+- `infrastructure/bicep/codeflow-engine.bicep` - Container App infrastructure  
 - `website/public/staticwebapp.config.json` - Routing configuration
 - `autopr/server.py` - FastAPI application entry point
 - `autopr/dashboard/router.py` - Dashboard routes

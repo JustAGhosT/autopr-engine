@@ -5,7 +5,7 @@
 The Azure deployment was failing with the following error:
 
 ```
-ERROR: "code": "InvalidTemplateDeployment", "message": "The template deployment 'autopr-engine' is not valid according to the validation procedure."
+ERROR: "code": "InvalidTemplateDeployment", "message": "The template deployment 'codeflow-engine' is not valid according to the validation procedure."
 
 Inner Errors: 
 "code": "CertificateMissing", "message": "CertificateId property is missing for customDomain 'app.autopr.io'."
@@ -17,7 +17,7 @@ The Bicep template was attempting to configure a custom domain on Azure Containe
 
 ## Solution
 
-The fix involves three key changes to the `autopr-engine.bicep` file:
+The fix involves three key changes to the `codeflow-engine.bicep` file:
 
 ### 1. Updated API Versions
 
@@ -94,15 +94,15 @@ To verify the fix works:
 ```bash
 # Deploy the infrastructure
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group prod-rg-san-autopr \
-  --template-file infrastructure/bicep/autopr-engine.bicep \
+  --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
     customDomain=app.autopr.io \
-    containerImage=ghcr.io/justaghost/autopr-engine:latest \
+    containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<login>" \
     postgresPassword="<password>" \
     redisPassword="<password>"

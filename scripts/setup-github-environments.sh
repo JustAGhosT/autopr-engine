@@ -35,8 +35,8 @@ show_usage() {
     echo "  -h, --help     Show this help message"
     echo ""
     echo "Example:"
-    echo "  $0 -r your-org/autopr-engine -t ghp_xxx"
-    echo "  $0 -r your-org/autopr-engine -t ghp_xxx --dry-run"
+    echo "  $0 -r your-org/codeflow-engine -t ghp_xxx"
+    echo "  $0 -r your-org/codeflow-engine -t ghp_xxx --dry-run"
 }
 
 # Function to check if GitHub CLI is available
