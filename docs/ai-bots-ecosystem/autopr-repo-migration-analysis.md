@@ -346,7 +346,7 @@ dependencies = [
 from tools.autopr.actions.pr_review_analyzer import PRReviewAnalyzer
 
 # After:
-from autopr.actions.pr_review_analyzer import PRReviewAnalyzer
+from codeflow_engine.actions.pr_review_analyzer import PRReviewAnalyzer
 ```
 
 ### **Phase 3: Integration Bridge (Week 3)**

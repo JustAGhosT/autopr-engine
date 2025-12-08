@@ -19,8 +19,8 @@ The file splitter is included with the AutoPR system. No additional installation
 ## Quick Start
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
-from autopr.ai.core.providers.manager import LLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
 # Initialize the file splitter
 splitter = FileSplitter(
@@ -35,7 +35,7 @@ chunks = await splitter.split_file("large_file.py")
 ## Configuration
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import SplitConfig
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import SplitConfig
 
 config = SplitConfig(
     max_chunk_size=1000,
@@ -47,8 +47,8 @@ config = SplitConfig(
 ## Advanced Usage
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
-from autopr.ai.core.providers.manager import LLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
 # Configure splitting parameters
 config = SplitConfig(
@@ -72,8 +72,8 @@ results = await splitter.process_files(["file1.py", "file2.py"])
 The file splitter integrates seamlessly with the AutoPR quality engine:
 
 ```python
-from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter
+from codeflow_engine.actions.quality_engine.engine import QualityEngine
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter
 
 # Use in quality analysis
 quality_engine = QualityEngine()

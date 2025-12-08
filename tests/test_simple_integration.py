@@ -9,11 +9,11 @@ with the AI fixer components without complex database dependencies.
 import tempfile
 from pathlib import Path
 
-from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
+from codeflow_engine.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
 # Import the core components
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import (FileSplitter,
                                                            SplitConfig)
-from autopr.actions.ai_linting_fixer.models import LintingIssue
+from codeflow_engine.actions.ai_linting_fixer.models import LintingIssue
 
 
 def create_test_file_with_issues(content: str, filename: str = "test_file.py") -> str:
@@ -204,7 +204,7 @@ if __name__ == "__main__":
             "fallback_order": ["openai"],
             "default_provider": "openai",
         }
-        from autopr.actions.llm.manager import ActionLLMProviderManager
+        from codeflow_engine.actions.llm.manager import ActionLLMProviderManager
         llm_manager = ActionLLMProviderManager(llm_config)
 
         # Create AI fix applier with file splitter integration

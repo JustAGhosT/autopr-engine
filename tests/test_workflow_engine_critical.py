@@ -9,10 +9,10 @@ from datetime import datetime
 import pytest
 import pytest_asyncio
 
-from autopr.config import AutoPRConfig
-from autopr.exceptions import WorkflowError
-from autopr.workflows.engine import WorkflowEngine
-from autopr.workflows.base import Workflow
+from codeflow_engine.config import AutoPRConfig
+from codeflow_engine.exceptions import WorkflowError
+from codeflow_engine.workflows.engine import WorkflowEngine
+from codeflow_engine.workflows.base import Workflow
 
 
 class MockWorkflow(Workflow):
@@ -159,7 +159,7 @@ async def test_workflow_history_limit(workflow_engine):
     
     This verifies the fix for BUG-8: Potential memory leak in workflow history.
     """
-    from autopr.workflows.engine import MAX_WORKFLOW_HISTORY
+    from codeflow_engine.workflows.engine import MAX_WORKFLOW_HISTORY
     
     workflow = MockWorkflow("history-test", delay=0.001)
     workflow_engine.register_workflow(workflow)

@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from autopr.agents.crew import AutoPRCrew
-from autopr.agents.models import CodeIssue, IssueSeverity, PlatformAnalysis
-from autopr.enums import QualityMode
+from codeflow_engine.agents.crew import AutoPRCrew
+from codeflow_engine.agents.models import CodeIssue, IssueSeverity, PlatformAnalysis
+from codeflow_engine.enums import QualityMode
 
 
 class TestVolumeControlE2E:
@@ -22,7 +22,7 @@ class TestVolumeControlE2E:
     @pytest.fixture
     def mock_llm_provider(self):
         """Mock LLM provider to avoid actual API calls."""
-        with patch("autopr.agents.crew.get_llm_provider_manager") as mock_manager:
+        with patch("codeflow_engine.agents.crew.get_llm_provider_manager") as mock_manager:
             mock_llm = MagicMock()
             mock_manager.return_value.get_llm.return_value = mock_llm
             yield mock_llm
@@ -31,9 +31,9 @@ class TestVolumeControlE2E:
     def mock_agents(self):
         """Mock agent classes to avoid actual LLM calls."""
         with (
-            patch("autopr.agents.crew.CodeQualityAgent") as mock_qa_agent,
-            patch("autopr.agents.crew.PlatformAnalysisAgent") as mock_pa_agent,
-            patch("autopr.agents.crew.LintingAgent") as mock_lint_agent,
+            patch("codeflow_engine.agents.crew.CodeQualityAgent") as mock_qa_agent,
+            patch("codeflow_engine.agents.crew.PlatformAnalysisAgent") as mock_pa_agent,
+            patch("codeflow_engine.agents.crew.LintingAgent") as mock_lint_agent,
         ):
             # Set up mock agent instances
             mock_qa_agent.return_value = MagicMock()

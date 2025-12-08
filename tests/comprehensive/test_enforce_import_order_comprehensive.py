@@ -13,7 +13,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.enforce_import_order import (ImportAnalyzer,
+    from codeflow_engine.actions.enforce_import_order import (ImportAnalyzer,
                                                      ImportConfig,
                                                      ImportFormatter,
                                                      ImportOrderEnforcer,

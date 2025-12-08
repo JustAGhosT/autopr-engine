@@ -11,7 +11,7 @@ import sys
 # Add the autopr package to the path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from autopr.actions.prototype_enhancement.file_generators import FileGenerator
+from codeflow_engine.actions.prototype_enhancement.file_generators import FileGenerator
 
 
 def demo_hybrid_templates() -> None:

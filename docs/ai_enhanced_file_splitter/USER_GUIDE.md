@@ -9,8 +9,8 @@ The AI Enhanced File Splitter is a sophisticated tool that intelligently splits 
 ### Basic Usage
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
-from autopr.ai.core.providers.manager import LLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
 # Initialize the file splitter
 splitter = FileSplitter(
@@ -25,8 +25,8 @@ chunks = await splitter.split_file("large_file.py")
 ### Advanced Usage
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
-from autopr.ai.core.providers.manager import LLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
 # Configure splitting parameters
 config = SplitConfig(
@@ -80,8 +80,8 @@ except ProcessingError as e:
 The file splitter integrates seamlessly with the AutoPR quality engine:
 
 ```python
-from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter
+from codeflow_engine.actions.quality_engine.engine import QualityEngine
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter
 
 # Use in quality analysis
 quality_engine = QualityEngine()

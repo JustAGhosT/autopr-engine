@@ -173,7 +173,7 @@ To test if a platform is detected correctly:
 Example test:
 
 ```python
-from autopr.actions.platform_detection import detect_platforms
+from codeflow_engine.actions.platform_detection import detect_platforms
 
 def test_platform_detection():
     test_dir = Path("path/to/test/directory")

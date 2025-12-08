@@ -31,7 +31,7 @@
 **Features:**
 ```python
 # Usage example
-from autopr.security.rate_limiting import rate_limit, FlaskRateLimitMiddleware
+from codeflow_engine.security.rate_limiting import rate_limit, FlaskRateLimitMiddleware
 
 # Decorator approach
 @rate_limit(limit=100, window=60)
@@ -97,7 +97,7 @@ limiter.is_allowed("ip_addr", tier="anonymous")  # 10/min
 
 **Features:**
 ```python
-from autopr.security.exception_handling import (
+from codeflow_engine.security.exception_handling import (
     sanitize_error_message,
     SafeExceptionHandler,
     setup_fastapi_exception_handlers

@@ -3,7 +3,7 @@ Tests for workflow condition evaluation improvements.
 """
 import unittest
 import asyncio
-from autopr.workflows.base import YAMLWorkflow
+from codeflow_engine.workflows.base import YAMLWorkflow
 
 
 class TestWorkflowConditions(unittest.TestCase):

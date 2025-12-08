@@ -34,8 +34,8 @@ WorkflowError: Workflow engine is not running
 
 **Solution:**
 ```python
-from autopr import AutoPREngine
-from autopr.config import AutoPRConfig
+from codeflow_engine import AutoPREngine
+from codeflow_engine.config import AutoPRConfig
 
 # Ensure engine is started
 engine = AutoPREngine(config)
@@ -139,7 +139,7 @@ RateLimitError: Rate limit exceeded. Retry after 3600 seconds
 **Immediate:**
 ```python
 import time
-from autopr.exceptions import RateLimitError
+from codeflow_engine.exceptions import RateLimitError
 
 try:
     result = await engine.execute_workflow(...)
@@ -270,7 +270,7 @@ ModuleNotFoundError: No module named 'autopr'
 **1. Verify installation:**
 ```bash
 pip list | grep codeflow-engine
-python -c "import autopr; print(autopr.__version__)"
+python -c "import codeflow_engine; print(autopr.__version__)"
 ```
 
 **2. Check virtual environment:**
@@ -298,7 +298,7 @@ pip install codeflow-engine
 
 **Symptoms:**
 ```
-Warning: Failed to load config from autopr.yaml
+Warning: Failed to load config from codeflow_engine.yaml
 ```
 
 **Solutions:**
@@ -381,7 +381,7 @@ password: "P@ssw0rd!"
 
 **3. Test configuration:**
 ```python
-from autopr.config import AutoPRConfig
+from codeflow_engine.config import AutoPRConfig
 
 try:
     config = AutoPRConfig.from_file("autopr.yaml")
@@ -455,7 +455,7 @@ print(f"Memory usage: {process.memory_info().rss / 1024 / 1024:.2f} MB")
 **1. Check workflow history limit:**
 ```python
 # Verify history is being cleaned
-from autopr.workflows.engine import MAX_WORKFLOW_HISTORY
+from codeflow_engine.workflows.engine import MAX_WORKFLOW_HISTORY
 print(f"History limit: {MAX_WORKFLOW_HISTORY}")  # Should be 1000
 
 # Check actual history size
@@ -508,7 +508,7 @@ export REDIS_URL=redis://localhost:6379
 
 **2. Use database connection pooling:**
 ```python
-from autopr.config import AutoPRConfig
+from codeflow_engine.config import AutoPRConfig
 
 config = AutoPRConfig()
 config.database_pool_size = 20
@@ -727,7 +727,7 @@ conn = sqlite3.connect('autopr.db', timeout=30.0)
 
 **3. Use connection pooling:**
 ```python
-from autopr.database import get_session
+from codeflow_engine.database import get_session
 
 async with get_session() as session:
     # Connection automatically managed
@@ -808,7 +808,7 @@ python -m autopr.cli run
 
 **Method 2: Configuration**
 ```python
-from autopr.config import AutoPRConfig
+from codeflow_engine.config import AutoPRConfig
 
 config = AutoPRConfig()
 config.enable_debug_logging = True
@@ -892,7 +892,7 @@ curl https://api.openai.com/v1/models \
 
 2. **Verify configuration:**
    ```python
-   from autopr.config import validate_configuration
+   from codeflow_engine.config import validate_configuration
    
    errors = validate_configuration()
    if errors:
@@ -902,8 +902,8 @@ curl https://api.openai.com/v1/models \
 3. **Test basic functionality:**
    ```python
    import asyncio
-   from autopr import AutoPREngine
-   from autopr.config import AutoPRConfig
+   from codeflow_engine import AutoPREngine
+   from codeflow_engine.config import AutoPRConfig
    
    async def test():
        config = AutoPRConfig()
@@ -994,7 +994,7 @@ export AUTOPR_LOG_LEVEL=DEBUG
 python -m autopr.server --reload
 
 # Test configuration
-python -c "from autopr.config import AutoPRConfig; print(AutoPRConfig().to_dict())"
+python -c "from codeflow_engine.config import AutoPRConfig; print(AutoPRConfig().to_dict())"
 
 # Check connectivity
 curl -v http://localhost:8080/api/status
@@ -1007,8 +1007,8 @@ curl -v http://localhost:8080/api/status
 """Health check script for AutoPR Engine"""
 import asyncio
 import sys
-from autopr import AutoPREngine
-from autopr.config import AutoPRConfig
+from codeflow_engine import AutoPREngine
+from codeflow_engine.config import AutoPRConfig
 
 async def health_check():
     try:

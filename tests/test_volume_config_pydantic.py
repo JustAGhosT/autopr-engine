@@ -23,7 +23,7 @@ logger.debug(f"Current working directory: {os.getcwd()}")
 
 # Try to import VolumeConfig with error handling
 try:
-    from autopr.agents.agents import VolumeConfig
+    from codeflow_engine.agents.agents import VolumeConfig
 
     logger.debug("Successfully imported VolumeConfig")
 except ImportError as e:

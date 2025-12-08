@@ -94,12 +94,12 @@ def _remaining_issues_for_file(file_path: str, codes: list[str]) -> int:
 
 def main() -> int:
     # Fast import inside function to avoid import cost when listing help
-    from autopr.actions.ai_linting_fixer.database import (
+    from codeflow_engine.actions.ai_linting_fixer.database import (
         AIInteractionDB,
     )
 
     # type: ignore[import-not-found]
-    from autopr.actions.ai_linting_fixer.queue_manager import (
+    from codeflow_engine.actions.ai_linting_fixer.queue_manager import (
         IssueQueueManager,
     )
 

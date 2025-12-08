@@ -79,9 +79,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 # Local
-from autopr.config import settings
-from autopr.database import async_session
-from autopr.exceptions import WorkflowError
+from codeflow_engine.config import settings
+from codeflow_engine.database import async_session
+from codeflow_engine.exceptions import WorkflowError
 ```
 
 ---
@@ -337,7 +337,7 @@ async def list_workflows_v2():
 **Always validate all inputs:**
 
 ```python
-from autopr.workflows.validation import validate_workflow_input
+from codeflow_engine.workflows.validation import validate_workflow_input
 
 @app.post("/api/v1/workflows")
 async def create_workflow(data: WorkflowCreate):
@@ -355,7 +355,7 @@ async def create_workflow(data: WorkflowCreate):
 
 ```python
 # Good: Use environment variables
-from autopr.config import settings
+from codeflow_engine.config import settings
 
 github_token = settings.github_token
 
@@ -381,7 +381,7 @@ query = f"SELECT * FROM workflows WHERE id = {workflow_id}"  # ❌
 
 ```python
 from fastapi import Depends, HTTPException
-from autopr.security import get_current_user, require_permission
+from codeflow_engine.security import get_current_user, require_permission
 
 @app.get("/api/v1/workflows/{id}")
 async def get_workflow(

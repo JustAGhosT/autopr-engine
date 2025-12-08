@@ -15,7 +15,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.performance_tracker import (PerformanceAnalyzer,
+    from codeflow_engine.actions.performance_tracker import (PerformanceAnalyzer,
                                                     PerformanceConfig,
                                                     PerformanceMetrics,
                                                     PerformanceMonitor,

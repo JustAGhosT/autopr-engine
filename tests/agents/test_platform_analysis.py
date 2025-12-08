@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+from codeflow_engine.agents.platform_analysis_agent import PlatformAnalysisAgent
 
 
 class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.agent = PlatformAnalysisAgent(volume=500, verbose=False, llm_model="gpt-4")
 
-    @patch("autopr.actions.platform_detection.PlatformDetector")
+    @patch("codeflow_engine.actions.platform_detection.PlatformDetector")
     async def test_analyze_platform_returns_platform_analysis(self, mock_detector):
         """Test that analyze_platform returns a PlatformAnalysis object."""
         # Setup mock detector
@@ -27,7 +27,7 @@ class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):
         assert result == mock_analysis
         mock_detector_instance.analyze.assert_called_once_with(repo_path)
 
-    @patch("autopr.actions.platform_detection.PlatformDetector")
+    @patch("codeflow_engine.actions.platform_detection.PlatformDetector")
     def test_platform_detector_property_returns_detector(self, mock_detector):
         """Test that the platform_detector property returns the detector instance."""
         # Setup mock detector

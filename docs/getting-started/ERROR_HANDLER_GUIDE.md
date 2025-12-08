@@ -20,7 +20,7 @@ provides intelligent error recovery strategies.
 ### Basic Usage
 
 ```python
-from autopr.actions.ai_linting_fixer import (
+from codeflow_engine.actions.ai_linting_fixer import (
     ErrorHandler,
     create_error_context,
     DisplayConfig,
@@ -47,8 +47,8 @@ except Exception as e:
 ### Integration with AI Linting Fixer
 
 ```python
-from autopr.actions.ai_linting_fixer import AILintingFixer, ErrorHandler
-from autopr.actions.llm.manager import LLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer import AILintingFixer, ErrorHandler
+from codeflow_engine.actions.llm.manager import LLMProviderManager
 
 # Initialize components
 llm_manager = LLMProviderManager()

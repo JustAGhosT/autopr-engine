@@ -261,7 +261,7 @@ chmod 600 /opt/autopr/.env
 chmod 644 /opt/autopr/config/config.yaml
 
 # Verify configuration
-python -c "from autopr.config import load_config; print(load_config())"
+python -c "from codeflow_engine.config import load_config; print(load_config())"
 ```
 
 ---

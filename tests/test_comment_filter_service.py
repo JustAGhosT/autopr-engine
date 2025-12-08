@@ -20,12 +20,12 @@ pytest.importorskip("sqlalchemy", reason="SQLAlchemy not installed")
 try:
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session, sessionmaker
-    from autopr.database.models import (
+    from codeflow_engine.database.models import (
         AllowedCommenter,
         Base,
         CommentFilterSettings,
     )
-    from autopr.services.comment_filter import CommentFilterService
+    from codeflow_engine.services.comment_filter import CommentFilterService
 except ImportError:
     pytest.skip("Database or service modules not available", allow_module_level=True)
 

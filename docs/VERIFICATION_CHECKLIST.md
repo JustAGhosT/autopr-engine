@@ -52,7 +52,7 @@ All implementations have been verified as working correctly. This document provi
 ### **Database Models** ✅
 ```powershell
 $env:AUTOPR_SKIP_DB_INIT = '1'
-python -c "from autopr.database.models import Base, Workflow; 
+python -c "from codeflow_engine.database.models import Base, Workflow; 
 print(f'✅ Models: {len(Base.metadata.tables)} tables')"
 ```
 **Result**: ✅ 7 tables defined successfully
@@ -66,7 +66,7 @@ print(f'✅ Models: {len(Base.metadata.tables)} tables')"
 
 ### **Workflow Builder** ✅
 ```powershell
-python -c "from autopr.features import WorkflowBuilder; 
+python -c "from codeflow_engine.features import WorkflowBuilder; 
 wb = WorkflowBuilder(); 
 wf = wb.create_workflow('Test'); 
 print(f'✅ Created: {wf.name}')"
@@ -75,7 +75,7 @@ print(f'✅ Created: {wf.name}')"
 
 ### **AI Learning System** ✅
 ```powershell
-python -c "from autopr.features import AILearningSystem; 
+python -c "from codeflow_engine.features import AILearningSystem; 
 ai = AILearningSystem(); 
 print('✅ AI System initialized')"
 ```
@@ -338,8 +338,8 @@ Test-Path autopr/features/realtime_dashboard.py
 ### **Test Imports**
 ```powershell
 $env:AUTOPR_SKIP_DB_INIT = '1'
-python -c "from autopr.database.models import Base; print(f'✅ {len(Base.metadata.tables)} tables')"
-python -c "from autopr.features import WorkflowBuilder, AILearningSystem; print('✅ Features OK')"
+python -c "from codeflow_engine.database.models import Base; print(f'✅ {len(Base.metadata.tables)} tables')"
+python -c "from codeflow_engine.features import WorkflowBuilder, AILearningSystem; print('✅ Features OK')"
 ```
 
 ---

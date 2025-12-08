@@ -14,7 +14,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.engine import (AutoPREngine, EngineConfig,
+    from codeflow_engine.actions.engine import (AutoPREngine, EngineConfig,
                                        EngineManager, EngineMonitor,
                                        EngineRunner, EngineState,
                                        EngineValidator)

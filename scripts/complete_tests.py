@@ -132,7 +132,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 try:
     # Import the module being tested
     module_name = "{module_path.split('/')[-1].replace('.py', '')}"
-    module = __import__(f"autopr.{module_path.replace('/', '.')}", fromlist=['*'])
+    module = __import__(f"codeflow_engine.{module_path.replace('/', '.')}", fromlist=['*'])
 except ImportError:
     # If direct import fails, try alternative approaches
     pass
@@ -171,7 +171,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
     # Import the module being tested
-    module = __import__(f"autopr.{module_path.replace('/', '.')}", fromlist=['*'])
+    module = __import__(f"codeflow_engine.{module_path.replace('/', '.')}", fromlist=['*'])
 except ImportError as e:
     pytest.skip(f"Could not import module: {{e}}")
 

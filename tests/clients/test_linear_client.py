@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 from aiohttp import ClientResponseError, ClientSession
 import pytest
 
-from autopr.clients.linear_client import LinearClient
+from codeflow_engine.clients.linear_client import LinearClient
 
 
 class TestLinearClient(TestCase):

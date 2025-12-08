@@ -1,6 +1,6 @@
 import unittest
 
-from autopr.actions.platform_detection.config import PlatformConfigManager
+from codeflow_engine.actions.platform_detection.config import PlatformConfigManager
 
 
 class TestPlatformDetection(unittest.TestCase):

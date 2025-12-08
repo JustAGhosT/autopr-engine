@@ -71,7 +71,7 @@ def get_connection_info() -> dict[str, Any]:
 ```python
 # AI Learning System imports
 try:
-    from autopr.features.ai_learning_system import (
+    from codeflow_engine.features.ai_learning_system import (
         AILearningSystem,
         CodeIssue,
         IssueSeverity,
@@ -89,7 +89,7 @@ except ImportError:
 
 # Workflow Builder imports
 try:
-    from autopr.features.workflow_builder import (
+    from codeflow_engine.features.workflow_builder import (
         Workflow,
         WorkflowBuilder,
         WorkflowEdge,
@@ -609,9 +609,9 @@ After applying fixes:
 
 ```bash
 # Test imports
-poetry run python -c "from autopr.dashboard.router import DashboardState; print('✅ Dashboard imports')"
-poetry run python -c "from autopr.database.config import get_db; print('✅ Database config imports')"
-poetry run python -c "from autopr.features import *; print('✅ Features import')"
+poetry run python -c "from codeflow_engine.dashboard.router import DashboardState; print('✅ Dashboard imports')"
+poetry run python -c "from codeflow_engine.database.config import get_db; print('✅ Database config imports')"
+poetry run python -c "from codeflow_engine.features import *; print('✅ Features import')"
 
 # Run tests
 poetry run pytest tests/test_platform_detector_improvements.py -v

@@ -13,7 +13,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.quality.metrics_collector import (EvaluationMetrics,
+    from codeflow_engine.quality.metrics_collector import (EvaluationMetrics,
                                                   MetricPoint,
                                                   MetricsCollector,
                                                   PerformanceMetrics)

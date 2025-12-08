@@ -175,7 +175,7 @@ All foreign key relationships now use `UUID(as_uuid=True)`:
 
 ✅ **ORM Models**: Import successfully with all 7 tables
 ```bash
-poetry run python -c "from autopr.database.models import Base; print(list(Base.metadata.tables.keys()))"
+poetry run python -c "from codeflow_engine.database.models import Base; print(list(Base.metadata.tables.keys()))"
 # Output: ['workflows', 'workflow_executions', 'workflow_actions', 'execution_logs', 
 #          'integrations', 'integration_events', 'workflow_triggers']
 ```
@@ -306,16 +306,16 @@ poetry run alembic upgrade head
 
 # 3. Verify schema
 poetry run python -c "
-from autopr.database.models import Base
-from autopr.database.config import engine
+from codeflow_engine.database.models import Base
+from codeflow_engine.database.config import engine
 Base.metadata.create_all(engine)
 print('✅ Schema created successfully')
 "
 
 # 4. Test ORM operations
 poetry run python -c "
-from autopr.database.models import Workflow
-from autopr.database.config import get_session
+from codeflow_engine.database.models import Workflow
+from codeflow_engine.database.config import get_session
 import uuid
 
 with get_session() as session:
@@ -334,7 +334,7 @@ with get_session() as session:
 ### Platform Detection Testing
 
 ```python
-from autopr.actions.platform_detection.detector import PlatformDetector
+from codeflow_engine.actions.platform_detection.detector import PlatformDetector
 
 detector = PlatformDetector()
 

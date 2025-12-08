@@ -11,8 +11,8 @@ if project_root not in sys.path:
 
 # Import the modules we need to test
 try:
-    from autopr.agents.base.volume_config import VolumeConfig
-    from autopr.enums import QualityMode
+    from codeflow_engine.agents.base.volume_config import VolumeConfig
+    from codeflow_engine.enums import QualityMode
 
 except ImportError:
     raise

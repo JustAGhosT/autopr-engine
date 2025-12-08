@@ -1,5 +1,5 @@
 """
-Comprehensive test suite for autopr.database.config module.
+Comprehensive test suite for codeflow_engine.database.config module.
 
 Tests cover:
 - Engine creation scenarios (test/production environments)
@@ -56,7 +56,7 @@ def reload_config():
             del sys.modules[module]
         
         # Fresh import
-        from autopr.database import config
+        from codeflow_engine.database import config
         return config
     return _reload
 

@@ -4,8 +4,8 @@ Tests for volume mapping functionality in AutoPR Engine.
 
 import pytest
 
-from autopr.enums import QualityMode
-from autopr.utils.volume_utils import (
+from codeflow_engine.enums import QualityMode
+from codeflow_engine.utils.volume_utils import (
     VolumeLevel,
     get_volume_config,
     get_volume_level_name,

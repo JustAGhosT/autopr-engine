@@ -12,11 +12,11 @@ from pathlib import Path
 import pytest
 
 # Import the main components
-from autopr.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
+from codeflow_engine.actions.ai_linting_fixer.ai_fix_applier import AIFixApplier
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import (FileSplitter,
                                                            SplitConfig)
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.actions.llm import ActionLLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer.models import LintingIssue
+from codeflow_engine.actions.llm import ActionLLMProviderManager
 
 
 def create_test_file_with_issues(content: str, filename: str = "test_file.py") -> str:

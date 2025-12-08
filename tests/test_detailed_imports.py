@@ -19,9 +19,9 @@ def test_environment():
     for _i, _path in enumerate(sys.path, 1):
         pass
 
-    # Check if autopr is importable
+    # Check if codeflow_engine is importable
     try:
-        import autopr
+        import codeflow_engine
 
     except ImportError:
         raise
@@ -32,7 +32,7 @@ def test_import_crew():
     print_header("TESTING CREW IMPORT")
 
     # Try to import the module directly
-    module_path = "autopr.agents.crew"
+    module_path = "codeflow_engine.agents.crew"
 
     try:
         # Try to find the module spec
@@ -71,7 +71,7 @@ def test_volume_mapping_import():
     """Test importing the volume utils module with detailed diagnostics."""
     print_header("TESTING VOLUME UTILS IMPORT")
 
-    module_path = "autopr.utils.volume_utils"
+    module_path = "codeflow_engine.utils.volume_utils"
 
     try:
         module = importlib.import_module(module_path)

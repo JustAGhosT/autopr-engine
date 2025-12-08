@@ -103,7 +103,7 @@ export ENVIRONMENT=test  # Uses NullPool automatically
 
 **Check Pool Status:**
 ```python
-from autopr.database import engine
+from codeflow_engine.database import engine
 
 # Get pool statistics
 pool = engine.pool

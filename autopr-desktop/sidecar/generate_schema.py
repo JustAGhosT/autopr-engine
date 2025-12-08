@@ -1,5 +1,5 @@
 import json
-from autopr.config.settings import AutoPRSettings
+from codeflow_engine.config.settings import AutoPRSettings
 
 def generate_schema():
     schema = AutoPRSettings.model_json_schema()

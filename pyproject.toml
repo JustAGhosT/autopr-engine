@@ -10,7 +10,7 @@ authors = ["VeritasVault Team <dev@veritasvault.net>"]
 maintainers = ["VeritasVault Team <dev@veritasvault.net>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "autopr"}]
+packages = [{include = "codeflow_engine"}]
 
 keywords = [
     "github", "pull-request", "automation", "ai", "code-review",
@@ -72,30 +72,30 @@ Changelog = "https://github.com/veritasvault/codeflow-engine/blob/main/CHANGELOG
 Discussions = "https://github.com/veritasvault/codeflow-engine/discussions"
 
 [tool.poetry.scripts]
-autopr = "autopr.cli:main"
-autopr-server = "autopr.server:main"
-autopr-worker = "autopr.worker:main"
-autopr-migration = "autopr.migration:main"
+autopr = "codeflow_engine.cli:main"
+autopr-server = "codeflow_engine.server:main"
+autopr-worker = "codeflow_engine.worker:main"
+autopr-migration = "codeflow_engine.migration:main"
 
 [tool.poetry.plugins."autopr.actions"]
-"platform_detector" = "autopr.actions.platform_detector:PlatformDetector"
-"pr_review_analyzer" = "autopr.actions.pr_review_analyzer:PRReviewAnalyzer"
-"issue_creator" = "autopr.actions.issue_creator:IssueCreator"
-"ai_comment_analyzer" = "autopr.actions.ai_comment_analyzer:AICommentAnalyzer"
-"quality_gates" = "autopr.actions.quality_gates:QualityGates"
-"autogen_multi_agent" = "autopr.actions.autogen_multi_agent:AutoGenMultiAgent"
+"platform_detector" = "codeflow_engine.actions.platform_detector:PlatformDetector"
+"pr_review_analyzer" = "codeflow_engine.actions.pr_review_analyzer:PRReviewAnalyzer"
+"issue_creator" = "codeflow_engine.actions.issue_creator:IssueCreator"
+"ai_comment_analyzer" = "codeflow_engine.actions.ai_comment_analyzer:AICommentAnalyzer"
+"quality_gates" = "codeflow_engine.actions.quality_gates:QualityGates"
+"autogen_multi_agent" = "codeflow_engine.actions.autogen_multi_agent:AutoGenMultiAgent"
 
 [tool.poetry.plugins."autopr.integrations"]
-"github" = "autopr.integrations.github:GitHubIntegration"
-"linear" = "autopr.integrations.linear:LinearIntegration"
-"slack" = "autopr.integrations.slack:SlackIntegration"
-"axolo" = "autopr.integrations.axolo:AxoloIntegration"
+"github" = "codeflow_engine.integrations.github:GitHubIntegration"
+"linear" = "codeflow_engine.integrations.linear:LinearIntegration"
+"slack" = "codeflow_engine.integrations.slack:SlackIntegration"
+"axolo" = "codeflow_engine.integrations.axolo:AxoloIntegration"
 
 [tool.poetry.plugins."autopr.llm_providers"]
-"openai" = "autopr.ai.providers.openai:OpenAIProvider"
-"anthropic" = "autopr.ai.providers.anthropic:AnthropicProvider"
-"mistral" = "autopr.ai.providers.mistral:MistralProvider"
-"groq" = "autopr.ai.providers.groq:GroqProvider"
+"openai" = "codeflow_engine.ai.providers.openai:OpenAIProvider"
+"anthropic" = "codeflow_engine.ai.providers.anthropic:AnthropicProvider"
+"mistral" = "codeflow_engine.ai.providers.mistral:MistralProvider"
+"groq" = "codeflow_engine.ai.providers.groq:GroqProvider"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "8.2.0"
@@ -154,7 +154,7 @@ websockets = "^13.1.0"
 "" = "."
 
 [tool.setuptools.package-data]
-autopr = [
+codeflow_engine = [
     "workflows/*.yaml",
     "workflows/*.yml",
     "config/*.yaml",
@@ -182,7 +182,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["autopr"]
+source = ["codeflow_engine"]
 omit = ["*/tests/*", "*/migrations/*", "*/venv/*", "*/__pycache__/*"]
 
 [tool.coverage.report]
@@ -375,7 +375,7 @@ force-single-line = false
 lines-after-imports = 2
 
 # Known first party modules
-known-first-party = ["autopr"]
+known-first-party = ["codeflow_engine"]
 
 # Known third party modules
 known-third-party = [

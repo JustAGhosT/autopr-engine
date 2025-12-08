@@ -77,13 +77,13 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "autopr=autopr.cli.main:cli",
-            "autopr-dashboard=autopr.dashboard.server:run_dashboard",
+            "autopr=codeflow_engine.cli.main:cli",
+            "autopr-dashboard=codeflow_engine.dashboard.server:run_dashboard",
         ],
     },
     include_package_data=True,
     package_data={
-        "autopr": [
+        "codeflow_engine": [
             "dashboard/templates/*.html",
             "dashboard/static/*",
         ],

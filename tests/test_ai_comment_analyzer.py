@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from autopr.actions.ai_comment_analyzer import (
+from codeflow_engine.actions.ai_comment_analyzer import (
     AICommentAnalysisInputs,
     AICommentAnalysisOutputs,
     AICommentAnalyzer,
@@ -151,7 +151,7 @@ class TestAnalyzeCommentWithAI:
             "tags": ["fix"],
         })
         
-        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = mock_response
@@ -189,7 +189,7 @@ class TestAnalyzeCommentWithAI:
             "tags": [],
         })
         
-        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = mock_response
@@ -220,7 +220,7 @@ class TestAnalyzeCommentWithAI:
             "tags": ["praise"],
         })
         
-        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = mock_response
@@ -232,7 +232,7 @@ class TestAnalyzeCommentWithAI:
         """Test that fallback is used when OpenAI API fails."""
         inputs = AICommentAnalysisInputs(comment_body="Please fix this bug")
         
-        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.side_effect = Exception("API Error")
@@ -251,7 +251,7 @@ class TestAnalyzeCommentWithAI:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = None
         
-        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = mock_response
@@ -270,7 +270,7 @@ class TestAnalyzeCommentWithAI:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = "This is not valid JSON"
         
-        with patch("autopr.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
             mock_client.chat.completions.create.return_value = mock_response
@@ -298,7 +298,7 @@ class TestAICommentAnalyzer:
         analyzer = AICommentAnalyzer()
         inputs = AICommentAnalysisInputs(comment_body="Please remove this line")
         
-        with patch("autopr.actions.ai_comment_analyzer.analyze_comment_with_ai") as mock_analyze:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.analyze_comment_with_ai") as mock_analyze:
             mock_analyze.return_value = AICommentAnalysisOutputs(
                 intent="fix_request",
                 confidence=0.8,
@@ -324,7 +324,7 @@ class TestAICommentAnalyzer:
         )
         context = {"pr_number": 42, "repo": "test-repo"}
         
-        with patch("autopr.actions.ai_comment_analyzer.analyze_comment_with_ai") as mock_analyze:
+        with patch("codeflow_engine.actions.ai_comment_analyzer.analyze_comment_with_ai") as mock_analyze:
             mock_analyze.return_value = AICommentAnalysisOutputs(
                 intent="question",
                 confidence=0.9,

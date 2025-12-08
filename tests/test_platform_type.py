@@ -1,6 +1,6 @@
 import unittest
 
-from autopr.actions.platform_detection.schema import PlatformType
+from codeflow_engine.actions.platform_detection.schema import PlatformType
 
 
 class TestPlatformType(unittest.TestCase):

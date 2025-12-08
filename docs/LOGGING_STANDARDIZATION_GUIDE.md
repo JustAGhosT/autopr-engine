@@ -674,7 +674,7 @@ logger.info("processing_workflow", workflow_id=workflow_id)
 **Solution:**
 ```python
 # Ensure logging is configured
-from autopr.config.logging import configure_logging
+from codeflow_engine.config.logging import configure_logging
 configure_logging(level="DEBUG")
 
 # Check log level

@@ -11,11 +11,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from autopr.actions.ai_comment_analyzer import (
+from codeflow_engine.actions.ai_comment_analyzer import (
     AICommentAnalysisInputs,
     AICommentAnalysisOutputs,
 )
-from autopr.cli.main import analyze_comment, cli, _run_comment_analysis
+from codeflow_engine.cli.main import analyze_comment, cli, _run_comment_analysis
 
 
 class TestAnalyzeCommentCommand:
@@ -35,7 +35,7 @@ class TestAnalyzeCommentCommand:
             tags=["fix"],
         )
         
-        with patch("autopr.cli.main.AICommentAnalyzer") as mock_analyzer_class:
+        with patch("codeflow_engine.cli.main.AICommentAnalyzer") as mock_analyzer_class:
             mock_analyzer = MagicMock()
             mock_analyzer.execute = AsyncMock(return_value=mock_result)
             mock_analyzer_class.return_value = mock_analyzer
@@ -64,7 +64,7 @@ class TestAnalyzeCommentCommand:
             tags=["suggestion"],
         )
         
-        with patch("autopr.cli.main.AICommentAnalyzer") as mock_analyzer_class:
+        with patch("codeflow_engine.cli.main.AICommentAnalyzer") as mock_analyzer_class:
             mock_analyzer = MagicMock()
             mock_analyzer.execute = AsyncMock(return_value=mock_result)
             mock_analyzer_class.return_value = mock_analyzer
@@ -102,7 +102,7 @@ class TestAnalyzeCommentCommand:
         runner = CliRunner()
         
         # Mock the async function directly to avoid asyncio issues with CliRunner
-        with patch("autopr.cli.main._run_comment_analysis") as mock_run:
+        with patch("codeflow_engine.cli.main._run_comment_analysis") as mock_run:
             # Make the mock coroutine raise an exception when awaited
             async def raise_error(*args, **kwargs):
                 raise Exception("Test error")
@@ -110,7 +110,7 @@ class TestAnalyzeCommentCommand:
             mock_run.side_effect = raise_error
             
             # Patch asyncio.run to actually run the coroutine
-            with patch("autopr.cli.main.asyncio.run") as mock_asyncio_run:
+            with patch("codeflow_engine.cli.main.asyncio.run") as mock_asyncio_run:
                 mock_asyncio_run.side_effect = Exception("Test error")
                 
                 result = runner.invoke(cli, [
@@ -138,12 +138,12 @@ class TestRunCommentAnalysis:
             tags=["question"],
         )
         
-        with patch("autopr.cli.main.AICommentAnalyzer") as mock_analyzer_class:
+        with patch("codeflow_engine.cli.main.AICommentAnalyzer") as mock_analyzer_class:
             mock_analyzer = MagicMock()
             mock_analyzer.execute = AsyncMock(return_value=mock_result)
             mock_analyzer_class.return_value = mock_analyzer
             
-            with patch("autopr.cli.main.click.echo") as mock_echo:
+            with patch("codeflow_engine.cli.main.click.echo") as mock_echo:
                 await _run_comment_analysis(
                     comment_body="What does this function do?",
                     file_path=None,
@@ -170,12 +170,12 @@ class TestRunCommentAnalysis:
             tags=["fix"],
         )
         
-        with patch("autopr.cli.main.AICommentAnalyzer") as mock_analyzer_class:
+        with patch("codeflow_engine.cli.main.AICommentAnalyzer") as mock_analyzer_class:
             mock_analyzer = MagicMock()
             mock_analyzer.execute = AsyncMock(return_value=mock_result)
             mock_analyzer_class.return_value = mock_analyzer
             
-            with patch("autopr.cli.main.click.echo"):
+            with patch("codeflow_engine.cli.main.click.echo"):
                 await _run_comment_analysis(
                     comment_body="Please update this",
                     file_path="src/utils.py",
@@ -194,7 +194,7 @@ class TestRunCommentAnalysis:
     @pytest.mark.asyncio
     async def test_run_comment_analysis_exception_exits(self):
         """Test that _run_comment_analysis exits on exception."""
-        with patch("autopr.cli.main.AICommentAnalyzer") as mock_analyzer_class:
+        with patch("codeflow_engine.cli.main.AICommentAnalyzer") as mock_analyzer_class:
             mock_analyzer = MagicMock()
             mock_analyzer.execute = AsyncMock(side_effect=RuntimeError("Analysis failed"))
             mock_analyzer_class.return_value = mock_analyzer
@@ -214,7 +214,7 @@ class TestCLIImports:
 
     def test_ai_comment_analyzer_import(self):
         """Test that AICommentAnalyzer is importable from cli.main."""
-        from autopr.cli.main import AICommentAnalyzer, AICommentAnalysisInputs
+        from codeflow_engine.cli.main import AICommentAnalyzer, AICommentAnalysisInputs
         
         assert AICommentAnalyzer is not None
         assert AICommentAnalysisInputs is not None

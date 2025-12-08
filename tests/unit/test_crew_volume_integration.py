@@ -38,13 +38,13 @@ else:
 
 
 # Patch the agent classes before they're imported
-sys.modules["autopr.agents.code_quality_agent"] = Mock()
-sys.modules["autopr.agents.platform_analysis_agent"] = Mock()
-sys.modules["autopr.agents.linting_agent"] = Mock()
+sys.modules["codeflow_engine.agents.code_quality_agent"] = Mock()
+sys.modules["codeflow_engine.agents.platform_analysis_agent"] = Mock()
+sys.modules["codeflow_engine.agents.linting_agent"] = Mock()
 
 # Now import the rest of the modules
-from autopr.agents.crew import AutoPRCrew  # noqa: E402
-from autopr.utils.volume_utils import QualityMode, get_volume_config  # noqa: E402
+from codeflow_engine.agents.crew import AutoPRCrew  # noqa: E402
+from codeflow_engine.utils.volume_utils import QualityMode, get_volume_config  # noqa: E402
 
 
 class MockTask:
@@ -148,14 +148,14 @@ def mock_agents(monkeypatch):
 
     # Use monkeypatch to set the functions directly on the module
     monkeypatch.setattr(
-        "autopr.agents.crew.tasks.create_code_quality_task", _mk_code_quality_task
+        "codeflow_engine.agents.crew.tasks.create_code_quality_task", _mk_code_quality_task
     )
     monkeypatch.setattr(
-        "autopr.agents.crew.tasks.create_platform_analysis_task",
+        "codeflow_engine.agents.crew.tasks.create_platform_analysis_task",
         _mk_platform_analysis_task,
     )
     monkeypatch.setattr(
-        "autopr.agents.crew.tasks.create_linting_task", _mk_linting_task
+        "codeflow_engine.agents.crew.tasks.create_linting_task", _mk_linting_task
     )
 
     return agents
@@ -186,7 +186,7 @@ def crew(mock_llm_provider_manager, mock_agents, monkeypatch):
             )
 
     # Patch the AutoPRCrew class to use our mock
-    monkeypatch.setattr("autopr.agents.crew.main.AutoPRCrew", MockAutoPRCrew)
+    monkeypatch.setattr("codeflow_engine.agents.crew.main.AutoPRCrew", MockAutoPRCrew)
 
     # Now create the crew - this will use our mock class
     with patch(
@@ -298,7 +298,7 @@ class TestCrewVolumeIntegration:
         """Test that volume levels map to the correct quality modes."""
         # Use the crew's _create_quality_inputs method instead of get_volume_config
         # since the crew has its own volume mapping logic
-        from autopr.agents.crew.main import AutoPRCrew
+        from codeflow_engine.agents.crew.main import AutoPRCrew
 
         crew = AutoPRCrew(volume=500)  # Create a crew instance to access the method
         config = crew._create_quality_inputs(volume)
@@ -425,7 +425,7 @@ class TestCrewVolumeIntegration:
             )
 
         monkeypatch.setattr(
-            "autopr.agents.crew.tasks.create_code_quality_task", mock_create_task
+            "codeflow_engine.agents.crew.tasks.create_code_quality_task", mock_create_task
         )
 
         # Now test the method
@@ -465,7 +465,7 @@ class TestCrewVolumeIntegration:
             return MockTask({"auto_fix": expected_autofix})
 
         monkeypatch.setattr(
-            "autopr.agents.crew.tasks.create_linting_task", mock_create_task
+            "codeflow_engine.agents.crew.tasks.create_linting_task", mock_create_task
         )
 
         # Now test the method
@@ -514,7 +514,7 @@ class TestCrewVolumeIntegration:
             )
 
         monkeypatch.setattr(
-            "autopr.agents.crew.tasks.create_code_quality_task", mock_create_task
+            "codeflow_engine.agents.crew.tasks.create_code_quality_task", mock_create_task
         )
 
         # Now test the method

@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from autopr.actions.platform_detection.schema import (
+from codeflow_engine.actions.platform_detection.schema import (
     PlatformCategory,
     PlatformConfig,
     PlatformStatus,
     PlatformType,
 )
-from autopr.agents.platform_analysis_agent import (
+from codeflow_engine.agents.platform_analysis_agent import (
     PlatformAnalysisAgent,
     PlatformAnalysisInputs,
 )
@@ -49,7 +49,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
     def setUp(self):
         self.agent = PlatformAnalysisAgent()
 
-    @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
+    @patch("codeflow_engine.agents.platform_analysis_agent.PlatformConfigManager")
     def test_get_platform_info_returns_none_for_unknown_platform(
         self, mock_config_manager
     ):
@@ -66,7 +66,7 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
         assert result is None
         mock_manager.get_platform.assert_called_once_with(PlatformType.UNKNOWN.value)
 
-    @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
+    @patch("codeflow_engine.agents.platform_analysis_agent.PlatformConfigManager")
     def test_get_platform_info_returns_expected_structure(self, mock_config_manager):
         """Test that platform info is returned with expected structure."""
         # Create a test platform config
@@ -167,8 +167,8 @@ class TestPlatformAnalysisAgent(unittest.TestCase):
             assert platform_info is None
             instance.get_platform.assert_called_once_with("unknown_platform")
 
-    @patch("autopr.agents.platform_analysis_agent.PlatformDetector")
-    @patch("autopr.agents.platform_analysis_agent.PlatformAnalysis")
+    @patch("codeflow_engine.agents.platform_analysis_agent.PlatformDetector")
+    @patch("codeflow_engine.agents.platform_analysis_agent.PlatformAnalysis")
     async def test_analyze_platforms(self, mock_analysis, mock_detector):
         """Test the analyze_platforms method."""
         # Setup mocks
