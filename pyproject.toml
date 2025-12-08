@@ -168,7 +168,7 @@ autopr = [
 minversion = "7.0"
 addopts = ["-ra", "--tb=short", "--maxfail=10", "-p", "no:langsmith"]
 testpaths = ["tests"]
-norecursedirs = ["tests/completed", "tests/archive", "tests/generated"]
+norecursedirs = []
 # pytest-asyncio configuration
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
