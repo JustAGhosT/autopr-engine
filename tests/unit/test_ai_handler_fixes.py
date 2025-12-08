@@ -19,7 +19,7 @@ import pytest
 # from codeflow_engine.actions.quality_engine.models import QualityAnalysis, QualityIssue
 from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autopr"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "codeflow_engine"))
 
 
 async def test_ai_handler_fixes():
