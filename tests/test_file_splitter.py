@@ -12,12 +12,12 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from autopr.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
+from codeflow_engine.actions.ai_linting_fixer.analyzers.complexity_analyzer import \
     FileComplexityAnalyzer
-from autopr.actions.ai_linting_fixer.file_splitter import (FileSplitter,
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import (FileSplitter,
                                                            SplitConfig)
-from autopr.actions.ai_linting_fixer.models import LintingIssue
-from autopr.ai.core.providers.manager import LLMProviderManager
+from codeflow_engine.actions.ai_linting_fixer.models import LintingIssue
+from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
 
 def create_test_file(content: str, filename: str = "test_file.py") -> str:
@@ -313,7 +313,7 @@ if __name__ == "__main__":
         )
 
         # Create a mock LLM manager for testing
-        from autopr.ai.core.providers.manager import LLMProviderManager
+        from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
         llm_config = {
             "providers": {
@@ -399,7 +399,7 @@ def function3():
 
     try:
         # Create a mock LLM manager for testing
-        from autopr.ai.core.providers.manager import LLMProviderManager
+        from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
         llm_config = {
             "providers": {

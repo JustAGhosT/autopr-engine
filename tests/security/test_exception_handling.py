@@ -3,7 +3,7 @@ Tests for Exception Handling and Sanitization
 """
 
 import pytest
-from autopr.security.exception_handling import (
+from codeflow_engine.security.exception_handling import (
     sanitize_error_message,
     sanitize_exception,
     create_safe_error_response,

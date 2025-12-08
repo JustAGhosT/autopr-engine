@@ -13,7 +13,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from autopr.actions.ai_linting_fixer.display import (DisplayConfig,
+    from codeflow_engine.actions.ai_linting_fixer.display import (DisplayConfig,
                                                          DisplayFormatter,
                                                          DisplayTheme,
                                                          OutputMode,

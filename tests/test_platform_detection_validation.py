@@ -9,7 +9,7 @@ Tests cover:
 """
 
 import pytest
-from autopr.actions.platform_detection.scoring import PlatformScoringEngine
+from codeflow_engine.actions.platform_detection.scoring import PlatformScoringEngine
 
 
 class TestPlatformCompatibility:

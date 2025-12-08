@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 from aiohttp import ClientError, ClientResponseError, ClientSession
 import pytest
 
-from autopr.clients.github_client import GitHubClient, GitHubConfig, GitHubError
+from codeflow_engine.clients.github_client import GitHubClient, GitHubConfig, GitHubError
 
 
 class TestGitHubClient(TestCase):

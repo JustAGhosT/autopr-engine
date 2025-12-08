@@ -18,11 +18,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from autopr.quality.template_metrics import QualityMetrics
-from autopr.quality.template_metrics.validation_enricher import (
+from codeflow_engine.quality.template_metrics import QualityMetrics
+from codeflow_engine.quality.template_metrics.validation_enricher import (
     enrich_quality_metrics_issues,
 )
-from autopr.quality.template_metrics.validation_types import (
+from codeflow_engine.quality.template_metrics.validation_types import (
     ValidationSeverity as QMValidationSeverity,
 )
 
@@ -327,7 +327,7 @@ class HTMLReportGenerator(ReportGenerator):
         self, metrics: QualityMetrics, analysis: dict[str, Any] | None = None
     ) -> str:
         """Generate HTML report for a single template."""
-        from autopr.reporting.html_page import PageHeader, build_basic_page
+        from codeflow_engine.reporting.html_page import PageHeader, build_basic_page
 
         # Enrich the metrics with additional attributes for reporting
         enriched_metrics = enrich_quality_metrics_issues(metrics)
@@ -398,7 +398,7 @@ class HTMLReportGenerator(ReportGenerator):
         batch_analysis: dict[str, Any] | None = None,
     ) -> str:
         """Generate HTML batch report for multiple templates."""
-        from autopr.reporting.html_page import PageHeader, build_basic_page
+        from codeflow_engine.reporting.html_page import PageHeader, build_basic_page
 
         # Enrich all metrics with additional attributes for reporting
         enriched_metrics = [enrich_quality_metrics_issues(m) for m in template_metrics]

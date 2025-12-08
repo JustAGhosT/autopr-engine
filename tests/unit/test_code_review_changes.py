@@ -11,8 +11,8 @@ from pathlib import Path
 # Test Bug Fix #1: IntegrationRegistry Import
 def test_integration_registry_import():
     """Test that IntegrationRegistry can be imported from engine module."""
-    from autopr.engine import AutoPREngine
-    from autopr.integrations.registry import IntegrationRegistry
+    from codeflow_engine.engine import AutoPREngine
+    from codeflow_engine.integrations.registry import IntegrationRegistry
     
     # Should not raise ImportError
     assert IntegrationRegistry is not None
@@ -21,7 +21,7 @@ def test_integration_registry_import():
 # Test Bug Fix #4: AutoPRPermissionError
 def test_permission_error_renamed():
     """Test that AutoPRPermissionError exists and doesn't shadow built-in."""
-    from autopr.exceptions import AutoPRPermissionError
+    from codeflow_engine.exceptions import AutoPRPermissionError
     
     # Custom exception should exist
     assert AutoPRPermissionError is not None
@@ -36,7 +36,7 @@ def test_permission_error_renamed():
 # Test Bug Fix #5: Type conversions in get_provider_config
 def test_provider_config_types():
     """Test that get_provider_config returns proper types."""
-    from autopr.config.settings import AutoPRSettings, LLMProvider
+    from codeflow_engine.config.settings import AutoPRSettings, LLMProvider
     
     settings = AutoPRSettings()
     config = settings.get_provider_config(LLMProvider.OPENAI)
@@ -51,7 +51,7 @@ def test_provider_config_types():
 # Test Refactoring #2: Provider configuration consolidation
 def test_get_provider_specific_config():
     """Test the new _get_provider_specific_config helper method."""
-    from autopr.config.settings import AutoPRSettings, LLMProvider
+    from codeflow_engine.config.settings import AutoPRSettings, LLMProvider
     
     settings = AutoPRSettings()
     
@@ -70,7 +70,7 @@ def test_get_provider_specific_config():
 # Test Refactoring #3: Split initialization helpers
 def test_get_config_file_paths():
     """Test _get_config_file_paths helper method."""
-    from autopr.config.settings import AutoPRSettings
+    from codeflow_engine.config.settings import AutoPRSettings
     
     settings = AutoPRSettings()
     paths = settings._get_config_file_paths()
@@ -88,7 +88,7 @@ def test_get_config_file_paths():
 
 def test_load_yaml_config():
     """Test _load_yaml_config helper method."""
-    from autopr.config.settings import AutoPRSettings
+    from codeflow_engine.config.settings import AutoPRSettings
     import tempfile
     import yaml
     
@@ -115,7 +115,7 @@ def test_load_yaml_config():
 # Test Refactoring #4: Magic numbers extraction
 def test_max_workflow_history_constant():
     """Test that MAX_WORKFLOW_HISTORY constant is defined."""
-    from autopr.workflows.engine import MAX_WORKFLOW_HISTORY
+    from codeflow_engine.workflows.engine import MAX_WORKFLOW_HISTORY
     
     assert MAX_WORKFLOW_HISTORY == 1000
     assert isinstance(MAX_WORKFLOW_HISTORY, int)
@@ -124,8 +124,8 @@ def test_max_workflow_history_constant():
 # Test Refactoring #5: Standardized error handling
 def test_handle_operation_error():
     """Test handle_operation_error helper function."""
-    from autopr.engine import handle_operation_error
-    from autopr.exceptions import AutoPRException
+    from codeflow_engine.engine import handle_operation_error
+    from codeflow_engine.exceptions import AutoPRException
     
     test_exception = ValueError("Test error")
     
@@ -139,8 +139,8 @@ def test_handle_operation_error():
 
 def test_handle_workflow_error():
     """Test handle_workflow_error helper function."""
-    from autopr.workflows.engine import handle_workflow_error
-    from autopr.exceptions import WorkflowError
+    from codeflow_engine.workflows.engine import handle_workflow_error
+    from codeflow_engine.exceptions import WorkflowError
     
     test_exception = ValueError("Test workflow error")
     
@@ -154,12 +154,12 @@ def test_handle_workflow_error():
 # Test Enhancement #1: LRU caching for Action Registry
 def test_action_registry_caching():
     """Test that action instances are cached."""
-    from autopr.actions.registry import ActionRegistry
+    from codeflow_engine.actions.registry import ActionRegistry
     
     registry = ActionRegistry()
     
     # Register a test action
-    from autopr.actions.base.action import Action
+    from codeflow_engine.actions.base.action import Action
     
     class TestAction(Action):
         def __init__(self, name, description):
@@ -177,8 +177,8 @@ def test_action_registry_caching():
 
 def test_create_action_instance_helper():
     """Test _create_action_instance helper method."""
-    from autopr.actions.registry import ActionRegistry
-    from autopr.actions.base.action import Action
+    from codeflow_engine.actions.registry import ActionRegistry
+    from codeflow_engine.actions.base.action import Action
     
     registry = ActionRegistry()
     
@@ -207,8 +207,8 @@ def test_create_action_instance_helper():
 @pytest.mark.asyncio
 async def test_async_context_manager():
     """Test async context manager support for AutoPREngine."""
-    from autopr.engine import AutoPREngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.engine import AutoPREngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     config.github_token = "test_token"
@@ -231,8 +231,8 @@ async def test_async_context_manager():
 @pytest.mark.asyncio
 async def test_async_context_manager_aenter():
     """Test __aenter__ method."""
-    from autopr.engine import AutoPREngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.engine import AutoPREngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     engine = AutoPREngine(config)
@@ -246,8 +246,8 @@ async def test_async_context_manager_aenter():
 @pytest.mark.asyncio
 async def test_async_context_manager_aexit():
     """Test __aexit__ method."""
-    from autopr.engine import AutoPREngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.engine import AutoPREngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     engine = AutoPREngine(config)
@@ -260,8 +260,8 @@ async def test_async_context_manager_aexit():
 # Test Enhancement #3: Workflow execution metrics
 def test_workflow_metrics_initialization():
     """Test that workflow metrics are properly initialized."""
-    from autopr.workflows.engine import WorkflowEngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.workflows.engine import WorkflowEngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     engine = WorkflowEngine(config)
@@ -280,8 +280,8 @@ def test_workflow_metrics_initialization():
 @pytest.mark.asyncio
 async def test_update_metrics():
     """Test _update_metrics method."""
-    from autopr.workflows.engine import WorkflowEngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.workflows.engine import WorkflowEngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     engine = WorkflowEngine(config)
@@ -306,8 +306,8 @@ async def test_update_metrics():
 @pytest.mark.asyncio
 async def test_get_metrics():
     """Test get_metrics method."""
-    from autopr.workflows.engine import WorkflowEngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.workflows.engine import WorkflowEngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     engine = WorkflowEngine(config)
@@ -333,7 +333,7 @@ async def test_get_metrics():
 # Test Enhancement #4: Exponential backoff retry logic
 def test_retry_configuration():
     """Test that retry configuration is properly set."""
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     
@@ -349,8 +349,8 @@ def test_retry_configuration():
 @pytest.mark.asyncio
 async def test_exponential_backoff_calculation():
     """Test that exponential backoff retry configuration is available."""
-    from autopr.workflows.engine import WorkflowEngine
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.workflows.engine import WorkflowEngine
+    from codeflow_engine.config import AutoPRConfig
     
     config = AutoPRConfig()
     config.workflow_retry_attempts = 3
@@ -373,9 +373,9 @@ async def test_exponential_backoff_calculation():
 @pytest.mark.asyncio
 async def test_startup_validation():
     """Test that startup configuration validation is performed."""
-    from autopr.engine import AutoPREngine
-    from autopr.config import AutoPRConfig
-    from autopr.exceptions import ConfigurationError
+    from codeflow_engine.engine import AutoPREngine
+    from codeflow_engine.config import AutoPRConfig
+    from codeflow_engine.exceptions import ConfigurationError
     
     # Create config
     config = AutoPRConfig()
@@ -393,7 +393,7 @@ async def test_startup_validation():
 
 def test_config_validate_method():
     """Test the config.validate() method."""
-    from autopr.config import AutoPRConfig
+    from codeflow_engine.config import AutoPRConfig
     
     # Create config - validate should work with defaults
     config = AutoPRConfig()
@@ -412,9 +412,9 @@ def test_config_validate_method():
 @pytest.mark.asyncio
 async def test_comprehensive_integration():
     """Integration test covering multiple enhancements."""
-    from autopr.engine import AutoPREngine
-    from autopr.config import AutoPRConfig
-    from autopr.workflows.engine import WorkflowEngine
+    from codeflow_engine.engine import AutoPREngine
+    from codeflow_engine.config import AutoPRConfig
+    from codeflow_engine.workflows.engine import WorkflowEngine
     
     # Create valid config
     config = AutoPRConfig()

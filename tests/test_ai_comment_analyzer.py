@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from autopr.actions.ai_comment_analyzer import (
+from codeflow_engine.actions.ai_comment_analyzer import (
     AICommentAnalysisInputs,
     AICommentAnalysisOutputs,
     AICommentAnalyzer,

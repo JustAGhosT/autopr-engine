@@ -6,7 +6,7 @@ Tests security-critical input validation and sanitization functions.
 
 import pytest
 
-from autopr.workflows.validation import (
+from codeflow_engine.workflows.validation import (
     WorkflowContextValidator,
     validate_workflow_context,
     sanitize_workflow_parameters,

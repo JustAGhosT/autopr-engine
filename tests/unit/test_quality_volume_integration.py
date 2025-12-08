@@ -5,10 +5,10 @@ Tests for volume control integration with QualityEngine.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from autopr.actions.quality_engine.engine import QualityEngine
-from autopr.actions.quality_engine.models import QualityInputs
-from autopr.enums import QualityMode
-from autopr.utils.volume_utils import get_volume_config
+from codeflow_engine.actions.quality_engine.engine import QualityEngine
+from codeflow_engine.actions.quality_engine.models import QualityInputs
+from codeflow_engine.enums import QualityMode
+from codeflow_engine.utils.volume_utils import get_volume_config
 
 
 class TestVolumeIntegration(unittest.TestCase):

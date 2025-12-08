@@ -17,7 +17,7 @@ def test_import_paths():
 def test_import_crew():
     """Test importing the crew module."""
     try:
-        from autopr.agents.crew import AutoPRCrew
+        from codeflow_engine.agents.crew import AutoPRCrew
 
         assert AutoPRCrew is not None
     except Exception:
@@ -30,7 +30,7 @@ def test_import_crew():
 def test_import_volume_mapping():
     """Test importing the volume mapping module."""
     try:
-        from autopr.utils.volume_utils import get_volume_level_name
+        from codeflow_engine.utils.volume_utils import get_volume_level_name
 
         assert get_volume_level_name(500) == "Balanced"
     except Exception:

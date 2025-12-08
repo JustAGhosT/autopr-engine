@@ -13,7 +13,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.quality_gates import (QualityGateChecker,
+    from codeflow_engine.actions.quality_gates import (QualityGateChecker,
                                               QualityGateConfig,
                                               QualityGateInputs,
                                               QualityGateOutputs,

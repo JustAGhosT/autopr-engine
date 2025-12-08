@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 def test_import_volume_config():
     """Test importing VolumeConfig from agents.py."""
-    from autopr.agents.agents import VolumeConfig
+    from codeflow_engine.agents.agents import VolumeConfig
 
     assert VolumeConfig is not None
 
@@ -20,7 +20,7 @@ def test_import_volume_config():
 
 def test_import_crew():
     """Test importing AutoPRCrew from crew.py."""
-    from autopr.agents.crew import AutoPRCrew
+    from codeflow_engine.agents.crew import AutoPRCrew
 
     assert AutoPRCrew is not None
 
@@ -32,7 +32,7 @@ def test_import_crew():
 
 def test_import_volume_mapping():
     """Test importing from volume_utils.py."""
-    from autopr.utils.volume_utils import get_volume_config, volume_to_quality_mode
+    from codeflow_engine.utils.volume_utils import get_volume_config, volume_to_quality_mode
 
     # Test volume mapping
     mode, config = volume_to_quality_mode(500)

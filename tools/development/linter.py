@@ -10,7 +10,7 @@ from enum import Enum
 import sys
 from typing import Any
 
-from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
+from codeflow_engine.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
 
 
 class LintMode(Enum):

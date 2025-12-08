@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from autopr.agents.crew import AutoPRCrew
-from autopr.agents.models import CodeIssue, IssueSeverity, PlatformAnalysis
-from autopr.enums import QualityMode
+from codeflow_engine.agents.crew import AutoPRCrew
+from codeflow_engine.agents.models import CodeIssue, IssueSeverity, PlatformAnalysis
+from codeflow_engine.enums import QualityMode
 
 
 class TestVolumeControlE2E:

@@ -11,11 +11,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from autopr.actions.ai_comment_analyzer import (
+from codeflow_engine.actions.ai_comment_analyzer import (
     AICommentAnalysisInputs,
     AICommentAnalysisOutputs,
 )
-from autopr.cli.main import analyze_comment, cli, _run_comment_analysis
+from codeflow_engine.cli.main import analyze_comment, cli, _run_comment_analysis
 
 
 class TestAnalyzeCommentCommand:
@@ -214,7 +214,7 @@ class TestCLIImports:
 
     def test_ai_comment_analyzer_import(self):
         """Test that AICommentAnalyzer is importable from cli.main."""
-        from autopr.cli.main import AICommentAnalyzer, AICommentAnalysisInputs
+        from codeflow_engine.cli.main import AICommentAnalyzer, AICommentAnalysisInputs
         
         assert AICommentAnalyzer is not None
         assert AICommentAnalysisInputs is not None

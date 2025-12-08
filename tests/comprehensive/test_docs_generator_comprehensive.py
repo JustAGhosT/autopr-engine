@@ -13,7 +13,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.docs_generator import (DocConfig, DocExporter,
+    from codeflow_engine.actions.docs_generator import (DocConfig, DocExporter,
                                                DocFormatter, DocRenderer,
                                                DocsGenerator, DocTemplate,
                                                DocValidator)

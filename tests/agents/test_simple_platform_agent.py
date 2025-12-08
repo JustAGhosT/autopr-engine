@@ -3,8 +3,8 @@ import unittest
 
 # Try to import the required modules
 try:
-    from autopr.actions.platform_detection.schema import PlatformType
-    from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+    from codeflow_engine.actions.platform_detection.schema import PlatformType
+    from codeflow_engine.agents.platform_analysis_agent import PlatformAnalysisAgent
 
 except ImportError:
     raise

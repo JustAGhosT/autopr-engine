@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from autopr.actions.quality_engine.config import load_config
-from autopr.actions.quality_engine.engine import QualityEngine, QualityInputs
-from autopr.actions.quality_engine.models import QualityMode
+from codeflow_engine.actions.quality_engine.config import load_config
+from codeflow_engine.actions.quality_engine.engine import QualityEngine, QualityInputs
+from codeflow_engine.actions.quality_engine.models import QualityMode
 
 
 class TestQualityPipeline:
@@ -313,7 +313,7 @@ var unused = "unused";
 
     def test_quality_mode_from_volume(self):
         """Test volume to quality mode mapping."""
-        from autopr.enums import QualityMode
+        from codeflow_engine.enums import QualityMode
 
         # Test volume thresholds
         assert QualityMode.from_volume(0) == QualityMode.ULTRA_FAST
@@ -324,7 +324,7 @@ var unused = "unused";
 
     def test_quality_mode_validation(self):
         """Test quality mode validation."""
-        from autopr.enums import QualityMode
+        from codeflow_engine.enums import QualityMode
 
         # Test valid modes
         assert QualityMode("fast") == QualityMode.FAST

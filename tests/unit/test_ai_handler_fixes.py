@@ -15,9 +15,9 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 # Commented out unused imports that don't exist
-# from autopr.actions.quality_engine.ai.ai_handler import AIHandler
-# from autopr.actions.quality_engine.models import QualityAnalysis, QualityIssue
-from autopr.ai.core.providers.manager import LLMProviderManager
+# from codeflow_engine.actions.quality_engine.ai.ai_handler import AIHandler
+# from codeflow_engine.actions.quality_engine.models import QualityAnalysis, QualityIssue
+from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autopr"))
 
@@ -28,7 +28,7 @@ async def test_ai_handler_fixes():
     # Test 1: Import and initialization
     try:
         # This should work without import errors
-        from autopr.actions.quality_engine.ai.ai_handler import \
+        from codeflow_engine.actions.quality_engine.ai.ai_handler import \
             initialize_llm_manager
 
     except ImportError:
@@ -66,7 +66,7 @@ async def test_ai_handler_fixes():
     # Test 4: Import consistency
     try:
         # Verify we're using the correct LLMProviderManager
-        from autopr.ai.core.providers.manager import LLMProviderManager
+        from codeflow_engine.ai.core.providers.manager import LLMProviderManager
 
         # Verify the new manager has expected attributes
         assert hasattr(LLMProviderManager, '__init__')
@@ -74,7 +74,7 @@ async def test_ai_handler_fixes():
 
         # Verify we're not using the old one
         with contextlib.suppress(ImportError):
-            from autopr.actions.llm.manager import \
+            from codeflow_engine.actions.llm.manager import \
                 LLMProviderManager as OldLLMProviderManager
 
             # If old import succeeds, verify it's different from new one

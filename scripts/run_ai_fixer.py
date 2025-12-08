@@ -27,8 +27,8 @@ except ImportError:
 # Add the project root to the path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from autopr.actions.ai_linting_fixer.main import ai_linting_fixer
-from autopr.actions.ai_linting_fixer.models import AILintingFixerInputs
+from codeflow_engine.actions.ai_linting_fixer.main import ai_linting_fixer
+from codeflow_engine.actions.ai_linting_fixer.models import AILintingFixerInputs
 
 
 async def main():

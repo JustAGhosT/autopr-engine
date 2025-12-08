@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from autopr.actions.platform_detection.schema import (
+from codeflow_engine.actions.platform_detection.schema import (
     PlatformCategory,
     PlatformConfig,
     PlatformStatus,
     PlatformType,
 )
-from autopr.agents.platform_analysis_agent import (
+from codeflow_engine.agents.platform_analysis_agent import (
     PlatformAnalysisAgent,
     PlatformAnalysisInputs,
 )

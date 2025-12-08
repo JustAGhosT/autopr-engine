@@ -3,7 +3,7 @@ Tests for newly added AI platforms (Base44, Windsurf, Continue, Aider, etc.)
 """
 import unittest
 from pathlib import Path
-from autopr.actions.platform_detection.config import PlatformConfigManager
+from codeflow_engine.actions.platform_detection.config import PlatformConfigManager
 
 
 class TestNewPlatforms(unittest.TestCase):
@@ -174,7 +174,7 @@ class TestNewPlatforms(unittest.TestCase):
 
     def test_platform_detection_in_detector(self):
         """Test that new platforms are registered in platform detector."""
-        from autopr.actions.platform_detector import PlatformDetector
+        from codeflow_engine.actions.platform_detector import PlatformDetector
         
         detector = PlatformDetector()
         

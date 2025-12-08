@@ -13,7 +13,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.ai_linting_fixer.ai_fix_applier import (AIFixApplier,
+    from codeflow_engine.actions.ai_linting_fixer.ai_fix_applier import (AIFixApplier,
                                                                 FixAnalyzer,
                                                                 FixApplier,
                                                                 FixConfig,

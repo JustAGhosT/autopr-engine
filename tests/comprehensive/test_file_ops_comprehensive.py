@@ -15,7 +15,7 @@ import yaml
 
 # Import the modules we're testing
 try:
-    from autopr.actions.file_ops import (FileAnalyzer, FileBackup,
+    from codeflow_engine.actions.file_ops import (FileAnalyzer, FileBackup,
                                          FileOperations, FileProcessor,
                                          FileSynchronizer, FileTransformer,
                                          FileValidator)

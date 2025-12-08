@@ -6,7 +6,7 @@ The B101 warnings about assert are expected and correct for test files.
 # ruff: noqa: S101
 
 import time
-from autopr.dashboard.storage import (
+from codeflow_engine.dashboard.storage import (
     InMemoryStorage,
     RedisStorage,
     get_storage,
@@ -121,7 +121,7 @@ class TestGetStorageBackend:
         """Test default backend is in-memory."""
         monkeypatch.delenv("AUTOPR_STORAGE_BACKEND", raising=False)
         # Clear singleton
-        import autopr.dashboard.storage as storage_module
+        import codeflow_engine.dashboard.storage as storage_module
         storage_module._storage = None
 
         storage = get_storage_backend()
@@ -130,7 +130,7 @@ class TestGetStorageBackend:
     def test_explicit_memory_backend(self, monkeypatch):
         """Test explicit memory backend selection."""
         monkeypatch.setenv("AUTOPR_STORAGE_BACKEND", "memory")
-        import autopr.dashboard.storage as storage_module
+        import codeflow_engine.dashboard.storage as storage_module
         storage_module._storage = None
 
         storage = get_storage_backend()
@@ -140,7 +140,7 @@ class TestGetStorageBackend:
         """Test Redis falls back to memory when unavailable."""
         monkeypatch.setenv("AUTOPR_STORAGE_BACKEND", "redis")
         monkeypatch.setenv("REDIS_URL", "redis://invalid:6379/0")
-        import autopr.dashboard.storage as storage_module
+        import codeflow_engine.dashboard.storage as storage_module
         storage_module._storage = None
 
         storage = get_storage_backend()
@@ -154,7 +154,7 @@ class TestGetStorageSingleton:
     def test_singleton(self, monkeypatch):
         """Test get_storage returns same instance."""
         monkeypatch.delenv("AUTOPR_STORAGE_BACKEND", raising=False)
-        import autopr.dashboard.storage as storage_module
+        import codeflow_engine.dashboard.storage as storage_module
         storage_module._storage = None
 
         storage1 = get_storage()

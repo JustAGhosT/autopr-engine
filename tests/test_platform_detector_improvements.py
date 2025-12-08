@@ -6,7 +6,7 @@ import unittest
 import tempfile
 import os
 from pathlib import Path
-from autopr.actions.platform_detection import (
+from codeflow_engine.actions.platform_detection import (
     PlatformDetector,
     PlatformDetectorInputs,
 )

@@ -7,8 +7,8 @@ import tempfile
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from autopr.agents.crew.main import AutoPRCrew
-from autopr.agents.models import CodeIssue, PlatformAnalysis, PlatformComponent
+from codeflow_engine.agents.crew.main import AutoPRCrew
+from codeflow_engine.agents.models import CodeIssue, PlatformAnalysis, PlatformComponent
 
 
 class TestAutoPRCrew(unittest.IsolatedAsyncioTestCase):

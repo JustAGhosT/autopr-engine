@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 def test_jinja2_provider():
     """Test the Jinja2 template provider."""
     try:
-        from autopr.templates import Jinja2TemplateProvider, TemplateSystem
+        from codeflow_engine.templates import Jinja2TemplateProvider, TemplateSystem
 
         # Initialize the template system with Jinja2 provider
         template_dirs = [
@@ -60,7 +60,7 @@ def test_autoweave_provider():
         pytest.skip("AUTOWEAVE_API_KEY not set")
 
     try:
-        from autopr.templates import AutoWeaveProvider, TemplateSystem
+        from codeflow_engine.templates import AutoWeaveProvider, TemplateSystem
 
         logger.info("Initializing AutoWeave template provider...")
         autoweave_provider = AutoWeaveProvider(api_key=autoweave_api_key)
@@ -84,7 +84,7 @@ def test_autoweave_provider():
 def test_provider_fallback():
     """Test provider fallback mechanism."""
     try:
-        from autopr.templates import (
+        from codeflow_engine.templates import (
             AutoWeaveProvider,
             Jinja2TemplateProvider,
             TemplateSystem,

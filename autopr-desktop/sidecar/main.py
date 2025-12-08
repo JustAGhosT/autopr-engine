@@ -2,7 +2,7 @@ import asyncio
 import logging
 import uvicorn
 from fastapi import FastAPI, WebSocket
-from autopr.engine import AutoPREngine
+from codeflow_engine.engine import AutoPREngine
 from .websocket_handler import WebSocketHandler
 
 app = FastAPI()

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+from codeflow_engine.agents.platform_analysis_agent import PlatformAnalysisAgent
 
 
 class TestPlatformAnalysisAgent(unittest.IsolatedAsyncioTestCase):

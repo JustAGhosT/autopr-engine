@@ -16,7 +16,7 @@ import os
 pytest.importorskip("pydantic", reason="Dashboard dependencies not installed")
 
 try:
-    from autopr.dashboard.router import DashboardState
+    from codeflow_engine.dashboard.router import DashboardState
 except ImportError:
     pytest.skip("Dashboard module not available", allow_module_level=True)
 

@@ -5,7 +5,7 @@ Tests BUG-9 fix: Ensures sensitive information is not exposed in error messages.
 """
 
 import pytest
-from autopr.exceptions import (
+from codeflow_engine.exceptions import (
     AutoPRException,
     ConfigurationError,
     WorkflowError,

@@ -4,7 +4,7 @@
 def test_volume_config_import():
     """Test that VolumeConfig can be imported and instantiated."""
     # Import inside test to isolate any import issues
-    from autopr.agents.base.volume_config import VolumeConfig
+    from codeflow_engine.agents.base.volume_config import VolumeConfig
 
     # Test basic instantiation
     config = VolumeConfig(volume=500)

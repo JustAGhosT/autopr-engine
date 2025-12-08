@@ -24,7 +24,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import Base from our models for autogenerate support
-from autopr.database.models import Base
+from codeflow_engine.database.models import Base
 
 # Set target_metadata for autogenerate
 target_metadata = Base.metadata

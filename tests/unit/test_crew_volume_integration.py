@@ -43,8 +43,8 @@ sys.modules["autopr.agents.platform_analysis_agent"] = Mock()
 sys.modules["autopr.agents.linting_agent"] = Mock()
 
 # Now import the rest of the modules
-from autopr.agents.crew import AutoPRCrew  # noqa: E402
-from autopr.utils.volume_utils import QualityMode, get_volume_config  # noqa: E402
+from codeflow_engine.agents.crew import AutoPRCrew  # noqa: E402
+from codeflow_engine.utils.volume_utils import QualityMode, get_volume_config  # noqa: E402
 
 
 class MockTask:
@@ -298,7 +298,7 @@ class TestCrewVolumeIntegration:
         """Test that volume levels map to the correct quality modes."""
         # Use the crew's _create_quality_inputs method instead of get_volume_config
         # since the crew has its own volume mapping logic
-        from autopr.agents.crew.main import AutoPRCrew
+        from codeflow_engine.agents.crew.main import AutoPRCrew
 
         crew = AutoPRCrew(volume=500)  # Create a crew instance to access the method
         config = crew._create_quality_inputs(volume)

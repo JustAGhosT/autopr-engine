@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from autopr.actions.platform_detection.schema import PlatformType
-from autopr.agents.platform_analysis_agent import PlatformAnalysisAgent
+from codeflow_engine.actions.platform_detection.schema import PlatformType
+from codeflow_engine.agents.platform_analysis_agent import PlatformAnalysisAgent
 
 
 class TestMinimalPlatformAnalysisAgent(unittest.TestCase):

@@ -10,7 +10,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 try:
-    from autopr.agents.base.volume_config import VolumeConfig
+    from codeflow_engine.agents.base.volume_config import VolumeConfig
 
     # Test basic functionality
     config = VolumeConfig()

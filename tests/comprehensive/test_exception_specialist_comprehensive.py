@@ -13,7 +13,7 @@ import pytest
 
 # Import the modules we're testing
 try:
-    from autopr.actions.exception_specialist import (ExceptionAnalyzer,
+    from codeflow_engine.actions.exception_specialist import (ExceptionAnalyzer,
                                                      ExceptionConfig,
                                                      ExceptionHandler,
                                                      ExceptionPattern,
