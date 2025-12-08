@@ -1491,7 +1491,7 @@ Sizes:
    This module provides...
    
    Example:
-       from autopr.module import MyClass
+       from codeflow_engine.module import MyClass
        obj = MyClass()
    """
    ```
@@ -2422,7 +2422,7 @@ Configuration access is inconsistent:
    token = os.getenv("GITHUB_TOKEN")
    
    # Use:
-   from autopr.config import settings
+   from codeflow_engine.config import settings
    token = settings.github_token
    ```
 

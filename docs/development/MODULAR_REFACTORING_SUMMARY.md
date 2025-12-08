@@ -149,7 +149,7 @@ and follows the Single Responsibility Principle.
 
 ```python
 
-from autopr.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
+from codeflow_engine.actions.ai_linting_fixer import AILintingFixer, AILintingFixerInputs
 
 # Create inputs
 inputs = AILintingFixerInputs(
@@ -170,7 +170,7 @@ with AILintingFixer() as fixer:
 
 ```python
 
-from autopr.actions.ai_linting_fixer import (
+from codeflow_engine.actions.ai_linting_fixer import (
     LintingDetector,
     CodeAnalyzer,
     ErrorHandler,
@@ -192,7 +192,7 @@ error_handler = ErrorHandler(DisplayConfig())
 
 ```python
 
-from autopr.actions.ai_linting_fixer import (
+from codeflow_engine.actions.ai_linting_fixer import (
     ErrorHandler,
     create_error_context,
     DisplayConfig

@@ -18,7 +18,7 @@
 The `SplitConfig` class provides the fundamental configuration options:
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import SplitConfig
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import SplitConfig
 
 config = SplitConfig(
     max_lines_per_file=500,        # Maximum lines per split file

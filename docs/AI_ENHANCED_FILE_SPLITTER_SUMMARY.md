@@ -167,7 +167,7 @@ preserve_imports: bool = True         # Preserve import statements in all compon
 ### Basic Usage
 
 ```python
-from autopr.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
+from codeflow_engine.actions.ai_linting_fixer.file_splitter import FileSplitter, SplitConfig
 
 # Create splitter with default configuration
 splitter = FileSplitter()
@@ -199,7 +199,7 @@ splitter = FileSplitter(config=config)
 ### With AI Integration
 
 ```python
-from autopr.actions.llm.manager import LLMProviderManager
+from codeflow_engine.actions.llm.manager import LLMProviderManager
 
 # Initialize with LLM manager for AI decisions
 llm_manager = LLMProviderManager(llm_config)

@@ -58,7 +58,7 @@ The platform detector automatically includes new platforms. No action needed.
 To verify detection is working:
 
 ```python
-from autopr.actions.platform_detector import PlatformDetector, PlatformDetectorInputs
+from codeflow_engine.actions.platform_detector import PlatformDetector, PlatformDetectorInputs
 
 detector = PlatformDetector()
 inputs = PlatformDetectorInputs(
@@ -175,7 +175,7 @@ touch .base44
 
 Run detection:
 ```python
-from autopr.actions.platform_detector import PlatformDetector, PlatformDetectorInputs
+from codeflow_engine.actions.platform_detector import PlatformDetector, PlatformDetectorInputs
 
 detector = PlatformDetector()
 result = detector.detect_platform(PlatformDetectorInputs(
