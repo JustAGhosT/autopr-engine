@@ -37,8 +37,8 @@ class AILintingFixer:
     def __init__(self, display_config: DisplayConfig | None = None):
         """Initialize the AI Linting Fixer with all components."""
         # Set logging levels to ERROR by default to prevent clutter
-        logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(logging.ERROR)
-        logging.getLogger("autopr.actions.llm").setLevel(logging.ERROR)
+        logging.getLogger("codeflow_engine.actions.ai_linting_fixer").setLevel(logging.ERROR)
+        logging.getLogger("codeflow_engine.actions.llm").setLevel(logging.ERROR)
         logging.getLogger("httpx").setLevel(logging.ERROR)
 
         # Initialize display
@@ -381,18 +381,18 @@ class AILintingFixer:
             if hasattr(inputs, "verbose") and inputs.verbose:
                 self.display.set_verbose(True)
                 # Set logging to DEBUG for verbose mode
-                logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(
+                logging.getLogger("codeflow_engine.actions.ai_linting_fixer").setLevel(
                     logging.DEBUG
                 )
-                logging.getLogger("autopr.actions.llm").setLevel(logging.DEBUG)
+                logging.getLogger("codeflow_engine.actions.llm").setLevel(logging.DEBUG)
                 logging.getLogger("httpx").setLevel(logging.DEBUG)
             elif hasattr(inputs, "quiet") and inputs.quiet:
                 self.display.set_quiet(True)
                 # Set logging to ERROR only for quiet mode
-                logging.getLogger("autopr.actions.ai_linting_fixer").setLevel(
+                logging.getLogger("codeflow_engine.actions.ai_linting_fixer").setLevel(
                     logging.ERROR
                 )
-                logging.getLogger("autopr.actions.llm").setLevel(logging.ERROR)
+                logging.getLogger("codeflow_engine.actions.llm").setLevel(logging.ERROR)
                 logging.getLogger("httpx").setLevel(logging.ERROR)
 
             # Show session start
