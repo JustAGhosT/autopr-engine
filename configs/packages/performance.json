@@ -1,5 +1,0 @@
-{
-  "common": ["compression", "morgan", "cluster", "pm2"],
-  "react": ["@loadable/component", "react-window", "react-virtualized"],
-  "node": ["node-cache", "redis"]
-}

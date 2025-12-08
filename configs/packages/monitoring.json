@@ -1,5 +1,0 @@
-{
-  "common": ["@azure/monitor-opentelemetry-exporter", "winston", "express-prometheus-middleware"],
-  "react": ["@sentry/react", "web-vitals"],
-  "node": ["@sentry/node", "pino"]
-}

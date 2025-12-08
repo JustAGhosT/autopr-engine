@@ -1,8 +1,0 @@
-# Core dependencies for YAML linting
-PyYAML>=6.0,<7.0
-
-# Development dependencies (optional)
-# pytest>=7.0
-# pytest-cov>=4.0
-# black>=22.0
-# mypy>=1.0

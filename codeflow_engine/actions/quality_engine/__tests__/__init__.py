@@ -1,1 +1,0 @@
-# quality engine tests package

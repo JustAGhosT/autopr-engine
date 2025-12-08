@@ -1,9 +1,0 @@
-{
-  "git.enableCommitSigning": false,
-  "yaml.schemas": {},
-  "ansible.validation.enabled": false,
-  "yaml.validate": true,
-  "yaml.customTags": [
-    "!reference sequence"
-  ]
-}

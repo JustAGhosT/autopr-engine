@@ -1,1 +1,0 @@
-# example hybrid templates package
