@@ -9,13 +9,14 @@ Configure via AUTOPR_STORAGE_BACKEND environment variable:
 - "redis": Redis storage (requires REDIS_URL)
 """
 
+from abc import ABC, abstractmethod
 import json
 import logging
 import os
 import threading
 import time
-from abc import ABC, abstractmethod
 from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -314,7 +315,7 @@ class RedisStorage(StorageBackend):
         def _initialize():
             prefixed_key = self._key(key)
             if not self._client.exists(prefixed_key):
-            self._client.set(prefixed_key, json.dumps(value), nx=True)
+                self._client.set(prefixed_key, json.dumps(value), nx=True)
             return True
         self._execute_with_retry("initialize_if_empty", _initialize, None)
 
