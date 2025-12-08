@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Chocolatey package for AutoPR Engine -->
-<!-- Install with: choco install autopr-engine -->
+<!-- Chocolatey package for CodeFlow Engine -->
+<!-- Install with: choco install codeflow-engine -->
 <!-- Build with: choco pack -->
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
-    <id>autopr-engine</id>
+    <id>codeflow-engine</id>
     <version>1.0.1</version>
-    <title>AutoPR Engine</title>
+    <title>CodeFlow Engine</title>
     <authors>JustAGhosT</authors>
     <owners>JustAGhosT</owners>
-    <projectUrl>https://github.com/JustAGhosT/autopr-engine</projectUrl>
-    <iconUrl>https://raw.githubusercontent.com/JustAGhosT/autopr-engine/main/docs/assets/logo.png</iconUrl>
-    <licenseUrl>https://github.com/JustAGhosT/autopr-engine/blob/main/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/JustAGhosT/codeflow-engine</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/JustAGhosT/codeflow-engine/main/docs/assets/logo.png</iconUrl>
+    <licenseUrl>https://github.com/JustAGhosT/codeflow-engine/blob/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/JustAGhosT/autopr-engine</projectSourceUrl>
-    <docsUrl>https://github.com/JustAGhosT/autopr-engine#readme</docsUrl>
-    <bugTrackerUrl>https://github.com/JustAGhosT/autopr-engine/issues</bugTrackerUrl>
+    <projectSourceUrl>https://github.com/JustAGhosT/codeflow-engine</projectSourceUrl>
+    <docsUrl>https://github.com/JustAGhosT/codeflow-engine#readme</docsUrl>
+    <bugTrackerUrl>https://github.com/JustAGhosT/codeflow-engine/issues</bugTrackerUrl>
     <tags>github pr automation ai code-review cli python openai</tags>
     <summary>AI-Powered GitHub PR Automation and Issue Management</summary>
     <description><![CDATA[
-# AutoPR Engine
+# CodeFlow Engine
 
 AI-Powered GitHub PR Automation and Issue Management.
 
@@ -53,9 +53,9 @@ autopr --help
 
 ## Documentation
 
-https://github.com/JustAGhosT/autopr-engine
+https://github.com/JustAGhosT/codeflow-engine
 ]]></description>
-    <releaseNotes>https://github.com/JustAGhosT/autopr-engine/releases</releaseNotes>
+    <releaseNotes>https://github.com/JustAGhosT/codeflow-engine/releases</releaseNotes>
     <dependencies>
       <dependency id="python3" version="3.12" />
     </dependencies>

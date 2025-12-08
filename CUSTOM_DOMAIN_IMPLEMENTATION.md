@@ -10,7 +10,7 @@ Added custom domain configuration directly to the Azure Container App Bicep temp
 
 ## Changes Made
 
-### 1. Infrastructure Configuration (`infrastructure/bicep/autopr-engine.bicep`)
+### 1. Infrastructure Configuration (`infrastructure/bicep/codeflow-engine.bicep`)
 
 **Added custom domain parameter:**
 ```bicep
@@ -39,17 +39,17 @@ ingress: {
 output customDomain string = customDomain
 ```
 
-### 2. Parameter Files (`infrastructure/bicep/autopr-engine-parameters.json`)
+### 2. Parameter Files (`infrastructure/bicep/codeflow-engine-parameters.json`)
 
 Added customDomain parameter with value "app.autopr.io".
 
-### 3. Deployment Scripts (`infrastructure/bicep/deploy-autopr-engine.sh`)
+### 3. Deployment Scripts (`infrastructure/bicep/deploy-codeflow-engine.sh`)
 
 - Added CUSTOM_DOMAIN parameter (default: "app.autopr.io")
 - Included customDomain in deployment command
 - Added DNS setup instructions to the output
 
-### 4. GitHub Actions Workflow (`.github/workflows/deploy-autopr-engine.yml`)
+### 4. GitHub Actions Workflow (`.github/workflows/deploy-codeflow-engine.yml`)
 
 - Added customDomain parameter to deployment step
 - Added custom domain to deployment outputs
@@ -101,7 +101,7 @@ Get the Container App FQDN from deployment outputs:
 ```bash
 az deployment group show \
   --resource-group prod-rg-san-autopr \
-  --name autopr-engine \
+  --name codeflow-engine \
   --query properties.outputs.containerAppUrl.value
 ```
 
@@ -140,10 +140,10 @@ All should return successful responses over HTTPS with a valid SSL certificate.
 
 ## Related Files
 
-- `infrastructure/bicep/autopr-engine.bicep` - Main infrastructure template
-- `infrastructure/bicep/autopr-engine-parameters.json` - Parameter file
-- `infrastructure/bicep/deploy-autopr-engine.sh` - Deployment script
-- `.github/workflows/deploy-autopr-engine.yml` - CI/CD workflow
+- `infrastructure/bicep/codeflow-engine.bicep` - Main infrastructure template
+- `infrastructure/bicep/codeflow-engine-parameters.json` - Parameter file
+- `infrastructure/bicep/deploy-codeflow-engine.sh` - Deployment script
+- `.github/workflows/deploy-codeflow-engine.yml` - CI/CD workflow
 - `docs/ARCHITECTURE_AND_DEPLOYMENT.md` - Architecture documentation
 
 ## Next Steps for Deployment

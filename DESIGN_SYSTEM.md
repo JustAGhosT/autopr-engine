@@ -49,7 +49,7 @@ The AutoPR Engine design system is built on the following core principles:
 ### 1.3 File Structure
 
 ```
-autopr-engine/
+codeflow-engine/
 ├── design-system/
 │   ├── tokens.css          # Centralized design tokens
 │   └── README.md           # Quick reference guide

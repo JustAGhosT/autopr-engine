@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: autopr-engine
+  name: codeflow-engine
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: autopr-engine
+      app: codeflow-engine
   template:
     metadata:
       labels:
-        app: autopr-engine
+        app: codeflow-engine
     spec:
       containers:
-      - name: autopr-engine
-        image: autopracr.azurecr.io/autopr-engine:latest
+      - name: codeflow-engine
+        image: autopracr.azurecr.io/codeflow-engine:latest
         ports:
         - containerPort: 8080
         readinessProbe:
@@ -58,7 +58,7 @@ spec:
     spec:
       containers:
       - name: autopr-worker
-        image: autopracr.azurecr.io/autopr-engine:latest
+        image: autopracr.azurecr.io/codeflow-engine:latest
         command: ["autopr-worker"]
         readinessProbe:
           exec:

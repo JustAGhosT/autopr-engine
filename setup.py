@@ -30,14 +30,14 @@ def read_requirements():
 
 
 setup(
-    name="autopr-engine",
+    name="codeflow-engine",
     version="1.0.0",
     author="AutoPR Team",
     author_email="team@autopr.dev",
     description="AI-Powered Code Quality and Automation Engine",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/autopr/autopr-engine",
+    url="https://github.com/autopr/codeflow-engine",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -100,8 +100,8 @@ setup(
         "development-tools",
     ],
     project_urls={
-        "Bug Reports": "https://github.com/autopr/autopr-engine/issues",
-        "Source": "https://github.com/autopr/autopr-engine",
+        "Bug Reports": "https://github.com/autopr/codeflow-engine/issues",
+        "Source": "https://github.com/autopr/codeflow-engine",
         "Documentation": "https://autopr.dev/docs",
     },
 )

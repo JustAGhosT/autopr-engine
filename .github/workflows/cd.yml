@@ -25,5 +25,5 @@ jobs:
       - name: Smoke Test
         run: |
           sleep 60
-          IP=$(kubectl get service autopr-engine-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          IP=$(kubectl get service codeflow-engine-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           curl -s --fail http://$IP/health

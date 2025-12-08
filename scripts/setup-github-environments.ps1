@@ -17,7 +17,7 @@
     Show what would be created without actually creating environments
 
 .EXAMPLE
-    .\setup-github-environments.ps1 -Repository "your-org/autopr-engine" -Token "ghp_xxx"
+    .\setup-github-environments.ps1 -Repository "your-org/codeflow-engine" -Token "ghp_xxx"
 #>
 
 param(

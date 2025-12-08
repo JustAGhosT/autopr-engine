@@ -1,4 +1,4 @@
-name: Build and Deploy AutoPR Engine
+name: Build and Deploy CodeFlow Engine
 
 on:
   push:
@@ -63,7 +63,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: false
-          tags: autopr-engine:pr-${{ github.event.pull_request.number }}
+          tags: codeflow-engine:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -245,15 +245,15 @@ jobs:
           echo "📖 See infrastructure/bicep/FAQ.md for certificate details"
           echo ""
           az deployment group create \
-            --name autopr-engine \
+            --name codeflow-engine \
             --resource-group prod-rg-san-autopr \
-            --template-file infrastructure/bicep/autopr-engine.bicep \
+            --template-file infrastructure/bicep/codeflow-engine.bicep \
             --parameters \
               environment=prod \
               regionAbbr=san \
               location=eastus2 \
               customDomain=app.autopr.io \
-              containerImage=ghcr.io/justaghost/autopr-engine:latest \
+              containerImage=ghcr.io/justaghost/codeflow-engine:latest \
               postgresLogin="${{ steps.passwords.outputs.postgres_login }}" \
               postgresPassword="${{ steps.passwords.outputs.postgres_password }}" \
               redisPassword="${{ steps.passwords.outputs.redis_password }}"
@@ -263,7 +263,7 @@ jobs:
         run: |
           OUTPUTS=$(az deployment group show \
             --resource-group prod-rg-san-autopr \
-            --name autopr-engine \
+            --name codeflow-engine \
             --query properties.outputs \
             --output json)
           

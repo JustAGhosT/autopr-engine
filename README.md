@@ -2,14 +2,14 @@
 
 ## AI-Powered GitHub PR Automation and Issue Management
 
-[![PyPI version](https://badge.fury.io/py/autopr-engine.svg)](https://badge.fury.io/py/autopr-engine)
+[![PyPI version](https://badge.fury.io/py/codeflow-engine.svg)](https://badge.fury.io/py/codeflow-engine)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Marketplace](https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/autopr-engine)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub-Marketplace-blue)](https://github.com/marketplace/codeflow-engine)
 
-[![CI](https://github.com/JustAGhosT/autopr-engine/workflows/CI/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3ACI)
-[![Quality](https://github.com/JustAGhosT/autopr-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22Quality+Feedback%22)
-[![PR Checks](https://github.com/JustAGhosT/autopr-engine/workflows/PR%20Checks/badge.svg)](https://github.com/JustAGhosT/autopr-engine/actions?query=workflow%3A%22PR+Checks%22)
+[![CI](https://github.com/JustAGhosT/codeflow-engine/workflows/CI/badge.svg)](https://github.com/JustAGhosT/codeflow-engine/actions?query=workflow%3ACI)
+[![Quality](https://github.com/JustAGhosT/codeflow-engine/workflows/Quality%20Feedback/badge.svg)](https://github.com/JustAGhosT/codeflow-engine/actions?query=workflow%3A%22Quality+Feedback%22)
+[![PR Checks](https://github.com/JustAGhosT/codeflow-engine/workflows/PR%20Checks/badge.svg)](https://github.com/JustAGhosT/codeflow-engine/actions?query=workflow%3A%22PR+Checks%22)
 
 AutoPR Engine is a comprehensive AI-powered automation platform that transforms GitHub pull request
 workflows through intelligent analysis, issue creation, and multi-agent collaboration.
@@ -81,18 +81,18 @@ The AutoPR Engine repository is organized for optimal developer experience and m
 
 ```bash
 # Install from PyPI
-pip install autopr-engine
+pip install codeflow-engine
 
 # Or install with all features
-pip install "autopr-engine[full]"
+pip install "codeflow-engine[full]"
 
 # Docker deployment (build locally)
-docker build -t autopr-engine:latest .
+docker build -t codeflow-engine:latest .
 docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
-  YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
+  YOUR_DOCKERHUB_USERNAME/codeflow-engine:latest
 
 # Docker Compose deployment (recommended for full setup)
 # Create a .env file with your environment variables:
@@ -103,40 +103,40 @@ docker-compose up -d
 
 # Publishing to GitHub Container Registry (GHCR)
 # 1. Build the image:
-docker build -t autopr-engine:latest .
+docker build -t codeflow-engine:latest .
 
 # 2. Tag for GHCR (replace YOUR_USERNAME with your GitHub username):
-docker tag autopr-engine:latest ghcr.io/YOUR_USERNAME/autopr-engine:latest
+docker tag codeflow-engine:latest ghcr.io/YOUR_USERNAME/codeflow-engine:latest
 
 # 3. Authenticate to GHCR:
 docker login ghcr.io -u YOUR_USERNAME -p YOUR_GITHUB_TOKEN
 
 # 4. Push to GHCR:
-docker push ghcr.io/YOUR_USERNAME/autopr-engine:latest
+docker push ghcr.io/YOUR_USERNAME/codeflow-engine:latest
 
 # 5. Run the published image:
 docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
-  ghcr.io/YOUR_USERNAME/autopr-engine:latest
+  ghcr.io/YOUR_USERNAME/codeflow-engine:latest
 
 # Publishing to Docker Hub (alternative)
 # 1. Build and tag for Docker Hub:
-docker build -t YOUR_DOCKERHUB_USERNAME/autopr-engine:latest .
+docker build -t YOUR_DOCKERHUB_USERNAME/codeflow-engine:latest .
 
 # 2. Authenticate to Docker Hub:
 docker login -u YOUR_DOCKERHUB_USERNAME -p YOUR_DOCKERHUB_TOKEN
 
 # 3. Push to Docker Hub:
-docker push YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
+docker push YOUR_DOCKERHUB_USERNAME/codeflow-engine:latest
 
 # 4. Run the published image:
 docker run -d \
   -e GITHUB_TOKEN=your_token \
   -e OPENAI_API_KEY=your_key \
   -p 8080:8080 \
-  YOUR_DOCKERHUB_USERNAME/autopr-engine:latest
+  YOUR_DOCKERHUB_USERNAME/codeflow-engine:latest
 ```
 
 ### **Basic Configuration**
@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: JustAGhosT/autopr-engine@v0.0.1
+      - uses: JustAGhosT/codeflow-engine@v0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -261,8 +261,8 @@ graph TB
 
 ```bash
 # Clone repository
-git clone https://github.com/JustAGhosT/autopr-engine.git
-cd autopr-engine  # or 'cd autopr' if repository is cloned as 'autopr'
+git clone https://github.com/JustAGhosT/codeflow-engine.git
+cd codeflow-engine  # or 'cd autopr' if repository is cloned as 'autopr'
 
 # Create virtual environment
 python -m venv venv
@@ -684,9 +684,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 **Support**
 
-- **Documentation**: [https://autopr-engine.readthedocs.io](https://autopr-engine.readthedocs.io)
-- **GitHub Issues**: [Report bugs and request features](https://github.com/JustAGhosT/autopr-engine/issues)
-- **Discussions**: [Community discussions](https://github.com/JustAGhosT/autopr-engine/discussions)
+- **Documentation**: [https://codeflow-engine.readthedocs.io](https://codeflow-engine.readthedocs.io)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/JustAGhosT/codeflow-engine/issues)
+- **Discussions**: [Community discussions](https://github.com/JustAGhosT/codeflow-engine/discussions)
 - **Email**: [support@justaghost.com](mailto:support@justaghost.com)
 
 ---

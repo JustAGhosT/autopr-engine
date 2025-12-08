@@ -1,8 +1,8 @@
-# GitHub App Manifest for AutoPR Engine
-# Install at: https://github.com/apps/autopr-engine
+# GitHub App Manifest for CodeFlow Engine
+# Install at: https://github.com/apps/codeflow-engine
 # Use this at: https://github.com/settings/apps/new?manifest=1
 
-name: autopr-engine
+name: codeflow-engine
 description: AI-powered GitHub PR automation - Intelligent code analysis, automated issue creation, and multi-agent collaboration for pull request workflows.
 url: https://app.autopr.io
 hook_attributes:
