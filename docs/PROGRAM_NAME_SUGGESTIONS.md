@@ -28,6 +28,7 @@ Our evaluation framework uses 8 key factors to assess each name candidate:
 ### 🥇 1. CodeFlow AI (48/50 points)
 
 **Scoring Breakdown:**
+
 - Clarity: 8/8 - Immediately conveys code workflow automation
 - Memorability: 8/8 - Simple, rhythmic, easy to recall
 - Brandability: 7/7 - Strong visual possibilities (flow metaphors, streams)
