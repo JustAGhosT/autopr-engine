@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+**Superseded by [ADR-0019: Python-Only Architecture](0019-python-only-architecture.md)**
+
+This ADR was originally proposed but never implemented. The project was successfully built using Python-only architecture. See ADR-0019 for the actual implementation and rationale.
 
 ## Context
 

@@ -2,7 +2,11 @@
 
 ## Status
 
-Proposed
+**Deprecated** (Related to ADR-0001 which was superseded)
+
+This ADR was proposed for cross-language communication in a hybrid C#/Python architecture, but was never implemented. The project uses Python-only architecture (see [ADR-0019](0019-python-only-architecture.md)), eliminating the need for cross-language communication.
+
+Kept for historical reference.
 
 ## Context
 
