@@ -25,7 +25,7 @@ def test_import_crew():
     assert AutoPRCrew is not None
 
     # Test basic initialization with mocks
-    with patch("autopr.agents.crew.get_llm_provider_manager"):
+    with patch("codeflow_engine.agents.crew.get_llm_provider_manager"):
         crew = AutoPRCrew(llm_model="test-model")
         assert crew is not None
 

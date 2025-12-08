@@ -9,7 +9,7 @@ class TestMinimalPlatformAnalysisAgent(unittest.TestCase):
     def setUp(self):
         self.agent = PlatformAnalysisAgent()
 
-    @patch("autopr.agents.platform_analysis_agent.PlatformConfigManager")
+    @patch("codeflow_engine.agents.platform_analysis_agent.PlatformConfigManager")
     def test_get_platform_info_returns_none_for_unknown_platform(
         self, mock_config_manager
     ):

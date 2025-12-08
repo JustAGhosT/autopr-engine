@@ -13,7 +13,7 @@ if project_root not in sys.path:
 
 def test_imports():
     """Test that we can import the required modules."""
-    with patch("autopr.agents.crew.get_llm_provider_manager"):
+    with patch("codeflow_engine.agents.crew.get_llm_provider_manager"):
         from codeflow_engine.agents.crew import AutoPRCrew
 
         assert AutoPRCrew is not None
