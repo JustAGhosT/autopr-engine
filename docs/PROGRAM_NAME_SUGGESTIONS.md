@@ -163,6 +163,7 @@ If maintaining AutoPR, consider positioning strategies that emphasize the platfo
 - **Best For:** Differentiation from coding assistants is clear
 
 ### 9. FlowForge (40/50 points)
+
 - **Strengths:** Metaphor of crafting workflows, strong branding
 - **Considerations:** Less explicit about code/dev focus
 - **Best For:** Broader DevOps automation positioning
