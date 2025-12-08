@@ -185,7 +185,7 @@ Voice: Authoritative, protective, reliable
 5. **Professional Appeal:** Enterprise credibility + developer authenticity
 
 **vs. Current Brand (AutoPR):**
-- **+4 points overall** (48 vs 44) driven primarily by scalability advantage
+- **+4 points overall** (48 vs 44) driven primarily by the scalability advantage
 - CodeFlow AI better supports platform growth beyond PR-specific features
 - AutoPR maintains advantages in clarity (8/8) and established domain presence
 - Investment in rebranding justified if product roadmap includes workflow expansion
